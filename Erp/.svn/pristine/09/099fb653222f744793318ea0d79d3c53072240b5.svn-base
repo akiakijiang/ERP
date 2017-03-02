@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+ <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>一号店订单</title>
+<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../misc/jquery.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+	// <![CDATA[
+							
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	{literal}
+	function searchgood_receiver_county(good_receiver_city,good_receiver_province,yhd_order_id) {
+		$.ajax({
+			type: 'POST', //请求类型
+			url: 'yhd_order_list.php?request=ajax&act=search_good_receiver_county',//请求发送地址
+			data: 'good_receiver_city=' + good_receiver_city +"&good_receiver_province="+good_receiver_province,//传送数据
+			dataType: 'json',//数据类型
+			async: false, 	//请求同步执行
+			success:function(data){
+				if(data.error){
+					alert(data.error);
+					return;
+				}
+				var tdc = "<td aoi="+yhd_order_id+"> <select name=\"good_receiver_county\"><option value=\"0\">-请选择-</option>";
+				for(j = 0; j<data.length;j++){
+					tdc += "<option value="+data[j].region_id+">"+data[j].region_name+"</option>";
+				}
+				tdc += "</select><a href=\"javascript:void(0);\" onclick=\"addgood_receiver_county(this,"+yhd_order_id+")\">确认</a></td> ";
+				$('#'+yhd_order_id).replaceWith(tdc);
+			},
+			error: function() { 
+				alert("区信息查询异常");
+			}
+		});
+	}
+	function addgood_receiver_county(obj,yhd_order_id){
+		var select = $(obj).prev().find("option:selected").val();
+		if(select == '0'){
+			alert("请选择添加的区");
+		}else 
+		location.href='yhd_order_list.php?region_id=' + select+"&yhd_order_id="+yhd_order_id;
+		
+	}
+	{/literal}
+	// ]]>
+	</script>
+	
+</head>
+<body>
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;一号店订单&nbsp;</span>
+		</legend>
+		<div style="clear: both;">
+			<font color="red">
+	                         注意：<br />
+	          1.一号店订单号、用户名、订单状态三个条件必须至少输入一个<br/>
+	          2.不能查全部状态为正常的订单<br />
+	          3.状态分为WARN和ERROR,ERROR状态的请直接手工录单; WARN状态时区信息为空的，店长可选择区信息，其它可联系ERP。<br />	          
+       		  4.备注信息会列出同步失败原因,未找到匹配商品为商家编码错误,手工录单;未找到地址为地址信息错误,联系ERP。<br />
+            </font>
+            <br />
+			<form method="post" id="conditionForm">
+				<table>
+					<tr>
+						<td>一号店订单号：<input type="text" name="yhd_order_id" id="yhd_order_id" value="{$yhd_order_id}" /></td>
+						<td>用户名：<input type="text" name="good_receiver_name" id="good_receiver_name" value="{$good_receiver_name}" /></td>
+						<td>开始时间:<input type="text" id="start" name="startDate"  size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /></td>
+						<td>结束时间:<input type="text" id="end" name="endDate"  size="10" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" /></td>
+						<td>订单状态: 
+							<select name="transfer_status" id="transfer_status"> 
+								{html_options options=$transfer_status_list selected=$transfer_status }
+							</select>
+						</td>
+						<td>
+							<input type="hidden" name="act" id="act" value="search" />
+						 	<input	type="button" value="搜索" onclick="checkCondition()" />
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<br />
+		<div style="clear: both;">
+			<h3 style="color: #09F;">一号店订单</h3>
+			<table class="bWindow" style="margin-top: 10px;"
+				id="goods_list_table">
+				<tr>
+					<th width="30">No.</th>
+					<!-- <th>商店名</th> -->
+					<th>一号店订单号</th>
+					<th>用户名</th>
+					<th>下单时间</th>
+					<!-- <th>付款时间</th> -->
+					<th>状态</th>
+					<th>备注</th>
+					<th>省</th>
+					<th>市</th>
+					<th>区</th>
+					<!-- <th>是否外包发货</th> -->
+					<th>操作建议</th>
+				</tr>
+				<!--  {if $order_list != null} -->
+				<!-- {foreach from=$order_list item=order name="yhdOrderList"} -->
+				<tr align="center" class="{cycle values='odd,even'}" id="">
+					<td>{$smarty.foreach.yhdOrderList.iteration}</td>
+					<!-- <td>{$order.title}</td> -->
+					<td>{$order.yhd_order_id}</td>
+					<td>{$order.good_receiver_name}</td>
+					<td>{$order.order_create_time}</td>
+					<!-- <td>{$order.pay_date}</td> -->
+					<td>{$order.transfer_status}</td>
+					<td>{$order.transfer_note}</td>
+					<td>{$order.good_receiver_province}</td>
+					<td>{$order.good_receiver_city}</td>
+					{if !$order.good_receiver_county && ($order.order_create_time)> $valide_date && $order.transfer_status=='WARN'}
+					 <td id="{$order.yhd_order_id}" >
+						 <input type="hidden" id="state" value="{$order.good_receiver_province}" />
+						<input type="hidden" id="good_receiver_city" value="{$order.good_receiver_city}"/>
+						<input type="button" value="查询" onclick="searchgood_receiver_county('{$order.good_receiver_city}','{$order.good_receiver_province}','{$order.yhd_order_id}');"/> 
+					</td>
+					{else}
+					<td>{$order.good_receiver_county}</td>
+					{/if}
+					
+					<!-- <td>{$order.ship_type}</td> -->
+					<td>{$order.advice}</td>
+				</tr>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="10" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+			</table>
+			<br />
+		</div>
+	</fieldset>
+	<script type="text/javascript">
+	{literal}
+	function checkCondition(){
+		var start = $('#start').val();
+		var end = $('#end').val();
+	/*	if($('#yhd_order_id').val() == '' && $('#good_receiver_name').val() == '' && $('#transfer_status').val() == 'NORMAL'){
+			alert('不能查全部状态为正常的订单');
+			return false;
+		}else */
+		if( $('#yhd_order_id').val() == '' && $('#good_receiver_name').val() == '' && $('#transfer_status').val() == 'ALL' ){
+			alert('三个条件至少输入一个');
+			return false;
+		}else if(start > end){
+			alert('开始时间不能晚于结束时间');
+			return false;
+		}else{
+			$('#conditionForm').submit();
+		}
+	}
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "start",
+		button            : "startTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "end",
+		button            : "endTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	{/literal}
+	</script>
+</body>
+</html>

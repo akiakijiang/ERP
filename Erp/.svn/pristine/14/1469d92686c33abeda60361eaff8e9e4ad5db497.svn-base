@@ -1,0 +1,35 @@
+<!--
+	All Hail Sinri Edogawa!
+
+	库位条码的标准模板
+	按照Godex EZ 1100p打印机和4*10cm热敏打印纸配置设计。
+
+	@AUTHOR ljni@i9i8.com
+	@UPDATED 20130911
+
+	@PARAM barcode
+	@PARAM sugu_print
+-->
+<HTML>
+	<HEAD>
+		<TITLE>库位条码打印 - {$barcode}</TITLE>
+	</HEAD>
+	<BODY {if $smarty.request.sugu_print == 1}onload="window.print();"{/if}>
+		<DIV style="height: 3cm;width:9.5cm;"><!-- border-style: solid; -->
+			<CENTER>
+				<div style="padding-top:0.1cm;">
+					<!-- <span style="font-size:5px;">-->
+					<span style="font-size:0.3cm;">
+						库位条码 - {$party_name}
+					</span>
+					<br>
+					<img src="code_img.php?barcode={$smarty.request.barcode}&height=35&text=0" />
+					<br>
+					<span style="font-size:1.5cm;font-weight:900;font-family:Arial">
+						{$smarty.request.barcode}
+					</span>
+				</div>
+			</CENTER>
+		</DIV>
+	</BODY>
+</HTML>

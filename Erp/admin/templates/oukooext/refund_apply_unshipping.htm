@@ -1,0 +1,1027 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>退款申请</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+	<style type="text/css">
+	{literal}
+		.inner {
+			margin:5px auto; 
+			padding:5px; 
+			line-height:30px;
+			width: 90%;
+		}
+		
+		.expand {
+			background-color: #008000; 
+			color:#FFFFFF; 
+			cursor:pointer;
+			padding:3px;
+		}
+		
+		.disabled {
+			background-color: #C0C0C0; 
+			cursor: auto;
+		}
+	{/literal}
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	// 退款明细原因options
+	var refund_detail_goods_reason_options = "{foreach from=$refund_detail_goods_reason_list key=key item=item}<option value=\"{$key}\">{$item}</option>{/foreach}";
+	var refund_detail_commodity_reason_list = "{foreach from=$refund_detail_commodity_reason_list key=key item=item}<option value=\"{$key}\">{$item}</option>{/foreach}";
+	var refund_detail_others_reason_options = "{foreach from=$refund_detail_others_reason_list key=key item=item}<option value=\"{$key}\">{$item}</option>{/foreach}";
+	var refund_detail_other_reason_options = "{foreach from=$refund_detail_other_reason_list key=key item=item}<option value=\"{$key}\">{$item}</option>{/foreach}";
+	var refund_detail_money_reason_options = "{foreach from=$refund_detail_money_reason_list key=key item=item}<option value=\"{$key}\">{$item}</option>{/foreach}";
+	
+	// 系统的推荐退款金额
+	var refund_total_amount = {$refund_total_amount};
+	
+	// 是否初始化商品列表
+	<!--{if $refund_type_id == 1 || $refund_type_id == 5} -->
+	var init_refund_detail_goods = true;
+	<!--{else}-->
+	var init_refund_detail_goods = false;
+	<!--{/if}-->
+	
+	{literal}
+	
+	// 已添加商品明细
+	var refund_detail_goods_array = new Array();
+	// 总价格
+	var total_amount = 0;
+	
+	
+	// 商品明细价格回车事件
+	
+	function enterPrice(event){
+		var me = event.target;
+		if(event.keyCode == 13) {
+			
+			var $markvalue = $(me).parent().children(".markvalue").val();
+			var $newvalue = $(me).val();
+			//alert($newvalue + "");
+			if ($newvalue == '' || !/^(-|\+)?\d+(\.\d+)?$/.test($newvalue)) {
+				alert('请输入正确的退款金额');
+				$(me).val($markvalue);
+				$newvalue = $markvalue;
+				return;
+			}
+			$(me).parent().children(".markvalue").val($newvalue);
+			total_amount = calc_total_refund_fee();
+			//total_amount = money_format(total_amount - parseFloat($markvalue) + parseFloat($newvalue));  // 总价格
+			//alert("total_amount" + total_amount);
+			$('#total_amount').val(total_amount); 
+		}
+	}
+	
+	// 商品明细价格获得焦点
+	
+	function focusPrice(event){
+		var me = event.target;
+		var content = "<input class=\"markvalue\" type=\"hidden\" value=" + $(me).val() +  "  /> ";
+		$(me).parent().append(content);
+	}
+	
+	// 商品明细价格失去焦点
+	
+	function blurPrice(event){
+		var me = event.target;
+		$(me).parent().children("input").remove(".markvalue");
+	}
+	
+	$(document).ready(function(){
+			$("#add_responsible_list").click(function(event){
+    		event.preventDefault();
+    		var responsible_list_html = '<div class="responsible_list">' 
+    		+ $("#responsible_list_wrap").find(".responsible_list").eq(0).clone(true).html() 
+    		+ '<button class="remove_responsible_list" onclick="$(this).parent().remove();">删除</button></div>';
+    		//alert(responsible_list_html);
+    		$("#responsible_list_wrap").append(responsible_list_html);
+    	});
+
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			
+			// 绑定添加商品明细按钮
+			$('#refund_detail_goods_add').bind('click', refund_detail_goods_add);
+			// 绑定添加其他明细按钮
+			$('#refund_detail_item_add').bind('click', refund_detail_item_add);
+			
+			
+			// 事件绑定：更换支付方式，显示不同的输入框
+			var $s = $(':input[name="payment[payment_type_id]"]');
+			$s.bind('change', function(){
+				var code = $(this).find('option:selected').attr('code');
+				payment_type_switch(code);
+			});
+			payment_type_switch($s.find('option:selected').attr('code'));
+			
+			
+			// 事件绑定：更改商品明细时显示价格
+			var $e = $('#refund_detail_goods_select');
+			$e.bind('click', function(){
+				var n = $e.find('option:selected');
+				var p = money_format( parseFloat(n.attr('price')) * parseInt(n.attr('number')) );
+				$('#refund_detail_goods_cost').val(p);
+			});
+			
+			// 初始化已列出的商品， 并计算总价, 防止再次添加
+			if (init_refund_detail_goods) {
+				$e.find('option:not(.selectAll)').each(function(i){
+					var itm = $(this);
+					refund_detail_goods_array.push(itm.val());			
+					total_amount = money_format( total_amount + parseFloat(itm.attr('price')) * parseInt(itm.attr('number')) );
+				});
+			}
+			
+			// 绑定事件： 选择计算运费
+			$('#shipping_fee_check').bind('click', function(){
+				
+				var $input = $(':hidden[name="info[shipping_amount]"]');
+				if ($(this).attr('checked')) {
+					$input.attr('disabled', false);
+					total_amount = money_format(total_amount + parseFloat($input.val()));
+				} else {
+					$input.attr('disabled', true);
+					total_amount = money_format(total_amount - parseFloat($input.val()));
+				}
+				
+				//calc_total_refund_fee();
+				$('#total_amount').val(total_amount);
+			});
+			
+			// 绑定事件： 选择计算包装费
+			$('#pack_fee_check').bind('click', function(){
+				
+				var $input = $(':hidden[name="info[pack_amount]"]');
+				if ($(this).attr('checked')) {
+					$input.attr('disabled', false);
+					total_amount = money_format(total_amount + parseFloat($input.val()));
+				} else {
+					$input.attr('disabled', true);
+					total_amount = money_format(total_amount - parseFloat($input.val()));
+				}
+				
+				//calc_total_refund_fee();
+				$('#total_amount').val(total_amount);
+			});
+			
+			// 初始化运费和包装费
+			if ($('#shipping_fee_check').attr('checked')) {
+				total_amount = money_format(total_amount + parseFloat($(':hidden[name="info[shipping_amount]"]').val()) );
+			}
+			if ($('#pack_fee_check').attr('checked')) {
+				total_amount = money_format(total_amount + parseFloat($(':hidden[name="info[pack_amount]"]').val()) );
+			}
+			
+			//红包费用
+			//alert($(':hidden[name="detail[others][5][cost]"]'));
+			if($(':hidden[name="detail[others][5][cost]"]').val() != undefined){
+				//alert($(':hidden[name="detail[others][5][cost]"]').val());
+				total_amount = money_format(total_amount + parseFloat($(':hidden[name="detail[others][5][cost]"]').val()) );
+			}
+			
+				
+			$('#total_amount').val(total_amount);  // 总价格
+			
+			// 全选
+			$('.selectAll').bind('click',function(){
+				
+				if($(this).attr("selected")) {
+					$(this).parent().children("option").attr("selected",true);
+				}
+			});
+	});
+	
+	/**
+	 * 退款方式切换, 更换不同的输入框
+	 */
+	function payment_type_switch(code)
+	{
+		switch (code) {
+			case 'ALIPAY' :  // 支付宝
+				$('#payment_type_bank, #payment_type_others, #payment_type_qqtenpay').fadeOut(function(){
+					$('#payment_type_alipay').fadeIn('slow');
+				});
+				break;
+				
+			case 'BANK' :  // 银行
+				$('#payment_type_alipay, #payment_type_others, #payment_type_qqtenpay').fadeOut(function(){
+					$('#payment_type_bank').fadeIn('slow');
+				});				
+				break;	
+			case 'QQTENPAY' :  // 财付通电教ＱＱ商城
+				$('#payment_type_alipay, #payment_type_others, #payment_type_bank').fadeOut(function(){
+					$('#payment_type_qqtenpay').fadeIn('slow');
+				});				
+				break;	
+			case 'OTHERS' :  //  其他
+				$('#payment_type_bank, #payment_type_alipay, #payment_type_qqtenpay').fadeOut(function(){
+					$('#payment_type_others').fadeIn('slow');
+				});	
+				break;
+			
+			default :  // 支付宝直连、财付通、快钱不需要填写
+				$('#payment_type_bank, #payment_type_alipay, #payment_type_others, #payment_type_qqtenpay').fadeOut();
+				break;
+		}
+	}
+
+	/**
+	 * 添加退款商品明细
+	 */
+	function refund_detail_goods_add(event)
+	{
+		// 添加按钮
+		var $button = $('#refund_detail_goods_add');
+		waiting($button);
+		
+		// 判断是否输入了退款金额
+		var cost = $.trim($('#refund_detail_goods_cost').val());
+		if (cost == '' || !/^(-|\+)?\d+(\.\d+)?$/.test(cost)) {
+			alert('请输入正确的退款金额');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的订单商品id
+		var id = $('#refund_detail_goods_select').val();
+		if (!id) {
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 判断是否添加过了
+		if ($.inArray(id, refund_detail_goods_array) != -1) {
+			alert('该商品已添加到商品明细了');
+			waiting($button, 'en');
+			return;
+		}
+		 
+		// 查询出该商品详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'ajax.php?act=get_order_goods',
+			data: 'goods_id=' + id,
+			dataType: 'json',
+			success: refund_detail_goods_callback
+		});
+		
+		// 添加商品到列表
+		function refund_detail_goods_callback(data) {
+			var tpl = "<tr align=\"center\" ix=\"" + data.rec_id +"\">" +
+						    "  <td>" + data.goods_name  + " x " + data.goods_number + "</td>" +
+						    "  <td>" + cost + "</td>" +
+						    "  <td><select name=\"detail[goods][" + data.rec_id + "][reason_id]\">"+ refund_detail_goods_reason_options +"</select></td>" +
+						    "  <td><input name=\"detail[goods][" + data.rec_id + "][note]\" type=\"text\" maxlength=\"250\" /></td>" +
+						    "  <td> " +
+								"    <a href=\"javascript:void(0);\" onclick=\"refund_detial_item_remove(this, 'goods')\">删除</a>" +
+								"    <input name=\"detail[goods][" + data.rec_id + "][product_id]\" type=\"hidden\" value=\"" + data.productId + "\" /> " +
+								"    <input name=\"detail[goods][" + data.rec_id + "][order_goods_id]\" type=\"hidden\" value=\"" + data.rec_id + "\" />" +
+								"    <input name=\"detail[goods][" + data.rec_id + "][cost]\" type=\"hidden\" value=\"" + cost + "\" /> " +
+								"  </td>" +
+					      "</tr>";
+			$('#refund_detail_goods_list').append(tpl);
+			
+			refund_detail_goods_array.push(id);  // 防止重复添加
+			total_amount = money_format(total_amount + parseFloat(cost));  // 总价格
+			$('#total_amount').val(total_amount); 
+			waiting($button, 'en');
+		}
+	}
+	
+	
+	/**
+	 * 添加退款商品明细
+	 */
+	function refund_detail_goods_add(event)
+	{
+		//添加每条商品明细
+		function refund_detail_each_goods_add(id) {
+			var id = $('#refund_detail_goods_select').val();
+			if (!id) {
+				waiting($button, 'en');
+				return;
+			}
+			
+			// 判断是否添加过了
+			if ($.inArray(id, refund_detail_goods_array) != -1) {
+				//alert('该商品已添加到商品明细了');
+				waiting($button, 'en');
+				return;
+			}
+		}
+		// 添加按钮
+		var $button = $('#refund_detail_goods_add');
+		waiting($button);
+		
+		
+		var selected = $('#refund_detail_goods_select').children("option:selected");
+		if(selected.size()==0){
+			alert('请至少选择一个选项');
+			waiting($button, 'en');
+			return;
+		}
+		
+		$('#refund_detail_goods_select').children("option:selected:not(.selectAll)").each(
+				
+				
+				function(){
+					
+					
+					var id = $(this).val();
+					if (!id) {
+						waiting($button, 'en');
+						return;
+					}
+					if ($.inArray(id, refund_detail_goods_array) != -1) {
+						//alert('该商品已添加到商品明细了');
+						waiting($button, 'en');
+						return;
+					}
+					
+					var cost  = money_format(($(this).attr("price")));
+					// 查询出该商品详情并添加到列表
+					$.ajax({
+						type: 'POST',
+						url: 'ajax.php?act=get_order_goods',
+						data: 'goods_id=' + id,
+						dataType: 'json',
+						success: refund_detail_goods_callback
+					});
+					
+					// 添加商品到列表
+					function refund_detail_goods_callback(data) {
+						
+						var tpl = "<tr align=\"center\" ix=\"" + data.rec_id +"\">" +
+									    "  <td>" + data.goods_name + "</td>" +
+									    "  <td>" + data.goods_number + "</td>" +
+									    "  <td><input class=\"newcost\" name=\"detail[goods][" + data.rec_id + "][cost]\" type=\"text\"  onfocus=\"focusPrice(event)\" onkeyup=\"enterPrice(event)\" onblur=\"blurPrice(event)\"  value=\"" + cost*data.goods_number + "\"></input></td>" +
+									    "  <input class=\"refund_reason\" name=\"detail[goods][" + data.rec_id + "][reason_id]\" type=\"hidden\"  />" +
+									    "  <input class=\"refund_reason_detail\" name=\"detail[goods][" + data.rec_id + "][note]\" type=\"hidden\"  /> </td>" +
+									    "  <td> " +
+											"    <a href=\"javascript:void(0);\" onclick=\"refund_detial_item_remove(this, 'goods')\">删除</a>" +
+											"    <input name=\"detail[goods][" + data.rec_id + "][product_id]\" type=\"hidden\" value=\"" + data.productId + "\" /> " +
+											"    <input name=\"detail[goods][" + data.rec_id + "][order_goods_id]\" type=\"hidden\" value=\"" + data.rec_id + "\" />" +
+											"    <input name=\"detail[goods][" + data.rec_id + "][origin_cost]\" type=\"hidden\" value=\"" + cost + "\" /> " +
+											"  </td>" +
+								      "</tr>";
+						
+						$('#refund_detail_goods_list').append(tpl);
+						
+						refund_detail_goods_array.push(id);  // 防止重复添加
+						//total_amount = money_format(total_amount + parseFloat(cost));  // 总价格
+						calc_total_refund_fee();
+						waiting($button, 'en');
+					}
+				}			
+		);
+	
+		$('.newcost').unbind('keyup',enter_handle);
+		$('.newcost').unbind('focus',focus_handle);
+		$('.newcost').unbind('blur',blur_handle);
+		
+		$('.newcost').bind('keyup',enter_handle);
+		$('.newcost').bind('focus',focus_handle);
+		$('.newcost').bind('blur',blur_handle);
+		// 判断是否输入了退款金额
+		/*
+		var cost = $.trim($('#refund_detail_goods_cost').val());
+		if (cost == '' || !/^(-|\+)?\d+(\.\d+)?$/.test(cost)) {
+			alert('请输入正确的退款金额');
+			waiting($button, 'en');
+			return;
+		}
+		*/
+		 
+	}
+	
+	/**
+	 * 添加退款其他明细
+	 */
+	function refund_detail_item_add(event)
+	{
+		// 添加按钮
+		var $button = $('#refund_detail_item_add');
+		waiting($button);
+		
+		// 判断是否输入了退款金额
+		var cost = $.trim($('#refund_detail_item_cost').val());
+		if (cost == '' || !/^(-|\+)?\d+(\.\d+)?$/.test(cost)) {
+			alert('请输入正确的退款金额');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的明细项id
+		var id = $('#refund_detail_type_select').val();
+		if (!id) {
+			waiting($button, 'en');
+			return;
+		}
+		
+		//判断显示的选项
+		var myOptions = null;
+		if(id == 2) 
+			myOptions = refund_detail_other_reason_options;
+		else
+			myOptions = refund_detail_money_reason_options;
+		
+				 
+		// 查询出该明细详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'ajax.php?act=get_refund_detail_type',
+			data: 'id=' + id,
+			dataType: 'json',
+			success: refund_detail_item_add_callback
+		});
+		
+		// 添加明细到列表
+		function refund_detail_item_add_callback(data) {
+			var tpl = "<tr align=\"center\" ix=\"" + data.refundDetailTypeId +"\">" +
+						    "  <td>" + data.description + "</td>" +
+						    "  <td>" + cost + "</td>" +
+						    "  <td><select name=\"detail[others][" + data.refundDetailTypeId + "][reason_id]\">" +  myOptions + "</select></td>" +
+						    "  <td><input name=\"detail[others][" + data.refundDetailTypeId + "][note]\" type=\"text\" maxlength=\"250\" /></td>" +
+						    "  <td>" +
+								"    <a href=\"javascript:void(0);\" onclick=\"refund_detial_item_remove(this, 'item')\">删除</a>" +
+								"    <input name=\"detail[others][" + data.refundDetailTypeId + "][detail_type_id]\" type=\"hidden\" value=\"" + data.refundDetailTypeId + "\" />" + 
+								"    <input name=\"detail[others][" + data.refundDetailTypeId + "][cost]\" type=\"hidden\" value=\"" + cost + "\" />" +
+								"    <input class=\"newcost\" type=\"hidden\" value=\"" + cost + "\" />" +
+								"  </td>" +
+					      "</tr>";
+			$('#refund_detail_item_list').append(tpl);
+			
+			total_amount = money_format(total_amount + parseFloat(cost));  // 总价格
+			$('#total_amount').val(total_amount); 
+			waiting($button, 'en');
+		}
+	}
+	
+	/**
+	 * 删除商品明细或其他明细
+	 *
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function refund_detial_item_remove(doc, type) 
+	{
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		//var cost = $tr.find(":hidden[name$='[cost]']").val();
+		var cost = $tr.find(".newcost").val();
+		$tr.remove();
+		
+		total_amount = money_format(total_amount-parseFloat(cost)) ;  // 总价格减少
+		$('#total_amount').val(total_amount); 
+								
+		if (type == 'goods') {
+				// 从已添加堆栈中删除该商品明细
+				for (var i = 0; i < refund_detail_goods_array.length; i++ ) {
+					if (refund_detail_goods_array[i] == id) {
+						refund_detail_goods_array.splice( i, 1);
+						break;
+					}
+				}
+		}
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		
+		var $input = $(':input[name="info[total_amount]"]');
+		var cost = $.trim($input.val());
+		if (cost == '' || !/^(-|\+)?\d+(\.\d+)?$/.test(cost)) {
+			alert('请输入正确的退款总金额');
+			$input.focus();
+			waiting($button, 'en');
+			return;
+		}
+		
+		var sta;
+		$(':input[name="responsible_party[]"]').each(function(index){
+		if($.trim($(this).val()) == '0'){
+			alert('请选择责任方');
+			sta = 0;
+			return false;	
+		}
+		});
+		if(sta == 0){
+			return;
+		}
+
+		if($.trim($(':input[name="after_sales_type"]').val()) == '0'){
+			alert('请选择售后类型');
+			return;
+		}
+		$(':input[name="compensation_amount[]"]').each(function(index){
+			var str = this.previousSibling.previousSibling;
+			var privious = str.previousSibling.previousSibling;
+				if($.trim($(this).val()) == '0'&&privious.value != 'WZTK'){
+							alert('不是无责退款，损失金额不能为零');
+							sta = 0;
+							return false;
+				}else if($.trim($(this).val()) == ''){
+							alert('损失金额不能为零');
+							sta = 0;
+							return false;
+				}
+		});
+		if(sta == 0){
+			return;
+		}
+		
+		update_refund_reason();
+		calc_total_refund_fee();
+		
+		if (total_amount != refund_total_amount)
+			message = '您输入的退款金额和系统建议的退款金额不一致，您确定吗?';
+		else
+			message = '您确认吗？';
+		if (confirm(message)) {
+			//天猫直销全额先款后货待付款状态订单 客服执行退款  先上线金佰利,添加雀巢
+			var party_list = ['65558','65635','65683','65553'];
+			if(party_list.indexOf($('#party_id').val()) != -1 && $('#shop_type').val() == 'taobao' && $('#order_amount').val() == total_amount && $('#shipping_status').val() == 0 && $('input[name="info[refund_type_id]"]').val() == 1){
+				$('input[name="info[refund_type_id]"]').val('8');
+			}
+			$('#form').submit();	
+		}
+	}
+	
+	/**
+	 * 格式化金额
+	 */
+	function money_format(number) 
+	{
+		return Math.round(number * 100) / 100 ;
+	}
+	
+	
+	/**
+	 * 更新每条商品明细的退款原因和备注
+	 */
+	function update_refund_reason() {
+		
+		
+		$(".refund_reason").each(
+			function(){
+				$(this).val($("#refund_reason_select").val());
+			}		
+		);
+		$(".refund_reason_detail").each(
+			function(){
+				$(this).val($("#refund_detail_all").val());
+			}		
+		);
+		
+		
+	}
+	
+	
+	/**
+	 * 计算退款总金额
+	 */
+	
+	 function calc_total_refund_fee() {
+		var fee = 0.0;
+		// 运费
+		var freight = $(':hidden[name="info[shipping_amount]"]'); 
+		if($('#shipping_fee_check').attr('checked'))
+			fee = money_format(fee + parseFloat(freight.val()));
+		var packing = $(':hidden[name="info[pack_amount]"]');
+		// 包装费
+		if($('#pack_fee_check').attr('checked'))
+			fee = money_format(fee + parseFloat(packing.val()));
+		// 退款商品明细
+		$('.newcost').each(
+			function(){
+				fee = money_format(fee + parseFloat($(this).val()));
+			}		
+		);
+		$('.other_refund').each(
+			function(){
+				fee = money_format(fee + parseFloat($(this).val()));
+			}		
+		);
+		total_amount = fee;
+		$("#total_amount").val(fee);
+	 }
+	
+	
+	/**
+	 *无则退款，损失金额为0
+	 */
+	function responsibleChange(obj){
+		if(obj.value=="WZTK") {
+			var str = obj.nextSibling.nextSibling;
+			var next = str.nextSibling.nextSibling;
+			next.value = "0";
+		}
+	}
+	
+	// ]]>
+	{/literal}
+	</script>
+</head>
+<body>
+
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;" >
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;退款申请&nbsp;</span></legend>
+<form method="post" id="form" style="width:96%; margin:auto;">
+
+	{if $message}
+	<div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  {/if}
+
+  {if $alert}
+	<script type="text/javascript">
+  if (confirm('{$alert}'))
+		window.close();
+  </script>
+  {/if}
+
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  		<legend class="expand">&nbsp;退款申请信息&nbsp;</legend>
+      
+    	<div>
+    	<table class="inner">
+      <tr>
+      	<td width="120">退款申请单号</td>
+        <td><input name="info[refund_id]" type="text" value="" readonly="readonly" /></td>
+      </tr>
+     
+      <tr>
+        <td>类型</td>
+        <td>
+          <select name="info[refund_type_id]" disabled="disabled">
+          {html_options options=$refund_type_list selected=$refund_type_id}
+          </select>
+          <input name="info[refund_type_id]" type="hidden" value="{$refund_type_id}" /> 
+        </td>
+      </tr>
+       
+      <tr>
+        <td><strong>订单号</strong></td>
+        <td>
+        	<input name="info[order_sn]" type="text" value="{$order.order_sn}" readonly="readonly" /> 
+       		&nbsp;&nbsp;&nbsp;&nbsp;<a href="order_edit.php?order_id={$order.order_id}" target="_blank">订单状态: {$order.formated_order_status}, {$order.formated_pay_status}, {$order.formated_shipping_status}</a>
+        	<input type="hidden" name="order_amount" id="order_amount" value="{$order.order_amount}" />
+        	<input type="hidden" name="shipping_status" id="shipping_status" value="{$order.shipping_status}" />
+        	<input type="hidden" name="shop_type" id="shop_type" value="{$shop_type}"/>
+        	<input type="hidden" name="party_id" id="party_id" value="{$order.party_id}"/>
+        </td>
+      </tr>
+      
+      {if $original_order.order_sn != $order.order_sn} {* 原销售订单 *}
+      <tr>
+        <td><strong>原始订单信息</strong></td>
+        <td>
+        	订单号： <a href="order_edit.php?order_id={$original_order.order_id}" target="_blank">{$original_order.order_sn}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          已支付: {$original_order.formated_real_paid}&nbsp;&nbsp;
+          抵用券抵用: {$original_order.formated_bonus}
+        </td>
+      </tr>
+      {/if}
+      
+			{if $order_refer_bonus}
+      <tr>
+        <td>订单关联红包</td>
+        <td>
+          <table class="inner" style="text-align:center" width="100%">
+          	<tr align="center" bgcolor="#E2F9FA">
+							<td>红包编号</td>
+              <td>红包金额</td>
+              <td>红包类型</td>
+              <td>时间限制</td>
+              <td>领取人</td>
+              <td>使用时间</td>
+              <td>使用订单</td>
+            </tr>
+            <!--{foreach from=$order_refer_bonus item=bonus}-->  
+            <tr align="center">
+              <td>{$bonus.gt_code}</td>
+              <td>{$bonus.gtc_value}</td>
+              <td>{$bonus.gtc_type_name}</td>
+              <td>
+              	<!--{if $bonus.gt_state == 1}-->
+                禁用
+              	<!--{elseif $bonus.gt_state == 2}-->
+                {$bonus.gtc_stime|date_format:"%Y-%m-%d %H:%M:%S"} - {$bonus.gtc_etime|date_format:"%Y-%m-%d %H:%M:%S"}
+              	<!--{elseif $bonus.gt_state == 3}-->
+                无时间限制启用
+              	<!--{elseif $bonus.gt_state == 4}-->
+                已经使用
+                <!--{/if}-->
+              </td>
+              <td>{if $bonus.user_id}{$bonus.user_name}{else}未领取{/if}</td>
+              <td>{if $bonus.gt_state == 4}{$bonus.used_timestamp|date_format:"%Y-%m-%d %H:%M:%S"}{else}未使用{/if}</td>
+              <td>{$bonus.used_order_sn}</td>
+            </tr>
+            <!--{/foreach}-->
+          </table>
+          
+        </td>
+      </tr>
+      {/if}
+      
+      <tr>
+        <td><strong>客户姓名</strong></td>
+        <td><input name="info[applicant]" type="text" value="{if $original_order}{$original_order.consignee}{else}{$order.consignee}{/if}" /></td>
+      </tr>
+      
+      <tr>
+        <td><strong>退款总金额</strong></td>
+        <td>
+        <input type="hidden" name="info[currency]" value="{$original_order.currency}" />
+        {$original_order.currency} 
+        <input id="total_amount" name="info[total_amount]" size="10" /></td>
+      </tr>
+      
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+          建议退款金额：{$original_order.currency} {$refund_total_amount}&nbsp;&nbsp;
+          订单已支付: {$original_order.currency} {$order.real_paid}&nbsp;&nbsp;
+          累计退款金额: {$original_order.currency} {$order_total_refund_money}&nbsp;&nbsp;
+          {if $order.bonus < 0}
+          <span style="color:red;">抵用券抵用: {$original_order.currency} {$order.bonus}</span>
+          {else}
+          抵用券抵用: {$original_order.currency} {$order.bonus}
+          {/if}
+        </td>
+      </tr>
+         
+	    </table>
+    	</div>
+      
+  </fieldset>
+
+
+
+
+	<br /><br />
+  <fieldset style="border: #FF7FFF 1px dashed;"> 
+  		<legend class="expand">&nbsp;原订单退款明细&nbsp;</legend>
+    	<div style="display:none">
+           
+           
+      
+		 
+      
+         
+      <div class="inner" style="text-align:left; padding-right:20px; border-bottom:#7F9FFF 2px solid;">
+    退款原因<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select id="refund_reason_select"> {foreach from=$refund_detail_commodity_reason_list key=v item=caption}<option value="{$v}" {if $item->refundDetailReasonId==$v}selected="selected"{/if}>{$caption}</option>{/foreach}</select> -->
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id="refund_detail_all" name="refund_detail_all" type="text"></input>
+     
+      <br/> <br/>  
+      
+      加入退款明细 ： <select multiple="multiple" id="refund_detail_goods_select"><option class="selectAll">全选</option><!--{foreach from=$order_goods_list item=goods}--><option value="{$goods.rec_id}" price="{$goods.goods_price}" number="{$goods.goods_number}">{$goods.goods_name} x {$goods.goods_number}</option><!--{/foreach}--></select>  
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input id="refund_detail_goods_add" type="button" value="添加" />
+      </div>
+      
+      
+      
+      
+      <table class="inner" id="refund_detail_goods_list">
+        <tr align="center" bgcolor="#E2F9FA">
+          <th>商品名</th>
+          <th>数量</th>
+          <th>退款金额</th>
+          <th width="40">操作</th>
+        </tr>
+        
+        {* 商品列表 *}
+        <!--{$refund_type_id}{if $refund_type_id == 1 or $refund_type_id == 5} 如果是先款后货取消订单，需要列出全部商品-->
+        <!--{foreach from=$order_goods_list item=goods key=key}-->
+				<tr align="center" ix="{$goods.rec_id}">
+					
+					<td {if !$goods.all_returned}style="background-color:#F00; color: #FFF"{/if}>{$goods.goods_name}</td>
+					<td {if !$goods.all_returned}style="background-color:#F00; color: #FFF"{/if}>{$goods.goods_number}</td>
+					<td >
+						<input class="newcost" name="detail[goods][{$goods.rec_id}][cost]" type="text"  onfocus="focusPrice(event)" onkeyup="enterPrice(event)" onblur="blurPrice(event)" value="{$goods.subtotal|string_format:"%01.2f"}"></input>
+						<input class= "refund_reason" name="detail[goods][{$goods.rec_id}][reason_id]"  type = "hidden"  value="{$item->refundDetailReasonId}"  />
+						<input class = "refund_reason_detail" name="detail[goods][{$goods.rec_id}][note]" type="hidden"  value="{$item->note}"  />
+					<td>
+            <a href="javascript:void(0);" onclick="refund_detial_item_remove(this, 'goods')">删除</a>
+            <input name="detail[goods][{$goods.rec_id}][product_id]" type="hidden" value="{$goods.productId}" />
+            <input name="detail[goods][{$goods.rec_id}][order_goods_id]" type="hidden" value="{$goods.rec_id}" />
+            <input name="detail[goods][{$goods.rec_id}][oldcost]" type="hidden" value="{$goods.subtotal}" />
+					</td>
+				</tr>
+        <!--{/foreach}-->
+        <!--{/if}-->
+        
+
+        
+      </table> 
+      
+      {* 运费 包装费 *}
+      <table class="inner" style="margin-top:0px; padding-top:0px;">
+      <tr>
+      	<td align="right">运费: {$order.shipping_fee}</td>
+        <td width="40" align="center"> 
+          <input id="shipping_fee_check" type="checkbox" value="1" {if $refund_type_id == 1}checked="checked"{/if} />
+          <input name="info[shipping_amount]" type="hidden" value="{$order.shipping_fee}" {if $refund_type_id != 1}disabled="disabled"{/if} />
+        </td>
+      </tr>
+      <tr>
+      	<td align="right">包装费: 0.00</td>
+        <td width="40" align="center"> 
+         <!-- <input id="pack_fee_check" type="checkbox" value="1" {if $refund_type_id == 1}checked="checked"{/if} /> --> 
+         <input id="pack_fee_check" type="checkbox" value="1"  />
+         <input name="info[pack_amount]" type="hidden" value="0.00" {if $refund_type_id != 1}disabled="disabled"{/if} />
+        </td>
+      </tr>
+      </table>
+      
+      </div> 
+  </fieldset>
+
+
+
+
+	<br /><br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  		<legend class="expand">&nbsp;退款其它明细项&nbsp;</legend>
+      <div style="display:none;">
+      <div class="inner" style="text-align:right; padding-right:20px; border-bottom:#7F9FFF 2px solid;">
+      其它 ： <select id="refund_detail_type_select">{html_options options=$refund_detail_type_list}</select> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 退款金额： <input type="text" id="refund_detail_item_cost" size="10" />  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="button" id="refund_detail_item_add" value="添加" />
+      </div>
+      <table class="inner" id="refund_detail_item_list">
+        <tr align="center" bgcolor="#E2F9FA">
+          <th>类别</th>
+          <th>退款金额</th>
+          <th>原因</th>
+          <th>备注</th>
+          <th>操作</th>
+        </tr>
+        <!-- {if $order.bonus < 0} -->
+	        <tr align="center" ix="5">
+				<td>订单商品金额调整</td>
+				<td>{$order.bonus}</td>
+				<td>
+					<select name="detail[others][5][reason_id]">
+						{foreach from=$refund_detail_money_reason_list key=key item=item}<option value="{$key}">{$item}</option>{/foreach}
+					</select>
+				</td>
+				<td>
+					<input type="text" maxlength="250" name="detail[others][5][note]">
+				</td>
+				<td>
+					<a onclick="refund_detial_item_remove(this, 'item')" href="javascript:void(0);">删除</a>
+					<input type="hidden" value="5" name="detail[others][5][detail_type_id]">
+					<input type="hidden" value="{$order.bonus}" name="detail[others][5][cost]">
+					<input class="newcost" type="hidden" value="{$order.bonus}">
+				</td>
+			</tr>
+		<!-- {/if} -->
+      </table>   
+      </div>
+  </fieldset>
+
+
+
+
+	<br /><br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  		<legend class="expand">&nbsp;退款方式&nbsp;</legend>
+  		<div>
+      <table class="inner">
+      {if $order_payment_type.is_taobao_refund}
+      <thead>
+      <tr><td>该订单的支付方式为： {$order_payment_type.pay_name}
+      <input type="hidden" name="payment[payment_type_id]" value='{$order_payment_type.payment_type_id}' />
+      <input type="hidden" name="taobao_refund_id" value="{$smarty.request.taobao_refund_id}" />
+      </td> <td>&nbsp;</td></tr>
+      </thead>
+      <tbody >
+      <tr><td>|- 淘宝账号：</td><td><input type="text" name="payment[alipay_bank_account_no]" value="{$order_payment_type.pay_account.account_user_login}" size="30" maxlength="200" /></td></tr>
+      </tbody>
+      {else}
+      <thead>
+      <tr><td>该订单的支付方式为： {$order_payment_type.pay_name}</td> <td>&nbsp;</td></tr>
+      <tr>
+      	<td>
+	      	<select name="payment[payment_type_id]">
+	      	{foreach from=$refund_payment_type_list item=item key=key}{* left originally strtoupper($order_payment_type.pay_code) *}
+	      		<option value="{$key}" code="{$item.0}" {if $item.0=='TAOBAO'}selected="selected"{/if}>
+	      			{$item.1}
+	      		</option>
+	      	{/foreach}
+	      	</select>
+      	</td>
+      	<td>&nbsp;</td>
+      </tr>
+      </thead>
+      
+      {* 银行支付 *}
+      <tbody id="payment_type_bank" style="display:none;">
+      <tr><td>|- 开户行：</td><td><input name="payment[bank_name]" value="" size="30" maxlength="200" /></td></tr>
+      <tr><td>|- 银行账号：</td><td> <input name="payment[bank_account_no]" size="30" maxlength="200" /> </td></tr>
+      <tr><td>|- 开户名：</td><td> <input name="payment[account_user_login]" size="30" maxlength="200" /> </td></tr>
+      <tr><td>|- 所在省(银行账户)：</td><td> <input name="payment[bank_province]" size="30" maxlength="200" /> </td></tr>
+      <tr><td>|- 所在市(银行账户)：</td><td> <input name="payment[bank_city]" size="30" maxlength="200" /> </td></tr>
+      </tbody>
+      
+      {* 支付宝支付 *}
+      <tbody id="payment_type_alipay" style="display:none;">
+      <tr><td>|- 客户姓名：</td><td><input type="text" name="payment[alipay_account_user_login]" size="30" maxlength="200" /></td></tr>
+      <tr><td>|- 支付宝账号：</td><td><input type="text" name="payment[alipay_bank_account_no]" value="{$order_payment_type.pay_account.account_user_login}" size="30" maxlength="200" /></td></tr>
+      </tbody>
+      
+      {* 财付通电教QQ商城支付 *}
+      <tbody id="payment_type_qqtenpay" style="display:none;">
+      <tr><td>|- 客户姓名：</td><td><input type="text" name="payment[qqtenpay_account_user_login]" size="30" maxlength="200" /></td></tr>
+      <tr><td>|- 财付通账号：</td><td><input type="text" name="payment[qqtenpay_account_no]" size="30" maxlength="200" /></td></tr>
+      </tbody>
+      
+      {* 其他 *}
+      <tbody id="payment_type_others" style="display:none;">
+      <tr><td>|- 账号信息：</td><td><textarea name="payment[note]" cols="50" rows="5"></textarea></td></tr>
+      </tbody>  
+      {/if}
+      </table>   
+   		</div>
+  </fieldset>
+
+	<br /><br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  		<legend class="expand">&nbsp;理赔信息&nbsp;</legend>
+      <div>
+      <table class="inner">
+		<tr>
+			<td></td>
+			<td>
+        		<div id="responsible_list_wrap">
+	        		<div class="responsible_list">
+	        	    	<span>责任方：</span>
+			        	<select name="responsible_party[]"  onchange="responsibleChange(this)">
+			        		<option value="0">--请选择--</option>{html_options options=$responsible_party_list selected="WZTK"}
+			        	</select>
+			        	<span style="margin-left:30px;">损失金额：</span>
+			        	<input name="compensation_amount[]"  value="0"/>  
+	        		</div>
+        		</div>
+        		<button id="add_responsible_list">添加</button>	
+      		</td>
+        </tr>
+        <tr>
+        	<td></td>
+        	<td>
+        		<span>售后类型</span>
+        		<select style="margin-left:30px;width:100px" name="after_sales_type">
+        			<option value="0">-请选择-</option>
+        			{html_options options=$after_sales_type_list selected="4"}
+        		</select>
+        	</td>
+        </tr>
+      </table> 
+      </div>
+  </fieldset>
+
+	<br /><br />
+	<div style="text-align:center"><input type="button" value="生成退款申请" onclick="apply_submit(this);" /></div>
+  <br />
+  
+  
+	<input type="hidden" name="info[customer_user_id]" value="{$order.user_id}" />
+	<input type="hidden" name="info[order_id]" value="{$order.order_id}" />
+	<input type="hidden" name="info[party_id]" value="{$order.party_id}" />
+</form>
+</fieldset>
+</div>
+
+</body>
+</html>

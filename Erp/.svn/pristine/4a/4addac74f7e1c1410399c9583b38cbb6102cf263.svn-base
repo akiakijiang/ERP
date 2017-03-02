@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+</style>
+{/literal}
+<title>cps统计数据</title>
+</head>
+
+<body>
+<form>
+统计开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+统计结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+ 
+<input type="submit" name="go" value="查看" />
+</form>
+
+<br><br>
+<table class="bWindow" align="center" style="width: 400px;float: left; margin-right:50px;">
+<caption><h1>订单</h1><br/></caption>
+<tr>
+    <th>时间</th>
+    <th>订单号</th>
+    <th>订单状态</th>
+    <th>聊天记录</th>
+</tr>
+{foreach from=$clients item=client}
+<tr align="center">
+    <td style="width: 80px;">{$client.start_time|date_format:"%Y-%m-%d %T"}</td>
+    <td>
+        <a href="detail_info.php?order_id={$client.order_id}" target="_blank">{$client.order_sn}</a><br/>
+        {$client.order_time}
+    </td>
+    <td>
+        <span style="color: {if $client.order_status == 1}blue{elseif $client.order_status == 2}red{else}#666666{/if}">
+            {$_CFG.adminvars.order_status[$client.order_status]}
+        </span><br/>
+        {$_CFG.adminvars.shipping_status[$client.shipping_status]}<br/>
+        {$_CFG.adminvars.pay_status[$client.pay_status]}<br/>
+    </td>
+    <td><a href="{$smarty.server.REQUEST_URI|add_param_in_url:"session_id":$client.session_id}">查看</a></td>
+</tr>
+{/foreach}
+</table>
+<table class="bWindow" align="center" style="width: 700px; float: left;">
+<caption><h2>聊天记录<h2><br/></caption>
+<tr>
+    <th style="width: 100px;">ID</th>
+    <th style="width: 100px;">时间</th>
+    <th>内容</th>
+</tr>
+{foreach from=$messages item=message}
+<tr align="center">
+    <td style="width: 100px;"><span style="color: {if $message.type == 'SUPPORTER'}red{else}green{/if}">{$message.name|default:"匿名"}</span></td>
+    <td style="width: 100px;">{$message.time/1000|date_format:"%Y-%m-%d %T"}</td>
+    <td align="left">{$message.content}</td>
+</tr>
+{/foreach}
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

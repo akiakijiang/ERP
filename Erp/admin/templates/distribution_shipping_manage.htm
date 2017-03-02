@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+
+<head>
+<title>分销快递公司选择</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/general.css" rel="stylesheet" type="text/css" />
+<link href="{$WEB_ROOT}admin/styles/main.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<script type="text/javascript" src="../admin/misc/jquery.ajaxQueue.js"></script>
+<script language="JavaScript">
+var actId = '{$act_id}' ;
+{literal}
+function E(id) {return document.getElementById(id);}
+//function ES(name) {return document.getElementsByName(name);}
+$(document).ready(function() {
+	if(actId == 'region_facility_assign_facility') {
+		show(0);
+	} else if(actId == 'region_shipping_assign_shipping') {
+		show(1);
+	} else if(actId == 'pat_shipping_distribution_shipping'){
+		show(2);
+	}else {
+		show(1);
+	}
+
+});
+//区域转仓
+function region_facility_region_change(){
+	var region_id = $('#region_facility_region').val();
+	//选区域之前，先清除之前选中的CheckBox
+    var checkedList = $('#region_facility_ret_detail').find("input:checked[name='region_facility_chkbox[]']");
+    $.each(checkedList, function(i, item){
+       item.checked = false ;  
+    });
+    $.ajax({
+        url : "distribution_shipping_manage.php",
+        data : "region_facility_region_id="+region_id+"&act=search_region_facility_list",
+        type : "POST",
+        cache: false,
+        dataType :"json",
+        error : function(XMLHttpRequest, textStatus, errorThrown) {
+            //alert("检索失败：" + XMLHttpRequest.responseText);
+            alert(XMLHttpRequest.status) ;
+        },
+        success : function(json) {
+            for (var i=0; i<json.length; i++) {
+                var aaa = $('#region_facility_ret_detail').find('#region_facility_facility_id_' + json[i]);
+                aaa.attr("checked", true);
+            }
+        }
+     }); 
+}
+//区域快递
+function region_shipping_region_change() {
+    var region_id = $('#region_shipping_region').val() ;
+    // 先清除之前选中的CheckBox
+    var checkedList = $('#region_shipping_ret_detail').find("input:checked[name='region_shipping_chkbox[]']");
+    $.each(checkedList, function(i, item){
+       // item.attr("checked", false);
+       item.checked = false ;  
+    });  
+    
+    $.ajax( {
+        url : "distribution_shipping_manage.php",
+        data : "region_shipping_region_id="+region_id+"&act=search_region_shipping_list",
+        type : "POST",
+        cache: false,
+        dataType :"json",
+        error : function(XMLHttpRequest, textStatus, errorThrown) {
+            // alert("检索失败：" + XMLHttpRequest.responseText);
+            alert(XMLHttpRequest.status) ;
+        },
+        success : function(json) {
+            for (var i=0; i<json.length; i++) {
+                var aaa = $('#region_shipping_ret_detail').find('#region_shipping_shipping_id_' + json[i]);
+                aaa.attr("checked", true);
+            }
+        }
+     }); 
+
+}
+//淘宝拍下转快递
+function taobao_pat_shipping_change() {
+    var pat_id = $('#taobao_pat_shipping').val() ;
+    // 先清除之前选中的CheckBox
+    var checkedList = $('#pat_shipping_ret_detail').find("input:checked[name='pat_shipping_chkbox[]']");
+    $.each(checkedList, function(i, item){
+       // item.attr("checked", false);
+       item.checked = false ;  
+    });  
+    $.ajax( {
+        url : "distribution_shipping_manage.php",
+        data : "pat_shipping_id="+pat_id+"&act=search_pat_shipping_list",
+        type : "POST",
+        cache: false,
+        dataType :"json",
+        error : function(XMLHttpRequest, textStatus, errorThrown) {
+            // alert("检索失败：" + XMLHttpRequest.responseText);
+            alert(XMLHttpRequest.status) ;
+        },
+        success : function(json) {
+            for (var i=0; i<json.length; i++) {
+                var aaa = $('#pat_shipping_ret_detail').find('#pat_shipping_shipping_id_' + json[i]);
+                aaa.attr("checked", true);
+            }
+        }
+     }); 
+
+}
+function region_facility_validate() {
+    var region_id = $('#region_facility_region').val() ;
+    if (0 == region_id) {
+        return false ;
+    }
+    var checkedList = $('#region_facility_ret_detail').find("input:checked[name='region_facility_chkbox[]']");
+
+    var count = 0;
+    $.each(checkedList, function(i, item){
+	   	 count++;
+    });
+	  if(count > 1) {
+		 alert('一个地区最多只能选择1个仓库，请检查！');
+		 return false;
+	  } 
+	  if(count == 0) {
+		 if(!confirm('该地区确定不维护仓库吗？')){
+			 return false;
+		 }
+	  } 
+    return true;
+}
+function region_shipping_validate() {
+    var region_id = $('#region_shipping_region').val() ;
+    if (0 == region_id) {
+        return false ;
+    }
+    var checkedList = $('#region_shipping_ret_detail').find("input:checked[name='region_shipping_chkbox[]']");
+
+    var count = 0;
+    $.each(checkedList, function(i, item){
+	   	 count++;
+    });
+	  if(count > 1) {
+		 alert('一个地区最多只能选择1个默认快递，请检查！');
+		 return false;
+	  } 
+	  if(count == 0) {
+		 if(!confirm('该地区确定不维护默认快递吗？')){
+			 return false;
+		 }
+	  } 
+    return true;
+}
+function taobao_pat_shipping_validate() {
+    var pat_id = $('#taobao_pat_shipping').val() ;
+    if (0 == pat_id) {
+        return false ;
+    }
+    var checkedList = $('#pat_shipping_ret_detail').find("input:checked[name='pat_shipping_chkbox[]']");
+
+    var count = 0;
+    $.each(checkedList, function(i, item){
+	   	 count++;
+    });
+	  if(count > 1) {
+		 alert('一种配送方式最多只能选择1个默认快递，请检查！');
+		 return false;
+	  } 
+	  if(count == 0) {
+		 if(!confirm('该种配送方式确定不维护默认快递吗？')){
+			 return false;
+		 }
+	  } 
+    return true;
+}
+//显示页面
+function show(num){
+    var shippingLi = E('shipping_li').getElementsByTagName('li');
+
+    for(var i=0;i<shippingLi.length;i++){
+        E('shipping_li_'+i).className = '';
+        E('shipping_detail_'+i).style.display = 'none';
+    }
+    
+    E('shipping_detail_'+num).style.display = '';
+    E('shipping_li_'+num).className = 'on';
+
+}
+</script>
+{/literal}
+<style type="text/css">
+{literal}
+.order_liTab{float:left;margin-bottom:-1px;margin-top:20px;}
+.order_liTab li{width:110px;height:21px;padding-top:11px;background:url(../../images/order_liBg_1.gif) 0 5px no-repeat;float:left;text-align:center;margin-left:-1px;cursor:pointer;list-style:none;}
+.order_liTab li.on{background:url(../../images/order_liOn.png) no-repeat;font-weight:bold;font-size:14px;margin-bottom:-1px;position:relative;cursor:default;color:#000;}
+.order_liTab li a{color:#fff;}
+.order_liTab li.on a{color:#000;}
+.direction{
+width:900px;
+float:left;
+}
+</style>
+{/literal}
+</head>
+<body>
+<div class="direction">
+<table> 
+         <tr>
+         <td>使用说明：</td>
+         </tr>
+         
+         <tr>
+         <td>1、"区域转仓"：特殊地区转仓库</td>
+         </tr>
+         
+         <tr>
+         <td>2、"区域快递"：特殊地区发指定快递</td>
+         </tr>
+         
+          <tr>
+         <td>3、"拍下快递"：根据淘宝拍下快递指定ERP快递方式</td>
+         </tr>  
+         <tr>
+         <td> 
+                            特别提示：该功能即时修改，同步订单即时生效，拍下快递优先级高于区域快递 。</br>
+                             电教、安满根据买家留言确定快递方式的，在此修改无法生效，若要修改请联系ERP！</td>
+         </tr>
+         
+</table>
+<br />
+</div>
+<div class="direction">
+   <ul class="order_liTab fix" id="shipping_li" style="margin:0 0 -1px 0;padding:0 0 0 1px;">
+     <li id="shipping_li_0" onclick="show(0)">区域转仓</li>
+     <li id="shipping_li_1" onclick="show(1)">区域快递</li>
+     <li id="shipping_li_2" onclick="show(2)">拍下快递</li>
+   </ul>
+</div>
+</br></br></br></br>
+
+
+<!-- 区域转仓-->
+<div class="main-div" style="float:left" id="shipping_detail_0">
+<form method="post" action="distribution_shipping_manage.php" name="default_shipping_form" onsubmit="return region_facility_validate()">
+<table >
+   <tr>
+    <td>
+       <div style="margin-left: 90px; float: left; width: 100px;">地区名称：</div>
+       <div style="float: left;">
+          <select id="region_facility_region" name="region_facility_region" onchange="javascript:region_facility_region_change();" >
+            <option label="-- 请选择地区 --" value="0" selected="selected" >-- 请选择地区  --</option>
+             {html_options options=$region_list }
+          </select>
+       </div> 
+       <div style="float: left; margin-left: 40px;"> <input type="submit" id='region_facility_btn_submit' name='region_facility_btn_submit' 
+        {if $can_edit eq '0' } disabled='disabled' {/if}
+        value="确&nbsp;定" /> </div>
+       <div style="float: left; margin-left: 30px;"> <input type="reset" id='region_facility_reset' name='region_facility_btn_reset' value="取&nbsp;消" /> </div>  
+       <input type="hidden" id="act" name="act" value="region_facility_assign_facility"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+       <div id='region_facility_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$facility_lists item=facility name=facilityList }
+          {if $smarty.foreach.facilityList.iteration > 1 and ($smarty.foreach.facilityList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="region_facility_chkbox[]" id="region_facility_facility_id_{$facility.facility_id}" value="{$facility.facility_id}"/>&nbsp; {$facility.facility_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+     <tr>
+    <td>
+       <div id='region_facility_all_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+         <th>组织地区默认仓库列表：</th>
+          {foreach from=$distribution_facility_list item=region_facility name=distribution_facility_facilityList }
+              <tr><td>
+            {$region_facility.region_name}:&nbsp;&nbsp;&nbsp;{$region_facility.facility_name}</br></br>
+             </td></tr>
+          {/foreach}
+          <tr><td>
+                                  其他地区:&nbsp;&nbsp;&nbsp;没勾选快递仓库的则为店铺默认仓库</br></br> 
+          </td></tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+   <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 区域快递 -->
+<div class="main-div" style="float:left" id="shipping_detail_1">
+<form method="post" action="distribution_shipping_manage.php" name="region_shipping_form" onsubmit="return region_shipping_validate()">
+<table >
+   <tr>
+    <td>
+       <div style="margin-left: 90px; float: left; width: 100px;">地区名称：</div>
+       <div style="float: left;">
+          <select id="region_shipping_region" name="region_shipping_region" onchange="javascript:region_shipping_region_change();" >
+            <option label="-- 请选择地区 --" value="0" selected="selected" >-- 请选择地区  --</option>
+             {html_options options=$region_list }
+          </select>
+       </div> 
+       <div style="float: left; margin-left: 40px;"> <input type="submit" id='region_shipping_btn_submit' name='region_shipping_btn_submit' 
+        {if $can_edit eq '0' } disabled='disabled' {/if}
+        value="确&nbsp;定" /> </div>
+       <div style="float: left; margin-left: 30px;"> <input type="reset" id='region_shipping_reset' name='region_shipping_btn_reset' value="取&nbsp;消" /> </div>  
+       <input type="hidden" id="act" name="act" value="region_shipping_assign_shipping"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+       <div id='region_shipping_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$shipping_list item=shipping name=shippingList }
+          {if $smarty.foreach.shippingList.iteration > 1 and ($smarty.foreach.shippingList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="region_shipping_chkbox[]" id="region_shipping_shipping_id_{$shipping.shipping_id}" value="{$shipping.shipping_id}"/>&nbsp; {$shipping.shipping_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+     <tr>
+    <td>
+       <div id='region_shipping_all_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+         <th>组织地区默认快递列表：</th>
+          {foreach from=$distribution_default_shipping_list item=region_shipping name=distribution_default_shipping_shippingList }
+              <tr><td>
+            {$region_shipping.region_name}:&nbsp;&nbsp;&nbsp;{$region_shipping.shipping_name}</br></br>
+             </td></tr>
+          {/foreach}
+          <tr><td>
+                                  其他地区:&nbsp;&nbsp;&nbsp;没有勾选快递方式的跑出来为默认快递</br></br> 
+          </td></tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+    <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 拍下快递 -->
+<div class="main-div" style="float:left" id="shipping_detail_2">
+<form method="post" action="distribution_shipping_manage.php" name="pat_shipping_form" onsubmit="return taobao_pat_shipping_validate()">
+<table >
+   <tr>
+    <td>
+       <div style="margin-left: 90px; float: left; width: 100px;">拍下方式：</div>
+       <div style="float: left;">
+          <select id="taobao_pat_shipping" name="taobao_pat_shipping" onchange="javascript:taobao_pat_shipping_change();" >
+            <option label="-- 选择拍下方式 --" value="0" selected="selected" >-- 请选择拍下方式  --</option>
+             {html_options options=$taobao_pat_shipping_list}
+          </select>
+       </div> 
+       <div style="float: left; margin-left: 40px;"> <input type="submit" id='pat_shipping_btn_submit' name='pat_shipping_btn_submit' 
+        {if $can_edit eq '0' } disabled='disabled' {/if}
+        value="确&nbsp;定" /> </div>
+       <div style="float: left; margin-left: 30px;"> <input type="reset" id='pat_shipping_reset' name='pat_shipping_btn_reset' value="取&nbsp;消" /> </div>  
+       <input type="hidden" id="act" name="act" value="pat_shipping_distribution_shipping"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+       <div id='pat_shipping_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$shipping_list item=shipping name=shippingList }
+          {if $smarty.foreach.shippingList.iteration > 1 and ($smarty.foreach.shippingList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="pat_shipping_chkbox[]" id="pat_shipping_shipping_id_{$shipping.shipping_id}" value="{$shipping.shipping_id}"/>&nbsp; {$shipping.shipping_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+     <tr>
+    <td>
+       <div id='pat_shipping_all_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+         <th>组织地区默认快递列表：</th>
+          {foreach from=$distribution_pat_shipping_list item=pat_shipping name=distribution_pat_shipping_shippingList }
+              <tr><td>
+            {$pat_shipping.pat_shipping_name}:&nbsp;&nbsp;&nbsp;{$pat_shipping.shipping_name}</br></br>
+             </td></tr>
+          {/foreach}
+          <tr><td>
+                                  其他地区:&nbsp;&nbsp;&nbsp;没有勾选快递方式的跑出来为默认快递</br></br> 
+          </td></tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+    <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+</body>
+</html>

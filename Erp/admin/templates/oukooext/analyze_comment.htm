@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  {literal}
+  <style type="text/css">
+    *,dl{font-size:13px;}
+    dd{margin-left:10px;font-weight:bold;}
+    table{background:#ccc;}
+    td{background:#fff; padding:3px;}
+  </style>
+  {/literal}
+  <title>留言统计数据</title>
+</head>
+<body>
+<h3>统计</h3>
+<form name="stat">
+  统计开始时间：
+  <input style="width:90px" id="statStartCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="statStartTrigger">
+  统计结束时间：
+  <input style="width:90px" id="statEndCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="statEndTrigger">
+  <select name="repliedby">{html_options options=$repliedby_users selected=$smarty.request.repliedby}</select>
+  <!--<input type="radio" name="isoutwork" value="0" /> 工作时间
+  <input type="radio" name="isoutwork" value="1" /> 非工作时间-->
+  <input type="submit" value="查看" />
+</form>
+<h3>从{$start}到{$end} 的统计数据</h3>
+<table cellspacing="1">
+<tr><td colspan="6">每日售前留言回复数量（商品咨询、物流配送、支付问题、保修及发票、投诉建议）</td></tr>
+<tr><td>时间</td><td>商品咨询</td><td>物流配送</td><td>支付问题</td><td>保修及发票</td><td>投诉建议 </td></tr>
+<tr><td>工作时间</td><td>{$comment_counts_work.goods}</td><td>{$comment_counts_work.shipping}</td><td>{$comment_counts_work.payment}</td><td>{$comment_counts_work.postsale}</td><td>{$comment_counts_work.complaint}</td></tr>
+<tr><td>非工作时间</td><td>{$comment_counts_outwork.goods}</td><td>{$comment_counts_outwork.shipping}</td><td>{$comment_counts_outwork.payment}</td><td>{$comment_counts_outwork.postsale}</td><td>{$comment_counts_outwork.complaint}</td></tr>
+<tr><td>小结</td><td>{math equation="x + y" x=$comment_counts_work.goods|default:0 y=$comment_counts_outwork.goods|default:0}</td><td>{math equation="x + y" x=$comment_counts_work.shipping|default:0 y=$comment_counts_outwork.shipping|default:0}</td><td>{math equation="x + y" x=$comment_counts_work.payment|default:0 y=$comment_counts_outwork.payment|default:0}</td><td>{math equation="x + y" x=$comment_counts_work.postsale|default:0 y=$comment_counts_outwork.postsale|default:0}</td><td>{math equation="x + y" x=$comment_counts_work.complaint|default:0 y=$comment_counts_outwork.complaint|default:0}</td></tr>
+<tr><td colspan="6">详细分布</td></tr>
+{foreach from=$comment_counts item=comment_counts_item key=time_area}
+<tr><td>{$time_area}</td><td>{$comment_counts_item.goods}</td><td>{$comment_counts_item.shipping}</td><td>{$comment_counts_item.payment}</td><td>{$comment_counts_item.postsale}</td><td>{$comment_counts_item.complaint}</td></tr>
+{/foreach}
+<tr><td colspan="6">共计 {$comment_counts_total}</td></tr>
+</table>
+<dl><dt>每日售前留言回复平均时间</dt>
+<dd>工作时间 {$comment_reply_avg_time_work}分钟</dd>
+<dd>非工作时间 {$comment_reply_avg_time_outwork}分钟</dd>
+{foreach from=$comment_avgtime item=avgtime key=timestr}<dd> {$timestr} {$avgtime}分钟</dd>{/foreach}
+</dl>
+<dl>
+<dt>售前转换</dt>
+<dd><a href="javascript:void(0)" onclick="document.getElementById('buy_after_comment_order').style.display=(document.getElementById('buy_after_comment_order').style.display==''?'none':'');">留言转换订单数：{$comment_buy_count}</a></dd>
+<dd>留言转换率： {$comment_buy_percent}</dd>
+<dd id="buy_after_comment_order" style="display:none;">
+<table class="bWindow">
+{foreach from=$buy_after_comment_list item=buy_after_comment}
+<tr><td><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$buy_after_comment.order_id}" target="_blank">{$buy_after_comment.order_sn}</a></td>
+<td>
+<table>
+{foreach from=$buy_after_comment.order_goods_info item=order_goods_info}
+<tr>
+<td style="width:200px;">{$order_goods_info.goods_name}</td>
+<td style="width:30px;">{$order_goods_info.goods_number}</td>
+<td style="width:60px;">￥{$order_goods_info.total_price}</td>
+</tr>
+{/foreach}
+</table>
+</td>
+<td>{$buy_after_comment.consignee}</td><td>{$buy_after_comment.tel}<br />{$buy_after_comment.mobile}</td></tr>
+{/foreach}
+</table>
+</dd>
+</dl>
+
+<!-- 每日售中 -->
+<table cellspacing="1">
+<tr><td colspan="{math equation="x + 1" x=$_CFG.adminvars.comment_cat|@count}">每日售中留言回复数量</td></tr>
+<tr><td>时间</td>{foreach from=$_CFG.adminvars.comment_cat item=comment_cat_name}<td>{$comment_cat_name}</td>{/foreach}</tr>
+<tr><td>工作时间</td>{foreach from=$_CFG.adminvars.comment_cat item=comment_cat_name key=cat}<td> {$order_comment_counts_work.$cat}</td>{/foreach}</tr>
+<tr><td>非工作时间</td>{foreach from=$_CFG.adminvars.comment_cat item=comment_cat_name key=cat}<td> {$order_comment_counts_outwork.$cat}</td>{/foreach}</tr>
+<tr><td>小结</td>{foreach from=$_CFG.adminvars.comment_cat item=comment_cat_name key=cat}<td> {math equation="x + y" x=$order_comment_counts_work.$cat|default:0 y=$order_comment_counts_outwork.$cat|default:0}</td>{/foreach}</tr>
+{foreach from=$order_comment_counts item=order_comment_counts_item key=time_area}
+<tr>
+<td>{$time_area}</td>{foreach from=$_CFG.adminvars.comment_cat item=comment_cat_name key=cat}<td> {$order_comment_counts_item.$cat}</td>{/foreach}
+</tr>
+{/foreach}
+<tr><td colspan="{math equation="x + 1" x=$_CFG.adminvars.comment_cat|@count}">共计 {$order_comment_counts_total}</td></tr>
+</table>
+<dl><dt>每日售中留言回复平均时间</dt>
+<dd>工作时间 {$order_comment_reply_avg_time_work} 分钟</dd>
+<dd>非工作时间 {$order_comment_reply_avg_time_outwork} 分钟</dd>
+{foreach from=$order_comment_avgtime item=avgtime key=timestr}<dd> {$timestr} {$avgtime}分钟</dd>{/foreach}
+</dl>
+
+
+<table cellspacing="1">
+<tr><td colspan="{math equation="x + 1" x=$_CFG.adminvars.service_type_mapping|@count}">每日售后留言回复数量；</td></tr>
+<tr><td>时间</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name}<td>{$service_name}</td>{/foreach}</tr>
+<tr><td>工作时间</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td> {$service_counts_work.$service_type}</td>{/foreach}</tr>
+<tr><td>非工作时间</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td> {$service_counts_outwork.$service_type}</td>{/foreach}</tr>
+<tr><td>小结</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td> {math equation="x + y" x=$service_counts_work.$service_type|default:0 y=$service_counts_outwork.$service_type|default:0}</td>{/foreach}</tr>
+{foreach from=$service_counts item=service_counts_item key=time_area}
+<tr><td>{$time_area}</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td>{$service_counts_item.$service_type}</td>{/foreach}</tr>
+{/foreach}
+<tr><td colspan="{math equation="x + 1" x=$_CFG.adminvars.service_type_mapping|@count}">共计 {$service_counts_total}</td></tr>
+</table>
+<dl><dt>每日售后留言回复平均时间</dt>
+<dd>工作时间 {$service_reply_avg_time_work} 分钟</dd>
+<dd>非工作时间 {$service_reply_avg_time_outwork} 分钟</dd>
+</dl>
+<dl><dt>每日售后留言回复平均时间</dt>
+<dd>工作时间 {$service_reply_avg_time_work} 分钟</dd>
+<dd>非工作时间 {$service_reply_avg_time_outwork} 分钟</dd>
+{foreach from=$service_avgtime item=avgtime key=timestr}<dd> {$timestr} {$avgtime}分钟</dd>{/foreach}
+</dl>
+
+
+<table cellspacing="1">
+<tr><td colspan="{math equation="x + 1" x=$_CFG.adminvars.service_type_mapping|@count}">售后订单数量；</td></tr>
+<tr><td>时间</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name}<td>{$service_name}</td>{/foreach}</tr>
+<tr><td>工作时间</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td> {$service_order_counts_work.$service_type}</td>{/foreach}</tr>
+<tr><td>非工作时间</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td> {$service_order_counts_outwork.$service_type}</td>{/foreach}</tr>
+<tr><td>小结</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td> {math equation="x + y" x=$service_order_counts_work.$service_type|default:0 y=$service_order_counts_outwork.$service_type|default:0}</td>{/foreach}</tr>
+{foreach from=$service_order_counts item=service_order_counts_item key=time_area}
+<tr><td>{$time_area}</td>{foreach from=$_CFG.adminvars.service_type_mapping item=service_name key=service_type}<td>{$service_order_counts_item.$service_type}</td>{/foreach}</tr>
+{/foreach}
+<tr><td colspan="{math equation="x + 1" x=$_CFG.adminvars.service_type_mapping|@count}">共计 {$service_order_counts_total}</td></tr>
+</table>
+<dl>
+<dt>处理的订单数</dt>
+<dd>工作时间：{$order_dealed_count_work}</dd>
+<dd>非工作时间：{$order_dealed_count_outwork}</dd>
+<dt>处理的平均时间</dt>
+<dd>工作时间：{$order_dealed_avgtime_work} 分钟</dd>
+<dd>非工作时间：{$order_dealed_avgtime_outwork} 分钟</dd>
+</dl>
+
+<script type="text/javascript">
+{literal}
+//<![CDATA[
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "statStartCalendar",
+		button            : "statStartTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "statEndCalendar",
+		button            : "statEndTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+//]]>
+{/literal}
+</script>
+
+</body>
+</html>

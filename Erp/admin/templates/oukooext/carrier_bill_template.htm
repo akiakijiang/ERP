@@ -1,0 +1,728 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title></title>
+<!-- <script type="text/javascript" src="misc/jquery.js"></script> -->
+<script type="text/javascript" src="misc/cbt/jquery.min.js"></script>
+
+<script type="text/javascript">
+	var WEB_ROOT = '{$WEB_ROOT}';
+	var cbt_id = '{$smarty.request.cbt_id}';
+</script>
+
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message"
+	style="border: #7F9F00 2px solid; padding: 5px; text-align: center;">
+{$message}</div>
+<!--{/if}-->
+
+<!--{if $smarty.request.act == 'design'}-->
+
+<!-- {literal} --><style>body, textarea{font-size:10pt;}</style><!-- {/literal} -->
+<link href="misc/cbt/jquery-ui.css" rel="stylesheet" type="text/css" />
+<script src="misc/cbt/jquery-ui.min.js"></script>
+<script src="misc/cbt/json.js"></script>
+<script type="text/javascript">//{literal}
+Array.prototype.remove = function(dx) {
+	if (isNaN(dx) || dx > this.length) {
+		return false;
+	}
+	this.splice(dx, 1);
+};
+(function(window, undefined) {
+	var document = window.document;
+	var zy = {
+		divs : new Array(),
+		inARray : function(elem, arr) {
+			for ( var i = 0, length = arr.length; i < length; i++) {
+				if (arr[i].name && arr[i].name === elem) {
+					return i;
+				}
+			}
+			return -1;
+		},
+		bind : function(name) {
+			var init;
+			if (typeof name == 'string') {
+				init = {
+					name : name,
+					left : 0,
+					top : 0,
+					height : 100,
+					width : 100,
+					data : ''
+				};
+			} else {
+				init = name;
+			}
+			if (zy.inARray(name, zy.divs) < 0) {
+				init.left = init.left;
+				zy.drag_resize(init);
+				zy.divs.push(init);
+				var nm = init;
+				(function(nm){
+					var xnm = nm.name.replace("#", "");
+					$('#delbtns').append('<button id="delbtn_'+xnm+'" class="delbtn" style="border:1px solid green;margin-right: 3px;" onclick="zy.delbtnevt(this, \''+nm.name+'\')">删除</button>');
+					$(nm.name).focus(function(){
+						$('.delbtn').css({border:'1px solid green'});
+						$('#delbtn_'+xnm).css({border:'1px solid red'});
+						$('.resizable').css({border:'1px solid blue'});
+						$(this).css({border:'1px solid red'});
+					}).blur(function(){
+						//$('.delbtn').css({border:'1px solid green'});
+						//$('.resizable').css({border:'1px solid blue'});
+					});
+				})(nm);
+			}
+			return zy;
+		},
+		remove : function(name) {
+			var i = zy.inARray(name, zy.divs);
+			if (i < 0) {
+				zy.divs.remove(i);
+			}
+			return zy;
+		},
+		run : function() {
+			for ( var i in zy.divs) {
+				if (zy.divs[i].name) {
+					var nm = zy.divs[i];
+					zy.drag_resize(nm);
+				}
+			}
+		},
+		drag_resize: function(nm) {
+			$(nm.name).resizable(
+					{
+						stop : function(event, ui) {
+							nm.width = ui.size.width;
+							nm.height = ui.size.height;
+						}
+					})
+					.parent().draggable(
+							{
+								cancel : 'textarea',
+								stop : function(event, ui) {
+									nm.left = ui.offset.left;
+									nm.top = ui.offset.top;
+								}
+							});
+		},
+		save : function() {
+			for ( var i in zy.divs) {
+				if (zy.divs[i].name) {
+					zy.divs[i].data = $(zy.divs[i].name).val();
+				}
+			}
+			
+			zy.divs.push({
+					name: '#box',
+					data: '',
+					width: $('#box_width').val(),
+					height: $('#box_height').val(),
+					top: 0,
+					left: 0,
+			});
+			
+			var jsonData = JSON.stringify(zy.divs);
+			//alert(jsonData);
+			$.ajax({
+				'type': 'POST',
+				'url': 'carrier_bill_template.php',
+				'data': 'request=ajax&act=design&cbt_id=' + cbt_id + '&cbt_data=' + encodeURIComponent(jsonData),
+				'cache': false,
+				'dataType': 'json',
+				'success': function(data) {
+					alert(data.msg);
+				},
+				'error': function(data) {
+					alert('通信失败或返回数据异常。');
+				}
+			});
+		},
+		delbtnevt : function(o, name) {
+			$('.delbtn').css({border:'1px solid blue'});
+			$('.resizable').css({border:'1px solid blue'});
+			$(o).css({border:'1px solid red'});
+			$(name).css({border:'1px solid red'});
+			if (confirm('是否删除该输入框？')) {
+				$(name).resizable("destroy");
+				$(name).draggable("destroy");
+				$(name).remove();
+				$(o).remove();
+				for ( var i in zy.divs) {
+					if (zy.divs[i].name && zy.divs[i].name == name) {
+						zy.divs.remove(i);
+					}
+				}
+			}
+		}
+	};
+	return (window.zy = zy);
+})(window);
+
+//{/literal}
+//<!--{if $cbt}-->
+var cbt = {$cbt.cbt_data};
+//<!--{else}-->
+//{literal}
+var cbt = {};
+//{/literal}
+//<!--{/if}-->
+//{literal}
+
+$(document).ready(function() {
+	
+	$('#applyBoxWH').click(function(){
+		$('#txtadiv').css({'width': $('#box_width').val()+'mm', 'height': $('#box_height').val()+'mm'});
+	});
+	
+	//zy.bind("#a").bind("#b");
+	for (var i in cbt) {
+		if (!/^\d+$/.test(i)) {
+			continue;
+		}
+		var id = cbt[i].name;
+		if (!id) {
+			cbt.remove(i);
+			continue;
+		}
+		if (id == '#box') {
+			if (cbt[i].width) {
+				$('#box_width').val(cbt[i].width);
+			}
+			if (cbt[i].height) {
+				$('#box_height').val(cbt[i].height);
+			}
+			$('#applyBoxWH').click();
+			continue;
+		}
+		$('#txtadiv').append('<textarea id="'+id.replace("#", "")+'" class="resizable" style="border:1px solid blue;">'+cbt[i].data+'</textarea>');
+		$(id).css({
+			position: 'absolute',
+			top: cbt[i].top + 'px',
+			left: cbt[i].left + 'px',
+			width: cbt[i].width + 'px',
+			height: cbt[i].height + 'px',
+		});
+		zy.bind(cbt[i]);
+	}
+
+	$('#arrow_btn').draggable();
+	
+});
+function newDR() {
+	var id = ('drid_' + Math.random()).replace(".", "");
+	$('#txtadiv').append('<textarea id="'+id+'" class="resizable" style="border:1px solid blue;"></textarea>');
+	zy.bind('#' + id);
+}
+function func_movepx(direction) {
+	var px = 1 * $('#movepx').val();
+	if (!(px > 0)) {
+		return null;
+	}
+
+	for (var i in cbt) {
+		if (!/^\d+$/.test(i)) {
+			continue;
+		}
+		var id = cbt[i].name;
+		if (/border:\s*1px solid red/.test($(id).attr('style'))) {
+			switch(direction) {
+				case "left":
+					cbt[i].left -= px;
+					$(id).parent().css({left: cbt[i].left + 'px'});
+					break;
+				case "top":
+					cbt[i].top -= px;
+					$(id).parent().css({top: cbt[i].top + 'px'});
+					break;
+				case "right":
+					cbt[i].left += px;
+					$(id).parent().css({left: cbt[i].left + 'px'});
+					break;
+				case "bottom":
+					cbt[i].top += px;
+					$(id).parent().css({top: cbt[i].top + 'px'});
+					break;
+			}
+			return ;
+		}
+	}
+
+	for (var i in cbt) {
+		if (!/^\d+$/.test(i)) {
+			continue;
+		}
+
+		var id = cbt[i].name;
+		
+		switch(direction) {
+			case "left":
+				cbt[i].left -= px;
+				$(id).parent().css({left: cbt[i].left + 'px'});
+				break;
+			case "top":
+				cbt[i].top -= px;
+				$(id).parent().css({top: cbt[i].top + 'px'});
+				break;
+			case "right":
+				cbt[i].left += px;
+				$(id).parent().css({left: cbt[i].left + 'px'});
+				break;
+			case "bottom":
+				cbt[i].top += px;
+				$(id).parent().css({top: cbt[i].top + 'px'});
+				break;
+		}
+	}
+}
+	//{/literal}
+</script>
+<div id="arrow_btn" 
+	style="position: fixed; right: 12px; top: 32px; z-index: 88888; width: 116px; 
+	border: 1px solid #b7b7b7; padding: 6px; font-size: 12px; cursor: move;
+	-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; border-width: 1px;">
+<!-- {literal} -->
+<button onclick="$('.resizable').css({border:'1px solid blue'});$('.delbtn').css({border:'1px solid green'});">清除选中以移动全部</button><br>
+<!-- {/literal} -->
+输入偏移像素：
+　<input type="text" id="movepx" value="1" size="10" /><br />
+　　　<button onclick="func_movepx('top');">↑</button>　　<br />
+　<button onclick="func_movepx('left');">←</button>　
+<button onclick="func_movepx('right');">→</button><br />
+　　　<button onclick="func_movepx('bottom');">↓</button>　　
+<hr>
+虚线框的尺寸，默认宽200mm，高110mm：<br />
+宽(mm)：<input name="box_width" id="box_width" size="4" value="200" /><br />
+高(mm)：<input name="box_height" id="box_height" size="4" value="142" /><br />
+<button id="applyBoxWH">应用</button>
+<hr>
+<b>备注：</b>一般顺丰高度可设为142mm，TNT高度可设为132mm，其他高度可设为110mm；<br>
+宽度一般都为200mm；<br>
+有异时需多摸索。
+</div>
+<div style="position: absolute; left: 6px; top: 6px; z-index: 100;">
+<button onclick="newDR();">新增</button>
+<button onclick="zy.save();">保存</button>
+<button onclick="window.open('?act=preview&cbt_id={$smarty.request.cbt_id}');return false;">预览</button>
+<button onclick="location.href = location.href;">刷新</button>
+<button onclick="window.close();">关闭</button>
+
+ —— 
+<div style="display:inline-block" id="delbtns"></div>
+</div>
+<div style="position: absolute; left: 0px; top: 0px; z-index: 10; height:142mm; width:200mm; border: 1px dotted #666;" id="txtadiv"></div>
+
+<!--{elseif $smarty.request.act == 'preview'}-->
+
+<!-- {literal} -->
+<style type="text/css">
+body{
+	font-size: 10pt;
+    height:142mm; width:200mm;
+    border: 1px dotted #666;
+}
+<!-- {/literal} -->
+</style>
+<script>
+//{literal}
+$(document).ready(function() {
+	//zy.bind("#a").bind("#b");
+	//{/literal}
+	//<!--{if $cbt}-->
+	var cbt = {$cbt.cbt_data};
+	//<!--{else}-->
+	//{literal}
+	var cbt = {};
+	//{/literal}
+	//<!--{/if}-->
+	
+	//{literal}
+	
+	for (var i in cbt) {
+		if (!/^\d+$/.test(i)) {
+			continue;
+		}
+		var id = cbt[i].name;
+		if (!id) {
+			cbt.remove(i);
+			continue;
+		}
+		if (id == '#box') {
+			if (cbt[i].width) {
+				$('body').css({'width': cbt[i].width + 'mm'});
+			}
+			if (cbt[i].height) {
+				$('body').css({'height': cbt[i].height + 'mm'});
+			}
+			continue;
+		}
+		$('body').append('<div id="'+id.replace("#", "")+'" class="resizable">'+cbt[i].data+'</div>');
+		$(id).css({
+			position: 'absolute',
+			top: cbt[i].top + 'px',
+			left: cbt[i].left + 'px',
+			width: cbt[i].width + 'px',
+			height: cbt[i].height + 'px',
+		});
+	}
+	
+});
+	//{/literal}
+</script>
+
+<!--{else}-->
+
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+
+<script>
+var pol = '{$pol}';
+var dts = {$dts};
+var carrier_opt = '{$carrier_opt}';
+//{literal}
+function sss(pid) {
+	for (var i in dts) {
+		//alert(i);
+	}
+	var a = $('#partyfacilitytd_'+pid).attr('id');
+	alert(a);
+}
+
+$(document).ready(function() {
+	$('.party_f_td').each(function(){
+		(function(o){
+			var id = $(o).attr('id');
+			var ids = id.split("_"); // partyfacilitytd_6_1_2 -- cbt_id, party_id, facility_id
+			
+			var s = '<select id="sparty_'+id.replace("partyfacilitytd_", "")+'" onchange="select_party(this)">';
+			s = s + '<option value="">--选择组织--</option>';
+			for (var i in dts) {
+				s = s + '<option value="'+i+'">'+dts[i].value+'</option>';
+			}
+			s = s + '</select>';
+			s = s + '<select id="sfacility_'+id.replace("partyfacilitytd_", "")+'" onchange="select_facility(this)">';
+			s = s + '<option value="">--选择仓库--</option>';
+			s = s + '</select>';
+			$(o).html(s);
+			//$('#sparty_'+id.replace("partyfacilitytd_", "")).val(ids[2]);
+			select_party($('#sparty_'+id.replace("partyfacilitytd_", "")), ids[2]);
+			$('#sfacility_'+id.replace("partyfacilitytd_", "")).val(ids[3]);
+		})(this);
+	});
+});
+function select_party(o, spval) {
+	var idx;
+	if (spval) {
+		$(o).val(spval);
+	}
+	idx = $(o).val();
+	var id = $(o).attr('id');
+	var s = '<option value="">--选择仓库--</option>';
+	if (idx) {
+		for (var j in dts[idx].facility) {
+			s = s + '<option value="'+j+'">'+dts[idx].facility[j]+'</option>';
+		}
+	}
+	$('#sfacility_'+id.replace("sparty_", "")).empty().append(s);
+	
+}
+function select_facility(o) {
+	var id = $(o).attr('id');
+	var party_id = $('#sparty_'+id.replace("sfacility_", "")).val();
+	var facility_id = $(o).val();
+	var ids = id.split("_");
+	var cbt_id = ids[1];
+	if (party_id < 1 || facility_id < 1) {
+		return false;
+	}
+	$.ajax({
+		'type': 'POST',
+		'url': 'carrier_bill_template.php',
+		'data': 'request=ajax&act=updatePF&cbt_id=' + cbt_id + '&party_id=' + party_id + '&facility_id=' + facility_id,
+		'cache': false,
+		'dataType': 'json',
+		'success': function(data) {
+			if (data.code == 0) {
+			} else {
+				alert(data.msg);
+			}
+		},
+		'error': function(data) {
+			alert('通信失败或返回数据异常。');
+		}
+	});
+}
+function select_carrier(o) {
+	var id = $(o).attr('id');
+	var carrier_id = $(o).val();
+	var ids = id.split("_");
+	var cbt_id = ids[1];
+	if (cbt_id < 1 || carrier_id < 1) {
+		return false;
+	}
+	$.ajax({
+		'type': 'POST',
+		'url': 'carrier_bill_template.php',
+		'data': 'request=ajax&act=updateC&cbt_id=' + cbt_id + '&carrier_id=' + carrier_id,
+		'cache': false,
+		'dataType': 'json',
+		'success': function(data) {
+			if (data.code == 0) {
+			} else {
+				alert(data.msg);
+			}
+		},
+		'error': function(data) {
+			alert('通信失败或返回数据异常。');
+		}
+	});
+}
+//select_party, select_facility
+function spsf(spid, sfid) {
+	var s = '<select id="sparty_'+spid+'">';
+	s = s + '<option value="">--选择组织--</option>';
+	for (var i in dts) {
+		s = s + '<option value="'+i+'"'+(i==spid?" selected":"")+'>'+dts[i].value+'</option>';
+	}
+	s = s + '</select>';
+	s = s + '<select id="sfacility_'+sfid+'">';
+	s = s + '<option value="">--选择仓库--</option>';
+	for (var i in dts) {
+		if (i == spid) {
+			for (var j in dts[i].facility) {
+				s = s + '<option value="'+j+'"'+(j==sfid?" selected":"")+'>'+dts[i].facility[j]+'</option>';
+			}
+		}
+	}
+	s = s + '</select>';
+	
+}
+function delete_cbt(cbt_id) {
+	if (!confirm('确认删除吗？ —— 一旦删除将不能还原该条记录。')) {
+		return false;
+	}
+	$.ajax({
+		'type': 'POST',
+		'url': 'carrier_bill_template.php',
+		'data': 'request=ajax&act=delete_cbt&cbt_id=' + cbt_id,
+		'cache': false,
+		'dataType': 'json',
+		'success': function(data) {
+			if (data.code == 0) {
+				$('#_tr_' + cbt_id).remove();
+			} else {
+				alert(data.msg);
+			}
+		},
+		'error': function(data) {
+			alert('通信失败或返回数据异常。');
+		}
+	});
+}
+function insert_cbt() {
+	$.ajax({
+		'type': 'POST',
+		'url': 'carrier_bill_template.php',
+		'data': 'request=ajax&act=insert_cbt',
+		'cache': false,
+		'dataType': 'json',
+		'success': function(data) {
+			if (data.code == 0) {
+				//$('#_tr_' + cbt_id).remove();
+				var html = '<tr id="_tr_'+data.cbt_id+'">'+
+					'<td>'+data.cbt_id+'</td>'+
+					'<td></td>'+
+					'<td nowrap><select id="sparty_'+data.cbt_id+'__" onchange="select_party(this)"><option value="">--选择组织--</option>'+pol+'</select>'+
+					'<select id="sfacility_'+data.cbt_id+'__" onchange="select_facility(this)"><option value="">--选择仓库--</option></select>'+
+					'</td>'+
+					'<td align="center"><select id="carriers_'+data.cbt_id+'_" onchange="select_carrier(this)">'+carrier_opt+'</select></td>'+
+					'<td></td>'+
+					'<!--<td></td>-->'+
+					'<td align="center" nowrap="nowrap"><button onclick="window.open(\'?act=design&cbt_id='+data.cbt_id+'\');return false;">设计</button>'+
+					' <button onclick="window.open(\'?act=preview&cbt_id='+data.cbt_id+'\');return false;">预览</button>'+
+					' <button onclick="clone_cbt(\''+data.cbt_id+'\');">复制</button>'+
+					' <button onclick="delete_cbt(\''+data.cbt_id+'\');">删除</button>'+
+					' <button onclick="cbt_log(\''+data.cbt_id+'\');">日志</button>'+
+					'</td>'+
+				'</tr>';
+				$('#cbt_list_tbl').append(html);
+			} else {
+				alert(data.msg);
+			}
+		},
+		'error': function(data) {
+			alert('通信失败或返回数据异常。');
+		}
+	});
+}
+function update_cbt(o, cbt_id) {
+	if ($(o).html() == $(o).attr('title') || cbt_id < 1) {
+		return ;
+	}
+	$.ajax({
+		'type': 'POST',
+		'url': 'carrier_bill_template.php',
+		'data': 'request=ajax&act=update_cbt&cbt_id=' + cbt_id + '&cbt_title=' + encodeURIComponent($(o).html().replace("<br>", "")),
+		'cache': false,
+		'dataType': 'json',
+		'success': function(data) {
+			if (data['code'] == 0) {
+				$(o).attr('title', $(o).html().replace("<br>", ""));
+			} else {
+				alert(data.msg);
+			}
+		},
+		'error': function(data) {
+			alert('通信失败或返回数据异常。');
+		}
+	});
+}
+function clone_cbt(cbt_id) {
+	$.ajax({
+		'type': 'POST',
+		'url': 'carrier_bill_template.php',
+		'data': 'request=ajax&act=clone_cbt&cbt_id=' + cbt_id,
+		'cache': false,
+		'dataType': 'json',
+		'success': function(data) {
+			if (data.code == 0) {
+				//$('#_tr_' + cbt_id).remove();
+				var html = '<tr id="_tr_'+data.cbt_id+'">'+
+					'<td>'+data.cbt_id+'</td>'+
+					'<td></td>'+
+					'<td nowrap><select id="sparty_'+data.cbt_id+'__" onchange="select_party(this)"><option value="">--选择组织--</option>'+pol+'</select>'+
+					'<select id="sfacility_'+data.cbt_id+'__" onchange="select_facility(this)"><option value="">--选择仓库--</option></select>'+
+					'</td>'+
+					'<td align="center"><select id="carriers_'+data.cbt_id+'_" onchange="select_carrier(this)">'+carrier_opt+'</select></td>'+
+					'<td><div style="border: 1px solid #ddd; height: 30px; width:300px; overflow-y: scroll; word-break: break-all;">'+
+					''+data.cbt_data+
+					'</div></td>'+
+					'<!--<td></td>-->'+
+					'<td align="center" nowrap="nowrap"><button onclick="window.open(\'?act=design&cbt_id='+data.cbt_id+'\');return false;">设计</button>'+
+					' <button onclick="window.open(\'?act=preview&cbt_id='+data.cbt_id+'\');return false;">预览</button>'+
+					' <button onclick="clone_cbt(\''+data.cbt_id+'\');">复制</button>'+
+					' <button onclick="delete_cbt(\''+data.cbt_id+'\');">删除</button>'+
+					' <button onclick="cbt_log(\''+data.cbt_id+'\');">日志</button>'+
+					'</td>'+
+				'</tr>';
+				$('#cbt_list_tbl').append(html);
+			} else {
+				alert(data.msg);
+			}
+		},
+		'error': function(data) {
+			alert('通信失败或返回数据异常。');
+		}
+	});
+}
+function cbt_log(cbt_id) {
+	window.showModalDialog('?act=cbt_log&cbt_id='+cbt_id, 'viewlog', 'dialogHeight:400px;dialogwidth:750px;center:yes');
+}
+//{/literal}
+</script>
+
+<style type="text/css">
+<!--{literal}-->
+#cbt_list_tbl th {
+	background-color: #F7F4F0;/*F0EBE2*/
+}
+#cbt_list_tbl td {
+	background-color: #FFFFFF;
+}
+body {
+	font-family: 'Microsoft YaHei', monospace;
+}
+<!--{/literal}-->
+</style>
+<fieldset
+	style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;">
+<legend><span
+	style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;设计打印面单用的模板&nbsp;</span></legend>
+<div style="text-align: right; margin-bottom: 6px;">
+<button onclick="location.href = location.href;">刷新</button>
+<button onclick="insert_cbt();">新增</button>
+</div>
+<div style="clear: both;">
+
+<table id="cbt_list_tbl" class="bWindow">
+	<tr>
+		<th nowrap="nowrap">ID</th>
+		<th nowrap="nowrap">模板名称</th>
+		<th nowrap="nowrap">组织/仓库</th>
+		<th nowrap="nowrap">配送方式</th>
+		<th nowrap="nowrap">模板数据（JSON）</th>
+		<!-- <th nowrap="nowrap">禁用否</th> -->
+		<th nowrap="nowrap">设计</th>
+	</tr><!--{foreach from=$list item=row}-->
+	<tr id="_tr_{$row.cbt_id}">
+		<td>{$row.cbt_id}</td>
+		<td onclick="this.contentEditable='true';" onblur="update_cbt(this, '{$row.cbt_id}')" title="{$row.cbt_title}">{$row.cbt_title}</td>
+		<td class="party_f_td" id="partyfacilitytd_{$row.cbt_id}_{$row.romeo_party_id}_{$row.facility_id}"></td>
+		<td align="center" id="carriertd_{$row.carrier_id}"><select id="carriers_{$row.cbt_id}_{$row.carrier_id}" onchange="select_carrier(this)">{$row.carrier}</select></td>
+		<td><div style="border: 1px solid #ddd; height: 30px; width:300px; overflow-y: scroll; word-break: break-all;">{$row.cbt_data}</div></td>
+		<!-- <td>{$row.cbt_disabled}</td> -->
+		<td align="center" nowrap="nowrap"><button onclick="window.open('?act=design&cbt_id={$row.cbt_id}');return false;">设计</button>
+		<button onclick="window.open('?act=preview&cbt_id={$row.cbt_id}');return false;">预览</button>
+		<button onclick="clone_cbt('{$row.cbt_id}');">复制</button>
+		<button onclick="delete_cbt('{$row.cbt_id}');">删除</button>
+		<button onclick="cbt_log('{$row.cbt_id}');">日志</button>
+		</td>
+	</tr><!--{/foreach}-->
+</table>
+
+</div>
+
+</fieldset>
+<br>
+<fieldset
+	style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;">
+<legend><span
+	style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;使用帮助&nbsp;</span></legend>
+
+<ul style="line-height: 1.7;">
+  <li>编辑“模板名称”请点击该单元格编辑</li>
+  <li>编辑模板可用变量（使用时按smarty格式）：<br>
+    $order['now_ymd_1'] = date("Y/m/d");<br>
+    $order['now_ymd_2'] = date("Y-m-d");<br>
+    $order['now_ymd_3'] = date("Y m d");<br>
+    $order['order_amount'] = sprintf('%01.2f', $order['order_amount']);<br>
+    $order['mobile_tel'] = $order['mobile'] ? $order['mobile'] : $order['tel'];<br>
+    $order['province_city_district'] = ($order['province'] ? '[' . $order['province'] . ']' : '') . ($order['city'] ? '[' . $order['city'] . ']' : '') . ($order['district'] ? '[' . $order['district'] . ']' : '');<br>
+    $order['full_address'] = $order['province_city_district'] . $order['address'];<br>
+  </li>
+  <li>模板编辑其他常用变量：<br>{literal}
+{$order.consignee}：收货人<br>
+{$order.address}：收货地址<br>
+{$order.country}：国家<br>
+{$order.province}：省/直辖市/特别行政区<br>
+{$order.city}：城市<br>
+{$order.district}：地区<br>
+{$order.province_city_district}：[省/直辖市/特别行政区][城市][地区]<br>
+{$order.full_address}：[省/直辖市/特别行政区][城市][地区]收货地址 —— 是完整地址<br>
+{$order.mobile}：手机号码<br>
+{$order.zipcode}：邮编<br>
+{$order.tel}：电话号码<br>
+{$order.mobile_tel}：使用手机号码，如果没有手机号码就使用电话号码<br>
+{$order.order_amount}：金额<br>
+{$order.now_ymd_1}：格式 2010/12/12<br>
+{$order.now_ymd_2}：格式 2010-12-12<br>
+{$order.now_ymd_3}：格式 2010 12 12<br>
+{/literal}</li>
+  <li style="color:red;"><span style="color:blue;">JJsHouse的区别：</span><br>{literal}
+{$order.full_address}：收货地址,标志性建筑,城市,州<br>
+<span style="color:blue;">变量：</span><br>
+$order['address'] = $order['address'] . ($order['sign_building'] ? ',' . $order['sign_building'] : '');<br>
+$order['province_city_district'] = $order['city'] . ',' . $order['province'];<br>
+$order['full_address'] = $order['address'] . ',' . $order['province_city_district'];<br>
+{/literal}</li>
+  <li>常用字符：<br>√</li>
+</ul>
+</fieldset>
+<!--{/if}-->
+</body>
+</html>

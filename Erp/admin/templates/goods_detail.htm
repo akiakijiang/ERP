@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品列表</title>
+{literal}
+<style type="text/css">
+#table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 14px;
+	font-family: "宋体";
+}
+
+#table th {
+	background: #ffffff;
+	border-bottom: 1px solid #CCC;
+	padding: 4px;
+	text-align: center;
+}
+
+#table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+	text-align: left;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+　　h1 {
+	font-size: 16px;
+}
+</style>
+{/literal}
+</head>
+<body>
+<h1 align="center">{$goods.goods_name}</h1>
+<table id="menu" cellpadding="0" cellspacing="0">
+	<tr>
+		<td><a href="goods_index.php?act=add&&cat_id={$goods.cat_id}"><font color="#0099FF">添加商品</font></a></td>
+		<td><a href="goods_index.php?act=edit&&goods_id={$goods.goods_id}&cat_id={$goods.cat_id}">　<font color="#0099FF">　编辑该商品</font></a></td>
+		<td><a href="goods_index.php?act=list&cat_id={$goods.cat_id}">　<font color="#0099FF"> 返回商品列表</font></a></td>
+	</tr>
+</table>
+<br />
+<table id="table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="6">产品信息</th>
+	</tr>
+	<tr>
+		<td>id</td>
+		<td colspan="5">{$goods.goods_id}</td>
+	</tr>
+	<tr>
+		<td>商品条码</td>
+		<td colspan="5">{ if $style|@count > 0 }请查看样式的具体条码{else}{$goods.barcode}{/if}</td>
+	</tr>
+	<tr>
+		<td>商品类别</td>
+		<td colspan="5">{$goods.cat_name}</td>
+	</tr>
+	<tr>
+		<td>保修/标配</td>
+		<td colspan="5">{$goods.seller_note}</td>
+	</tr>
+	{foreach from=$style item=style}
+	<tr>
+		<td>商品颜色/尺寸</td>
+		<td>{$style.color}</td>
+		<td>商品价格 {$style.style_price} </td>
+		<td>商品条码 {if $style.barcode=='null'}{else}{$style.barcode}{/if} </td>
+		<td>商品货号:{$style.goods_code}</td>
+		<td> <span style='display: inline-block;'> 采购信息:</span>
+			<span style="display:inline-block;">
+			{foreach from=$style.purchase_info item=purchase}
+			 		采购单价: {$purchase.unit_price} 供应商:  {$purchase.provider_name}  
+			 		<br/> 
+			{/foreach}
+			</span>
+		</td>
+	</tr>
+	{foreachelse}
+	<tr>
+		<td>商品颜色</td>
+		<td colspan="5">无</td>
+	</tr>
+	{/foreach}
+	<tr>
+		<td>是否上架</td>
+		<td colspan="5">{if $goods.is_on_sale eq 1 }是{else}否{/if}</td>
+	</tr>
+	<tr>
+		<td>警告库存</td>
+		<td colspan="5">{$goods.warn_number}</td>
+	</tr>
+	<tr>
+		<td>重量维护</td>
+		<td colspan="5">{if $goods.is_maintain_weight eq 1 }是{else}否{/if}</td>
+	</tr>
+	<tr>
+		<td>商品重量</td>
+		<td colspan="5">{$goods.goods_weight}（单位：g）</td>
+	</tr>
+	<tr>
+		<td>保质期维护</td>
+		<td colspan="5">{if $goods.is_maintain_warranty eq 1 }是{else}否{/if}</td>
+	</tr>
+	<tr>
+		<td>批次号维护</td>
+		<td colspan="5">{if $goods.is_maintain_batch_sn eq 1 }是{else}否{/if}</td>
+	</tr>
+	<tr>
+		<td>保质期</td>
+		<td colspan="5">{$goods.goods_warranty}（单位：月）</td>
+	</tr>
+	<tr>
+		<td>违禁品</td>
+		<td colspan="5">{if $goods.is_contraband eq 1 }是{else}否{/if}</td>
+	</tr>
+	<tr>
+		<td>商品长度：</td>
+		<td colspan="5">{$goods.goods_length|default:0}（单位：cm 保留两位小数）</td>
+	</tr>
+	<tr>
+		<td>商品宽度：</td>
+		<td colspan="5">{$goods.goods_width|default:0}（单位：cm 保留两位小数）</td>
+	</tr>
+	<tr>
+		<td>商品高度：</td>
+		<td colspan="5">{$goods.goods_height|default:0}（单位：cm 保留两位小数）</td>
+	</tr>
+	<tr>
+        <td>商品体积</td>
+        <td colspan="5">{$goods.goods_volume}（单位：cm³）</td>
+    </tr>
+    <tr>
+    	<td>箱子:</td>
+    	<td colspan="5">
+    		长度：{$goods.box_length|default:0}  &nbsp; 
+    	    宽度：{$goods.box_width|default:0}  &nbsp;
+    	    高度：{$goods.box_height|default:0}
+    	    &nbsp;（单位：cm 保留两位小数）
+    	</td>
+    </tr>
+ <!--<tr>
+		<td>是否使用气泡袋：</td>
+		<td colspan="5">{if $goods.is_bubble_bag eq 1}是{else}否{/if}</td>
+	</tr>
+	<tr>
+		<td>是否使用泡沫箱：</td>
+		<td colspan="5">{if $goods.is_bubble_box eq 1}是{else}否{/if}</td>
+	</tr>
+-->
+	<tr>
+		<td>耗材名称：</td>
+		<td colspan="5">{$consumable_str}</td>
+	</tr>	
+	<tr>
+		<td>价格</td>
+		<td colspan="5">{$goods.shop_price}</td>
+	</tr>
+	<tr>
+		<td>采购信息</td>
+		<td colspan="5">
+			{foreach from=$goods.purchase_info item=purchase}
+			 		采购单价: {$purchase.unit_price} 供应商:  {$purchase.provider_name}   
+			 		<br/> 
+			{/foreach}
+		</td>
+	</tr>
+	<tr>
+		<td>税率</td>
+		<td colspan="5">{$goods.added_fee}</td>
+	</tr>
+	<tr>
+	<td>货币种类</td>	
+	<td colspan="5">{$goods.currency}</td>  
+	</tr>
+	
+	<tr>
+		<td>箱规</td>
+		<td colspan="5">{$goods.spec}</td>
+	</tr>
+	<tr>
+		<td>商品货号</td>
+		<td colspan="5">{$goods.goods_code}</td>
+	</tr>		
+	<tr>
+		<td>商品单位</td>
+		<td colspan="5">{$goods.unit_name} (个、件等)</td>
+	</tr>	
+	<tr>
+		<td>产品重要性</td>
+		<td colspan="5">{$goods.product_importance} 类</td>
+	</tr>
+	{if $show_item_number}
+		<tr>
+			<td>易碎品：</td>
+			<td colspan="5">{if $goods.is_fragile eq 1}是{else}否{/if}</td>
+		</tr>
+
+		<tr>
+			<td>物料编码</td>
+			<td colspan="5">{$goods.item_number}</td>
+		</tr>
+	{/if}
+</table>
+{literal}
+<script type="text/javascript">
+	var obj = document.getElementById("table");
+	for ( var i = 0; i < obj.rows.length; i++) {
+		obj.rows[i].onmouseover = function() {
+			this.style.background = "#bbdde5";
+		}
+		obj.rows[i].onmouseout = function() {
+			this.style.background = "";
+		}
+	}
+</script>
+{/literal}
+</body>
+</html>

@@ -1,0 +1,831 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link href="../styles/css/css.css" rel="stylesheet" type="text/css">
+	<link href="../styles/css/css_2007.9.8.css" rel="stylesheet" type="text/css">
+	<link href="../misc/thickbox.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="../misc/jquery.js"></script>
+	<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="../misc/autocomplete.js"></script>
+	<script type="text/javascript" src="../misc/thickbox.js"></script>
+	<link rel="stylesheet" href="../misc/autocomplete.css" />
+
+	<script type="text/javascript">
+// <![CDATA[
+var info = "{$smarty.request.info}";
+var process_request = "{$lang.process_request}";
+
+//{literal}
+
+function getObjectURL(file) {
+	var url = null ; 
+	if (window.createObjectURL!=undefined) { // basic
+		url = window.createObjectURL(file) ;
+	} else if (window.URL!=undefined) { // mozilla(firefox)
+		url = window.URL.createObjectURL(file) ;
+	} else if (window.webkitURL!=undefined) { // webkit or chrome
+		url = window.webkitURL.createObjectURL(file) ;
+	}
+	return url ;
+}
+$(document).ready(function(){
+	
+	var file_index = 0;
+	$(".file_change").change(function(e){
+		if(file_index<5){
+			var up_img_name_string = $(this).val();
+			var up_img_name = up_img_name_string.split('\\');
+			var up_img_final_name = up_img_name[up_img_name.length-1];
+			var objUrl = getObjectURL(this.files[0]);
+			if (objUrl) {
+				var img_class = ".img"+file_index;
+				var delete_ = ".delete"+file_index;
+
+				$(img_class).text("图片"+file_index+":"+up_img_final_name).attr('src_name',objUrl);
+				$(delete_).append('<input type="button" class="btn_delete" value="删除" onclick="del('+file_index+')"></input>');
+			}
+			var file_inform = e.target.files[0];
+			var parent = $(this).parent();
+			var file_name = "file"+file_index;
+			var class_file_name=".file"+file_index;
+			$(this).attr('name',file_name);
+			var input_clone = $(this).clone(true);
+			console.log(input_clone);
+			var input_file = $(this);
+			input_file.removeClass('fileInput');
+			$(".replace_input").find(class_file_name).remove();
+			$(".replace_input input").eq(file_index).before(input_file);
+			file_index++;
+			parent.html(input_clone);
+			parent.append("上传");
+		}else{
+			alert("最多只能上传5张图片");
+		}
+	});
+
+	$(".support_types").change(function(){
+		var id = $(".support_types option:selected").val();
+		if(id != '-1') {
+			var subid = $(".support_type_" + id);
+            var data = "support_type_key="+id;
+            $.ajax({
+            	type:'get',
+            	dataType:'json',
+            	url:'sale_support.php?ajax=change_support_type',
+            	data:data,
+            	success:function(data){
+            		if(data !== '') {
+
+	             		$support_type = $("#support_type");
+	                    $support_type.html("");
+	                    for(var key in data){
+	                    	$support_type.append("<option value='"+key+"'>"+data[key]+"</option>");
+	                    }
+            		}
+            	},
+            	error:function(){
+
+            	}
+            });
+		} else {
+			$("select").siblings("#support_type").hide(); 
+		}
+	});
+
+	$('.img_style').click(function(){
+		var src_name = $(this).attr('src_name');
+		$('.img_show_place img').attr('src',src_name);
+		$('.img_show_place').fadeIn().css('z-index', 20);;
+	});
+	$('.img_show_place_close').click(function(){
+		$(this).parent().fadeOut();
+	})
+});
+window.onload = function() {
+	show(1);
+}
+function del(ind){
+	var delete_index = ".delete" + ind;	
+	$(delete_index).prev().text('').removeAttr('src_name');
+	$(delete_index).css('display', 'none');
+	var file_index = "file"+ind;
+	$(".replace_input input").eq(ind).attr('class', file_index);
+	$(".replace_input input").eq(ind).attr('value', '');
+}
+
+   //去除首尾空格
+   function  Trim(str){
+   	return  str.replace(/^\s*(.*?)[\s\n]*$/g,  '$1');
+   }
+	/**
+	 * 切换按钮的等待状态
+	 */
+	 function waiting($button, status) {
+	 	if (status == 'en') {
+	 		$button.attr('disabled', false);
+	 	} else {
+	 		$button.attr('disabled', true);
+	 	}
+	 }
+
+	/**
+	 * 申请提交
+	 */
+	 function apply_submit(obj, send_type) {
+	 	var support_type = $('#support_type').val();
+	 	if (support_type < 1 || support_type > 34) {
+	 		alert('请选择咨询类型');
+	 		return false;
+	 	}
+
+		//判断咨询详情是否为空
+		var message = $('#message').val();
+		if(message == ''){
+			alert('咨询详情未填写');
+			return false;
+		}
+
+		$('#send_type').val(send_type);
+		/* alert($('#send_type').val());
+		alert($(0)); */
+		// 成功后提交
+		if (confirm('确认吗')) {
+			$('#next_process_group').val(obj);
+			$('#form').submit();
+		}
+	}
+	
+	
+	function end_kf(end_kf){
+		if(end_kf != '' && end_kf != 'KF' && end_kf != 'FXKF'){
+			alert('现在不能确认方案');
+			return ;
+		}else{
+			/* if(type == '确认方案'){ */
+				show2(1,3);
+			/* }else if(type == '撤销'){
+				show2(1,4);
+			} */
+		}
+	}
+	
+	function finish_submit(){
+		var res_person = Trim($('#res_person').val());
+		var res_message = Trim($('#res_message').val());
+		
+		var plan = document.getElementsByName("plan");   
+
+		for(var i = 0; i < plan.length; i++)   
+		{   
+			if(plan[i].checked == true)   
+			{   
+				$('#plan').val($('#plan').val()+plan[i].value+',');
+			}   
+		} 
+		//检测方案
+		if($('#plan').val() == ''){
+			alert('您还未确认方案，请确认方案');
+			return false;
+		}
+		
+		if(confirm('确认完结吗')){
+			$('#form2').submit();
+		}
+	}
+	
+	function show(num){
+		for(var i=1;i<=3;i++){
+			if(i != num){
+				var sl = document.getElementById("sl"+i);  
+				sl.style.display = 'none';
+			}
+		}
+		var sl = document.getElementById("sl"+num);  
+		sl.style.display = '';
+	}
+	
+	function show2(num1,num2){
+		for(var i=1;i<=3;i++){
+			var sl = document.getElementById("sl"+i);  
+			sl.style.display = 'none';
+		}
+		var sl = document.getElementById("sl"+num1);  
+		sl.style.display = '';
+		var sl = document.getElementById("sl"+num2); 
+		sl.style.display = '';
+	}
+	
+	// {/literal}
+	//
+	</script>
+	<style type="text/css">
+
+	{literal}
+	input[type='submit'],input[type='button']{cursor:pointer;}
+	.page{float:right;padding-right:15px;color:#75318e;margin:5px 0;}
+	.page input.text2{width:20px;height:14px;border:1px solid #cfd0d0;margin:0 3px;float:none;}
+	.page a{float:left;text-align:center;color:#75318e;margin:0 5px;padding:1px 5px;border:1px solid #e2e2e2;}
+	.page a:hover,.page a.currentPage{background:#75318e;color:#fff;text-decoration:none;}
+	.page span{float:left;}
+	.page input{float:left;}
+	.service p{padding:5px 0;}
+
+	body#font_14 div,body#font_14 input,body#font_14 select{color:#000;}
+	.tooltips{
+		position: relative; 
+		z-index: 9999;
+		text-decoration: none;
+		color: blue;
+		cursor: pointer;
+	}
+	.tooltips:hover{
+		z-index: 9999;
+		background: none; /* 没有这个在 IE 中不可用 */
+	}
+	.tooltips div{
+		display: none; /* span 不可见 */
+	}
+	.tooltips:hover div{ /* span 标签仅在 :hover 状态时显示 */
+		display: block;
+		position: absolute; 
+		top: -32px;
+		left: 80px;
+		width: 300px; /* ToolTips 的宽度 */
+		/* 以下是样式 */
+		border: 1px solid #D5C88B;
+		background: #C8D3F2;
+		padding: 4px;
+		color: #333;
+	}
+	.ddan table{
+		padding:5px;
+		border:transparent;
+		/*border-left: 1px solid rgba(220,220,220,.8);*/
+		/*border-right: 1px solid rgba(220,220,220,.8);*/
+		text-align: left;
+	}
+	.ddan table td{
+		border:none;
+	}
+	.order_number_h2{
+		font-size: 13px;
+		margin:0 auto;
+		text-align: left;
+		padding:5px 20px;
+		font-weight:normal;
+		/*background-image:url(../images/image/bg_1.jpg);*/
+		background:rgba(220,220,220,.5);
+		border:transparent;
+	}
+	.ddan_item{
+		margin-top:1px;
+		text-align:left;
+		padding:0;
+		padding-left:4px;
+		/*background:#f1fff0;*/
+		border:0;width:850px;
+	}
+	.ddan_item h3{
+		margin:3px 0 0 0;
+	}
+	.ddan_item table .ddan_item_head_tr{
+		/*width:90%;*/
+		padding:2px 15px;
+		margin-bottom: -10px;
+		/*border-bottom: 5px solid rgba(220,220,220,.6);*/
+	}
+	.Table3_Bo table td, .ddan table td{
+		padding:2px auto !important;
+	}
+	.ddan_item p{
+		padding-left:10px;
+		padding-right:10px;
+	}
+	.ddan_item h2{
+		border-bottom: transparent !important;
+	}
+	.ddan_item h2 a{
+		color:blue;
+		margin:0 5px;
+	}
+	.ddan_item table{
+		border:none;
+		margin:0;
+		width:99.9%;
+		margin-left:1px;
+	}
+	.ddan_item table tr{
+		/*background:#f1fff0;*/
+	}
+	.ddan_item table td{
+		width:auto;
+		border:0;
+		/*border:1px solid #c1dad7;*/
+		padding:7px 5px;
+	}
+	.ddan_item table th{
+		/*border:1px solid #c1dad7;*/
+		background:url(images/image/bg_header.jpg) repeat-x;
+		color:#4f6b72;
+		padding:0;
+	}
+	.insert_class{
+		cursor:pointer;
+		text-decoration: none;
+	}
+	.btn_input{
+			padding: 3px 6px;
+			margin-bottom: 0;
+			/*font-size: 18px;*/
+			font-weight: normal;
+			line-height: 1.42857143;
+			text-align: center;
+			white-space: nowrap;
+			vertical-align: middle;
+			-ms-touch-action: manipulation;
+			touch-action: manipulation;
+			cursor: pointer;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			color: white !important;
+			/*background-color: #008fb5;*/
+			background:-moz-linear-gradient(top, #8fa1ff, #3757fa);
+			background:-webkit-gradient(linear, left top, left bottom, color-stop(0,#45a3dc), color-stop(1, #1590d2));
+			background:linear-gradient(to bottom,#45a3dc,#1590d2);
+			border-color: #2e6da4;
+			/*background-image: none;*/
+			border: 1px solid transparent;
+			border-radius: 4px;
+			/*box-shadow: 2px 2px 2px rgba(0,0,0,.4);*/
+
+	}
+
+		.btn_delete{
+			padding: 3px 6px;
+			margin-bottom: 0;
+			/*font-size: 18px;*/
+			font-weight: normal;
+			line-height: 1.42857143;
+			text-align: center;
+			white-space: nowrap;
+			vertical-align: middle;
+			-ms-touch-action: manipulation;
+			touch-action: manipulation;
+			cursor: pointer;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			color: white !important;
+			/*background-color: #008fb5;*/
+			background:-moz-linear-gradient(top, #8fa1ff, #3757fa);
+			background:-webkit-gradient(linear, left top, left bottom, color-stop(0,#45a3dc), color-stop(1, #1590d2));
+			background:linear-gradient(to bottom,#45a3dc,#1590d2);
+			border-color: #2e6da4;
+			/*background-image: none;*/
+			border: 1px solid transparent;
+			border-radius: 4px;
+			/*box-shadow: 2px 2px 2px rgba(0,0,0,.4);*/
+			margin-left:10px;
+			height:20px;
+	}
+	.header_each_contant{
+		 text-align: left; 
+		 padding-left:20px !important;
+		 color:#1E90FF;
+		 font-size: 16px;
+	}
+	.add_pic_word{
+		margin-top:-8px;
+		/*margin-right:20px;*/
+		vertical-align: middle;
+		display:inline-block;
+		/*height:64px;*/
+		/*line-height: 64px;*/
+	}
+	.fileInputContainer{
+		background:-moz-linear-gradient(top, #8fa1ff, #3757fa);
+			background:-webkit-gradient(linear, left top, left bottom, color-stop(0,#45a3dc), color-stop(1, #1590d2));
+			background:linear-gradient(to bottom,#45a3dc,#1590d2);
+		padding:3px 12px;
+		color:white !important;
+		border-radius: 5px;
+		display:inline-block;
+		/*box-shadow: 2px 2px 2px rgba(0,0,0,.4);*/
+		/*height:48px;*/
+		/*background:url(../images/up_file.png);*/
+		/*background-size: 100% 100%;*/
+		position:relative;
+		/*width: 48px;*/
+	}
+	.fileInput{
+		/*height:48px;*/
+		overflow: hidden;
+		/*font-size: 300px;*/
+		position:absolute;
+		right:0;
+		top:0;
+		opacity: 0;
+		filter:alpha(opacity=0);
+		cursor:pointer;
+	}
+	.img_style{
+		cursor:pointer;
+		color:#008fb5 !important;
+		padding:5px auto;
+		margin:6px auto;
+		display: inline-block;
+	}
+	.img_show_place{
+		background:rgba(220,220,220,.7);
+		padding:16px;
+		display:none;
+		/*z-index: 888;*/
+		position:absolute;
+		width:50%;
+		height:50%;
+		left:25%;
+		top:10%;
+	}
+	.img_show_place_img{
+		width:80%;
+		height:80%;
+	}
+	.img_show_place_close_button_style{
+		cursor:pointer;
+		font-size: 16px;
+		text-align: right;
+	}
+	input[value='删除']{color:red;}
+	input[value='增加套餐商品']{margin-top:5px;}
+	.service{border:1px solid #c1dad7;}
+	.service p{line-height:160%;border-bottom:1px dashed #c1dad7;}
+	table.statusTable{border-collapse:collapse;margin-top:1px;}
+	table.statusTable td{
+		border:1px solid #c1dad7;
+	}
+	table.statusTable th{border:1px solid #c1dad7;font-weight:normal;color:#fff;}
+	table.statusTable tr.even{background:#f5fafa;}
+
+	.ddan_item table.none{margin:-10px;padding:0;float:right;width:350px;text-align:left;background:#fff;
+		/*border:1px solid #c1dad7;*/
+	}
+	.ddan_item table.none td{border:0;background:#fff;}
+	optgroup{color:#333;font-style:normal;}
+	optgroup option{color:#000;}
+	b{font-weight:normal;}
+
+	#order_status_action,#changeId{position:absolute;top:30px;right:100px;background:#fff;z-index:1;}
+	#changeId{border:1px solid #c1dad7;padding:10px;}
+	#infoTable td{background:#f1fff0;}
+	input[type='text'],select{background:#f1fff0;}
+	#searchId{margin-top:10px;}
+	#modify_vat_invoice input, #bonus_id, #bonus_id_note{border:1px solid #cfd0d0!important;}
+	#modify_vat_invoice input[type='submit'], #use_bonus_id input[type='submit']{border:none;}
+/*	.display_no{
+		display: none;
+	}*/
+	</style>
+	{/literal}
+	<title>{$order.order_sn} ({$order.party_name}) 订单的详细信息</title>
+</head>
+
+<body id="font_14">
+
+	<!--{if $tip}-->
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+
+	window.setTimeout(function(){
+		$('#tip').slideUp("slow");
+	}, 3000);
+
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="tip" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+		{$tip}
+	</div>
+	<!--{/if}-->
+
+	<div class="ddan" style="width:880px;">
+
+		<!-- <ul class="order_liTab fix" id="order_li" style="margin:0 0 -1px 0;padding:0 0 0 1px;">
+
+			<li id="a1" onclick="top.location.href='../order_edit.php?show=1&order_id={$order.order_id}'">订单详细信息</li>
+			<li id="a5" {if !$smarty.request.more}class="on"{/if}>售后沟通<span style="font-size:12px;font-weight:normal;"></span></li> -->
+       <!-- </!> <li id="a0" onclick="top.location.href='../order_edit.php?order_id={$order.order_id}'">打开所有栏目</li>
+        <li id="a2" onclick="location.href='../order_edit.php?show=2&order_id={$order.order_id}'">统计信息</li>
+        <li id="a3" onclick="location.href='../order_edit.php?show=3&order_id={$order.order_id}'">客服操作</li>
+        <li id="a4" onclick="location.href='../order_edit.php?show=4&order_id={$order.order_id}'" style="overflow:hidden;width:0;">{*商品操作*}</li>
+        {*<li id="a5" onclick="show(5)" {if $smarty.request.more == 'more'}class="on"{/if}>售前咨询<span style="font-size:12px;font-weight:normal;">({$usercommentNum})</span></li>*}                       
+        {*<li id="a5" onclick="show(5)">订单咨询<span style="font-size:12px;font-weight:normal;">({$commentsNum})</span></li>*}
+       
+        <li id="a6" onclick="location.href='../order_edit.php?show=6&order_id={$order.order_id}'">售后服务<span style="font-size:12px;font-weight:normal;"></span></li> 
+        <li id="a7" onclick="location.href='../order_edit.php?show=7&order_id={$order.order_id}'">订单状态</li>
+        {if "kf_send_msg"|check_admin_priv}
+        <li id="a8" onclick="location.href='../order_edit.php?show=8&order_id={$order.order_id}'">发送短信</li>
+        {/if}
+    -->
+<!-- </ul> -->
+
+<form method = "post" id="form" method="post" enctype="multipart/form-data">
+	<div  id="s5" style="width:873px;"> 
+		<h2 class="order_number_h2">订单号：{$order.order_sn} </h2>
+		<h2 class="order_number_h2">发货仓库：{$facility_name} </h2>
+		<table class="ddan_item" cellpadding="0" cellspacing="0" style="display:'none';position:relative;">
+	      <!-- <tr>
+	         <td style="width: 80px;">接收人：</td>
+	         <td>
+	           添加：<input type="text" id="sale_support_member_select" size="15" style="background-color:white;"/>
+	           &nbsp;&nbsp;&nbsp;
+	           显示：<input type="text" id="sale_support_member_list" size="55" style="background-color:white;" onblur="check_member();"/>
+	         </td> 
+	     </tr>  -->
+		<div class="img_show_place">
+			<div class="img_show_place_close_button_style img_show_place_close">关闭</div>
+			<img class="img_show_place_img" src="">
+		</div>
+	     <tr class="ddan_item_head_tr">
+	     	<td class="header_each_contant" style="font-weight: bold;padding:15px auto;padding-bottom:5px;border:transparent;"><h3>基本信息</h3></td>
+	     	<td></td>
+	         <!-- <td>咨询类型</td>
+	         <td>咨询详情</td>  -->                
+	     </tr>
+	     <tr style="margin:-4px 10px;padding:2px !important;">
+	     	<td style="border-bottom: 1px solid rgba(220,220,220,.7); "></td>
+	     	<td style="border-bottom: 1px solid rgba(220,220,220,.7); "></td>
+	     </tr>
+	     <tr>
+	     	<td style="padding-left:24px;padding-top:20px;vertical-align: top;">
+	     		<div>
+	     			<span style="width:60px;">咨询类型：</span>
+	     			<select class="support_types" style="background:white;">
+	     				<option value="-1">--请选择--</option>
+	     				<option value="0" {if $last_message.support_types == '0'} selected {/if}>发货问题</option>
+	     				<option value="1" {if $last_message.support_types == '1'} selected {/if}>商品问题</option>
+	     				<option value="2" {if $last_message.support_types == '2'} selected {/if}>快递问题</option>
+	     				<option value="3" {if $last_message.support_types == '3'} selected {/if}>其他问题</option>
+	     			</select>
+	     			<select name="support_type" id="support_type" style="background:white;" >
+	     				<option value="-1">--请选择--</option>
+	     				{html_options options=$support_type_list[$last_message.support_types] selected=$last_message.support_type}
+					</select>
+	     		</div>
+	     		<div style="margin-top:10px;">
+	     			<span style="width:60px;vertical-align:top;">添加备注：</span>
+	     			<textarea rows="4" cols="40" id="message" name="message"></textarea> <br />
+	     			
+	     			<div style="margin-bottom:10px;">
+		     			<div class="add_pic_word">请添加图片</div>
+		     			<div class="fileInputContainer">
+		     				上传
+							<input class="fileInput file_change" type="file"/>
+						</div>
+					</div>
+					<div><span style="width:60px;vertical-align:top;">图片描述：</span><textarea rows="2" cols="40" id="desc" name="desc"></textarea></div>
+					<div style="margin:5px auto;color:red;">上传仅限"jpg","gif","bmp","jpeg","png"格式并请保证在5M大小以内</div>
+					<div>
+						<div class="img0 img_style"></div>
+						<span class="delete0"></span>
+					</div>
+					<div>
+						<div class="img1 img_style"></div>
+						<span class="delete1"></span>
+					</div>
+					<div>
+						<div class="img2 img_style"></div>
+						<span class="delete2"></span>
+					</div>
+					<div>
+						<div class="img3 img_style"></div>
+						<span class="delete3"></span>
+					</div>
+					<div>
+						<div class="img4 img_style"></div>
+						<span class="delete4"></span>
+					</div>
+					
+	     			<!-- <label style="margin-left:62px;"></label>&nbsp;&nbsp;&nbsp;<u class="insert_class" onclick = "show2(1,2)">插入</u> -->
+	     			<input type="hidden" name="status" value="{$last_message.status}"/>
+	     			<input type="button" style="margin-left:160px;" class="btn_input" id="sale_message" value="发送信息" {if $send_message == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit('{$last_message.next_process_group}', 'send_message')"/>
+	     		</div>
+	     	</td>
+	     	<td style="padding-top:15px;">
+	     		<p style="margin-bottom: 25px;">
+	     			<input type="button" class="btn_input" id="KF" value="请客服处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')" />
+	     			<input type="button" class="btn_input" id="FXKF" value="请分销客服处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')" />
+	     			<input type="button" class="btn_input" id="DZ" value="请店长处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     		</p>
+	     		<p style="margin-bottom: 25px;">
+	     			<input type="button" class="btn_input" id="CW" value="请财务处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     			<input type="button" class="btn_input" id="CG" value="请快递理赔处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     		</p>
+	     		<p>
+	     			<input type="button" class="btn_input" id="BJWL" value="请北京物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     			<input type="button" class="btn_input" id="SHWL" value="请上海物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     			<input type="button" class="btn_input" id="DGWL" value="请东莞物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     		</p>
+	     		<p>
+	     			<input type="button" class="btn_input" id="WHWL" value="请武汉物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     			<input type="button" class="btn_input" id="CDWL" value="请成都物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     			<input type="button" class="btn_input" id="JPWL" value="请精品物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     		</p>
+	     		<p>
+	     			<input type="button" class="btn_input" id="SZWL" value="请苏州物流处理" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     			<input type="button" class="btn_input" id="WBWL" value="请外包物流处理[试用]" {if $admin_action == false} disabled="disabled" style="color:grey"{/if} onclick="apply_submit(this.id, 'handle')"/>
+	     		</p>
+	     	</td>
+	     	<input type="hidden" name="act" value="add"/>
+	     	<input type="hidden" id="order_id" name="order_id" value="{$order.order_id}"/>
+	     	<input type="hidden" id="program" name="program" value="{$last_message.program}" />
+	     	<input type="hidden" id="next_process_group" name="next_process_group" value=""/>
+	     	<input type="hidden" id="send_type" name="send_type" value=""/>
+	     </tr>
+	 </table>
+
+	</div>
+	<div class="ddan_item" id="sl2"  style="width:873px;">
+		<!-- <form id = "form3" method="post" action="sale_support_upload.php" enctype="multipart/form-data" >  --> 
+		<h2>上传图片<span style="font-size:12px;font-weight:normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:12px;font-weight:normal;"><u onclick="show(1);">返回</u></span></h2>
+			<table cellpadding="0" cellspacing="0">
+				<tr style="font-weigth: bold;">
+					<td style="width:125px;"></td>
+					<td><textarea rows="1" cols="82" id="desc" name="desc"></textarea></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td class="replace_input">
+						<input class="file0" type = "file" name = "file0" value = "浏览"/> 
+						<input class="file1" type = "file" name = "file1" value = "浏览"/> 
+						<input class="file2" type = "file" name = "file2" value = "浏览"/> 
+						<input class="file3" type = "file" name = "file3" value = "浏览"/>
+						<input class="file4" type = "file" name = "file4" value = "浏览"/>
+						<!-- <input type = "submit" name="sub" value = "上传"/> -->
+					</td>
+				</tr>
+			</table>
+			<!--  </form>  -->
+		</div> 
+	</form>
+
+	<div class="ddan_item" id="sl3">
+		<form id="form2" method="post">
+			<h2>确认方案<span style="font-size:12px;font-weight:normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:12px;font-weight:normal;"><u onclick="show(1);">返回</u></span></h2>
+				<table cellpadding="0" cellspacing="0" class="statusTable">
+					<tr style="font-weigth: bold;">
+						<td style="width:100px;">责任人</td>
+						<td><input type="text" style="width:710px;background-color:white;" name="res_person" id="res_person"></input></td>
+					</tr>
+					<tr style="font-weigth: bold;">
+						<td style="width:100px;">实际原因</td>
+						<td>
+							<textarea rows="3" cols="85" id="res_message" name="res_message"></textarea> <br />
+							<!--<input type="checkbox" name="plan" value ="th" >退货-->
+							<input type="checkbox" name="plan" value ="tk">退款
+							<input type="checkbox" name="plan" value ="thtk">退货退款
+							<input type="checkbox" name="plan" value ="hh">换货
+							<input type="checkbox" name="plan" value ="zh">追回
+							<input type="checkbox" name="plan" value ="bj">补寄
+							<input type="checkbox" name="plan" value ="ms">驳回（无需处理）
+						</td>
+					</tr>
+					<tr>
+						<td>&nbsp;</td>
+						<td><input type="button" value="确认方案" onclick="finish_submit();"/></td>
+						<input type="hidden" name="act" value="finish"/>
+						<input type="hidden" name="res_order_id" id="res_order_id" value="{$order.order_id}"/>
+						<input type="hidden" name="plan" id="plan" value="" />
+						<input type="hidden" name="support_type" value="{$last_message.support_type}" />
+					</tr>
+				</table>
+			</form>
+		</div>
+<!--  
+<div class="ddan_item" id="sl4">
+ <form id="form3" method="post">
+  <h2>撤销售后沟通<span style="font-size:12px;font-weight:normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:12px;font-weight:normal;"><u onclick="show(1);">返回</u></span></h2>
+  <table cellpadding="0" cellspacing="0" class="statusTable">
+        <tr style="font-weigth: bold;">
+          <td style="width:100px;">原因</td>
+          <td>
+          	<textarea rows="3" cols="85" id="rel_cancle" name="rel_cancle"></textarea>
+          </td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td><input type="submit" value="确认撤销"/></td>
+          <input type="hidden" name="act" value="cancel"/>
+          <input type="hidden" name="cel_order_id" id="cel_order_id" value="{$order.order_id}"/>
+        </tr>
+  </table>
+ </form>
+</div>
+-->
+<div class="ddan_item" id="sl1" style="width:872px;padding-left:0 !important; margin-top:-9px;">     
+	<!-- {if $return_detail} -->
+	<h2>售后的相关信息<span style="font-size:12px;font-weight:normal;"></span></h2>
+	<table cellpadding="0" cellspacing="0" class="statusTable">
+		<tr>
+			<th>退回快递</th>
+			<th>退回运单号</th>
+			<th>顾客姓名</th>
+			<th>顾客电话</th>
+			<th>售后发起原因</th>
+			<th>售后状态</th>
+			<th>退回商品信息(商品名称#数量)</th>
+
+		</tr> 
+
+		<!-- {foreach from=$return_detail item=item}-->
+		<tr>
+			<th>{$item.deliver_company}</th>
+			<th>{$item.deliver_number}</th>
+			<th>{$item.consignee}</th>
+			<th>{$item.mobile}</th>
+			<th>{$item.apply_reason}</th>
+			<th>{if $item.service_status == 0}待审核
+				{elseif $item.service_status == 1}已审核
+				{elseif $item.service_status == 3}审核通过
+				{/if}
+			</th>
+			<th>
+				{foreach from=$item.goods_detail item=good}
+				{$good.goods_name}#{$good.goods_amount}<br/>
+				{/foreach}
+			</th>
+		</tr> 
+		<!-- {/foreach} -->
+
+	</table>
+	<!-- {/if} -->
+	<!-- <td class="header_each_contant"><h3>基本信息</h3></td> -->
+	<h3 class="header_each_contant" style="font-weight: bold;padding:15px auto;padding-bottom:5px;border:transparent;border-bottom:1px solid rgba(220,220,220,.7);">售后沟通对应的操作记录</h3> 
+	<form id="form4" method="post">
+		{if $kf_admin == true} 
+		<h2 style="background:white;padding-left: 35px;font-size: 15px;">客服操作：
+			<u onclick = "end_kf('{$last_message.next_process_group}')" >确认方案</u>&nbsp;&nbsp;&nbsp;&nbsp;    
+		</h2>
+		{/if} 
+	</form>
+	<table cellpadding="0" cellspacing="0" class="statusTable" style="text-align: center;">
+		<tr style="background:#52b5e6;">
+			<th width="20%">发送时间</th>
+			<th width="10%">咨询类型</th>
+			<th width="33%">咨询详情</th>
+			<th width="10%">发送人</th>
+			<th width="20%">状态</th>
+			<th width="5%">操作</th>
+		</tr> 
+
+		<!-- {foreach from=$message_list item=m_item}-->
+		<tr>
+			<td>{$m_item.created_stamp}</td>
+			<td>{$m_item.support_type_detail}</td>
+			<td>{$m_item.message}</td>
+			<td>{$m_item.real_name}({$m_item.department})</td>
+			<td>{if $m_item.next_process_name != ''}待{$m_item.next_process_name}处理{elseif $m_item.program != '' && $m_item.status == 'FINISHED'}确认方案({$m_item.program}){else}{/if}</td>
+			<td>
+				<a href = "sale_support_detail.php?message_id={$m_item.sale_support_message_id}&keepThis=true&TB_iframe=true&height=550&width=800" class="thickbox" title="查看售后详情，单号[{$order.order_sn}]" style="color:#000000;">详细</a>
+				<!-- {if $m_item.pic_num!=0} --><span style="color: red;">[{$m_item.pic_num}]</span><!-- {/if} -->
+			</td>
+		</tr> 
+		<!-- {/foreach} -->
+
+	</table>  
+
+</div> 
+
+<div class="ddan_item" id="sl5" style="width:872px;">  
+	<!-- {if $sync_refund_m} -->
+	<h2>淘宝同步图片链接<span style="font-size:12px;font-weight:normal;"></span></h2>
+	<table cellpadding="0" cellspacing="0" class="statusTable">
+		<tr>
+			<th>留言者</th>
+			<th>留言内容</th>
+			<th>留言图片链接</th>
+		</tr> 
+
+		<!-- {foreach from=$sync_refund_m item=item}-->
+		<tr>
+			<th>{$item.owner_nick}</th>
+			<th>{$item.content}</th>
+			<th>
+				{foreach from=$item.pic_urls item=pic }
+				<a href='{$pic}' target="_blank">图片</a>;&nbsp;
+				{/foreach}
+			</th>
+		</tr> 
+		<!-- {/foreach} -->
+	</table>
+	<!-- {/if} -->
+</div>
+</body>
+</html>

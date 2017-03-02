@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>保税仓订单查询页</title>
+	<script src="../gift_activity/bootstrap/js/jquery.min.js"></script>
+	<style>
+	{literal}
+	fieldset{
+		border-radius: 3px;
+		padding: 10px;
+		border:1px solid rgba(0,0,0,.3);
+	}
+	legend{
+		font-weight: bold;
+		font-size: 18px;
+		color:#2A1FFF;
+		opacity:.7;
+	}
+	.form{
+		margin-left: 10px;
+		margin-bottom: 40px;
+	}
+	label{
+		font-size: 14px;
+	}
+	.form-control {
+		margin-right: 10px;
+		display: inline-block;
+		height: 14px;
+		padding: 6px 12px;
+		font-size: 13px;
+		line-height: 1.42857143;
+		color: #555;
+		background-color: #fff;
+		background-image: none;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+		box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+		-webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+		-o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+		transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	}
+	.form-control:focus {
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+	}
+	.select_height{
+		height:29px;
+		padding:3px 12px;
+	}
+	.btn {
+		color: #fff;
+		background-color: #337ab7;
+		border-color: #2e6da4;
+		display: inline-block;
+		padding: 3px 12px;
+		margin-bottom: 0;
+		font-size: 13px;
+		font-weight: normal;
+		line-height: 1.42857143;
+		text-align: center;
+		white-space: nowrap;
+		vertical-align: middle;
+		-ms-touch-action: manipulation;
+		touch-action: manipulation;
+		cursor: pointer;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		background-image: none;
+		border: 1px solid transparent;
+		border-radius: 4px;
+	}
+	.btn:focus,
+	.btn:active:focus{
+		outline: thin dotted;
+		outline: 5px auto -webkit-focus-ring-color;
+		outline-offset: -2px;
+	}
+	.btn:hover,
+	.btn:focus{
+		color: #333;
+		text-decoration: none;
+	}
+	.btn:active{
+		background-image: none;
+		outline: 0;
+		-webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+		box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+	}
+	.bw_word{
+		color:#09f;
+		font-weight: bold;
+		font-size: 18px;
+		margin-bottom: 5px;
+	}
+	.max_table{
+		font-size: 13px;
+		margin:10px auto 30px auto;
+		border-spacing: 0;
+		border-collapse: collapse;
+		width:100%;
+		height:auto;
+		text-align: center;
+	}
+	.max_table tr th,.max_table tr td{
+		border: 1px solid rgba(220,220,220,1);
+		padding:6px 10px;
+		text-align: center;
+	}
+	.max_table tr:nth-child(odd){
+		background: rgba(220,220,220,.4);
+	}
+	.max_table tr:first-child:hover,.max_table tr:first-child{
+		font-size: 15px;
+		background: rgba(220,220,220,.9);
+	}
+	.max_table tr:hover{
+		background: rgba(255,218,185,.6);
+	}
+	{/literal}
+	</style>
+</head>
+<body>
+	<fieldset>
+		<legend>保税仓订单查询</legend>
+		<form class="form" id="form_submit">
+			<label>外部订单号：</label>
+			<input type="text" class="form-control outer_order_sn" name="outer_order_sn">
+			<label>订单状态：</label>
+			<select name="transfer_status" id="transfer_status" class="form-control select_height">
+				<option value="ALL">ALL</option>
+				<option value="NORMAL">NORMAL</option>
+				<option value="ERROR">ERROR</option>
+			</select>
+			<input type="hidden" name="act" value="submited">
+			<button type="button" class="btn btn_submit">提交</button>
+		</form>
+		<div class="bw_word">保税仓订单</div>
+		<table class="max_table">
+			<tr>
+				<th>外部订单号</th>
+				<th>店铺名称</th>
+				<th>下单时间</th>
+				<th>付款时间</th>
+				<th>状态</th>
+				<th>备注</th>
+			</tr>
+			{foreach from=$bwshop_list item=list}
+				{if is_array($list)}
+					<tr>	
+						{foreach from=$list item=child_list}
+							<td>{$child_list}</td>	
+						{/foreach}
+					</tr>	
+				{/if}
+			{/foreach}
+		</table>
+	</fieldset>
+	<script>
+	{literal}
+	$(document).ready(function(){
+		$(".btn_submit").click(function(){
+			if($("#transfer_status").val() == "ALL" || $("#transfer_status").val() == "NORMAL"){
+				if($(".outer_order_sn").val() == ""){
+					alert("订单状态为"+$("#transfer_status").val()+"时外部订单号必填");
+					return false;
+				}
+				else{
+					$("#form_submit").submit();
+				}
+			}else{
+				$("#form_submit").submit();
+			}
+		})
+	})
+	{/literal}
+	</script>
+</body>
+</html>

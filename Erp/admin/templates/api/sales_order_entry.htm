@@ -1,0 +1,673 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>销售订单录入</title>
+<link href="../admin/styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<script type="text/javascript" src="../admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="../admin/misc/autocomplete.css" />
+<link href="../admin/styles/api.css" rel="stylesheet" type="text/css">
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	// 已添加的订单商品  (JS端的购物车)
+	var order_goods_array = new Array();
+	
+	// 初始化
+	{foreach from=$cart_goods_list item=goods}
+	var _g = {ldelim}goods_style_id:'{$goods.goods_id}_{$goods.style_id}', price:'{$goods.shop_price}', number:{$goods.quantity}{rdelim};
+	order_goods_array.push(_g);
+	{/foreach}
+	
+	// {literal}
+	
+	/**
+	 * 改变地域的下拉框
+	 */
+	var Region = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+				{name: 'order[province]', data:{type:2} }, // 省
+				{name: 'order[city]',     data:{type:3} }, // 市
+				{name: 'order[district]'}                  // 区
+		],
+		
+		expr : ':select[name="?"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+				for (var i = 0; i < this.regions.length; i++) {
+					var node = $(this.expr.replace('?', this.regions[i].name));
+					node.bind('change', this.regions[i].data, this.change_region_list);
+					if (i > 0) {
+						var prev = $(this.expr.replace('?', this.regions[i-1].name));
+						var value = parseInt(prev.val());
+						if (isNaN(value) || value < 1) {
+							node.hide();
+						} else {
+							node.show();	
+						}
+					}					
+				}
+		},
+
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = Region.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == Region.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				if (!last) {
+					$c = $(Region.expr.replace('?', Region.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(Region.expr.replace('?', Region.regions[i].name)).hide();	
+					}
+				}
+			
+				$c.unbind();
+				$.ajax({
+					type: 'POST',
+					url: 'salesOrderEntry.php?request=ajax&act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', Region.regions[next].data, Region.change_region_list);
+							}
+						}
+					}
+				});	
+		}
+		
+	};	
+	
+	
+	
+	// 载入执行
+	$(document).ready(function(){
+														 
+			// 提交禁用按钮
+			$(':button, :submit').attr('disabled', false);
+			$('form').bind('submit', function(){
+					$(':button, :submit').attr('disabled', true);
+			});
+			
+			// 绑定添加商品按钮事件
+			$('#order_goods_add_btn').bind('click', order_goods_add);
+			
+			// 绑定 选择省会改变地区的事件
+			Region.init();
+			
+			/**
+			 * 商品搜索
+			 */
+			$('#order_goods_add_select').autocomplete('salesOrderEntry.php?request=ajax&act=search_goods', {
+				dataType : 'json',
+				minChars: 1,
+				delay: 1000,
+				mustMatch: false,
+				formatItem : function(row, i, max, value, term) {
+					return(row.goods_name);
+				},
+				formatResult : function(row) {
+					return(row.goods_name);
+				}
+			}).result(function(event, row, formatted) {
+				$('#order_goods_add_goods_id').val(row.goods_id);
+				change_goods_style_select_list(row.goods_id);
+			});
+			
+			/**
+			 * 如果更改了分类, 则改变商品的查询范围
+			 */
+            /*
+			$('#order_goods_add_category').bind('change', function(){
+				$('#order_goods_add_select').val('');																										 
+				$('#order_goods_add_select').flushCache().setOptions({
+					extraParams : {'category':$(this).val()}
+				}); 																						 
+			});
+			var init_category = $('#order_goods_add_category').val();
+			if (init_category) {
+				$('#order_goods_add_select').flushCache().setOptions({
+					extraParams : {'category':init_category}
+				}); 	
+			}
+			*/
+	});
+	
+	/**
+	 * 更改样式选择的下拉项
+	 *
+	 * @param int goods_id 商品ID 
+	 */
+	function change_goods_style_select_list(goods_id)
+	{
+			var $e = $('#order_goods_add_style_id');
+			
+			$.ajax({
+ 				  beforeSend : function(){
+							$e.attr('disabled', true);	
+					},
+					async : false,
+					dataType : "json",
+					data: "goods_id=" + goods_id,
+					url : "salesOrderEntry.php?request=ajax&act=search_goods_styles",
+					type : 'POST',
+					success : function(response) {
+						if (response.length) {	
+							var tpl = '';
+							for (var i = 0; i < response.length; i++) {
+								tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+							}
+						} else {
+							tpl = '<option value="0">N/A</option>';	
+						}
+						$e.html(tpl);
+					},
+					complete : function() {
+						$e.attr('disabled', false);
+					}
+			});
+	}
+	
+	/**
+	 * 添加商品
+	 */
+	function order_goods_add(event)
+	{
+		// 添加按钮
+		var $button = $('#order_goods_add_btn');
+		waiting($button);
+		
+		// 判断是否输入了商品数量
+		var num = $.trim($('#order_goods_add_num').val());
+		if (num == '' || !/^\d+$/.test(num) || num < 1) {
+			alert('请输入正确的商品数量');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的订单商品id
+		var goods_id = $('#order_goods_add_goods_id').val();
+		if (!goods_id) {
+			alert('该商品的数据错误');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的商品样式id
+		var style_id = $('#order_goods_add_style_id').val();
+
+		// 查询出该商品详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'salesOrderEntry.php?request=ajax&act=add_goods',
+			data: 'goods_id=' + goods_id + '&style_id=' + style_id + '&goods_number=' + num,
+			dataType: 'json',
+			success: order_goods_add_callback,
+			error: function() { 
+				waiting($button, 'en'); 
+				alert('查询该商品数据失败'); 
+			}
+		});
+		
+		// 添加商品到列表
+		function order_goods_add_callback(data) {
+			if (data.error) {
+				alert(data.error);
+				waiting($button, 'en');
+				return;
+			}
+			
+			var amount = money_format(data.shop_price * num);
+			var goods_style_id = data.goods_id + '_' + data.style_id;
+			var g = {goods_style_id:goods_style_id, price:data.shop_price, number:parseInt(num)};
+			
+			var tpl = "<tr align=\"center\" ix=\"" + goods_style_id +"\">" +
+								"  <td>" + data.goods_name + "</td>" +
+								"  <td>" + data.goods_id + "#" + data.style_id +"</td>" +
+								"  <td>" + data.shop_price + "</td>" +
+								"  <td>" + num + "</td>" +
+								"  <td> " +
+								"    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this)\">删除</a>" +
+								"    <input name=\"order_goods[" + goods_style_id + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+								"    <input name=\"order_goods[" + goods_style_id + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+								"    <input name=\"order_goods[" + goods_style_id + "][goods_number]\" type=\"hidden\" value=\"" + num + "\" /> " +
+								"  </td>" +
+								"</tr>";
+
+			if (cart_add(g)) { $('#order_goods_list').append(tpl); }
+			waiting($button, 'en');
+		}
+	}
+	
+	/**
+	 * @return boolean 返回商品是否存在了
+	 */
+	function cart_add(g)
+	{
+		  // 判断该商品是否存在了
+			for (var i = 0; i < order_goods_array.length; i++ ) {
+				
+				// 商品存在则更改数量
+				if (order_goods_array[i].goods_style_id == g.goods_style_id) {
+					// 更改商品数
+					order_goods_array[i].number += g.number;
+					
+					// 更改显示的商品数
+					var expr = "tr[ix='"+ g.goods_style_id +"']";
+					var tr = $('#order_goods_list').find(expr);
+					td = tr.children('td');
+					td.get(3).innerHTML = order_goods_array[i].number;  // 更改显示数量
+					
+					var expr2 = "input[name='order_goods["+ g.goods_style_id +"][goods_number]']";  //  更新表单字段
+					tr.find(expr2).val(order_goods_array[i].number);
+					
+					return false;
+				}
+			}
+			
+			// 该商品还没有添加
+			order_goods_array.push(g);
+			return true;
+	}
+	
+	/**
+	 * 删除商品
+	 *
+	 * @param docObject  节点对象
+	 */
+	function order_goods_remove(doc) 
+	{
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		$tr.remove();
+								
+		// 从已添加堆栈中删除该商品
+		for (var i = 0; i < order_goods_array.length; i++ ) {
+			if (order_goods_array[i].goods_style_id == id) {
+				order_goods_array.splice( i, 1);
+				break;
+			}
+		}
+		
+		$.ajax({
+			type: 'POST',
+			url: 'salesOrderEntry.php?request=ajax&act=remove_goods',
+			data: 'goods_style_id=' + id,
+			dataType: 'json'
+		});
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		
+		do {
+			// 收货人
+			if ($.trim($(':input[name="order[consignee]"]').val()) == '') {
+				alert('请填写收货人');
+				break;
+			}
+			
+			// 联系电话
+			/*
+			if ($.trim($(':input[name="order[tel]"]').val()) == '') {
+				alert('请填写联系电话');
+				break;
+			}
+			*/
+			
+			// 收货地址
+			var $p = $(':select[name="order[province]"]');
+			var $c = $(':select[name="order[city]"]');
+			if ($.trim($p.val()) == '' || $p.val() == '0' || $.trim($c.val()) == '' || $c.val() == '0') {
+				alert('请选择收货地址');
+				break;
+			}
+			var a = $.trim($(':input[name="order[address]"]').val());
+			if (a == '') {
+			    alert('请填写收货地址');
+			    break;
+			}
+
+            // email
+            /*
+            if ($.trim($(':input[name="order[email]"]').val()) == '') {
+                alert('请填写Email');
+                break;
+            }
+            */
+			
+			// 邮政编码
+			/*
+			if ($.trim($(':input[name="order[zipcode]"]').val()) == '') {
+				alert('请填写邮政编码');
+				break;
+			}
+			*/
+			
+			// 配送费用
+			/*
+			if ($.trim($(':input[name="order[shipping_fee]"]').val()) == '') {
+				alert('请填写配送费用');
+				break;
+			}
+			*/	
+		
+            // 外部订单类型匹配
+            if ($(':select[name="order[outer_type]"]').val() != -1) {
+                if (($(':select[name="order[outer_type]"]').val() == 'taobao'
+                  && $(':select[name="order[pay_id]"]').val() != 65) || 
+                 ($(':select[name="order[outer_type]"]').val() == 'youa'
+                  && $(':select[name="order[pay_id]"]').val() != 69)) {
+                    alert('支付方式与外部订单类型不匹配');
+                    break;
+                }
+                if ($.trim($(':input[name="order[taobao_order_sn]"]').val()) == '') {
+                    alert('请填写外部订单号');
+                    break;
+                }
+            }
+            
+            // 外部订单号
+            if ($.trim($(':input[name="order[taobao_order_sn]"]').val()) != ''
+              && $(':select[name="order[outer_type]"]').val() == -1) {
+                alert('请选择外部订单类型');
+                break;
+            }
+			
+			// 成功后提交
+			 var message = '确认要生成订单吗';
+			if (confirm(message)) {
+				$('#form').submit();
+				waiting($button, 'en');
+			}
+		} while (false);
+
+		waiting($button, 'en');
+		return;	
+	}
+	
+	/**
+	 * 格式化金额
+	 */
+	function money_format(number) 
+	{
+		var num = Math.round(number * 100) / 100 ;
+		return num.toFixed(2);
+	}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+{include file="api/api.navigation.htm"}
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="margin:20px auto;border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;min-width:650px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;销售订单录入&nbsp;</span></legend>
+  
+ 	<form method="post" id="form" action="salesOrderEntry.php" >  
+
+	<div style="clear:both;"> 
+    <h3 style="color:#09F;">订单信息</h3>
+
+  	<table cellpadding="5" cellspacing="1">    
+    	<tr>
+      	<td width="120">收货人 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="order[consignee]" value="{$order.consignee}" /> &nbsp;
+                               性别 <select name="order[sex]"><option value="unknown">未知</option><option value="male">先生</option><option value="female">女士</option></select> &nbsp;
+            <span class="tip">请填写收货人姓名</span>
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>联系电话</td>
+        <td>
+            <input type="text" name="tel[0]" value="{$tel.0}" size="8" />-
+            <input type="text" name="tel[1]" value="{$tel.1}" size="30" />-
+            <input type="text" name="tel[2]" value="{$tel.2}" size="8" /> &nbsp;
+            <span class="tip">区号 - 电话号码 - 分机号</span>
+        </td>
+		</tr>
+      
+    	<tr>
+      	<td>手机</td>
+        <td><input type="text" name="order[mobile]" value="{$order.mobile}" size="30" /></td>
+		</tr>
+		
+        <tr>
+        <td>用户Email</td>
+        <td>
+          <input type="text" name="order[email]" value="{$order.email}" size="40" maxlength="128" />
+        </td>
+        </tr>
+        
+        <tr>
+        <td colspan="2">&nbsp;</td>
+        </tr>
+      
+      <tr>
+        <td>收货地址 <span class="require"> * </span></td>
+        <td>
+           <select name="order[province]"><option value="0">-请选择-</option>{html_options options=$province_list selected=$order.province}</select>省 &nbsp;&nbsp;
+           <select name="order[city]" style="display:none"><option value="0">-请选择-</option>{html_options options=$city_list selected=$order.city}</select> &nbsp;&nbsp;
+           <select name="order[district]" style="display:none"><option value="0">-请选择-</option>{html_options options=$district_list selected=$order.district}</select>
+        </td>
+      </tr>
+        
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+        	<input type="text" name="order[address]" value="{$order.address}" maxlength="254" size="50" /> &nbsp; 
+        	<span class="tip">详细的路名、街名和具体的门牌号</span>
+	    </td>
+      </tr>
+             
+      <!--   
+      <tr>
+        <td>发票抬头</td>
+        <td>
+          <input type="text" name="order[inv_payee]" value="{$order.inv_payee}" maxlength="128" /> &nbsp;&nbsp;
+                          是否需要发票 ：<input type="checkbox" name="order[need_invoice]" value="1" />
+        </td>
+      </tr>
+      -->
+      
+      <tr>
+        <td>外部订单号 <span class="require"> * </span></td>
+        <td>
+          <input type="text" name="order[taobao_order_sn]" value="{$order.taobao_order_sn}" maxlength="64" size="32" />&nbsp;
+        </td>
+      </tr>
+      
+      <tr>
+      	<td>订单备注</td>
+        <td><input name="order[postscript]" value="{$order.postscript}" maxlength="255" size="50" /><td>
+			</tr>
+        
+		</table>
+  </div>
+  
+  
+  
+  
+  <br />
+  <div style="clear:both; width:720px;">
+  
+      <h3 style="color:#09F;">订单商品</h3>
+  
+    	<table cellpadding="5" cellspacing="1">
+    	
+        <!-- 
+    	<tr>
+      	<td width="120">品类</td>
+        <td>
+        	<select id="order_goods_add_category">
+            <option value="0">- 不限</option>
+            <option value="mobile">手机</option>
+            <option value="fittings">配件</option>
+            <option value="dvd">DVD</option>
+            <option value="education">电教产品</option>
+            <option value="shoes">鞋品</option>
+            <option value="notebook">笔记本</option>
+            <option value="other">其他</option>
+					</select> 
+        	&nbsp;
+          <span class="tip">选择品类可以缩小商品的查询范围</span>
+				</td>
+		</tr>
+		-->
+      
+      <tr>
+      	<td width="120">商品</td>
+        <td>
+        	<input type="text" id="order_goods_add_select" size="60" /> #<input type="text" id="order_goods_add_goods_id" size="5" readonly="readonly" style="border:none;" /> &nbsp;&nbsp;
+          样式 <select id="order_goods_add_style_id"><option value="0">N/A</option></select> &nbsp;
+				</td>
+      </tr>
+      
+      <tr>
+      	<td>&nbsp;</td>
+        <td><span class="tip">请输入商品名，如果自动提示没有响应您的输入，请尝试按向下方向键</span></td>
+      </tr>
+      
+      <tr>
+      	<td>数量</td>
+        <td>
+        	<input id="order_goods_add_num" type="text" size="10" value="1" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        	<input id="order_goods_add_btn" type="button" value="添加到商品列表" />
+				</td>
+      </tr>
+      
+      <tr>
+      	<td>&nbsp;</td>
+        <td> </td>
+      </tr>
+
+      </table>
+      
+      <h4>已添加商品</h4>
+      <table id="order_goods_list" class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="55%">商品名称</th>
+          <th width="15%">商品编码</th>
+          <th width="14%">单价</th>
+          <th width="8%">数量</th>
+          <th width="8%">操作</th>
+        </tr>   
+        
+        <!--{foreach from=$cart_goods_list item=goods}-->
+				<tr align="center" ix="{$goods.goods_id}_{$goods.style_id}">
+					<td>{$goods.goods_name}</td>
+					<td>{$goods.goods_id}#{$goods.style_id}</td>
+					<td>{$goods.shop_price}</td>
+					<td>{$goods.quantity}</td>
+					<td>
+						<a href="javascript:void(0);" onclick="order_goods_remove(this)">删除</a>
+						<input name="order_goods[{$goods.goods_id}_{$goods.style_id}][goods_id]" type="hidden" value="{$goods.goods_id}" />
+						<input name="order_goods[{$goods.goods_id}_{$goods.style_id}][style_id]" type="hidden" value="{$goods.style_id}" />
+						<input name="order_goods[{$goods.goods_id}_{$goods.style_id}][goods_number]" type="hidden" value="{$goods.quantity}" />
+					</td>
+				</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+  </div>
+  
+  
+  <br /><br /><br />
+	<div style="text-align:center"><input type="button" value="生成订单" onclick="apply_submit(this);" /></div>
+  <br />
+  
+  <input type="hidden" name="act" value="done" />
+  
+  </form>
+  
+  
+</fieldset>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!-- 用户银行信息 -->
+{if $service.service_type == 1 || $service.service_type == 2}
+<div class="action_class">
+  <a href="#" class="back_account_a">退款帐号信息</a>
+  <a href="#" class="back_express_a">退回快递信息</a>
+</div>
+
+<form action="sale_service_actionV3.php" method="post" >
+  <table cellpadding="0" cellspacing="0" class="bank_info"  is_amount="{if $back_amounts}1{else}0{/if}" style="{if $service.return_info.carrier_info && $service.service_type != 5}display:none;{/if}width:99%;margin-top:0;">
+   {assign var=open_bank value=''}
+	 {assign var=account_number value=''}
+	 {assign var=account_name value=''} 
+	 {assign var=account_province value=''}
+	 {assign var=account_city value=''}
+	 {assign var=alipay_account value=''}
+	 {assign var=tenpay_account value=''}    
+   {foreach from=$service.return_info.bank_info key=key item=item}
+	 {if $key == '开户行'}{assign var=open_bank value=$item}{/if}
+	 {if $key == '开户帐号'}{assign var=account_number value=$item}{/if}
+	 {if $key == '开户名'}{assign var=account_name value=$item}{/if}
+	 {if $key == '所在省'}{assign var=account_province value=$item}{/if}
+	 {if $key == '所在市'}{assign var=account_city value=$item}{/if}
+	 {if $key == '支付宝帐号'}{assign var=alipay_account value=$item}{/if}
+	 {if $key == '财付通帐号'}{assign var=tenpay_account value=$item}{/if}  
+	 {/foreach}
+    <tr>
+      <th width="230px;">开户行</th>
+      <th width="230px;">开户帐号</th>
+      <th>开户名</th>
+      <th>所在省</th>
+      <th>所在市</th>
+    </tr>
+    <tr>
+      <td style="padding:5px 0;"><input type="text" name="open_bank" value='{$open_bank}' style="width:200px"/></td>        
+      <td><input type="text" name="account_number" value='{$account_number}' style="width:200px"/></td>      
+      <td><input type="text" name="account_name" value='{$account_name}' style="width:90px;"/></td>        
+      <td><input type="text" name="account_province" value='{$account_province}' style="width:90px;"/></td>        
+      <td><input type="text" name="account_city" value='{$account_city}' style="width:80px;"/></td>
+    </tr>   
+    <tr>			      
+      <td>支付宝：<input type="text" name="alipay_account" value='{$alipay_account}' style="width:150px;"/></td>      
+      <td>财付通：<input type="text" name="tenpay_account" value='{$tenpay_account}' style="width:150px;"/></td>    	
+				<td colspan="3" style='text-align:center;padding-right:10px;'>
+				<input type='submit' value='修改退款信息' class="button_1" onclick="return confirm('确定修改吗？')" style='margin:5px;'>
+			</td>
+			
+		 </tr>
+  </table>
+	       <input type='hidden' name='service_id' value='{$service.service_id}' />
+        <input type='hidden' name='act' value='edit_service_return' />
+        <input type='hidden' name='back_url' value='{$smarty.server.REQUEST_URI}' />
+</form>  
+{/if}

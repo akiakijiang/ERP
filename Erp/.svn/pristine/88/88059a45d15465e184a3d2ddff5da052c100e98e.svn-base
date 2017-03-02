@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{literal}
+<style type="text/css" media="all">
+*{
+	margin:0;
+	padding:0;
+}
+h2{
+	font-size:12pt;
+	clear:both;
+	margin:10px 0;
+}
+ul{
+	list-style:none;
+	font-size:10pt;
+}
+ul li{
+	height:40px;
+	line-height:40px;
+	float:left;
+	width:33%;
+}
+
+table{
+	width:99.7%;
+	font-size:10pt;
+	text-align:center;
+	border:1px solid #000;
+	border-collapse:collapse;
+	margin:20px 0 20px 2px;
+}
+table td,table th{
+	border:1px solid #000;
+	height:25px;
+	line-height:25px;
+}
+p{
+	font-size:10pt;
+	clear:both;
+	text-align:center;
+}
+.left{
+	float:left;
+	margin-left:40px;
+	display:inline;
+}
+.right{
+	float:right;
+	margin-right:20px;
+}	
+h1{
+	text-align:center;
+	font-size:14pt;
+}
+li.c{
+	clear:both;
+	width:100%;
+}	
+</style>
+{/literal}
+<title>打印销售单</title>
+</head>
+
+<body>
+<h1>平世电商（香港）有限公司销售单</h1>
+<h2>基本信息</h2>
+<ul>
+<li>收货人姓名：{$order.consignee}</li>
+<li>联系电话： {$order.mobile}</li>
+<li>邮编： {$order.zipcode}</li>
+<li class="c">收货人地址： {$order.address}</li>
+</ul>
+
+<ul style="margin-top:0;padding-top:0;">
+<li>订单号： {$order.order_sn}</li>
+<li>发货时间： {$order.send_time}</li>
+<li>配送方式： {$order.shipping_name}</li>
+<!--<li>发货单号： {$order.bill_no}</li>-->
+<li class="c">支付方式： {$order.pay_name}</li>
+<!-- <li>下单时间： {$order.order_time}</li> -->
+<li class="c">发票抬头：{$order.inv_payee}</li>
+</ul>
+  
+<h2>商品信息</h2>
+
+<table cellpadding="0" cellspacing="0">
+<tr>
+<th style="width:8%;">序号</th>
+<th style="width:40%;">品名</th>
+<th style="width:13%;">品类</th>
+<th style="width:13%;">单价</th> 
+<th style="width:13%;">数量</th>
+<th style="width:13%;">价格小计</th>
+</tr>
+{foreach from=$goods_list item=goods name=goods}
+<tr> 
+<td>{$smarty.foreach.goods.iteration}</td>
+<td>{$goods.goods_name}</td>
+<td>{$goods.cat_name}</td>
+<td>{$goods.format_goods_price}</td>
+<td>{$goods.goods_number}</td>
+<td>{$goods.format_goods_amount}</td>
+</tr>
+{/foreach}
+</table>
+
+<h2>费用信息</h2>
+<ul>
+<li>商品总金额：{$order.format_goods_amount}</li>
+<li>配送费用：{$order.format_shipping_fee}</li> 
+<li>订单总金额：{$order.format_total_fee}</li> 
+<li>抵用券抵用：{$order.format_bonus}</li> 
+<li style="clear:both;width:100%;">应收款：{$order.format_final_fee}</li>
+</ul>
+<p style="display: none;"><span class="left">订单操作员：</span>                              <span class="right"> 订单打印时间：</span></p>
+
+<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<!-- <span class="right" onclick="window.close();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">关闭</span> -->
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+
+</body>
+</html>

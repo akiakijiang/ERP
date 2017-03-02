@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>见此请设置打印去除页眉页脚</title>
+	<link rel="stylesheet" href="styles/css/arata.css">
+</head>
+<body onload="window.print()">
+	{foreach from=$div_array key=order_id item=bill_code}
+	{$bill_code}
+	{if !$smarty.foreach.shipment.last}<div style="page-break-after: always;"></div>{/if}
+	{/foreach}
+</body>
+</html>

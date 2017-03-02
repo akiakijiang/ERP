@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>打印发货单</title>
+    {literal}
+	<style type="text/css" media="all">
+	*{
+		margin:0;
+		padding:0;
+	}
+	body {
+		position: relative;
+		top: 0px;
+	}
+	h2{
+		font-size:12pt;
+		clear:both;
+		margin:10px 0;
+	}
+	ul{
+		list-style:none;
+		font-size:10pt;
+		width:49%;
+		float:left;
+	}
+	ul li{
+		height:40px;
+		line-height:40px;
+	}
+	
+	table{
+		width:99.7%;
+		font-size:10pt;
+		text-align:center;
+		border:1px solid #000;
+		border-collapse:collapse;
+		margin:30px 0 20px 2px;
+	}
+	table td{
+	    padding:5px 10px;
+	}
+	table td,table th{
+		border:1px solid #000;
+		height:25px;
+		line-height:25px;
+	}
+
+	table.caption{
+		width:99.7%;
+		font-size:10pt;
+		text-align:center;
+		border:0px solid #000;
+		border-collapse:collapse;
+		margin:5px 0 5px 2px;
+	}
+	table.caption td{
+	    padding:0px 0px;
+	}
+	table.caption td,table.caption th{
+		border:0px solid #000;
+		height:25px;
+		line-height:25px;
+	}
+
+	p{
+		font-size:10pt;
+		clear:both;
+		text-align:center;
+	}
+	.left{
+		float:left;
+		margin-left:40px;
+		display:inline;
+	}
+	.right{
+		float:right;
+		margin-right:20px;
+	}	
+	h1{
+		text-align:center;
+		font-size:15pt;
+	}
+	li.c{
+		clear:both;
+		width:100%;
+	}	
+	.postscript {
+	    font-size:15px;
+	    font-family: "黑体";
+	    font-weight:bold;
+	}
+	.top{
+	    margin-top:140px;
+	    margin-left:0px;
+	}
+
+	/*!!!*/
+	.shipmentMsg {
+		position: absolute;
+		top: 220px;
+		left: 18px;
+		width: 40%;
+		font-size: 7pt;
+	}
+	.item {
+		overflow: auto;
+	}
+	.pick {
+		margin: 15px 0 0 0;
+	}
+	.itemTitle {
+		float: left;
+	}
+	.itemText {
+		max-width: 70%;
+		float: left;
+	}
+
+	#codeImg {
+		position: absolute;
+		top: 90px;
+		right: 0px;
+	}
+	#emsName {
+		
+		position: absolute;
+		top: 115px;
+		right: 220px;
+	}
+	#orderNum {
+		position: absolute;
+		top: 120px;
+		left: 18px;
+		font-size: 7pt;
+	}
+	.proTable {
+		border: none;
+	}
+	table td {
+		border: none;
+		font-size: 7pt;
+	}
+	body,html {
+		width: 100%;
+		height: 100%;
+	} 
+	.wrap {
+		position: relative;
+		width:100%;
+		min-height: 100%;
+		height:auto;
+		border:0px solid black;
+	}
+	</style>
+    {/literal}
+    
+    
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+ {foreach from=$list item=shipment name=shipment}
+ 	<div class="wrap">
+ 	<!-- <DIV style="text-align:center;"> -->
+ 	{if $shipment.facilityId|facility_convert != '19568549'}
+		{if '65547' == $shipment.partyId}
+			<br/><br/><br/><br/><br/><br/><br/>
+		{elseif '65558' == $shipment.partyId}
+			<br/><br/><br/><br/><br/><br/><br/><br><br>
+		{elseif '65617' == $shipment.partyId && $shipment.isSuzhouLebeiHuishi eq 'YES'}
+	 		<br /><br />
+	 		<!-- <h1>苏州乐贝母婴专营</h1> -->
+	 		<br /><br />
+ 		{/if} 
+ 	{else}
+		<br/><br/><br/><br/><br/><br/><br/><br/>
+	{/if}
+	<!-- </DIV> -->
+	<table class="caption">
+ 		<tr>
+ 		<td style="width:25%;">
+		 		{if $shipment.Shop2DBarcode neq "NO"}
+		 		{$shipment.Shop2DBarcodeHeader}
+		 		<br>
+		 		<img src="Shop2DBarcodes/{$shipment.Shop2DBarcode}" style="width:{$shipment.Shop2DBarcodeSize}px;height:{$shipment.Shop2DBarcodeSize}px;">
+		 		<br>
+		 		{$shipment.Shop2DBarcodeFooter}
+		 		{elseif $shipment.ShopLogo neq "NO"}
+		 		<br>
+		 		<img src="ShopLogos/{$shipment.ShopLogo}" style="width:120px;height:120px;">
+		 		<br>
+				{/if}
+		 		
+ 		</td>
+ 		<td style="width:50%">
+ 			<DIV style="text-align:center;">
+					<!-- [{$BPSN} : {$shipment.gridId}]   --><img id="codeImg" src="code_img.php?barcode={$shipment.shipmentId}&height=60" />
+					<h3 id="emsName" style="text-align:right;font-size:15pt;">{$shipment.carrierId|getCarrierName}</h3>
+		
+			</DIV>
+ 		</td>
+ 		<td style="width:25%">
+ 			
+ 		</td>
+ 		</tr>
+ 	</table>
+ 	
+	<!-- <h2>配送信息</h2> -->
+	<div class="shipmentMsg">
+		<div class="item">
+			<div class="itemTitle">地址：</div>
+			<div class="itemText">{if $shipment.province != 0}[{$shipment.province|get_region_names}]{/if}{if $shipment.city != 0}[{$shipment.city|get_region_names}]{/if}{if $shipment.district != 0}[{$shipment.district|get_region_names}]{/if}{$shipment.address}</div>
+		</div>
+		<div class="item">
+			<div class="itemTitle">邮编：</div>
+			<div class="itemText">{$shipment.zipcode}</div>
+		</div>
+		<div class="item">
+			<div class="itemTitle">姓名：</div>
+			<div class="itemText">{$shipment.consignee}</div>
+		</div>
+		<div class="item">
+			<div class="itemTitle">电话：</div>
+			<div class="itemText">{if $shipment.mobile != true}[{$shipment.mobile}]{/if}{$shipment.tel}</div>
+		</div>
+		<div class="item">
+			<div class="itemTitle">备注：</div>
+			<div class="itemText">{$order.important_note}</div>
+		</div>
+		<div class="item pick">
+			<div class="itemTitle">批拣单号：</div>
+			<div class="itemText">[{$BPSN} : {$shipment.gridId}]</div>
+		</div>
+	</div>
+	<!-- <table style="text-align:left;">
+		<tr>
+    		<td width="25%">收货人：{$shipment.consignee}</td>
+    	{if '65547' == $shipment.partyId}
+    		<td width="25%">会员名： {$shipment.mobile}</td>
+    	{/if}
+    		<td width="25%">联系手机： {$shipment.mobile}</td>
+    		<td width="25%">联系电话： {$shipment.tel}</td>
+		</tr>
+		<tr>
+    		<td colspan="3">收货地址：{if $shipment.province != 0}[{$shipment.province|get_region_names}]{/if}{if $shipment.city != 0}[{$shipment.city|get_region_names}]{/if}{if $shipment.district != 0}[{$shipment.district|get_region_names}]{/if}{$shipment.address}</td>
+		</tr>
+	</table> -->
+
+	{if '65547' == $shipment.partyId}<div style="text-align: right;"><img src="code_img.php?barcode={$shipment.real_mobile}&height=60&text=0" /></div>{/if}
+	<!-- <h2>商品信息</h2> -->
+	{foreach from=$shipment.order_list item=order}
+		{if $smarty.foreach.order.first}<p>&nbsp;</p> {/if}
+		<p id="orderNum" class="orderNum" style="text-align: left;">
+			<!--<img src="code_img.php?barcode={$order.order_sn}&height=50&width=360" />-->
+			订单号(SN): <span style="text-decoration:underline;">{$order.order_sn}</span>
+			 | 
+			外部订单号: <span style="text-decoration:underline;">{$oder.taobao_order_sn}</span> 
+			
+			{if $order.party_id eq '65551'}<span style="text-decoration:underline;font-weight:bold;font-size:15pt">订单商品金额：{$order.order_amount}</span>{/if}
+		</p>
+		<table cellpadding="0" cellspacing="0" class="proTable">
+			<!-- <tr>
+				<th style="width: 8.5%;">序号</th>
+			    <th style="width:12%;">产品编号</th>
+			    <th style="width:45%;">产品名称</th>
+			    <th style="width:8.5%;">规格</th> 
+			    <th style="width:8.5%;">数量</th>
+			    <th style="width:8.5%;">单价</th>
+			    <th style="width:8.5%;">总计</th>
+			</tr> -->
+		{foreach from=$order.goods_list key=k item=ogi name=goods}
+			<tr style="height:45px;"> 
+				<td style="width: 8.5%;">{$smarty.foreach.goods.iteration}</td>
+			    <td style="width:12%;">{if $ogi.product_code}<font style="font-weight:bold;">{$ogi.product_code}</font>{/if}</td>  <!-- 产品编号 -->
+			    <td style="width:42%;">{$ogi.goods_name}</td>  <!-- 产品名称 -->
+			    <td style="width:8%;">{foreach from=$ogi.location_seq_id item=loc} {$loc} </br> 
+				 {/foreach}
+				 
+				 {if $ogi.validity_batch_sn && $order.party_id != '65617'}
+				 (
+				 {foreach from=$ogi.validity_batch_sn item=validity_sn}				 
+					{if $validity_sn.batch_sn != ''} {$validity_sn.batch_sn}-{$validity_sn.quantity}, {/if}
+				 {/foreach}
+				 )
+				 {/if}</td>  <!-- 规格 改为 库位 -->
+			    <td style="width:8.5%"><B>{$ogi.goods_number}</B></td>  <!-- 数量 -->
+				<td style="width:8.5%;"> <!-- 单价 -->
+				 <!-- {$ogi.goods_price} -->
+				</td>
+				<td style="width:8.5%;"><!-- {$ogi.goods_price * $ogi.goods_number} --></td> <!-- 总计 -->
+			</tr>
+			{if $smarty.foreach.goods.iteration % 7 == 0 }
+				{if $smarty.foreach.goods.iteration !=  $order.goods_list|@count}
+					<tr class="aa" style="height:550px;">
+						<td>
+						</td>
+					</tr>
+				{/if}
+			{/if}
+		{/foreach}
+		{if $order.important_note != '' }
+			<!-- <tr>
+    			<td colspan="5" style="color:red;">重要备注：{$order.important_note}</td>
+			</tr> -->
+		{/if}
+		</table>
+		<div STYLE="page-break-after: always;"></div>
+	{/foreach}
+	{if $download_info}
+		<font style="font-weight:bold; font-size:48px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;需要下载</font>
+	{/if}
+	{if $shipment.isHaoQiZhongChou  neq "NO"} <img src="{$shipment.greetings}" width="650px" height="280px"/>{/if}
+	{if !$smarty.foreach.shipment.last}<div STYLE="page-break-after: always;"></div>{/if}
+	</div>
+{/foreach}
+
+{if $smarty.request.print != 1}
+<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+<script src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+<script>
+{literal}
+$(document).ready(function(){
+	$(".wrap").each(function(){
+		$(this).find(".proTable").each(function(index){
+			if (index == 0) {
+				$(this).css({
+					"margin-top" : "180px",
+					"border":"0px solid red"
+				});
+			} else {
+				$(this).css({
+					"margin-top" : "350px",
+					"border":"0px solid green"
+				});
+			}
+		});
+		$(this).find(".orderNum").each(function(index){
+			if (index != 0) {
+				$(this).hide();
+			}
+		});
+		$(this).find(".caption").each(function(index){
+			if (index != 0) {
+				$(this).hide();
+			}
+		});
+	});
+});
+{/literal}
+</script>
+</body>
+</html>

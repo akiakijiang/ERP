@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>售后小组管理</title>
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  
+	<script type="text/javascript">
+	// <![CDATA[
+							
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	var member_array = new Array();
+	
+	// {literal}
+	
+	// 载入执行
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			// 绑定添加组员按钮事件
+			$('#add_member_btn').bind('click', member_add);
+			
+			/**
+			 * 人员搜索
+			 */
+			$('#group_member_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_admin_user', {
+				dataType : 'json',
+				minChars: 0,
+				delay: 1000,
+				mustMatch: true,
+				formatItem : function(row, i, max, value, term) {
+					return(row.user_name);
+				},
+				formatResult : function(row) {
+					return(row.user_name);
+				}
+			}).result(function(event, row, formatted) {
+				$('#group_member_id').val(row.user_id);
+			});
+			
+		
+	});
+	
+	function E(id) {
+		return document.getElementById(id);
+	}
+	
+	/**
+	 * 添加成员明细
+	 */
+	function member_add(event)
+	{
+		// 添加按钮
+		var $button = $('#add_member_btn');
+		waiting($button);
+		
+		var user_id = $('#group_member_id').val();
+		if (!user_id){
+			alert('请选择小组成员');
+			waiting($button, 'en');
+			return;
+		}
+
+		// 查询出该成员详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'sale_support_group_manage.php',
+			data: 'user_id=' + user_id + '&request=ajax&act=add_member',
+			dataType: 'json',
+			success: member_add_callback,
+			error: function() { 
+				waiting($button, 'en'); 
+				alert('查询该从成员数据失败'); 
+			}
+		});
+
+		// 添加成员到列表
+		function member_add_callback(data) {
+			if (data.error) {
+				alert(data.error);
+				waiting($button, 'en');
+				return;
+			}
+			var g = {user_id:data.user_id, user_name:data.user_name, real_name:data.real_name};			
+			var tpl = "<tr align=\"center\" ix=\"" + data.user_id +"\">" +
+								"  <td>" + data.user_id + "</td>" +
+								"  <td>" + data.user_name + "</td>" +
+								"  <td>" + data.real_name + "</td>" +
+								"  <td>" + "<a href=\"javascript:void(0);\" onclick=\"members_remove(this)\">删除</a>" +
+								"    <input name=\"members[" + data.user_id + "][user_id]\" type=\"hidden\" value=\"" + data.user_id + "\" /> " +
+								"    <input name=\"members[" + data.user_id + "][user_name]\" type=\"hidden\" value=\"" + data.user_name + "\" />" +
+								"    <input name=\"members[" + data.user_id + "][real_name]\" type=\"hidden\" value=\"" + data.real_name + "\" />" +
+								"  </td>" +
+								"</tr>";
+
+			if (member_add_detail(g)) { $('#member_list').append(tpl); }
+			
+			$('#group_member_select').val('');
+			
+			waiting($button, 'en');
+		}
+	}
+	
+	/**
+	 * @return boolean 返回成员是否存在了
+	 */
+	function member_add_detail(g)
+	{
+		  // 判断该成员是否存在了
+			for (var i = 0; i < member_array.length; i++ ) {
+				
+				if ( member_array[i].user_id == g.user_id) {
+					
+					//成员已存在
+					return false;
+				}
+			}
+			
+			member_array.push(g);
+			return true;
+	}
+	
+	/**
+	 * 检测小组名是否唯一
+	 */
+	function check_unique(){
+		var group_name = E('group_name').value;
+		var pre_group_name = E('pre_group_name').value;
+		
+		$.ajax({
+			type: 'POST',
+			url: 'sale_support_group_manage.php',
+			data: 'pre_group_name=' + pre_group_name + '&group_name=' + group_name + '&request=ajax&act=check_unique',
+			dataType: 'json',
+			success: function(data) {
+				E('tip').innerHTML = data.tip;
+				if(data.exist == 'YES'){
+					$('#is_unique').val("NO");
+				}else{
+					$('#is_unique').val("YES");
+				}
+			},
+			error: function() { 
+				//alert('查询该数据失败'); 
+				return false;
+			}
+		});
+	}
+	
+	/**
+	 * 删除成员
+	 *
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function members_remove(doc, type) 
+	{
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		$tr.remove();
+							
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		
+		do {
+			var is_submit = false;
+			
+			//判断小组名是否存在
+			var is_unique = E('is_unique').value;
+			if(is_unique == "NO"){
+				alert('该小组名已经存在，请换个小组名');
+				$input.focus();
+				return false;
+			}
+			
+			// 小组名称
+			var $input = $(':input[name="group_name"]');
+			if ($.trim($input.val()) == '') {
+				alert('请填写小组名称');
+				$input.focus();
+				return false;
+			}
+			
+			// 成功后提交
+			message = '确认吗';
+			if (confirm(message)) {
+				$('#form').submit();
+				waiting($button, 'en');
+			}
+		} while (false);
+
+		waiting($button, 'en');
+		return;	
+	}
+				
+	// {/literal}
+	// ]]>
+	</script>
+
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;小组管理&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+	<!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#message').slideUp("slow");
+		}, 3000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+  
+      
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;小组列表&nbsp;</legend>
+  <div>
+      <div class="inner" style="text-align:right; padding-right:20px;">
+      <form method="get">
+      模糊搜索 ：  <input type="text" name="keyword" value="{$filter.keyword}" size="40" /> 
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" value="查询" /> <input type="hidden" name="act" value="search" />
+      </form>
+      </div>
+      
+<!--{if $group_list}-->  {* 如果有列表数据 *}
+
+      <table class="inner">
+      
+        <tr align="center" class="th">
+          <th>小组编号</th>
+          <th>小组名</th>
+          <th>创建人</th>
+          <th>创建时间</th>
+          <th width="62">操作</th>
+        </tr>
+        
+        <!--{foreach from=$group_list item=group name="groupList"}-->
+	    <tr align="center" class="{cycle values='odd,even'}">
+		  <td>{$group.group_id}</td>
+          <td>{$group.group_name}</td>
+		  <td>{$group.created_by}</td>
+          <td>{$group.created_stamp}</td>
+	      <td>
+            <a href="sale_support_group_manage.php?id={$group.group_id}#update">编辑</a>
+            <a href="sale_support_group_manage.php?id={$group.group_id}&work=delete">删除</a>
+		  </td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+	  {$pagination}
+
+<!--{else}-->
+
+	  <div style="text-align:center"><h4>无相关数据</h4></div>
+      
+<!--{/if}-->
+
+  </div>    
+  </fieldset>
+
+	<br />
+	<br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;小组管理&nbsp;</legend>
+  <div {if !$update && $smarty.request.act != 'add'}style="display:none;"{/if}> <a name="update"></a>
+	<form method="post" id="form">
+      <table class="inner">
+        
+        <tr>
+          <td width="120">小组名称</td>
+          <td>
+            <input type="text" id="group_name" name="group_name" value="{$update.group_name}" maxlength="128" onblur="check_unique();"/>
+            <input type="hidden" name="pre_group_name" id="pre_group_name" value="{$update.group_name}"/>
+            <span id="tip" style="color:#f00;"></span>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>添加小组成员</td>
+          <td>
+            <input type="text" id="group_member_select" size="20" /><input type="hidden" id="group_member_id"/>
+            <input type="button" id="add_member_btn" value="添加"/>
+          </td>
+        </tr>
+
+      </table>
+
+      <div class="inner" style="text-align:right; padding-right:20px; border-bottom:#7F9FFF 2px solid;"></div>
+      
+      <table id="member_list" class="inner">
+        <tr align="center" bgcolor="#E2F9FA">
+          <th width="30%">用户id</th>
+          <th width="30%">用户名</th>        
+       	  <th width="30%">用户名字</th>                  
+          <th width="10%">操作</th>
+        </tr>
+        
+        <!--{foreach from=$update.member_list item=item name="updateItemList"}-->
+		<tr align="center" ix="{$item.sale_support_group_member_id}">
+          <td>{$item.user_id}</td>
+          <td>{$item.member_name}</td>
+          <td>{$item.real_name}</td>
+          <td>
+            <a href="javascript:void(0);" onclick="members_remove(this)">删除</a>
+            <input name="members[{$item.sale_support_group_member_id}][user_id]" type="hidden" value="{$item.user_id}" />
+            <input name="members[{$item.sale_support_group_member_id}][user_name]" type="hidden" value="{$item.member_name}" />
+            <input name="members[{$item.sale_support_group_member_id}][real_name]" type="hidden" value="{$item.real_name}" /> 
+          </td>
+        </tr>
+        <!--{/foreach}-->
+      </table>
+      
+      <br />
+      {if $update.group_id}
+      
+      <div style="text-align:center"><input type="button" value="更新" onclick="apply_submit(this);" /></div>
+      <input type="hidden" name="group_id" value="{$update.group_id}" />
+      <input type="hidden" name="is_unique" id="is_unique"/>
+      <input type="hidden" name="act" value="update" />
+      
+      {else}
+      
+      <div style="text-align:center"><input type="button" value="创建" onclick="apply_submit(this);" /></div>
+      <input type="hidden" name="is_unique" id="is_unique"/>
+      <input type="hidden" name="act" value="add" />
+      {/if}
+  </form>
+	</div>
+	</fieldset>
+        
+  
+<br />
+</div>
+</fieldset>
+</div>
+
+</body>
+</html>

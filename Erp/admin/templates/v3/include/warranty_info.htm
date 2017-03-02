@@ -1,0 +1,189 @@
+{if $service.warranty_check_status gt '22' && $service.service_type eq 7}
+<table cellpadding="0" cellspacing="0" border="1 solid">
+    <form method="POST" action="sale_service_actionV3.php">
+	 <tr>
+    	<th style="width:100px;" colspan="2"><b>寄回快递信息</b></th>
+        
+    </tr>
+    <tr>    
+        <th>快递公司</th>
+	    <td>
+	    快递公司：
+      	{if !$service.carrier_info}
+      		{assign var="carrier_id" value=$service.carrier_id}
+      	{else}
+      		{assign var="carrier_id" value=$service.carrier_info.carrier_name}
+      	{/if}
+      	<select name="carrier_name" id="carrier_name_{$service.order_sn}" >
+			<option value="0"></option>
+			<!--{foreach from=$carrier item=c}-->
+			<option value="{$c.carrier_id}" {if $c.carrier_id == $carrier_id}selected{/if}>{$c.name}</option>
+			<!--{/foreach}-->
+		</select>
+	    </td>
+    </tr>
+    <tr>    
+        <th>收件人</th>
+	    <td>
+	    {if !$service.carrier_info}
+	        <input type="text" name="consignee" value="{$service.consignee}" />
+	    {else}
+	       {$service.carrier_info.consignee}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>寄送地址</th>
+	    <td width="500px">
+	    {if !$service.carrier_info}
+	    <input type="text" name="address" size="70px"
+            value="{$service.province|get_region_names}{$service.city|get_region_names}{$service.district|get_region_names} {$service.address}" />
+	    {else}
+	       {$service.carrier_info.address}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>手机</th>
+	    <td>
+	    {if !$service.carrier_info}
+	    <input type="text" name="mobile" value="{$service.mobile}" />
+	    {else}
+	       {$service.carrier_info.mobile}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>电话</th>
+	    <td>
+	    {if !$service.carrier_info}
+	    <input type="text" name="tel" value="{$service.tel}" />
+	    {else}
+	       {$service.carrier_info.tel}
+	    {/if}</td>
+    </tr>
+    <tr>    
+        <th>邮编</th>
+	    <td>
+        {if !$service.carrier_info}
+	    <input type="text" name="zipcode" value="{$service.zipcode}" />
+	    {else}
+	       {$service.carrier_info.zipcode}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>备注</th>
+	    <td>
+        {if !$service.carrier_info}
+	    <input type="text" size="70px" name="remark" value="{$service.remark}" />
+	    {else}
+	       {$service.carrier_info.remark}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>邮箱</th>
+	    <td>
+	    {if !$service.carrier_info}
+	    <input type="text" name="email" value="{$service.email}" />
+	    {else}
+	       {$service.carrier_info.email}
+	    {/if}</td>
+    </tr>
+    <tr>
+        <th>运单号</th>
+	    <td>
+        {$service.carrier_info.carrier_no}
+	    </td>
+    </tr>
+    {if !$service.carrier_info}
+    <tr>
+    	<td colspan="2" style="text-align:right;">
+        <p class="b_amount" sId="{$service.service_id}">
+        <input type='hidden' value="{$service.service_id}" name="service_id" />
+        <input type='hidden' value="edit_service_shipping" name="act" />
+        <input type='hidden' value="{$back}" name="back" />
+        <input type="submit" class="button_1" value="提交快递信息" style="width:100px;" />
+        </p>
+        </td> 
+    </tr>
+    {/if}
+    </form>
+</table>
+<table cellpadding="0" cellspacing="0" border="1 solid" >
+    <form method="POST" action="warranty_action.php">
+	 <tr>
+    	<th style="width:150px;">返修费用</th>
+			<td style="width:20px;"></td>
+      <td style="width:60px;">
+      	{$service.warranty_fee|price_format}
+		<input type="hidden" id="goods_amount_{$service.service_id}" name="goods_amount_1" value="{$service.warranty_fee}" />
+      </td>
+    </tr>
+    <tr>    
+        <th>寄送快递费用</th>
+				<td>+</td>
+        <td>
+        {if !$service.warranty_info}
+	        ￥ <input type="text" id="shipping_fee_{$service.service_id}" name="shipping_fee_1" value="{$service.warranty_info.shipping_fee}" style="width:40px;font-size:12px;font-family:Tahoma;" />
+	    {else}
+	       ￥ {$service.warranty_info.shipping_fee}
+	    {/if}
+        </td>
+    </tr>
+	<tr>
+		<th>杂项费用<br />（用户寄回的快递费用等）</th>
+		<td>+</td>
+		<td class='back_shipping_fee'>
+		{if !$service.warranty_info}
+			￥ <input type="text" id="misc_fee_{$service.service_id}" name="misc_fee_1" value="{$service.warranty_info.misc_fee}" style="width:40px;font-size:12px;font-family:Tahoma;" />
+	    {else}
+	       ￥ {$service.warranty_info.misc_fee}
+	    {/if}
+		</td>
+	</tr>
+    <tr>    
+        <th>包装费</th>
+				<td>+</td>
+        <td>
+        {if !$service.warranty_info}
+        	￥ <input type="text" id="pack_fee_{$service.service_id}" name="pack_fee_1" value="{$service.warranty_info.pack_fee}" style="width:40px;font-size:12px;font-family:Tahoma;" />
+	    {else}
+	       ￥ {$service.warranty_info.pack_fee}
+	    {/if}
+        </td>
+    </tr>
+    <tr>
+    	<td colspan="3" style="text-align:right;">
+        <p class="b_amount" style="border:0;padding:0;margin:0;width:300px;float:right;" sId="{$service.service_id}">
+        {if !$service.warranty_info}
+        <input type="button" onclick="cal_warranty_amount({$service.service_id});return false;" value="计算总金额" />
+        {/if}
+        <span>保修总金额：</span><input type="text" readonly id="amount_{$service.service_id}" name="amount_1" style="width:70px;" value="{$service.warranty_info.total_amount}" />
+        {if $service.warranty_check_status eq '23' || $service.warranty_check_status eq '26' || $service.warranty_check_status eq '27' }
+        <input type='hidden' value="{$service.service_id}" name="service_id" />
+        <input type='hidden' value="confirm" name="act" />
+        <input type='hidden' value="{$back}" name="back" />
+        {if !$service.warranty_info}
+        <input type="submit" class="button_1" value="用户确认" />
+        <a class="button_1" href="warranty_action.php?service_id={$service.service_id}&act=refuse&back={$back}" target="_blank">用户放弃</a>
+        {/if}
+        {/if}
+        </p>
+        </td> 
+    </tr>
+    </form>
+</table>
+{/if}
+{if (($service.warranty_check_status eq '27' && $service.warranty_info.pay_status eq 'Y') 
+    || $service.warranty_check_status eq '28')
+ && $service.service_status neq 2 && $service.service_type eq 7}
+<form method="POST" action="sale_service_actionV3.php">
+    <input type='hidden' value="{$service.service_id}" name="service_id" />
+    <input type='hidden' value="{$back}" name="back" />
+    <input type='hidden' value="warranty_service_shipping" name="act" />
+    <input type='hidden' value="2" name="service_status" />
+    <input class="button_1" type="submit" style="float:right;" value="返修完成，寄回" />
+</form>
+{/if}

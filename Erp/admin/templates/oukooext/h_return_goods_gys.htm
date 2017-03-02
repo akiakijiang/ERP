@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+{insert_scripts files="../js/utils.js,../js/transport.js"}
+<title>借机入库-借机订单</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+
+var goods_item_type = '{$goods_item_type}';
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+function check(obj) {
+	if(goods_item_type == 'SERIALIZED') {
+		if (ES("serial_number")[0].value == 0) {
+			alert('请输入串号');
+			ES("serial_number")[0].focus();
+			return false;
+		}
+		
+		if (ES("borrow_sn")[0].value != '') {
+			if (ES("serial_number")[0].value != ES("borrow_sn")[0].value) {
+				if(!confirm('还回的商品串号和借出去的不一致')) {
+					ES("serial_number")[0].focus();
+					return false;
+				}
+			}
+		}
+	} 
+	else 
+	{
+		var goods_number = ES("goods_number")[0].value;
+		var gr = goods_number.match(/^(\d)+$/);
+		if(gr == null){
+			alert('请输入正确的数字格式');
+			return false;
+		}
+	}
+	
+	return confirm("请确认该商品已经借机出库？");
+}
+{/literal}
+</script>
+</head>
+
+<body>
+<h2 align="center">
+	归还商品入库 
+</h2>
+<div style="margin-top:20px;margin-left:25%;" align="left">
+<form method="POST" onsubmit="return check(this)">
+<br>
+
+商品名：{$rec.goods_name}
+<br><br>
+{if $goods_item_type == 'SERIALIZED'}
+老商品串号：{$rec.serial_number}&nbsp;&nbsp;&nbsp;
+<input type="hidden" name="goods_number" value="1" >
+{else}
+本次入库数量：
+<input type="text" style='width:50px' name="goods_number" value="{$rec.not_in_number}" >
+最多再入{$rec.not_in_number}个，共借出{$rec.goods_number}个，已经入库{$rec.in_number}个
+{/if}
+<br><br>
+
+
+人名：
+{$rec.consignee}
+<br><br>
+{if $rec.status_id == 'INV_STTS_AVAILABLE'}全新 {else}二手 {/if}
+
+&nbsp;&nbsp;备注：{$rec.postscript}
+<br><br><br><br>
+{if $goods_item_type == 'SERIALIZED'}
+新商品串号：<input name='serial_number'/>
+{/if}
+
+{if $goods_item_type != 'SERIALIZED'}
+<p>
+是否打印条码：<input type="checkbox" checked="" value="1" name="is_print_barcode" />
+条码打印机：<select name="printer_id">{html_options options=$printers selected=$smarty.session.latest_printer_id}</select>
+</p>
+{/if}
+
+<div align='center' style='width:400px'>
+	<input type="submit" name="submit" value="入库"><br>
+	<span style='color:red;font-size:15px'>
+		{$info}<br>
+		<a href='{$back}'>返回库存页面</a>
+	</span>
+</div>
+	<input type="hidden" name="borrow_sn" value="{$rec.serial_number}" />
+	<input type="hidden" name="status_id" value="{$rec.status_id}" ></input>
+	<input type="hidden" name="back" value="{$back}" />
+</form>
+</div>
+</body>
+</html>

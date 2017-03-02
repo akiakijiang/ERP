@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>打印商品标识</title>
+    <style type="text/css">
+		<!--{literal}-->
+		table
+        {
+            width: 470px;
+            border: solid #000 1px;
+            border-collapse: collapse;
+        }
+        td
+        {
+            border: solid #000 1px;
+        }
+		td {
+			font-size:17px;
+			padding:3px
+		}
+		<!--{/literal}-->
+    </style>
+</head>
+<body onload="window.print()">
+ <!--{foreach from=$identify_lists  key=list_key item=identify}-->
+<table>
+ <tr>
+  <td>品牌： 爱步</td>
+  <td>等级： 合格品</td>
+ </tr>
+ <tr>
+  <td>保质期： 自售出日起三个月内</td>
+ </tr>
+ <tr>
+  <td>经销商：爱步企业管理(上海)有限公司</td>
+ </tr>
+ <tr>
+  <td>地址：上海市银城中路8号中融碧玉蓝天大厦31楼</td>
+  <td>电话：+86 400 720 6188</td>
+ </tr>
+ <tr>
+  <td>传真：021-51341922</td>
+  <td>邮编：200120</td>
+ </tr>
+ <tr>
+  <td>执行标准：{$identify.carried_standard}</td>
+ </tr>
+ <tr>
+  <td>产地：{$identify.area}</td>
+  <td>材料：{$identify.stuff}</td>
+ </tr>
+ <tr>
+  <td>类别：{$identify.type}</td>
+  <td>工艺：{$identify.craft}</td>
+ </tr>
+ <tr>
+  <td>品名：{$identify.item_name}</td>
+ </tr>
+ <tr>
+  <td>颜色：{$identify.color}</td>
+ </tr>
+ <tr>
+  <td>号型：  {$identify.shape}   {$identify.size}</td>  
+  <td>货号：{$identify.barcode2}</td>
+ </tr>
+</table>
+</br>
+</br>
+ <!--{/foreach}-->
+</body>
+</html>

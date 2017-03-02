@@ -1,0 +1,41 @@
+<html>
+<head>
+<title>EMS省内货到付款[东莞]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+
+<div style="position:absolute;font-size:11pt;top:30px;left:20px;">长本</div>
+<div style="position:absolute;font-size:11pt;top:30px;left:180px;">{$smarty.now|date_format:"%Y %m %d"}</div>
+<div style="position:absolute;font-size:11pt;top:60px;left:160px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:11pt;top:60px;left:40px;">乐其</div>
+<div style="position:absolute;font-size:11pt;top:100px;left:0px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:11pt;top:170px;left:35px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:11pt;top:170px;left:160px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:11pt;top:220px;left:10px;">{if $order.province != ''}{$order.province}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:220px;left:50px;">{if $order.city != ''}{$order.city}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:220px;left:80px;">{if $order.district != ''}{$order.district}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:240px;left:10px;width:380px;">{$order.address}<br />(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:20pt;top:305px;left:190px;">√</div><!-- 内件说明 -->
+<div style="position:absolute;font-size:15pt;top:360px;left:40px;">{if $order.facility_id == '19568548'}食品{elseif $order.facility_id == '3580047'}步步高电子{/if}</div><!-- 内件名称 -->
+<div style="position:absolute;font-size:20pt;top:410px;left:0px;">√</div><!-- 是否保价 -->
+<div style="position:absolute;font-size:11pt;top:450px;left:190px;">乐其</div>
+<div style="position:absolute;font-size:11pt;top:470px;left:210px;">{$smarty.now|date_format:"%Y %m %d"}</div>
+
+
+<div style="position:absolute;font-size:20pt;top:150px;left:300px;">√</div><!-- 付款方式:寄方付 -->
+<!-- 
+<div style="position:absolute;font-size:11pt;top:100px;left:330px;letter-spacing:13px;">{$money}</div>
+<div style="position:absolute;font-size:11pt;top:120px;left:340px;">{$order.order_amount|price_format}</div>
+ -->
+</body>
+</html>

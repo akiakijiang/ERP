@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>京东配送</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script> 
+<style type="text/css">
+{literal}
+	div {
+		font-family: 黑体;
+		position:absolute;
+	}
+	div.inside div{
+		border:none;
+	}
+	p {
+		padding: 0px;
+		margin: 1px;
+		font-family: 黑体;
+		font-size: 18px;
+	}
+	img {
+		padding: 0px 10px;
+		margin: 1px;
+		width: 90%;
+		height: 90%;
+	}
+{/literal}
+</style>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+{/if}
+
+<div style="top:10px;left:0px;height:560px;width:550px;">
+	<div style="top:0%;left:3%;width:90%;height:18%;"><!-- 15cm=9% -->
+		<!--Code128 OF {$arata.tracking_number}-->
+		<img style="-webkit-user-select: none"  src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=1&rotation=0&font_family=Arial.ttf&font_size=10&text={$arata.tracking_number}-1-1-&thickness=30&start=C&code=BCGcode128">
+		
+	</div>
+
+	<div style="top:18%;left:0%;width:72%;height:33%"><!-- 20cm=12% -->
+		<div style="left:2%;top:0%;width:98%;height:60%">
+			<p>收方信息</p>
+			<p>姓名：{$order.consignee} 电话：{$order.mobile} {$order.tel}　 <br/>
+			地址：{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+			</p>
+		</div>
+		<div style="left:2%;top:60%;width:98%;height:40%">
+			<p>寄方信息</p>
+			<p>姓名：乐其   电话：{$order.c_tel}　</p>
+			<p>
+				地址：{$order.company_address}
+			</p>
+		</div>
+	</div>
+	<div style="top:18%;left:72%;width:28%;height:33%"><!-- 20cm=12% -->
+		<div style="left:0%;top:0%;width:100%;height:33%">
+			<p>代收金额</p>
+			<p>￥0元　</p>
+		</div>
+		<div style="left:0%;top:33%;width:100%;height:35%">
+			<p style="font-size: 30px;">1/1</p>
+		</div>
+		<div style="left:0%;top:68%;width:100%;height:32%">
+			<p>客户签字</p>
+		</div>
+	</div>
+	<div  style="top:51%;left:0%;width:100%;height:5%">
+		<div style="top:20%;left:63%;width:37%;height:80%"><!-- 15cm=9% -->
+			<p  style="font-size: 12px;">{$arata.print_date}</p>
+		</div>
+	</div>
+	<div style="top:56%;left:0%;width:100%;height:7%"><!-- 15cm=9% -->
+		<div style="top:10%;left:33%;width:67%;height:90%">
+			<p>运单号：{$arata.tracking_number}</p>
+		</div>
+	</div>
+
+	<div style="top:63%;left:0%;width:70%;height:33%"><!-- 20cm=12% -->
+		<div style="left:2%;top:10%;width:98%;height:54%">
+			<p>收方信息</p>
+			<p>姓名：{$order.consignee} 电话：{$order.mobile} {$order.tel}<br/>
+			地址：{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+			</p>
+		</div>
+		<div style="left:2%;top:64%;width:98%;height:46%">
+			<p>寄方信息</p>
+			<p>姓名：乐其   电话：{$order.c_tel}　</p>
+			<p>
+				地址：{$order.company_address} | {$order.sendIDUser}
+			</p>
+			<p>{$order.sendIDCard}</p>
+		</div>
+	</div>
+	<div style="top:63%;left:70%;width:30%;height:33%"><!-- 20cm=12% -->
+		<div style="left:0%;top:10%;width:100%;height:54%">
+			<p>代收金额</p>
+			<p>￥0元　</p>
+		</div>
+		<div style="left:-30%;top:64%;width:100%;height:46%">
+			<div style="left:0%;top:0%;width:100%;height:80%">
+				<img style="-webkit-user-select: none"  src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=2&rotation=0&font_family=Arial.ttf&font_size=15&text={$arata.tracking_number}&thickness=30&start=C&code=BCGcode128">
+			</div>
+		</div>
+	</div>
+	<div style="bottom:0%;left:0%;width:95%;height:4%"><!-- 15cm=9% -->
+		<div style="top:0%;left:65%;width:35%;height:70%">
+			<p style="font-size: 12px;">{$arata.print_date}</p>
+		</div>
+	</div>
+
+</div>
+
+
+
+
+</body>
+</html>

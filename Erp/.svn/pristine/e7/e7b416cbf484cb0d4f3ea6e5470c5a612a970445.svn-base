@@ -1,0 +1,20 @@
+{if $contain_goods}  {* 导出订单商品 *}
+下单时间,确认时间,订单号,订单状态,客户名,商品名,数量,库存数量,类型,商品串号,商品类型,销售发票号,支付方式,寄达地,发货状态,送货方式,快递公司,快递单号,快递费用,备注
+{foreach from=$orders item=order}
+{foreach from=$order.goods_list item=goods name=goods}
+{if $goods.erp_id == 0}
+{assign var=count value=$goods.goods_number}
+{else}
+{assign var=count value=1}
+{/if}
+{section loop=$count name=inner}
+{$order.order_time},{$order.confirm_time},{$order.order_sn},{$order.order_status_name},{$order.consignee},{$goods.goods_name},{$goods.goods_number},{$goods.storage_count},{$goods.order_type},{$goods.erp_goods_sn},"{$goods.cat_name}",{$goods.shipping_invoice},{$order.pay_name},{$order.province_name},{$order.shipping_status_name},{$order.shipping_name},{$carriers[$order.carrier_id].name},{$order.bill_no},{$order.shipping_fee},"{$goods.note}"
+{/section}
+{/foreach}
+{/foreach}
+{else} {* 不导出订单商品 *}
+下单时间,确认时间,订单号,订单状态,客户名,支付方式,寄达地,发货状态,送货方式,快递公司,快递单号,快递费用,快递手续费,包装费
+{foreach from=$orders item=order}
+{$order.order_time},{$order.confirm_time},{$order.order_sn},{$order.order_status_name},{$order.consignee},{$order.pay_name},{$order.province_name},{$order.shipping_status_name},{$order.shipping_name},{$carriers[$order.carrier_id].name},{$order.bill_no},{$order.shipping_fee},{$order.shipping_proxy_fee},{$order.pack_fee}
+{/foreach}
+{/if}

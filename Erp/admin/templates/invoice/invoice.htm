@@ -1,0 +1,94 @@
+<!-- 默认发货单 -->
+
+<h1>{$bufahuodan}发货单 ({$orderInfo.facility_name})</h1>
+
+{if $orderInfo.order_sn != ''}<img src="code_img.php?barcode={$orderInfo.order_sn}&width={$orderInfo.code_width}&height=90">{/if}
+
+<h2>基本信息</h2>
+<table style="text-align:left;">
+<tr>
+<td>订单号： {$orderInfo.order_sn}</td>
+<td>收货人姓名：{$orderInfo.consignee}</td>
+<td>配送方式： {$orderInfo.shipping_name}</td>
+</tr>
+<tr>
+<td>{if $orderInfo.inv_payee}发票抬头：{$orderInfo.inv_payee}{/if}</td>
+<td>下单时间： {$orderInfo.order_time}</td>
+<!--<td>发货单号： {$orderInfo.bill_no}</td>-->
+<td>支付方式： {$orderInfo.pay_name}</td>
+</tr>
+<tr>
+<td>联系电话： {$orderInfo.tel}</td>
+<td>联系手机： {$orderInfo.mobile}</td>
+<td>邮编： {$orderInfo.zipcode}</td>
+</tr>
+<tr>
+<td colspan="3">收货人地址：{if $orderInfo.province != 0}[{$orderInfo.province|get_region_names}]{/if}{if $orderInfo.city != 0}[{$orderInfo.city|get_region_names}]{/if}{if $orderInfo.district != 0}[{$orderInfo.district|get_region_names}]{/if}{$orderInfo.address}</td>
+</tr>
+</table>
+
+
+<h2>商品信息</h2>
+<table cellpadding="0" cellspacing="0">
+<tr>
+<th style="width:5%;">序号</th>
+<th style="width:60%;">品名</th>
+<th style="width:6%;">编码</th>
+<th style="width:7%;">单价</th> 
+<th style="width:5%;">数量</th>
+<th style="width:7%;">价格</th>
+</tr>
+{foreach from=$orderInfo.goods_list key=k item=ogi name=goods}
+<tr> 
+<td>{$smarty.foreach.goods.iteration}</td>
+<td>{$ogi.goods_name}</td>
+<td>{if $ogi.productCode}(<font style="font-weight:bold;">{$ogi.productCode}</font>){/if}</td>
+<td>{$ogi.goods_price}</td>
+<td>{$ogi.goods_number}</td>
+<td>{$ogi.goods_amount}</td>
+</tr>
+{/foreach}
+</table>
+
+<h2>费用信息</h2>
+<table style="text-align:left;">
+<tr>
+<td colspan="4" valign="top">
+
+    
+    {if $orderInfo.postscript}
+        <div class="postscript">
+        用户备注：{$orderInfo.postscript}
+        </div>
+    {/if}
+    {if $orderInfo.shipping_note}
+        <div class="postscript">
+        重要备注：
+        {foreach from=$orderInfo.shipping_note item=note}
+            {$note.action_note}<br />
+        {/foreach}
+        </div>
+    {/if}
+    
+</td>
+<td style="text-align:right;width:130px;">
+{if $orderInfo.order_type_id == 'RMA_EXCHANGE'} 
+应收款：{$orderInfo.additional_amount|price_format}
+{elseif $orderInfo.order_type_id == 'SHIP_ONLY'}
+补寄订单，无应收款项
+{else}
+商品总金额：{$orderInfo.goods_amount|price_format}<br />
+配送费用：{$orderInfo.shipping_fee|price_format}<br />
+包装费用：{$orderInfo.pack_fee|price_format}<br />
+订单总金额：{$orderInfo.goods_amount+$orderInfo.shipping_fee+$orderInfo.pack_fee|price_format}<br />
+抵用券抵用：{$orderInfo.bonus|price_format}<br />
+应收款：{$orderInfo.order_amount|price_format}
+{/if}
+</td>
+</tr>
+</table>
+
+
+<div align="center" >
+友情提示：如查询有关退换货事宜，请参见此页背面。
+</div>

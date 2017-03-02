@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<AccessRequest>
+	<AccessLicenseNumber>BC867A9FFBBC5B68</AccessLicenseNumber>
+	<UserId>Zandy</UserId>
+	<Password>leqee888ADMIN</Password>
+</AccessRequest>
+<?xml version="1.0"?>
+<AddressValidationRequest xml:lang="en-US">
+	<Request>
+		<TransactionReference>
+			<CustomerContext>Maryam Dennis-Customer Data</CustomerContext>
+			<XpciVersion>1.0001</XpciVersion>
+		</TransactionReference>
+		<RequestAction>AV</RequestAction>
+	</Request>
+	<Address>
+		<City>MIAMI</City>
+		<StateProvinceCode>FL</StateProvinceCode>
+	</Address>
+</AddressValidationRequest>

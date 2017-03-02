@@ -1,0 +1,684 @@
+/*
+*
+*	gift_activity.php的样式
+*	2015.7.21
+*
+*/
+::-webkit-scrollbar{
+    width: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb{
+    background-color: rgba(105,105,105,.73);
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+/* Tiny Scrollbar */
+.scrollbar1 { width: 140px; margin: 30px 0 10px; }
+.scrollbar1 .viewport { width: 120px; height: 200px; overflow: hidden; position: relative; }
+.scrollbar1 .overview { list-style: none; position: absolute; left: 0; top: 0;right:0;bottom:0; padding-top:15px; margin: 0; }
+.scrollbar1 .scrollbar{ background: transparent url(images/bg-scrollbar-track-y.png) no-repeat 0 0; position: relative; background-position: 0 0; float: right; width: 15px; }
+.scrollbar1 .track { background: transparent url(images/bg-scrollbar-trackend-y.png) no-repeat 0 100%; height: 100%; width:13px; position: relative; padding: 0 1px; }
+.scrollbar1 .thumb { background: transparent url(images/bg-scrollbar-thumb-y.png) no-repeat 50% 100%; height: 20px; width: 25px; cursor: pointer; overflow: hidden; position: absolute; top: 0; left: -5px; }
+.scrollbar1 .thumb .end { background: transparent url(images/bg-scrollbar-thumb-y.png) no-repeat 50% 0; overflow: hidden; height: 5px; width: 25px; }
+.scrollbar1 .disable { display: none; }
+.noSelect { user-select: none; -o-user-select: none; -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; }
+
+.control_td_height{
+	/*text-align: center;*/
+	height:140px;
+	overflow:hidden;
+}
+
+body{
+	margin:0;
+	padding: 0;
+	font-size: 16px;
+	/*scrollbar-face-color:blue;
+    scrollbar-highlight-color:black; 
+    scrollbar-shadow-color:green; 
+    scrollbar-3dlight-color:yellow; 
+    scrollbar-arrow-color:black; 
+    scrollbar-track-color:red; 
+    scrollbar-darkshadow-color:red; */
+}
+
+.float_button{
+	float:right;
+	top:20px;
+	right:30px;
+}
+.float_button:after{
+	clear:both;
+}
+
+.nav_tab_margin .nav li a{
+	font-size: 20px;
+}
+
+.max_table{
+	font-size: 12px;
+	margin-top:10px;
+	border-spacing: 0;
+	border-collapse: collapse;
+	width:100%;
+	height:auto;
+	text-align: center;
+}
+.max_table tr th,.max_table tr td{
+	border: 1px solid rgba(220,220,220,1);
+	padding:1px 1px;
+	text-align: center;
+}
+.max_table tr:nth-child(odd){
+	background: rgba(220,220,220,.4);
+}
+.max_table tr:first-child:hover,.max_table tr:first-child{
+	font-size: 15px;
+	background: rgba(220,220,220,.9);
+}
+.max_table tr th:first-child{
+	-webkit-border-top-left-radius: 8px;
+	-moz-border-radius-topleft: 8px;
+	border-top-left-radius: 8px;
+}
+.max_table tr th:last-child{
+	-webkit-border-top-right-radius: 8px;
+	-moz-border-radius-topright: 8px;
+	border-top-right-radius: 8px;
+}
+.max_table tr:hover{
+	background: rgba(255,218,185,.6);
+}
+
+a,a:hover,a:link,a:visited{
+	cursor:pointer;
+	text-decoration: none;
+}
+.change{
+	margin-bottom: 5px;
+}
+.modul_change{
+	margin-left: 25px;
+}
+
+.btn_design{
+	display: inline-block;
+	padding-top: 4px;
+	padding-left: 15px;
+	/*padding: 4px 15px;*/
+	margin-bottom: 2px;
+	margin-left: 3px;
+	font-size: 15px;
+	font-weight: normal;
+	line-height: 1.42857143;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	-ms-touch-action: manipulation;
+	touch-action: manipulation;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	/*color: #fff;*/
+	color:black;
+	opacity: .8;
+	/*background-color: #337ab7;*/
+	border-color: #2e6da4;
+	background-image: none;
+	border: 1px solid transparent;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+.btn:focus{
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+.input_background{
+	background:rgba(220,220,220,.7);
+}
+
+.form_search{
+	margin-top: 30px;
+}
+.form_word_margin{
+	margin:auto 5px;
+}
+.max_table .th_header{
+	padding: 5px;
+	-webkit-border-top-right-radius: 8px;
+	-moz-border-radius-topright: 8px;
+	border-top-right-radius: 8px;
+}
+.max_table .th_header .clicked{
+	-webkit-border-radius: 8px 0 0 0 ;
+	-moz-border-radius: 8px 0 0 0 ;
+	border-radius: 8px 0 0 0 ;
+}
+.modal-header-back{
+	height:60px;
+	background:rgba(70,130,180,.7);
+}
+#new_active{
+	padding-left: 30px;
+}
+.base{
+	padding:2px;
+	margin-bottom: 2px;
+	/*border: 1px solid rgba(220,220,220,.8);*/
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+}
+.div_bottom{
+	width:170px;
+	font-size: 18px;
+	font-weight: bold;
+	padding-bottom: 1px;
+	border-bottom: 5px solid rgba(70,130,180,.7);
+}
+.brother_div_bottom{
+	margin-top: 10px;
+}
+.base_gift{
+	padding:2px;
+	margin:2px auto;
+	/*border: 1px solid rgba(220,220,220,.8);*/
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+}
+.base_gift:first-child{
+	margin-top: 12px;
+}
+.inline_div{
+	/*margin-left: 10px;*/
+	display:inline-block;
+}
+.inline_div_small{
+	/*margin-left: 3px;*/
+	display:inline-block;
+}
+.inline_div .focus{
+	margin-top: 3px;
+}
+.inline_div .choose{
+	text-align: center;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	margin-left: 10px;
+	padding:3px 15px;
+	font-size: 17px;
+	color:white;
+	background: rgba(100,149,237,.9);
+}
+.last_word{
+	width:50px;
+	display:inline-block;
+}
+.many_add{
+	text-align: center;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	margin-left: 10px;
+	padding:2px 15px !important;
+	font-size: 14px;
+	color:white;
+	background: rgba(100,149,237,.9);
+}
+.inline_div .choose:hover{
+	background: rgba(28,134,238,1);
+}
+.choose_small{
+	font-size: 17px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	margin-left: 2px;
+	padding:3px 15px;
+	background: rgba(100,149,237,.9);
+	color:white;
+}
+.choose_small:hover{
+	background: rgba(28,134,238,1);
+}
+.word p,#new_active .word .new_active_input{
+	display:inline-block;
+	width:50%;
+}
+.second_word p{
+	width:120px !important;
+}
+.word p{
+	text-align: right;
+	width:80px;
+}
+.word_width{
+	width:170px !important;
+}
+.min_word_width{
+	width:90px !important;
+}
+#new_active .font_change{
+	font-size: 16px;
+	padding-top: 7px;
+	/*padding-left: 7px;*/
+}
+#new_active .font_change_small{
+	font-size: 16px;
+	padding-top: 7px;
+	padding-left: 2px;
+}
+#new_active .show_detil{
+	padding-left: 2px;
+	margin-left: -6px;
+	width:600px;
+	word-wrap:break-word; 
+	word-break:break-all;
+	/*overflow-x:scroll;*/
+	white-space:pre-wrap;
+	/*margin: 2px 6px 4px 3px;*/
+	/*border: 1px solid rgba(220,220,220,.8);*/
+	/*-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;*/
+}
+.later_add_show_contant{
+	word-wrap:break-word; 
+	word-break:break-all;
+	white-space:pre-wrap;
+	
+}
+.contant_border{
+	border:1px solid rgba(0,0,0,.2);
+	background:rgba(220,220,220,.8);
+	border-radius: 5px;
+	padding:5px;
+	margin: 10px;
+}
+.td_goods_necessary{
+	width:120px;
+	font-weight: bold;
+}
+.td_goods_necessary:after{
+	content:'(主)';
+	margin-left: 10px;
+}
+.activity_cue{
+	font-weight: bold;
+}
+.activity_cue:before{
+	content:'(活动暗号)';
+	margin-right: 5px;
+}
+
+.disabled_change_button_background{
+	background:rgba(0,0,0,.6);
+	color:white;
+}
+.disabled_delete_button_background{
+	background:rgba(0,0,0,.6);
+	color:white;
+}
+/*.facility_contant{
+	margin-top: 1px !important;
+	margin-left: -14px !important;
+}
+.distributor_contant{
+	margin-left: -15px !important;
+}
+.region_contant{
+	margin-left: -2px;
+}*/
+
+/*
+*	ui-* 是采用了jquery ui autocomplate插件之后自动添加的
+*/
+
+.ui-autocomplete{
+	z-index: 5000;   /* 这里的z-index很重要,因为model已经设定了z-index了,而jquery autocomplate需要显示出来，所以需要设置更大的z-index */
+	text-align: center;
+	border-collapse: collapse;
+	height:400px;
+	overflow-y: scroll;
+}
+#ui-id-1{
+	left:85px !important;
+}
+#ui-id-2{
+	left:573px !important;
+}
+#ui-id-3,#ui-id-5,#ui-id-10{
+	left:119px !important;
+}
+#ui-id-4,#ui-id-6{
+	left:770px !important;
+}
+#ui-id-7,#ui-id-8,#ui-id-9{
+	left:120px !important;
+}
+#ui-id-13,#ui-id-14{
+	left:119px !important;
+}
+.ui-autocomplete li{
+	cursor:pointer;
+	/*margin-left: -100px;*/
+	padding:10px;
+	width:180px;
+	background:rgba(220,220,220,.8);
+	list-style: none;
+}
+.ui-autocomplete li:hover{
+	background:rgba(255,218,185,.8);
+}
+.ui-autocomplete li:last-child,.ui-autocomplete li:last-child:hover{
+	-webkit-border-radius: 0 0 8px 8px;
+	-moz-border-radius: 0 0 8px 8px;
+	border-radius: 0 0 8px 8px;
+}
+.ui-autocomplete,.ui-helper-hidden-accessible{
+	display:none;
+}
+
+.show_dis{
+	display:none;
+}
+
+.save_all{
+	vertical:middle;
+	margin:auto;
+}
+
+
+.glyphicon_margin{	
+	background:rgba(220,220,220,.9);
+	border-radius: 50%;
+	margin:-8px -6px 2px 5px;
+	font-size: 15px;
+}
+
+.modal_over-x{
+	overflow-y:scroll;
+}
+
+
+/*
+*	分页
+*/
+
+.pagination {
+	display: inline-block;
+	padding-left: 0;	
+	margin: 20px 0;
+	border-radius: 4px;
+	float:right;
+}
+.pagination > li {
+	display: inline;
+}
+.pagination > li > a,
+.pagination > li > span {
+	position: relative;
+	float: left;
+	padding: 6px 12px;
+	margin-left: -1px;
+	line-height: 1.42857143;
+	color: #337ab7;
+	text-decoration: none;
+	background-color: #fff;
+	border: 1px solid #ddd;
+}
+.pagination > li:first-child > a,
+.pagination > li:first-child > span {
+	margin-left: 0;
+	border-top-left-radius: 4px;
+	border-bottom-left-radius: 4px;
+}
+.pagination > li:last-child > a,
+.pagination > li:last-child > span {
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+}
+.pagination > li > a:hover,
+.pagination > li > span:hover,
+.pagination > li > a:focus,
+.pagination > li > span:focus {
+	color: #23527c;
+	background-color: #eee;
+	border-color: #ddd;
+}
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
+	z-index: 2;
+	color: #fff;
+	cursor: default;
+	background-color: #337ab7;
+	border-color: #337ab7;
+}
+
+.select_width{	
+	width:125px;
+	padding: 6px 12px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: #555;
+	background-color: #fff;
+	background-image: none;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+	-webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+.select_width:focus{
+	border-color: #66afe9;
+	outline: 0;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+}
+
+.new_active_input{	
+	padding: 3px 10px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: #555;
+	/*background-color: #fff;*/
+	/*background:rgba(220,220,220,.8);*/
+	background-image: none;
+	border: 1px solid #ccc !important;
+	border-radius: 4px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+	-webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.zengpin_gift{
+	width:200px !important;
+}
+.class_activity_add_zengpin_gift{
+	width:100px !important;
+}
+.class_activity_add_zengpin_gift_name{
+	width:160px !important;
+}
+.class_activity_add_input_1px{
+	margin:0 1px;
+}
+.class_activity_add_input_2px{
+	margin:0 2px;
+}
+.class_activity_add_input_3px{
+	margin:0 3px;
+}
+.two_list{
+	margin-bottom: 10px;
+}
+.half_width{
+	width:45%;
+	vertical-align:top;
+}
+.one_third_width{
+	width:32%;
+	vertical-align: top;
+}
+
+.time{
+	margin-left: -5px;
+	width:220px !important;
+	-webkit-box-sizing:content-box;
+	-moz-box-sizing:content-box;
+	box-sizing:content-box;				/* css3属性,width不包括padding和border */
+}
+.form_search_time{
+	/*margin-left: -5px;*/
+	width:180px !important;
+	-webkit-box-sizing:content-box;
+	-moz-box-sizing:content-box;
+	box-sizing:content-box;
+}
+
+#repeat_type option{
+	font-size: 15px;
+}
+
+#repeat_type option:last-child{
+	-webkit-border-radius:0 0 8px 8px;
+	-moz-border-radius: 0 0 8px 8px;
+	border-radius: 0 0 8px 8px;
+}
+/*
+*	这个media是为了控制模拟框的大小的
+*/
+@media (min-width: 992px) {
+	.modal_self_design_width{
+		width: 94%;
+	}
+}
+
+@media (max-width: 1450px){
+	.half_width{
+		width:48%;
+		vertical-align:top;
+	}
+	#ui-id-1{
+		left:90px !important;
+	}
+	#ui-id-2{
+		left:520px !important;
+	}
+	#ui-id-3,#ui-id-5{
+		left:124px !important;
+	}
+	#ui-id-4,#ui-id-6{
+		left:736px !important;
+	}
+	#ui-id-7,#ui-id-8,#ui-id-9{
+		left:116px !important;
+	}
+	.zengpin_gift{
+		width:160px !important;
+	}
+}
+
+/*
+*	鼠标划过事件,因为使用了jquery-ui插件，所以bootstrap中的tooltip不能正常使用,所以就自己写了一个
+*/
+.tooltip_hover{
+	font-size: 13px;
+	position:absolute;
+	display:none;
+	-webkit-border-radius:8px;
+	-moz-border-radius:8px;
+	border-radius:8px;
+	padding:5px;
+	background:rgba(1,1,1,.7);
+	color:white;
+	width:150px;
+
+}
+
+.gift_show{
+	display:none;
+}
+
+.many_textarea{
+	width:100%;
+	height:60%;
+}
+.many_goods_word{
+	color:red;
+}
+
+/*
+*	新增常规活动和等级活动的处理
+*/
+
+.border_bottom_dashed{
+	width:100%;
+	border-bottom: 1px dashed rgba(0,0,0,.3);
+}
+
+.class_activity_display{
+	display:none;
+}
+
+.class_add_height{
+	font-size: 12px !important;
+	height:35px;
+	border-bottom: 1px dashed rgba(0,0,0,.4);
+}
+
+.normal_second_display{
+	display:none;
+}
+
+.normal_third_display{
+	display:none;
+}
+
+.class_check_color{
+	background:rgba(28,134,238,1) !important;
+}
+.now_activity_type{
+	display:none;
+}
+.activity_type_font{
+	margin:10px auto;
+	font-size: 20px;
+	border-bottom: 1px dashed rgba(0,0,0,.4);
+}
+.input_border_color{
+	border:1px solid red !important;
+}
+.must_add{
+	color:red;
+}
+.must_add_white{
+	color:white;
+}
+.margin_left_must_add{
+	margin-left: 3px;
+	margin-right: 2px;
+	/*padding-left: 5px;*/
+}
+.gift_destory{
+	display:none;
+}

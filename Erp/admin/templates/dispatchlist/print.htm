@@ -1,0 +1,187 @@
+<html>
+<head>
+<meta name=Title content="">
+<meta name=Keywords content="">
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 14">
+<meta name=Originator content="Microsoft Word 14">
+{literal}
+	<style>
+		body {
+			font-size: 14px;
+		}
+		
+		table td {
+			padding: 5px;
+		}
+	</style>
+{/literal}
+</head>
+
+<body lang=ZH-CN style=''>
+
+<div class=WordSection1 style='layout-grid: 15.6pt'>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+	style='border-collapse: collapse; width: 600px'>
+	<tr>
+		<td width=212 colspan=2>
+		<p class=MsoNormal align=center style='text-align: center'>
+		{*	{$dispatchList->dispatchSn|@strtoupper}-{$dispatchList->price}-{$dispatchList->orderSn}-{$goodsId} <br/>*}
+			{$dispatchList->dispatchSn|@strtoupper}-{$dispatchList->orderSn}-{$goodsId} <br/>
+			<img src="../code_img.php?height=60&barcode={$dispatchList->dispatchSn}&&1.jpg" />
+		</p>
+		</td>
+		<td width=214 valign=top>
+		<p class=MsoNormal>下单日期：{$orderTime|date_format:"%Y-%m-%d"}</p>
+		<p class=MsoNormal>交货日期：{$dispatchList->dueDate}</p>
+		{if $importantDay}<p class=MsoNormal>婚期：{$importantDay}</p> {/if}
+		<p class=MsoNormal>发货索引：{$dispatchList->externalOrderSn}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>size：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_size}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>胸围：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_bust}</p>
+		</td>
+		<td width=214 rowspan=11 valign=top>
+		<p class=MsoNormal>{$attributes.note}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>腰围：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_waist}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>臀围：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_hips}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>肩到胸：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal></p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>肩到腰：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal></p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>喉咙到下摆：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_hollow_to_hem}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>喉咙到地：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_hollow_to_floor}（不含鞋高）</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>身高：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal></p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>颜色：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_color}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>腰带颜色：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_sash_color}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>腰带长：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_sash_size}</p>
+		</td>
+	</tr>
+	<tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>面料：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_textures}</p>
+		</td>
+	</tr>
+    <tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>罩杯：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$attributes.goodsStyle_cup_size}</p>
+		</td>
+	</tr>
+    <tr>
+		<td width=95 valign=top>
+		<p class=MsoNormal>品类：</p>
+		</td>
+		<td width=117 valign=top>
+		<p class=MsoNormal>{$cat_name}</p>
+		</td>
+	</tr>
+    
+	<tr>
+		<td width=426 colspan=3 valign=top>
+		<p class=MsoNormal>备注：尺寸为英寸。</p>
+		</td>
+	</tr>
+</table>
+
+<p class=MsoNormal>
+{foreach from=$imgAttributes item=imgSrc}
+	<img src="{$imgSrc|localjjshouseImageUrl}" border="0"	style="max-width: 600px;" /> 
+{/foreach}
+</p>
+
+</div>
+
+<p style="text-align: center; margin: 60px 0px 30px;"><input
+	class="btn" type="button" value=" 返回 " onClick="history.back();">
+</p>
+
+</body>
+</html>

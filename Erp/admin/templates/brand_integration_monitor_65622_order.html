@@ -1,0 +1,401 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="styles/font-awesome.min.css">
+	<style type="text/css">
+	{literal}
+	body{
+		    font-size: 12px;
+	    }
+	html ,body{
+			font-size: 100%;
+		    height: 100%;
+			margin-bottom: 1px;
+			/* Always show a scrollbar to avoid jumping when the scrollbar appears :D*/ 
+	    }
+	select{
+		font-size: 13px;
+	} 
+    h1{
+    	    color:#434343;
+    	    letter-spacing: .1em;
+        }
+	table{
+		    font-size: 13px;
+		    width: 100%;
+	    }
+    table td a.erp_order_sn{
+    	float: left;
+    }
+	table th,table td{
+		    font-weight: normal;
+		    text-align: center;
+		    border:1px solid #62B4E8;
+		}
+	table td{
+	    	padding:6px 0;
+		}
+    table td p,table td a{
+    		display: block;
+    		width: 80%;
+    		margin:0 auto 5px auto;
+    		text-align: left;
+    	}
+    table td a{
+    		color:#00a0e9;
+    	}
+    table td a:hover{
+    		color:#0075a9;
+    	}
+	table th{
+		    padding:2px 0; 
+		    background: #62B4E8;
+		    color:#fff;
+		}
+	label{
+			display: inline-block;
+			text-align: right;
+		}
+	textarea{
+			resize:none;
+			width: 200px;
+			height: 100px;
+			vertical-align: top;
+			outline: none;
+			border:1px solid #b1b1b1;
+			border-radius: 2px;
+		}
+	.act{
+		width: 200px;
+		}
+	h1{
+			font-size: 18px;
+			color:#434343;
+			text-align: center;
+			margin:10px 0;
+	    }
+    h2{
+		font-size: 16px;
+		color:#434343;
+		text-align: center;
+		margin:10px 0;
+    }
+	input[type="text"]{
+            display: inline-block;
+            height: 24px;
+            line-height: 24px;
+            width: 100px;
+            padding:2px 5px;
+            color: #333;
+            border-radius: 2px;
+            border:1px solid #b1b1b1;
+            outline: none; /* for chorme & safari's default effect */
+        }
+    #search_content p{
+    		margin:10px 0;
+    	}
+    #search_content label,.back_modal label{
+	    	font-size: 13px;
+	    	width: 180px;
+	    }
+	#search_erp label{
+		margin-bottom: 10px;
+	}
+    #search_content input[type='text']{
+	    	width: 175px;
+	    	font-size: 12px;
+	    }
+	#search_content input[type='text'].time_input{
+	    	width: 80px;
+	    }
+    .back_modal input[type='text']{
+	    	margin:10px 0;
+	    }
+    .msg{
+	        width: 50%;
+	    	padding:5px 0 5px 40px;
+	    	margin:10px auto;
+	    	display: none;
+	    	
+	    }
+    .msg-success{
+	    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+	    	background-position: 10px center;
+	        border-color: #9adf8f;
+	        color: #556652;
+	        
+	    }
+    .msg-error{
+	    	background: url('img/cross_circle.png') #ffcece no-repeat;
+	    	background-position: 10px center;
+	        border-color: #df8f8f;
+	        color: #665252;
+	    }
+    .btn-flat {
+		    cursor: pointer;
+		    display: inline-block;
+		    zoom: 1;
+		    *display: inline;
+		    /* ie7 hack for inline-block :C */
+		    overflow: visible;
+		    /* padding won't effect without this attr :C */
+		    vertical-align: bottom;
+		    margin: 0 10px;
+		    transition: background-color .4s linear;
+		    background-color: #62B4E8; 
+		    color:#fff;
+		    opacity: .7;
+		    border: none;
+		    outline: none;
+		    -webkit-border-radius: 0.2em;
+		    -moz-border-radius: 0.2em;
+		    -o-border-radius: 0.2em;
+		    -ms-border-radius: 0.2em;
+		    border-radius: 0.2em; 
+	    }
+	.btn-flat:hover {
+	        opacity: 1;
+	    }
+	.btn-flat:active {
+		    position: relative;
+		    top: 1px;
+		    box-shadow: 0.1em 0.1em 0.6em #a0a0a0 inset;
+	    }
+	.btn-small {
+		    font-size: 12px;
+		    padding: .2em .6em;  
+		}
+    .btn-normal {
+			font-size: 14px;
+			padding: .3em 1.5em;
+		}
+	#sub_back_info{
+			margin:10px 0 0 85px;
+		}
+    #show_content .btn-small{
+	    	width: 60px;
+	    	padding:.1em .4em;	
+	    	margin:5px 10px;
+	    	height: 26px;
+			line-height: 26px;
+	    }
+	i.icon-spinner{
+			display: none;
+		}
+	.back_btn{
+			background-color: #E8543F;
+		}
+
+	.act_modal{
+		    z-index: 1000;
+            width:100%;
+            height: 100%;
+            position: fixed;
+            top:0;
+            left: 0;
+            font-size: 14px;
+            overflow: auto;
+            background-color: rgba(0,0,0,.4);
+            display: none;
+	    }
+	.act_modal_content{
+			z-index: 101;
+			background-color: #fff;
+			box-shadow: 0 0 8px #a0a0a0;
+			border-radius: 5px;
+			width: 80%;
+			position: relative;
+			top:100px;
+			padding: 20px 10px 40px 10px;
+			margin: 0 auto;
+	    }
+	.act_modal_content h2{
+			text-align: center;
+			font-size: 16px;
+			margin: 10px 0;
+			color:#333;
+	    }
+	.edit_PO_info{
+		    display: none;
+	}
+	.sync_record_modal{
+            width:300px;
+            min-height: 100px;
+            padding:10px;
+            border-radius: 5px;
+            background-color:#EAEDEF;
+            position: absolute;
+            top:-1000px;
+            left: 430px;
+            opacity: 0;
+            z-index: 999; 
+            box-shadow: 0 0 8px #a0a0a0;
+            font-size: 14px;
+	}
+	.sync_record_modal table{
+			width: 100%;
+		}
+	.back_modal{
+		    width:330px;
+            padding:10px;
+            border-radius: 5px;
+            background-color:#EAEDEF;
+            position: absolute;
+            top:-1000px;
+            left: 800px;
+            opacity: 0;
+            z-index: 999; 
+            box-shadow: 0 0 8px #a0a0a0;
+            font-size: 13px;
+		}
+	.act_modal div{
+			margin-bottom: 10px;
+		}
+	.act_modal p{
+			margin:5px 0;
+		}
+	.add_edit_info{
+			cursor: pointer;
+		}
+	.delete_btn{
+			cursor: pointer;
+		}
+	.radiospan{
+		font-size: 12px;
+	}
+	.edit-po-modal{
+		width:100%;
+		height: 100%;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 999;
+		background: rgba(0,0,0,.5);
+        display: none;
+	}
+	.edit-po-content{
+		background-color: #fff;
+		width: 1200px;
+		min-height: 300px;
+		position: relative;
+		margin:20px auto;
+		padding:10px 5px;
+
+	}
+	.edit-po-content label{
+		display: inline-block;
+		margin:10px;
+	}
+	#edit-po-table{
+		margin-top: 20px;
+	}
+	.edit-po-content h2{
+		font-size: 18px;
+		width: 200px;
+		margin:0 auto;
+	}
+	.btn-submit-editdata{
+		padding:5px 8px;
+		font-size: 13px;
+	}
+	#btn-search{
+		padding:10px;
+		margin-left: 35px;
+	}
+    {/literal}
+	</style>
+</head>
+<body>
+	<h1>BabyNes品牌商对接监控</h1>
+	<h2><p><a href="brand_integration_monitor_65622_asn.php" title="切换到退货监控" target="blank" 
+	class="erp_order_sn">切换到退货监控 <i class="icon-external-link"></i></a></p></h2>
+	<p class="msg msg-success">操作成功：操作信息  :D</p>
+	<p class="msg msg-error">操作失败：错误信息  :(</a></p>
+	<!-- 搜索功能 -->
+	<form id="search_content" action="brand_integration_monitor_65622_order.php" method="post">
+		<p>
+			<label for="orderNumber">BabyNes订单号：</label>
+			<input type="text" name="orderNumber" id="orderNumber">
+            
+            <label for="nes_status">BabyNes订单状态：</label>
+			<select id="nes_status" name="nes_status">
+				{foreach from=$nes_status_list item=nes_status key=value}
+				    <option value="{$value}">{$nes_status.name}（{$nes_status.count}）</option>
+				{/foreach}
+			</select>
+			<label for="nes_order_type">BabyNes订单类型：</label>
+			<select id="nes_order_type" name="nes_order_type">
+				{foreach from=$nes_order_type_list item=erp_order_sync_type key=value}
+				    <option value="{$value}">{$erp_order_sync_type.name}（{$erp_order_sync_type.count}）</option>
+				{/foreach}
+			</select>
+		</p>
+		<p>
+			<label>BabyNes订单创建时间：</label>
+			<input type="text" class="time_input" name="created_stamp_start" id="created_stamp_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="created_stamp_end" id="created_stamp_end" onclick="new Calendar().show(this);" readonly="readonly">
+
+			<label>BabyNes订单更新时间：</label>
+			<input type="text" class="time_input" name="last_updated_stamp_start" id="last_updated_stamp_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="last_updated_stamp_end" id="last_updated_stamp_end" onclick="new Calendar().show(this);" readonly="readonly">
+	
+        </p>
+        <p>
+			<button class="btn-flat btn-small" id="btn-search"><i class="icon-search"></i>搜索订单</button>
+		</p>
+	</form>
+
+	<!-- 展示订单表格 -->
+	<form>
+		<table>
+			<thead>
+				<tr>
+					<th>订单号</th>
+					<th>父订单号</th>
+					<th>订单类型</th>
+					<th>订单时间</th>
+					<th>订单状态</th>
+					<th>生成时间</th>
+					<th>最后更新时间</th>
+					<th class="act">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach from=$data_list item=data key=k}
+				<tr>
+					<td>
+						<p>{$data.orderNumber}</p>
+						{if $data.order_id!=''}<p><a href="order_edit.php?order_id={$data.order_id}" title="链接到订单详情页" target="blank" class="erp_order_sn">ERP订单号：{$data.order_sn}<i class="icon-external-link"></i></a></p>{/if}
+					</td>
+					<td>
+						<p>{$data.parentOrderNumber}</p>
+						{if $data.parent_order_id !=''}<p><a href="order_edit.php?order_id={$data.parent_order_id}" title="链接到订单详情页" target="blank" class="erp_order_sn">ERP订单号：{$data.parent_order_sn}<i class="icon-external-link"></i></a></p>{/if}
+					</td>
+					<td>{$data.order_type}</td>
+					<td>{$data.orderDate}</td>
+					<td>{$data.status}</td>
+					<td>{$data.created_stamp}</td>
+					<td>{$data.last_updated_stamp}</td>
+					<td></td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</form>
+	
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="js/Calendar3.js"></script>
+<script src="js/jquery.js"></script>
+<script>
+// <![CDATA[
+//{literal}
+$(document).ready(function(){
+}
+//{/literal}
+// ]]>
+</script>
+	
+</body>
+</html>

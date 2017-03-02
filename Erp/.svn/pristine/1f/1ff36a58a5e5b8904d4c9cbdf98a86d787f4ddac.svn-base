@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <title>商品状态批量更新</title> 
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;商品状态批量更新&nbsp;</span></legend>
+  
+
+  
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">导入</h3>
+    <form id="upload" method="post" enctype="multipart/form-data">
+    	<select name="act"><option value="import">导入库存表</option><option value="done" style="font-weight:bold;">执行状态更新</option></select> &nbsp;
+      <select name="provider_id"><option value="">- 选择供应商</option>{html_options options=$provider_list}</select> &nbsp;
+      <input type="file" name="excel" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="执行" />
+      <div style="clear:both; margin-top:12px; color:#888;" >
+      	1 . 导入库存表功能会将导入的供应商库存保存在临时表中。<br />
+        2 . 执行状态更新会对比供应商库存调整商品的在售状态。
+			</div>
+    </form>
+	</div>
+
+
+<!--{if $report}-->  {* 导入报告 *}
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">更新报告</h3>
+    
+    
+    {if $report.shortage_size_list}
+    <br />
+    <h4>已标记为缺货的SIZE</h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="12%">SKU</th>
+        <th width="12%">SIZE</th>
+        <th width="26%">商品名</th>
+      </tr>
+      
+      <!--{foreach from=$report.shortage_size_list item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.sku}</td>
+        <td>{$item.size}</td>
+        <td align="center">&nbsp;{$item.goods_name}</td>
+      </tr>
+      <!--{/foreach}-->
+      
+    </table>
+    {/if}
+    
+    
+    
+    
+    {if $report.onsale_size_list}
+    <br />
+    <h4>已标记为在售的</h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="12%">SKU</th>
+        <th width="12%">SIZE</th>
+        <th width="26%">商品名</th>
+      </tr>
+      
+      <!--{foreach from=$report.onsale_size_list item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.sku}</td>
+        <td>{$item.size}</td>
+        <td align="center">&nbsp;{$item.goods_name}</td>
+      </tr>
+      <!--{/foreach}-->
+      
+    </table>
+    {/if}
+    
+    
+    
+    
+    {if $report.shortage_sku_list}
+    <br />
+		<br />
+    <h4>缺货的货号: </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="12%">SKU</th>
+        <th width="38%">商品名</th>
+      </tr>
+      
+      <!--{foreach from=$report.shortage_sku_list item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.sku}</td>
+        <td align="left">&nbsp;{$item.goods_name}</td>
+      </tr>      
+      <!--{/foreach}-->
+      
+    </table>
+    {/if}
+    
+    
+    {if $report.diff_size_list}
+    <br />
+    <br />
+    <h4>[已上架商品]缺少的SIZE</h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="12%">SKU</th>
+        <th width="38%">商品名</th>
+        <th width="50%">信息</th>
+      </tr>
+      
+      <!--{foreach from=$report.diff_size_list item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.sku}</td>
+        <td align="left">&nbsp;{$item.goods_name}</td>
+        <td align="left">&nbsp;{$item.errmsg}</td>
+      </tr>
+      <!--{/foreach}-->
+      
+    </table>
+    {/if}
+    
+      
+	</div>
+<!--{/if}-->
+  
+
+  <br /><br />
+
+
+</fieldset>
+
+
+
+
+<!--
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+-->
+
+</body>
+</html>

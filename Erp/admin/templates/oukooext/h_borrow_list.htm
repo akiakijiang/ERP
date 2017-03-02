@@ -1,0 +1,6 @@
+"商品名","新旧","商品条码","仓库","库位(生产日期)","串号控制","串号"
+{foreach from=$storage_list  item=goods}
+"{$goods.goods_name}","{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新{else}二手{/if}","{$goods.barcode}","{$goods.facility_name}","{foreach from=$goods.location_validity_list  item=product key=key }{$product.location_barcode}（{$product.validity}）
+{/foreach}","{if $goods.is_serial == 'SERIALIZED'}是{else}否{/if}","{if $goods.is_serial == 'SERIALIZED'}{foreach from=$goods.serial_numbers item=serial_number key=key }{$serial_number}
+{/foreach}{else}{/if}"
+{/foreach}

@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>热敏面单批量追加</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_add_rule.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_check.js"></script>
+		<script type="text/javascript" src="misc/jquery.js"></script>
+		
+		<style type="text/css" media="all">
+		{literal}
+			h2{
+				font-size:12pt;
+				clear:both;
+				margin:10px 0;
+			}
+			h3{
+				font-size:10pt;
+				clear:both;
+				margin:8px 0;
+			}
+			ul{
+				list-style:none;
+				font-size:10pt;
+				width:49%;
+				float:left;
+			}
+			ul li{
+				height:40px;
+				line-height:40px;
+			}
+			
+			table{
+				font-size:10pt;
+				text-align:center;
+				border:1px solid #000;
+				border-collapse:collapse;
+				margin:20px 0 20px 2px;
+			}
+			table td{
+			    padding:5px 10px;
+			}
+			table td,table th{
+				border:1px solid #000;
+				height:25px;
+				line-height:25px;
+			}
+			p{
+				font-size:10pt;
+				clear:both;
+				-- text-align:center;
+			}
+		{/literal}
+		</style>
+		<script type="text/javascript">
+		// <![CDATA[
+        //{literal}
+		
+
+			//输入批次号之后查询
+			function query(){
+				document.getElementById('foreAct').value='query';
+				document.getElementById('queryform').submit();
+			}
+
+			//追加时绑定新一批面单号
+			function addNewTrackingNum(bpsn){
+				$('#bind').attr('disabled', true);
+				if(check_bpsn_recheck(bpsn)){
+					document.getElementById('foreAct').value='addNewTrackingNum';
+					document.getElementById('queryform').submit();
+				}else{
+					alert('批拣单：'+bpsn+' 对应订单不全是“已出库/复核，待发货”状态，不能追加或更新面单！');
+					return false;
+				}
+				
+			}
+
+			// 批量追加面单
+	        function batch_add_shipment(){
+	        	$('#btn_batch_add_shipment').attr('disabled',true);
+				document.getElementById('mainact').value='batch_add_shipment';
+				
+				var shipment_ids = document.getElementsByName('SID[]');
+				for(var i=0;i<shipment_ids.length;i++) {
+					var shipment_id = $('#shipment_id_'+i).val();
+					var carrier_id = $('#carrier_id_'+i).val();
+					var tracking_number = $('#ADDTN_'+i).val(); 
+					// 检查复核状态
+					if(!check_shipment_recheck(shipment_id)) {
+					    $('#btn_batch_add_shipment').attr('disabled',false);
+						return false;
+					}
+				}
+				document.mainform.submit();
+			}
+
+
+	     // 检查是否复核过了
+			function check_shipment_recheck(shipment_id){
+		        var result = false;
+				$.ajax({
+					async:false,
+					type: 'POST',
+					url: 'ajax.php?act=check_shipment_recheck',
+				    data: 'shipment_id=' + shipment_id,
+				    dataType: 'json',
+				    error: function() {
+			          alert('ajax请求错误,检查是否复核过了ajax失败:' + shipment_id); 
+				    },
+				    success: function(data) {
+				    	if(data.success) {
+				    	   result = true;
+				    	} else {
+							alert('发货单：'+shipment_id+' 不是“已出库/复核，待发货”状态，不能追加或更新面单，请先去复核！');
+				    	}
+				    }
+				});
+				return result;
+			}
+			
+			// 检查是否复核过了
+			function check_bpsn_recheck(bpsn){
+		        var result = false;
+				$.ajax({
+					async:false,
+					type: 'POST',
+					url: 'ajax.php?act=check_bpsn_recheck',
+				    data: 'bpsn=' + bpsn,
+				    dataType: 'json',
+				    error: function() {
+			          alert('ajax请求错误,检查是否复核过了ajax失败:' + bpsn); 
+				    },
+				    success: function(data) {
+				    	if(data.success) {
+				    	   result = true;
+				    	} else {
+							result = false;
+				    	}
+				    }
+				});
+				return result;
+			}
+	     
+			
+	        //单个打印之前检查运单号合法性
+	        function check_trackingnumber(NO,sid,oid,countNum){
+	            var carrier_id = $("#carrierId").val();
+	            var TN_NO = 'TN_'+NO;
+	            var check = true;
+	            var trackingNumber=$("#TN_"+NO).val();
+		        //打印之前先判断该运单是否已经打印过
+		        var trackingNumberSel=document.getElementById(TN_NO).value;
+		        if(countNum>0)
+			        alert("运单号："+trackingNumberSel+"已经打印过！");
+	            if(check){
+		        	document.getElementById(TN_NO).blur();
+					document.getElementById('mainact').value='print';
+					document.getElementById('sel_ssid').value= sid;
+					document.getElementById('sel_soid').value= oid;
+					document.getElementById('sel_tn').value=document.getElementById(TN_NO).value;
+					document.mainform.submit();
+		        }
+	        }
+
+	        //查询给定运单号的历史打印记录
+	        function selectRecord(mainOrderId,eventTag){
+	        	document.getElementById('mainact').value='selectRecord';
+	        	document.getElementById('sel_mainOrderId').value= mainOrderId;
+	        	document.getElementById('is_thermal').value= 'thermal';
+
+	        	var data= "act=selectRecord&is_thermal=thermal&SelMainOrderId="+mainOrderId;
+				 $.ajax({
+		                type:'post',
+		                datatype: "json",
+		                url:'batch_add_arata_order_shipment_new.php',
+		                data:data,
+		                success:function($response){
+		                	var record=eval($response);
+		                	var len=record.length;
+		         			
+							$("#divRemark table").html(
+			         				"<tr>"
+		         						+"<td width='80px' align='center'><b>发货单号</b></td>"
+		         						+"<td width='170px' align='center'><b>运单号</b></td>"
+		         					+"</tr>");
+		         			var divStr = "";		
+                            for(var i=0;i<len;i++){
+                            	divStr = divStr + "<tr><td width='80px' align='center'>"+record[i].SHIPMENT_ID+"</td>"
+                            		    +"<td width='170px' align='center'>" +record[i].TRACKING_NUMBER+ "</td></tr>";
+                            } 	
+                            divStr = divStr + 	
+					         				"<tr>"
+					         					+"<td align='center' colspan='2'>"
+					         						+"<input type='button' id='button'  value='close' onclick='noShowRemark();'>"
+					         					+"</td>"
+					         				+"</tr>";
+					        $("#divRemark table").append(divStr);
+					        showRecord(eventTag);  
+		                },
+		                error:function(){
+		                    alert("selectRecord AJAX加载失败");
+		                }
+	              });
+		    }
+
+
+	        function showRecord(eventTag)
+	        {
+	            var event = eventTag || window.event;
+	            var top = event.clientY;      
+	            if((top+80) > document.body.offsetHeight)
+	                document.getElementById("divRemark").style.top = (top + document.documentElement.scrollTop-80)+'px';
+	            else   
+	                document.getElementById("divRemark").style.top = (top + document.documentElement.scrollTop)+'px';
+	            var left = event.clientX;   
+	            if((left+360) > document.body.offsetWidth)
+	                document.getElementById("divRemark").style.left = (left + document.documentElement.scrollLeft - 360)+'px';
+	            else
+	                document.getElementById("divRemark").style.left = (left + document.documentElement.scrollLeft)+'px';
+
+	           document.getElementById("divRemark").style.display = '';
+	        }
+
+	        function noShowRemark()
+	        {
+	            document.getElementById("divRemark").style.display = 'none';
+	        }
+	        
+	    //{/literal}
+        //]]>
+        
+		</script>
+</head>
+<body>
+		<div>			
+			<h1>批量追加热敏面单：批量拣货单对应的快递单打印</h1>
+			<p>
+				查询并列出批拣单对应的发货单以为其打印快递面单，请注意热敏打印机中的打印纸张正确。如果需要核对热敏资源是否足够，请移步<a href="thermal_manage.php">监控页</a>。
+			</p>
+			<p>{if $BPSN}{if $isAllBound}热敏面单号绑定调度已经完成，可以打印。{else}尚未完成热敏面单号绑定调度，请等待。如果长时间无法自动绑定，请联系ERP。{/if}{/if}</p>
+			<p>
+				<form id="queryform" action="batch_add_arata_order_shipment_new.php" method="post">
+					<input type="hidden" id="foreAct" name="act" value="query">
+					<input type="hidden" id="is_thermal" name="is_thermal" value="thermal">
+					批拣单号：<input type="text" id="BPSN" name="BPSN" value="{$BPSN}">
+					<input type="button" value="查询" onclick="query();">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     
+					<input id="bind" type="button" value="批量绑定新面单号" onclick="
+                    addNewTrackingNum('{$BPSN}');"  {if !$shipmentsNum}disabled='disabled'{/if}>
+				</form>
+			</p>
+			<hr>
+			{if $message}
+				<div id='message' style='color:red;'>{$message}</div>
+			{/if}
+			
+			<div>
+	{if $setBPSN}
+            <form name="mainform" action="batch_add_arata_order_shipment_new.php" method="POST">
+            			<input type="hidden" id="is_thermal" name="is_thermal" value="thermal">
+            			<input type="hidden" id="mainact" name="act" value="">
+						<input type="hidden" id="sel_ssid" name="SSID"> 
+						<input type="hidden" id="sel_soid" name="SOID"> 
+						<input type="hidden" id="sel_tn" name="STN"> 
+						<table>
+							<tr>
+								<th>序号</th>
+								<th>原始发货单号</th>
+								<th>主订单号</th>
+								<th>快递名称</th>
+								<th>原始快递面单号</th>
+								<th>追加的快递面单号</th>
+								<th style="display:none">操作</th>	
+								<th>查看追加面单记录</th>
+							</tr>
+		{foreach from=$shipments key=k item=shipment}
+              <tr>
+                <td><input type="hidden" id="carrierId" value="{$shipment.carrier_id}"><span>{$k+1}</span></td>
+                <td>
+                	<span>{$shipment.shipment_id}</span>
+                	<input type='hidden' id='shipment_id_{$k}' name='SID[]' value="{$shipment.shipment_id}">
+                </td>
+                <td>
+                	<span>{$shipment.main_order_id}</span>
+                	<input type='hidden' id='order_id_{$k}' name='OID[]' value="{$shipment.main_order_id}">
+                </td>
+                <td>
+                	<span>{$shipment.carrier_name}</span>
+                	<input type='hidden' id='shipping_id_{$k}' name='shipping_ID[]' value="{$shipment.shipping_id}">
+                	<input type='hidden' id='carrier_id_{$k}' name='carrier_ID[]' value="{$shipment.carrier_id}">
+                </td>
+                <td>
+                     <input type="text"
+                       id="TN_{$k}"
+                       name="TNS[]"
+                       value="{$shipment.tracking_number}"
+                       readonly="true"
+                     >
+                </td>
+                <td>
+                     <input type="text"
+                       id="ADDTN_{$k}"
+                       name="ADDTNS[]"
+                       value="{$shipment.add_tracking_number}"
+                     >
+                </td>
+                <td style="display:none">
+                  <input type="button" value="更新快递单记录并重新打印快递单" onclick="
+                    check_trackingnumber({$k},{$shipment.shipment_id},{$shipment.main_order_id},{$shipment.countNum});
+                  "  {if !$isAllBound}disabled='disabled'{/if}>
+                </td>                      
+                <td>
+                	<input type="hidden" id="sel_mainOrderId" name="SelMainOrderId"> 
+                	<input type="button" value="查看追加面单记录" onclick="selectRecord({$shipment.main_order_id},event);">
+                </td>
+              </tr>
+        {/foreach}
+				
+				<tr>
+					{if $shipmentsNum}
+					<td colspan=7>
+						<input type="hidden" name="BPSN" value="{$BPSN}">						
+						Let's go to print them all! 
+						<input type="button" id="btn_batch_add_shipment"  value="批量追加面单并打印" onclick="batch_add_shipment();"  {if !$isAllBound}disabled='disabled'{/if}>
+					</td>
+					{else}
+					<td colspan=7>没有能打的面单</td>
+					{/if}
+				</tr>
+				</table>
+		</form>
+	{/if}
+			</div>
+		</div>
+        {if $ifUpdateDone}
+        	<div style="display: none;">
+        		<form name="KyrieEleison" id="KyrieEleison" action="print_shipping_orders_arata.php" method='POST' target="print_frame">
+					<input type="hidden" name="print" value="1">
+					<input type="hidden" name="arata" value="1">
+					<input type="hidden" name="isAdd" value="1">  
+					<textarea name='order_id'>{$order_ids}</textarea>
+					<input type="submit">
+				</form>
+			</div>
+				<iframe name="print_frame" width="100%" height="100%" frameborder="1" src="" ></iframe> <!--{$src}-->
+				<script type="text/javascript">
+				document.KyrieEleison.submit();
+				</script>
+	    {/if}
+	    
+	    
+         <div id="divRemark" style="z-index:100px;position:absolute;background:#FFF; margin:0; padding:5px 5px 0 5px; width:260px; border:1px solid #b4e3e5; font-size:12px; line-height:20px; color:#5c5c5c; font-family:宋体;display:none;">
+			<table id="recordTable">
+				
+			</table>	
+		</div>
+		
+	</body>
+</html>

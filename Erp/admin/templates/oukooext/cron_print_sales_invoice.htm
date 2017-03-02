@@ -1,0 +1,29 @@
+{literal}<?xml version="1.0" standalone="yes"?>{/literal}
+<DsInvoice xmlns="http://ouku.com/invoiceDataSet.xsd">
+  <InvoiceHeader>
+    <partnerName><![CDATA[{$invoice.partner_name}]]></partnerName>
+    <orderSn>{$invoice.root_order_sn}</orderSn>
+    <tel>{$invoice.tel}</tel>
+    <shippingName><![CDATA[{$invoice.shipping_name}]]></shippingName>    
+    <payName><![CDATA[{$invoice.pay_name}]]></payName>
+    <salesInvoiceId>{$invoice.sales_invoice_id}</salesInvoiceId>
+    <invoiceDate>{$invoice.invoice_date}</invoiceDate>
+    <totalNetAmount>¥{$invoice.total_net_amount}</totalNetAmount>
+    <totalAmount>¥{$invoice.total_amount}</totalAmount>
+    <totalAmountCapital>{$invoice.total_amount_capital}</totalAmountCapital>
+    <redFlag>{$invoice.red_flag}</redFlag>
+    <originalInvoiceNo>{$invoice.original_invoice_no}</originalInvoiceNo>
+    <description>{$invoice.description}</description>
+  </InvoiceHeader>
+  {foreach from=$invoice.items item=item}
+  <InvoiceItem>
+    <itemName><![CDATA[{$item.item_name}]]></itemName>
+    <itemModel><![CDATA[{$item.item_model}]]></itemModel>
+    <uom>{$item.uom}</uom>
+    <unitPrice>{$item.unit_price}</unitPrice>
+    <totalPrice>{$item.total_price}</totalPrice>
+    <serialNumber>{$item.serial_number}</serialNumber>
+    <quantity>{$item.quantity}</quantity>
+  </InvoiceItem>
+  {/foreach}
+</DsInvoice>

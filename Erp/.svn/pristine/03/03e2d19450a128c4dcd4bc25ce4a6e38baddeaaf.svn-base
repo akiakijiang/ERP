@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>发货单查询</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<style type="text/css">
+	<!--{literal}-->
+	#tab td {
+		text-align: center;
+	}
+
+	<!--{/literal}-->
+</style>
+<script type="text/javascript">
+{literal}
+
+{/literal}
+</script>
+</head>
+<body>
+ <fieldset style="-moz-border-radius:6px;padding:10px;margin:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;发货单查询&nbsp;</span></legend>
+	<DIV>
+	    <h3 style="color:#09F;">查询</h3>
+		<p>
+			<form action="search_shipment_bill.php" method="GET">
+			   <table id="search" cellpadding="5" cellspacing="1">
+			   <tr>
+			     <td>每页显示
+		          <select name="size" >
+         	          {html_options options=$page_size_list selected = $smarty.request.size}
+           	      </select> 条记录</td>
+			   </tr>
+			   <tr>
+			    <td>发货单号
+			    <input id="SHIPMENT_ID" style="width:100px" size="50"  name="SHIPMENT_ID" value="{$smarty.request.SHIPMENT_ID}"></td>
+			    <td>订单号 
+			    <input id="order_sn" style="width:100px" size="50"  name="order_sn" value="{$smarty.request.order_sn}"></td>
+			   </tr>
+			   <tr>
+			     <td>面单号 
+			      <input id="TRACKING_NUMBER" style="width:100px" size="50"  name="TRACKING_NUMBER" value="{$smarty.request.TRACKING_NUMBER}"></td>
+			     <td>发货单状态
+			     <select name="shipping_status">
+			          {html_options options=$shipping_status_list selected = $smarty.request.shipping_status}
+			     </select></td>
+			     <td>快递运单类型
+			     <select name="shipping_category">
+			          {html_options options=$shipping_category_list selected = $smarty.request.shipping_category}
+			     </select></td>
+			   </tr>
+			   <tr>
+			    <td>起始下单时间 <input style="width:90px;margin-top:5px" id=start_validity_time name="start_validity_time" value="{$start_validity_time}"><input type="button" value="..." id="start_validity_time_trigger"></td>
+			    <td>终止下单时间 <input style="width:90px;margin-top:5px" id="end_validity_time" name="end_validity_time" value="{$end_validity_time}"><input type="button" value="..." id="end_validity_time_trigger"></td>
+			    <td>排序方式 <select name="sort_method" id="sort_method" style="margin-top:5px">
+	                  {html_options options=$sort_time_list selected = $smarty.request.sort_method}
+	            </select></td>
+			    <td><input type="submit"  style="margin-top:5px" value="搜索" ></td>
+			   </tr>
+			 </table>
+			</form>
+		</p>
+	</DIV>
+	<DIV>
+	    <h3 style="color:#09F;">发货单列表</h3>
+		<hr style="margin:5px;">
+		<h3 style="text-align:left;">
+			共计{$total}条发货单记录
+		</h3>
+		<table id="tab" class="bWindow" style="margin-top:10px;margin-bottom:10px;width:1400px;">
+			<tr>
+				<th>发货单号</th>
+				<th>发货单状态</th>
+				<th>所在批拣单-格子ID</th>
+				<th>绑定订单</th>
+				<th>承运</th>
+				<th>绑定面单</th>
+				<th>仓库名称</th>
+				<th>操作</th>
+			</tr>
+			<!--{foreach from=$shipment_bills item=shipment_bill}-->
+			<tr>
+			   <td>{$shipment_bill.SHIPMENT_ID}</td>
+			   <td>{$shipment_bill.shipping_status_name}</td>
+			   <td>{if $shipment_bill.is_pick != ''}【{$shipment_bill.is_pick}】{/if}<a href="batch_pick_detail.php?batch_pick_sn={$shipment_bill.batch_pick_sn}" target="new">{$shipment_bill.batch_pick_sn}</a> - {$shipment_bill.grid_id}</td>
+			   <td><a href="order_edit.php?order_id={$shipment_bill.order_id}" target="new">{$shipment_bill.order_sn}</td>
+			   <td>{$shipment_bill.shipping_name}</td>
+			   <td>{$shipment_bill.TRACKING_NUMBER}</td>
+			   <td>{$shipment_bill.facility_name}</td>
+			   <td>
+				   {if $shipment_bill.is_pick != ''}
+				   <form action="search_shipment_bill.php?&sugu_print=1&shipment_id={$shipment_bill.SHIPMENT_ID}&size={$smarty.request.size}&sort_method={$smarty.request.sort_method}&shipping_status={$smarty.request.shipping_status}&start_validity_time={$smarty.request.start_validity_time}&end_validity_time={$smarty.request.end_validity_time}&shipping_category={$smarty.request.shipping_category}&SHIPMENT_ID={$smarty.request.SHIPMENT_ID}&order_sn={$smarty.request.order_sn}&TRACKING_NUMBER={$smarty.request.TRACKING_NUMBER}" method="POST">
+				   <input type="submit" value=" 打印  "><br>
+				   </form>
+				   {/if}
+			   </td>
+			</tr>
+			<!--{/foreach}-->
+	</table>
+	{$pagination}
+ </fieldset>
+   <!-- 终于转到发货单打印了 -->
+   {if $sp==1}
+     <div style="text-align:center;">
+			<h1> = = = 打印预览 = = = </h1>
+		   </div>
+		<iframe name="print_frame" width="100%" height="100%" frameborder="1" 
+		 src= "shipment_print_for_batch_pick_new.php?print=1&shipment_id={$shipment_id}"
+		></iframe>
+   {/if}
+  {literal}
+  <script type="text/javascript">//<![CDATA[
+                                          
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "start_validity_time",
+          button            : "start_validity_time_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+      
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "end_validity_time",
+          button            : "end_validity_time_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+      //]]>
+	</script>
+	{/literal}
+  </body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>汇率管理</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// 载入执行
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+	});	
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit(form)
+	{
+		$button = $(this);
+		waiting($button);
+		
+		if (form == 'form1') {
+			do {
+				// 本币
+				var $input = $(':select[name="currencyConversion[fromCurrencyCode]"]');
+				if ($.trim($input.val()) == '') {
+					alert('请选择本币');
+					$input.focus();
+					break;
+				}
+				
+				// 外币
+				var $input = $(':select[name="currencyConversion[toCurrencyCode]"]');
+				if ($.trim($input.val()) == '') {
+					alert('请选择外币');
+					$input.focus();
+					break;
+				}
+				
+				// 汇率
+				var $input = $(':input[name="currencyConversion[currencyConversionRate]"]');
+				if ($.trim($input.val()) == '') {
+					alert('请填写汇率');
+					$input.focus();
+					break;
+				}
+				
+				// 时间
+				var $input = $(':input[name="currencyConversion[currencyConversionDate]"]');
+				if ($.trim($input.val()) == '') {
+					alert('请填写日期');
+					$input.focus();
+					break;
+				}
+				
+				// 成功后提交
+				message = '确认吗';
+				if (confirm(message)) {
+					$('#form1').submit();
+					waiting($button, 'en');
+				}
+			} while (false);
+			
+		} else {
+			
+			do {
+				// 货币代码
+				var $input = $(':input[name="currency[code]"]');
+				if ($.trim($input.val()) == '') {
+					alert('请填写货币代码');
+					$input.focus();
+					break;
+				}
+				
+				// 成功后提交
+				message = '确认吗';
+				if (confirm(message)) {
+					$('#form2').submit();
+					waiting($button, 'en');
+				}
+			} while (false);
+		}
+
+		waiting($button, 'en');
+	}
+	
+	/**
+	 * 格式化金额
+	 */
+	function money_format(number) 
+	{
+		var num = Math.round(number * 100) / 100 ;
+		return num.toFixed(2);
+	}
+				
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;汇率管理&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+	<!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#message').slideUp("slow");
+		}, 3000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+  
+      
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;汇率列表&nbsp;</legend>
+  <div>
+			<div class="inner" style="text-align:right; padding-right:20px;">
+    	<form method="get">
+        <select name="from_code">
+            <option value="">- [ 本币 ]</option>
+            <!--{foreach from=$currency_type_list item=item}-->
+            <option value="{$item->currencyCode}" {if $filter.fromCurrencyCode == $item->currencyCode}selected="selected"{/if}>[{$item->currencyCode}] {$item->description}</option>
+            <!--{/foreach}-->
+        </select>
+        &nbsp;&nbsp;
+        <select name="to_code">
+            <option value="">- [ 外币 ]</option>
+            <!--{foreach from=$currency_type_list item=item}-->
+            <option value="{$item->currencyCode}" {if $filter.toCurrencyCode == $item->currencyCode}selected="selected"{/if}>[{$item->currencyCode}] {$item->description}</option>
+            <!--{/foreach}-->
+        </select>
+         
+        &nbsp;&nbsp;&nbsp;&nbsp; 
+         
+        <input type="text" name="begin" value="{$filter.begin}" id="begin" size="10" maxlength="10" /> 
+        <input type="button" id="beginTrigger" value="日历" style="border:#960 1px solid;" />
+        &nbsp;&nbsp;
+        <input type="text" name="end" value="{$filter.end}" id="end" size="10" maxlength="10" /> 
+        <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+        
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" value="查询" /> <input type="hidden" name="act" value="filter" />
+      </form>
+      </div>
+      
+<!--{if $currency_conversion_list}-->  {* 如果有列表数据 *}
+
+      <table class="inner">
+      
+        <tr align="center" class="th">
+          <th>从 [本币]</th>
+          <th>到 [外币] </th>
+          <th>汇率</th>
+          <th>开始时间</th>
+          <th>创建时间</th>
+          <th width="62">操作</th>
+        </tr>
+        
+        <!--{foreach from=$currency_conversion_list item=item name="curConList"}-->
+				<tr align="center" class="{cycle values='odd,even'}">
+          <td>{$item->fromCurrencyCode}</td>
+          <td>{$item->toCurrencyCode}</td>
+          <td>{$item->currencyConversionRate}</td>
+          <td>{$item->currencyConversionDate|date_format:"%Y-%m-%d"}</td>
+          <td>{$item->createdStamp|date_format:"%Y-%m-%d"}</td>
+          <td>
+            	{if $item->cancellationFlag == 'Y'}
+                已停用
+                {else}
+           		<a href="currency_scale.php?act=disable&id={$item->currencyConversionId}">作废</a>
+                {/if}
+					</td>
+				</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+	{$pagination}
+
+<!--{else}-->
+
+			<div style="text-align:center"><h4>无相关数据</h4></div>
+      
+<!--{/if}-->
+
+  </div>    
+  </fieldset>
+
+
+
+	{* 添加汇率 *}
+	<br /><br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;添加汇率&nbsp;</legend>
+  <div style="display:none;">
+	<form method="post" id="form1">
+			<!--<div style="float:right;"><a href="?act=add">添加</a></div>-->
+      <table class="inner">
+        <tr>
+          <td width="120">选择币种</td>
+          <td>
+          	<select name="currencyConversion[fromCurrencyCode]">
+            	<option value="">- [ 本币 ]</option>
+            	<!--{foreach from=$currency_type_list item=item}-->
+              <option value="{$item->currencyCode}">[{$item->currencyCode}] {$item->description}</option>
+              <!--{/foreach}-->
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <select name="currencyConversion[toCurrencyCode]">
+            	<option value="">- [ 外币 ]</option>
+            	<!--{foreach from=$currency_type_list item=item}-->
+              <option value="{$item->currencyCode}">[{$item->currencyCode}] {$item->description}</option>
+              <!--{/foreach}-->
+            </select>
+			</td>
+        </tr>
+        
+        <tr>
+          <td>汇率</td>
+          <td>
+            <input type="text" name="currencyConversion[currencyConversionRate]" value="" maxlength="128" size="10" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>开始日期</td>
+          <td>
+            <input type="text" name="currencyConversion[currencyConversionDate]" id="datetime" size="10" maxlength="10" /> 
+            <input type="button" id="datetimeTrigger" value="日历" style="border:#960 1px solid;" />
+          </td>
+        </tr> 
+      </table>
+      
+      <br />     
+      <div style="text-align:center"><input type="button" value="创建" onclick="apply_submit('form1');" /></div>
+      <input type="hidden" name="act" value="add" />
+ 
+  </form>
+	</div>
+	</fieldset>
+  
+  
+  {* 添加币种 *}
+	<br /><br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;添加币种&nbsp;</legend>
+  <div style="display:none;">
+	<form method="post" id="form2">
+      <table class="inner">
+        <tr>
+          <td width="120">币种代码</td>
+          <td>
+          	<input type="text" name="currency[code]" value="{$currency.code}" maxlength="128" size="10" /> &nbsp;&nbsp; (* 如果该币种代码已存在，则不会重新创建，只会更改其币种名 )
+					</td>
+        </tr>
+        
+        <tr>
+          <td>币种名</td>
+          <td>
+            <input type="text" name="currency[description]" value="{$currency.description}" maxlength="128" size="20" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>币种符号</td>
+          <td>
+            <input type="text" name="currency[sign]" value="{$currency.sign}" maxlength="128" size="20" />
+          </td>
+        </tr>
+        
+      </table>
+      
+      <br />
+      <div style="text-align:center"><input type="button" value="创建" onclick="apply_submit('form2');" /></div>
+      <input type="hidden" name="act" value="create" />
+
+  </form>
+	</div>
+	</fieldset>
+        
+  
+<br />
+</div>
+</fieldset>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "datetime",
+	button            : "datetimeTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "begin",
+	button            : "beginTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

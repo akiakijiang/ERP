@@ -1,0 +1,890 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销商品套餐管理</title>
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  
+	<script type="text/javascript">
+	// <![CDATA[				
+	var WEB_ROOT = '{$WEB_ROOT}';
+	//初始化两个用来存储用户作出的修改，用以显示
+	{literal}
+	var changeValue = {};
+	{/literal}
+	// 初始化变量		
+	// 已添加的订单商品
+	var goods_array = new Array();
+
+	{if $update && $update.item_list}
+	{foreach from=$update.item_list item=item}
+	var _g = {ldelim}goods_style_id:'{$item.goods_id}_{$item.style_id}_{$item.item_id}', price:{$item.price}, number:{$item.goods_number}{rdelim}; 
+	goods_array.push(_g);
+	{/foreach}	
+	{/if}
+	
+	// {literal}
+	
+	// 载入执行
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			// 绑定添加商品按钮事件
+			$('#goods_add_btn').bind('click', goods_add);
+			
+			/**
+			 * 商品搜索
+			 */
+			$('#goods_add_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+				dataType : 'json',
+				minChars: 0,
+				delay: 1000,
+				mustMatch: true,
+				formatItem : function(row, i, max, value, term) {
+					return(row.goods_name);
+				},
+				formatResult : function(row) {
+					return(row.goods_name);
+				}
+			}).result(function(event, row, formatted) {
+				$('#goods_add_goods_id').val(row.goods_id);
+				change_goods_style_select_list(row.goods_id);
+			});
+			
+			$(".submit-btn").bind('click',function(){
+				var $button = $(this);
+				waiting($button);
+				
+				do {
+					var is_submit = false;
+					var goods_list = $('#goods_list').find('tr');
+					for(var i = 1 ; i < goods_list.length ; i++ ){
+						var good_price = goods_list.get(i).getElementsByTagName("INPUT")[0].value;
+						var price_strs = good_price.split('.');
+						if(price_strs.length == 2 && price_strs[1].length > 6){
+							alert('商品单价只能保存六位小数');
+							is_submit = true;
+							break;
+						}
+					}
+					if(is_submit){
+						break;
+					}
+
+		           //套餐价格自动填充为：商品单价*商品数量
+					if($("#goods_list tr").length!=0 && $("input:[name='group[auto]']:radio:checked").val()=="no"){
+					var sum=0;				 
+						for (var i = 1; i < $("#goods_list tr").length; i++) {
+						 	var value = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+						 	//alert(value);
+						 	var number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+						 	//alert(number);
+						 	var num=parseInt(number);
+							var s = parseFloat(value);
+							var a=num*s;
+							sum+=a;
+						};
+						//alert(sum);
+						var amount = $("input[name='group[amount]']").attr("value");
+						//alert(amount);
+						if(sum!=amount){
+					
+							$("input[name='group[amount]']").attr("value",sum);
+						}
+					}	
+					
+					
+					
+					// 分销商
+					var $input = $(':input[name="group[name]"]');
+					if ($.trim($input.val()) == '') {
+						alert('请填写套餐名');
+						$input.focus();
+						break;
+					}
+
+					// 判断是否输入了开始有效时间
+					var date = $.trim($('#date').val());
+					if (date == '') {
+						alert('请输入开始有效时间');
+						waiting($button, 'en');
+						return;
+					}
+
+
+					/*需求变更，验证套餐存在功能弃用
+					//检查套餐是否已经存在
+					if($("#goods_list tr").length==1){
+						alert("没有添加商品");
+						break;
+					}
+					else if($("#comment").val()=="创建"){
+						//alert($("#comment").val());
+						var good_kinds_num = $("#goods_list tr").length-1;
+						var total = new Array();
+						var child  = {};
+						var array_input=new Array();    //前台的数据放入数组				
+						for (var i = 1; i < $("#goods_list tr").length; i++) {
+							var goods_id = $("#goods_list tr").eq(i).children().attr("goods_id");
+							var style_id = $("#goods_list tr").eq(i).children().attr("style_id");
+							var price = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+							var goods_number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+							//console.log(goods_id);
+							//var Array1 = {};
+							child.goods_id = goods_id;
+							child.style_id = style_id;
+							child.goods_number = goods_number;
+							child.price = price;
+							total.push(child);
+							child={};				
+						}
+						console.log(total);
+						function if_is_existed(sendData){ //这里使用闭包，访问到内部Ajax返回值
+							var is_existed;
+								function inner_ajax(){	
+									$.ajax({
+										async : false,
+										dataType : "text",
+										//data: total,
+										data:"sendData="+sendData,
+										url : WEB_ROOT + "admin/ajax.php?act=check_is_existed",
+										type : 'POST',
+										success : function(response) {	
+											//alert(response);
+											console.log(response);									
+												is_existed=response;
+												// alert(is_exited);										
+										},
+										error: function() { 
+											alert('error'); 
+										}
+									});
+									return is_existed;
+								}
+							return inner_ajax;
+						}
+						//console.log("这里是数组输出："+ total[0]['goods_id']);
+						var sendData = JSON.stringify(total);
+						var result = if_is_existed(sendData);
+						var TC = result();
+						//alert(TC);
+						if(TC!=1){
+							alert("该套餐已存在，套餐编码为："+TC);
+							break;
+						}
+
+					}
+					else if($("#comment").val()=="更新"){
+						var good_kinds_num = $("#goods_list tr").length-1;
+						var total = new Array();
+						var child  = {};
+						var array_input=new Array();    //前台的数据放入数组				
+						for (var i = 1; i < $("#goods_list tr").length; i++) {
+							var goods_id = $("#goods_list tr").eq(i).children().attr("goods_id");
+							var style_id = $("#goods_list tr").eq(i).children().attr("style_id");
+							var price = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+							var goods_number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+							//console.log(goods_id);
+							//var Array1 = {};
+							child.goods_id = goods_id;
+							child.style_id = style_id;
+							child.goods_number = goods_number;
+							child.price = price;
+							total.push(child);
+							child={};				
+						}
+						//console.log(total);
+						// var is_exited;
+						function if_is_existed(sendData){ //这里使用闭包，访问到内部Ajax返回值
+							var is_existed;
+								function inner_ajax(){	
+									$.ajax({
+										async : false,
+										dataType : "text",
+										//data: total,
+										data:"sendData="+sendData,
+										url : WEB_ROOT + "admin/ajax.php?act=check_is_existed",
+										type : 'POST',
+										success : function(response) {	
+												//console.log(response);								
+												is_existed=response;									
+										},
+										error: function() { 
+											alert('error'); 
+										}
+									});
+									return is_existed;
+								}
+							return inner_ajax;
+						}
+						//console.log("这里是数组输出："+ total[0]['goods_id']);
+						var sendData = JSON.stringify(total);
+						var result = if_is_existed(sendData);
+						var finally_result = result();
+						// alert($(":input[name='group[code]']").val());
+						var code=$(":input[name='group[code]']").val();
+						var codeString='"'+code+'"';
+						//alert(finally_result);
+						// alert(codeString);
+						// alert(typeof finally_result);
+						// alert(typeof codeString);
+						if(finally_result!=codeString && finally_result!= 1){
+							alert("该套餐已存在，套餐编码为："+finally_result);
+							break;
+						}
+					}
+					*/
+					
+
+					// 成功后提交
+					var message = '作出修改如下：\n';
+					for (var key in changeValue) {
+						message += key + ' : ' + changeValue[key] + '\n';
+					}
+					message += '确认吗';
+					if (confirm(message)) {
+						var comment = $('#comment').val();
+						comment += '\n' + message;
+						$('#comment').val(comment);				
+						$('#group_detail_form').submit();
+						waiting($button, 'en');
+					}
+				} while (false);
+
+				waiting($button, 'en');
+				return;	
+			});
+	});
+	
+	function change_goods_style_select_list(goods_id)
+	{
+			var $e = $('#goods_add_style_id');
+			
+			$.ajax({
+ 	     		    beforeSend : function(){
+						$e.attr('disabled', true);	
+					},
+					async : false,
+					dataType : "json",
+					data: "goods_id=" + goods_id,
+					url : WEB_ROOT + "admin/ajax.php?act=search_goods_styles",
+					type : 'POST',
+					success : function(response) {
+						if (response.length) {	
+							var tpl = '';
+							for (var i = 0; i < response.length; i++) {
+								tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+							}
+						} else {
+							tpl = '<option value="0">N/A</option>';	
+						}
+						$e.html(tpl);
+					},
+					complete : function() {
+						$e.attr('disabled', false);
+					}
+			});
+	}
+	
+	function change_control(value){
+		if(value == 'yes'){		
+			$('.control').hide();
+			$('#textSpan').show();
+		}else if(value == 'no'){
+			$('.control').show();
+			$('#textSpan').hide();
+		}
+	}
+	
+	/**
+	 * 添加商品明细
+	 */
+	function goods_add(event)
+	{
+		// 添加按钮
+		var $button = $('#goods_add_btn');
+		waiting($button);
+		
+		// 判断是否输入了商品数量
+		var num = $.trim($('#goods_add_num').val());
+		if (num == '' || !/^\d+$/.test(num) || num < 1) {
+			alert('请输入正确的商品数量');
+			waiting($button, 'en');
+			return;
+		}
+
+		
+		var shipping_fee = $.trim($('#goods_add_shipping_fee').val());
+		if ((shipping_fee != '') && (!/^\d+$/.test(shipping_fee)) ) {
+			alert('请输入正确的快递费用');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的订单商品id
+		var goods_id = $('#goods_add_goods_id').val();
+		if (!goods_id) {
+			alert('请先选择商品');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的商品样式id
+		var style_id = $('#goods_add_style_id').val();
+
+		// 查询出该商品详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: '?request=ajax&act=add_goods',
+			data: 'goods_id=' + goods_id + '&style_id=' + style_id + '&goods_number=' + num,
+			dataType: 'json',
+			success: goods_add_callback,
+			error: function() { 
+				waiting($button, 'en'); 
+				alert('查询该商品数据失败'); 
+			}
+		});
+
+		// 添加商品到列表
+		function goods_add_callback(data) {
+			if (data.error) {
+				alert(data.error);
+				waiting($button, 'en');
+				return;
+			}
+			var goods_style_id = data.goods_id + '_' + data.style_id;
+			var g = {goods_style_id:goods_style_id, price:data.shop_price, number:parseInt(num)};			
+			var tpl = "<tr align=\"center\" goodname=\""+data.goods_name+"\"ix=\"" + goods_style_id +"\">" +
+								"  <td goods_id=\""+goods_id+"\"style_id=\""+style_id+"\"goods[" + goods_style_id + "][goods_id]>" + data.goods_name + "</td>";
+			tpl += "  <td class=\"control\"><input name=\"goods[" + goods_style_id + "][price]\" size=\"8\" type=\"text\" value=\"" + data.shop_price + "\" " +
+								"onchange=\"changeDetail('"+data.goods_name+" 修改单价为', this.value);\"" +
+								"oninput=\"OnInput (event)\" onpropertychange=\"OnPropChanged (event)\""+
+	                            "/></td>";
+			tpl += "  <td><input name=\"goods[" + goods_style_id + "][shipping_fee]\" size=\"8\" type=\"text\" value=\"" + shipping_fee + "\" "+
+								"onchange=\"changeDetail('"+data.goods_name+" 修改运费为', this.value);\"" +
+								"/></td>" +
+								"  <td>" + num + "</td>" +
+								"  <td> " +
+								"    <a href=\"javascript:void(0);\" onclick=\"update_goods_remove(this)\">删除</a>" +
+								"    <input name=\"goods[" + goods_style_id + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+								"    <input name=\"goods[" + goods_style_id + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+								"    <input name=\"goods[" + goods_style_id + "][number]\" type=\"hidden\" value=\"" + num + "\" /> " +
+								"  </td>" +
+								"</tr>";
+
+			if (cart_add(g)) { $('#goods_list').append(tpl); }
+			
+			change_control($("input:[name='group[auto]']:radio:checked").val());
+
+		// 	//套餐总价格自动填充为：商品单价*商品数量
+		if($("#comment").val()=="更新" && $("#goods_list tr").length>1){
+			var sum=0;				 
+				for (var i = 1; i < $("#goods_list tr").length; i++) {
+				 	var value = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+				 	//alert(value);
+				 	var number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+				 	//alert(number);
+				 	var numb=parseInt(number);
+					var s = parseFloat(value);
+					var a=numb*s;
+					sum+=a;
+				};
+				//alert(sum);
+				var amount = $("input[name='group[amount]']").attr("value");
+				//alert(amount);
+				if(sum!=amount){
+			
+					$("input[name='group[amount]']").attr("value",sum);
+				}
+
+		}
+		else if($("#comment").val()=="创建" && $("#goods_list tr").length>1 && $("input:[name='group[auto]']:radio:checked").val()=="no"){
+			var sum=0;				 
+				for (var i = 1; i < $("#goods_list tr").length; i++) {
+				 	var value = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+				 	//alert(value);
+				 	var number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+				 	//alert(number);
+				 	var numb=parseInt(number);
+					var s = parseFloat(value);
+					var a=numb*s;
+					sum+=a;
+				};
+				//alert(sum);
+				var amount = $("input[name='group[amount]']").attr("value");
+				//alert(amount);
+				if(sum!=amount){
+			
+					$("input[name='group[amount]']").attr("value",sum);
+				}
+			}
+			
+			waiting($button, 'en');
+		}
+		
+		
+		var key = '添加商品';
+		var value = $('#goods_add_select').val() + ' * ' + num + '+' + shipping_fee;
+		var content = changeValue[key];
+		if (content!=null) {
+			content += '\n           ' + value;
+		} else {
+			content = value;
+		}
+		changeDetail(key, content);
+	}
+	
+	/**
+	 * @return boolean 返回商品是否存在了
+	 */
+	function cart_add(g)
+	{
+		  // 判断该商品是否存在了
+			for (var i = 0; i < goods_array.length; i++ ) {
+				
+				// 商品存在则更改数量
+				if (goods_array[i].goods_style_id == g.goods_style_id) {
+					// 更改商品数
+					goods_array[i].number += g.number;
+					
+					// 更改显示的商品数
+					var expr = "tr[ix='"+ g.goods_style_id +"']";
+					var tr = $('#goods_list').find(expr);
+					td = tr.children('td');
+					td.get(3).innerHTML = goods_array[i].number;  // 更改显示数量
+					
+					var expr2 = "input[name='goods["+ g.goods_style_id +"][number]']";  //  更新表单字段
+					tr.find(expr2).val(goods_array[i].number);
+					
+					return false;
+				}
+			}
+			
+			// 该商品还没有添加
+			goods_array.push(g);
+			return true;
+	}
+	/**
+	*  套餐列表删除套餐
+	*/
+	function group_remove(doc) {
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('group_id');
+		var name = $tr.attr('group_name');
+		var message = '亲，确定要删除ID为' + id + '名为' + name + '的套餐吗?';
+		if (confirm(message)) {
+			location.href='distribution_group_goods.php?id='+id+'&work=delete&comment=删除套餐'+message;
+		}
+	}
+	/**
+	 * update删除商品
+	 *
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function update_goods_remove(doc, type) 
+	{
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		var value = $tr.attr('goodname');
+		var content = changeValue['删除商品'];
+		if (content!=null) {
+			content += '\n           ' + value;
+		} else {
+			content = value;
+		}
+		changeDetail('删除商品', content);
+		var value = $tr.find('td').find("input[name$='[price]']").val();
+		var number = $tr.find('td').eq(3).text();
+		$tr.remove();
+								
+		// 从已添加堆栈中删除该商品
+		for (var i = 0; i < goods_array.length; i++ ) {
+			if (goods_array[i].goods_style_id == id) {
+				goods_array.splice( i, 1);
+				break;
+			}
+		}
+		var amount = $("input[name='group[amount]']").attr("value");
+		var update_amount = (amount-value*number).toFixed(2);
+		$("input[name='group[amount]']").attr("value",update_amount);
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+
+
+	/**
+	 * 取消提交
+	 */
+	function cancel_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		var message = '确定要取消吗？';
+		if(confirm(message)){
+			if($("#comment").val()=="创建"){
+				$(":input","#group_detail_form") 
+				.not(":button, :submit, :reset, :hidden,:radio") 
+				.val(" ") 
+				.removeAttr("checked") 
+				.removeAttr("selected");
+				if($("#goods_list tr").length!=0){
+
+					// alert($('#goods_list tr').length);
+					 for (var i = 1; i < $("#goods_list tr").length; i++) {
+						 $("#goods_list tr").eq(i).empty();
+					 }
+
+				}
+				window.location.reload();
+			}
+			else if($("#comment").val()=="更新"){
+			window.location.reload();
+			}
+
+		}	
+		return;	
+	}
+
+	/**
+	*  监控用户修改
+	*/
+	function changeDetail(key, value) {
+		changeValue[key] = value;
+		//alert('change ' + key + ' ' + changeValue[key]);
+	}
+
+	
+	/**
+	 * 格式化金额
+	 */
+	function money_format(number) 
+	{
+		var num = Math.round(number * 100) / 100 ;
+		return num.toFixed(2);
+	}
+
+    /**
+	 * 动态填充套餐总金额
+	 */
+	function OnInput (event) {                   //非IE
+            if($("#goods_list tr").length!=0){		 
+				var sum=0;				 
+				for (var i = 1; i < $("#goods_list tr").length; i++) {
+				 	var value = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+				 	if(value==""){
+				 		value=0;
+				 	}
+				 	else if(isNaN(value)){
+				 		alert("单价必须是数字");
+				 		$("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value",0);
+				 		value=0;
+				 	}
+				 	
+				 	//alert(value);
+				 	var number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+				 	//alert(number);
+				 	var num=parseInt(number);
+					var s = parseFloat(value);
+					var a=num*s;
+					sum+=a;					
+				};
+				//alert(sum);
+				var amount = $("input[name='group[amount]']").attr("value");
+				//alert(amount);
+				if(sum!=amount){
+					$("input[name='group[amount]']").attr("value",sum);
+				}
+			}
+        }
+    function OnPropChanged (event) {                      //IE
+        if($("#goods_list tr").length!=0){		 
+				var sum=0;				 
+				for (var i = 1; i < $("#goods_list tr").length; i++) {
+				 	var value = $("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value");
+				 	if(value==""){
+				 		value=0;
+				 	}
+				 	else if(isNaN(value)){
+				 		alert("单价必须是数字");
+				 		$("#goods_list tr").eq(i).find("input[name$='[price]']").attr("value",0);
+				 		value=0;
+				 	}
+				 	
+				 	//alert(value);
+				 	var number = $("#goods_list tr").eq(i).find("td").eq(3).text();
+				 	//alert(number);
+				 	var num=parseInt(number);
+					var s = parseFloat(value);
+					var a=num*s;
+					sum+=a;					
+				};
+				//alert(sum);
+				var amount = $("input[name='group[amount]']").attr("value");
+				//alert(amount);
+				if(sum!=amount){
+					$("input[name='group[amount]']").attr("value",sum);
+				}
+		}
+    } 
+
+    
+				
+	// {/literal}
+	// ]]>
+	</script>
+
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+{include file="distributor/inc.navigation.htm"}
+
+<div style="margin:20px auto; width:770px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;套餐管理&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+	<!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#message').slideUp("slow");
+		}, 4000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+  
+      
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;套餐列表&nbsp;</legend>
+  <div>
+      <div class="inner" style="text-align:right; padding-right:20px;">
+      <form method="get">
+      模糊搜索 ：  <input type="text" name="keyword" value="{$filter.keyword}" size="40" /> 
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" value="查询" /> <input type="hidden" name="act" value="search" />
+      <div style="float:right;">&nbsp;<a href="?act=add#update">新建套餐</a></div>
+      <div style="float:right;">&nbsp;<a href="?act=exportTC">导出套餐</a></div>
+      </form>
+      </div>
+      
+<!--{if $group_list}-->  {* 如果有列表数据 *}
+
+      <table class="inner" id="group_table">
+      
+        <tr align="center" class="th">
+          <th>套餐编号</th>
+          <th>套餐名</th>
+          <th>套餐价</th>
+          <th>有效时间</th>
+          <th>最后更新时间</th>
+          <th width="62">操作</th>
+        </tr>
+        
+        <!--{foreach from=$group_list item=group name="groupList"}-->
+	    <tr align="center" class="{cycle values='odd,even'}" group_id="{$group.group_id}" group_name="{$group.name}">
+		  <td>{$group.code}</td>
+          <td>{$group.name}</td>
+		  <td>{$group.amount|string_format:"%.2f"}</td>
+          <td>{$group.valid_from}</td>
+          <td>{$group.updated}</td>
+	      <td>
+            <a href="distribution_group_goods.php?id={$group.group_id}#update">编辑</a>
+            <!-- <a href="distribution_group_goods.php?id={$group.group_id}&work=delete">删除</a>-->
+            <a href="javascript:void(0);" onclick="group_remove(this);">删除</a>
+		  </td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      <br>
+      
+	  {$pagination}
+
+<!--{else}-->
+
+	  <div style="text-align:center"><h4>无相关数据</h4></div>
+      
+<!--{/if}-->
+
+  </div>    
+  </fieldset>
+
+	<br />
+	<br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;套餐管理&nbsp;</legend>
+  <div {if !$update && $smarty.request.act != 'add'}style="display:none;"{/if}> <a name="update"></a>
+	<form method="post" id="group_detail_form">
+			<!-- <div style="float:right;"><a href="?act=add#update">添加</a></div> -->
+      <table class="inner">
+        <tr>
+          <td width="120">套餐编码</td>
+          <td><input type="text" name="group[code]" value="{$update.code}" maxlength="128" readonly="readonly" /></td>
+        </tr>
+        
+        <tr>
+          <td>套餐名</td>
+          <td>
+            <input type="text" name="group[name]" value="{$update.name}" maxlength="128" size="30" onchange="changeDetail('套餐名', this.value);" />
+            <span style=color:#FF0000>不能加入特殊符号和空格</span>
+          </td>
+        
+        </tr>
+        
+        
+        <tr>
+          <td>套餐总金额</td>
+          <td>
+            <input type="text" name="group[amount]" value="{$update.amount|string_format:"%.6f"}" maxlength="128" size="10" onchange="changeDetail('套餐总金额', this.value);"/>
+          </td>
+        </tr>
+        
+
+        <tr>
+          <td>从……时开始有效</td>
+          <td>
+            <input name="group[valid_from]" value="{$update.valid_from}" size="21" id="date" onchange="changeDetail('从……时开始有效', this.value);"/>
+            <input type="button" id="dateTrigger" value="日历" style="border:#960 1px solid;" />
+          </td>
+        </tr>
+        {if !$update.group_id}
+        <tr>
+        	<td>是否选择自动分配</td>
+        	<td>
+        		<input type = "radio" name = "group[auto]" value = "yes"  onclick="change_control('yes')"/> 是
+        		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;        	      		
+        		<input type = "radio" name = "group[auto]" value = "no" checked="checked" onclick="change_control('no')"/> 否
+        		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
+        		<span id="textSpan" style=color:#FF0000>请先维护好商品的价格</span>
+        	</td>         
+        </tr>
+        {/if}
+
+        <tr>
+          <td>套餐商品</td>
+          <td>
+        	<input type="text" id="goods_add_select" size="20" /> <input type="hidden" id="goods_add_goods_id"/>
+          样式 <select id="goods_add_style_id"><option value="0">N/A</option></select>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 数量： <input id="goods_add_num" type="text" size="5" value="1" />  
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 运费： <input id="goods_add_shipping_fee" type="text" size="5" value="0" />  
+          </td>
+        </tr> 
+
+        <tr>
+          <td></td>
+          <td><input id="goods_add_btn" type="button" value="添加" /></td>
+        </tr>
+      </table>
+
+      <div class="inner" style="text-align:right; padding-right:20px; border-bottom:#7F9FFF 2px solid;"></div>
+      
+      <table id="goods_list" class="inner">
+        <tr align="center" bgcolor="#E2F9FA">
+          <th width="50%">商品名称</th>
+          <th width="15%" class="control">单价</th>        
+       	  <th width="15%">运费</th>                  
+          <th width="10%">数量</th>
+          <th width="10">操作</th>
+        </tr>
+        
+        <!--{foreach from=$update.item_list item=item name="updateItemList"}-->
+		<tr align="center" goodname="{$item.goods_name}" ix="{$item.goods_id}_{$item.style_id}_{$item.item_id}">
+          <td goods_id="{$item.goods_id}" style_id="{$item.style_id}">{$item.goods_name}</td>
+          <td class="control">
+          	<input name="goods[{$item.goods_id}_{$item.style_id}_{$item.item_id}][price]" type="text" value="{$item.price|string_format:"%.6f"}" size="8" 
+          		onchange="changeDetail('{$item.goods_name} 修改单价为', this.value);" 
+          		oninput="OnInput (event)" 	             
+	            onpropertychange="OnPropChanged (event)"/></td>
+          <td>
+          <input name="goods[{$item.goods_id}_{$item.style_id}_{$item.item_id}][shipping_fee]" 
+	             type="text" 
+	             value="{$item.shipping_fee|string_format:"%.2f"}"  size="8" 
+	             onchange="changeDetail('{$item.goods_name} 修改运费为', this.value);"/>
+          </td>
+          <td>{$item.goods_number}</td>
+          <td>
+            <a href="javascript:void(0);" onclick="update_goods_remove(this)">删除</a>
+            <input name="goods[{$item.goods_id}_{$item.style_id}_{$item.item_id}][goods_id]" type="hidden" value="{$item.goods_id}" />
+            <input name="goods[{$item.goods_id}_{$item.style_id}_{$item.item_id}][style_id]" type="hidden" value="{$item.style_id}" />
+            <input name="goods[{$item.goods_id}_{$item.style_id}_{$item.item_id}][number]" type="hidden" value="{$item.goods_number}" /> 
+          </td>
+        </tr>
+        <!--{/foreach}-->
+      </table>
+      
+      <br />
+      {if $update.group_id}
+      
+      <div style="text-align:center">
+      	<input type="button" value="更新" class="submit-btn" />
+      	<input type="button" value="取消编辑" onclick="cancel_submit(this);" />
+      </div>
+      <input type="hidden" name="group[group_id]" value="{$update.group_id}" />
+      <input type="hidden" name="act" value="update" />
+      <input type="hidden" name="comment" id="comment" value="更新"/>
+      
+      {else}
+      
+      <div style="text-align:center">
+      	<input type="button" value="创建" class="submit-btn" />
+      	<input type="button" value="取消" onclick="cancel_submit(this);" />
+      </div>
+      <input type="hidden" name="act" value="add" />
+      <input type="hidden" name="comment" id="comment" value="创建"/>
+      {/if}
+  </form>
+	</div>
+	</fieldset>
+        
+  
+<br />
+</div>
+</fieldset>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers : false,
+	electric    : false,
+	inputField  : "date",
+	button      : "dateTrigger",
+	ifFormat    : "%Y-%m-%d %H:%M:%S",
+	daFormat    : "%Y-%m-%d %H:%M:%S"
+});
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>管理测试邮件</title>
+</head>
+<body>
+
+<table cellpadding="2" cellspacing="2" border="1">
+<tr><td>文件名</td><td>修改时间</td>{*<td>操作</td>*}</tr>
+{foreach from=$testmail_list item=testmail key=mail_name}
+<tr>
+<td><a href="{$testmail.filepath}" target="_blank" >{$mail_name}</a></td><td>{$testmail.filemtime}</td>{*<td><a href="testmail.php?action=del&path={$mail_name}" >删除</a></td>*}
+</tr>
+{/foreach}
+</table>
+
+</body>
+</html>

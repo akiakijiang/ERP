@@ -1,0 +1,97 @@
+<!-- 寄回商品信息 -->
+{if $service.service_type != 6 }
+<table cellpadding="0" cellspacing="0" class="price_info">
+{if $service.service_type == 2}
+
+	<tr>
+      
+      <td style="text-align:left;color:red;padding:0 5px;" rowspan="6">
+            {if $service.check_result}送检结果：{$service.check_result}{/if} 
+      </td>
+  </tr>
+		
+{/if}		
+	{if $service.back_order_info && $service.service_type == 2 && $service.inner_check_status == 32}
+	 <tr>
+    	<th style="width:150px;">退回商品总金额</th>
+			<td style="width:20px;"></td>
+      <td style="width:60px;">
+      	{$service.back_order_info.goods_amount|price_format}
+		<input type="hidden" name="goods_amount_0" value="{$service.back_order_info.goods_amount}" />
+      </td>
+    </tr>
+    <tr>    
+        <th>订单快递费用</th>
+				<td>+</td>
+        <td>
+					{$service.back_order_info.shipping_fee|price_format}
+	        <input type="hidden" name="shipping_fee_0" value="{$service.back_order_info.shipping_fee}" />
+        </td>
+    </tr>
+	<tr>
+		<th>退回杂项费用<br />（用户寄回的快递费用等）</th>
+		<td>+</td>
+		<td class='back_shipping_fee'>
+			￥ <input type="text" class="misc_fee" name="misc_fee" value="{$service.back_order_info.misc_fee}" style="width:40px;font-size:12px;font-family:Tahoma;" />
+		</td>
+	</tr>
+    <tr>    
+        <th>包装费</th>
+				<td>+</td>
+        <td>
+        	{$service.back_order_info.pack_fee|price_format}
+          <input type="hidden" name="pack_fee_0" value="{$service.back_order_info.pack_fee}" />
+        </td>
+    </tr>
+		<tr>
+		  <th>红包</th>
+			<td>+</td>
+			<td>
+      	{$service.back_order_info.bonus|price_format}
+				<input type="hidden" name="bonus_0" value="{$service.back_order_info.bonus}" />        
+      </td>
+		</tr>
+    {if !$service.service_pay_status && $service.service_status != 3}
+    <tr>
+    	<td colspan="4" style="text-align:right;">
+        <p style="margin:5px 0;" >
+        <a href="#" class="money" amount='{$service.back_order_info.order_amount}'>确认退款信息</a>
+        </p>
+        <p class="b_amount" style="border:0;padding:0;margin:0;width:300px;float:right;" sId="{$service.service_id}">
+        
+        <span>退款金额：</span><input type="text" name="amount" style="width:70px;" value="{$service.back_order_info.order_amount}" />
+        {if $service.service_call_status==1}
+        <a href="#" class="pop confirm_refund" actVal="update_status" type='{$service.service_type}' call='2' status='{$service.service_status}' is_goods_amount='0' is_shipping_fee='0' is_back_shipping='0' is_backbonus='0' misc_fee='0'>确认退款</a>
+        {/if}
+        {if $service.back_order_info.order_id && $service.service_call_status==2 }}
+	        {if $service.back_order_info.refund_apply_disable == 0}
+	        <a class="button_1" href="refund_apply.php?order_id={$service.back_order_info.order_id}&type=RET_EXT" target="_blank">退款申请</a>
+	        {else}
+	        <a class="button_2" href="javascript:void(0);" target="_blank">已申请</a>
+	        {/if}
+        {/if}
+        
+        {*<a href="#" class="button_1 no_sub">取消</a>*}
+        </p>
+    </td> 
+    </tr>
+    {/if}
+ 	{/if}
+    {if $service.service_type == 1 && $service.service_call_status != 2 && $service.inner_check_status == 32}
+    	<tr>
+    		 <td style="text-align:left;color:red;padding:0 5px;" >
+          {if $service.check_result}检测结果：{$service.check_result}{/if} 
+        </td>
+				{if $service.back_order_info}
+        <td  sId="{$service.service_id}" style="text-align:left;width:150px;">
+            	<a href="#" class="button_1 pop" style="width:100px;" actVal="update_status" type='{$service.service_type}' call='2' status='{$service.service_status}'
+                 onclick="{if $service.prompt}alert('{$service.prompt}');{/if}" >
+            	确认换货订单
+            	</a>
+            	<font style="display:none;" color="Red" id="service_done">已操作"确认换货订单"</font>
+        </td>	
+				{/if}
+      </tr>
+    {/if}
+</table>  
+{/if}

@@ -1,0 +1,4 @@
+订单号,订单金额,实际代收,手续费,预估运费,实际运费,欧酷是否收款,已结算金额,将结算金额,结算差额
+{foreach from=$request_orders item=request_order}
+{$request_order.order_sn},{$request_order.order_amount},{$request_order.real_order_amount},{$request_order.proxy_amount},{$request_order.shipping_fee},{$request_order.real_shipping_fee},{$request_order.pay_status|get_pay_status},{$request_order.origin_settle_amount},{$request_order.origin_settle_amount+$request_order.amount},{$request_order.amount}
+{/foreach}

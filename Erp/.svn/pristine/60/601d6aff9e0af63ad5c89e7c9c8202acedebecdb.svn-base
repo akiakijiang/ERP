@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<style type="text/css">
+{literal}
+*{
+	padding:0;
+	margin:0;
+}
+
+.Table3_Bo table{
+	width:100%;
+	text-align:center;
+	border-bottom:1px solid #b2b2b2;
+	border-collapse:collapse;
+}
+.Table3_Bo th{
+	height:30px;
+	line-height:30px;
+	border:1px solid #b2b2b2;
+}
+.Table3_Bo td{
+	height:50px;
+	line-height:25px;
+	border:1px solid #b2b2b2;
+	text-align:left;
+}
+.Table3_Bo table table{
+	border:0;
+	width:100%;
+}
+#user{
+	padding-bottom:15px;
+	_height:1%;
+}
+#user table{
+	float:right;
+	width:90.5%;
+	margin-top:-30px;
+	margin-right:10px;
+	margin-bottom:10px;
+}
+p{
+	padding:0;
+	margin:5px 0;
+}
+#user table td{
+	border:1px solid #b2b2b2;
+}
+.Table3_Bo table table td{
+	border:0;
+	border-bottom:1px solid #b2b2b2;
+	width:16.6%;
+}
+.b5{
+	margin-left:25px;
+}
+.b6{
+	margin-left:15px;
+}
+.w1{
+	width:10%;
+}
+.w2{
+	width:15%;
+}
+.w3{
+	width:20%;
+}
+
+.Button4{
+	background-repeat:no-repeat;
+	height:25px;
+	line-height:25px;
+	padding:0;
+	cursor:pointer;
+}
+.Button3{
+	background-repeat:no-repeat;
+	height:22px;
+	line-height:22px;
+	padding:0;
+	margin:5px;
+	cursor:pointer;
+}
+.Table3_Bo{
+	float:none;
+	clear:both;
+}
+
+body#can .calendar{
+	width:195px;
+}
+
+table.statusTable{border-collapse:collapse;margin-top:1px;}
+table.statusTable td{border:1px solid #c1dad7;}
+table.statusTable th{border:1px solid #c1dad7;font-weight:normal;color:#333;}
+table.statusTable tr.even{background:#f5fafa;}
+
+table.none{margin:-10px;padding:0;float:right;width:350px;text-align:left;background:#fff;border:1px solid #c1dad7;}
+table.none td{border:0;background:#fff;}
+#action_div {position:absolute;right:250px;background:#fff;z-index:1;}
+{/literal}
+</style>
+<title>降价提醒</title>
+</head>
+<body>
+<center>
+<form method="GET" action="pricecut_inform.php">
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+自动提醒状态：
+<select name="is_deal">
+<option value="-1" >所有</option>
+<option value="0" {if $smarty.request.is_deal == '0'}selected{/if}>未提醒</option>
+<option value="1" {if $smarty.request.is_deal == '1'}selected{/if}>已提醒</option>
+<option value="2" {if $smarty.request.is_deal == '2'}selected{/if}>客户已取消</option>
+<option value="3" {if $smarty.request.is_deal == '3'}selected{/if}>客户已删除</option>
+</select>
+客服跟踪状态：
+<select name="op_status">
+<option value="-1" >所有</option>
+<option value="none" {if $smarty.request.op_status == 'none'}selected{/if}>未处理</option>
+<option value="ever" {if $smarty.request.op_status == 'ever'}selected{/if}>待跟踪</option>
+<option value="deal" {if $smarty.request.op_status == 'deal'}selected{/if}>已处理</option>
+</select>
+模糊框(邮箱、手机、品牌)：
+<input style="width:120px" name="searchtext" value="{$smarty.request.searchtext}">
+<input type="hidden" value="search" name="act"/>
+<input type="submit" value="搜索">
+</form>
+<form action="{$back}" method="POST" style="display:none;margin-top:5px;" id="action_div"> 
+  <table class="none" style="height:200px;">
+		<tr valign="top">
+			<td style="width:60px;">
+				添加备注：
+			</td>	
+        	<td>
+				<textarea style="font-size:12px;width:97%;height:45px;height:50px;"  name="op_note" id="action_note_id"></textarea>
+			</td>
+         </tr>
+		<tr>
+				<td>处理时间：</td>
+				<td><input name="handle_time" id="handle_time_calendar" value="{$smarty.now|date_format:"%Y-%m-%d %H:%M:%S"}" style="width: 80px"><input type="button" value="..." id="handle_time_trigger"></td>
+			</tr>
+			<tr>
+			<td></td>
+			<td align="center" style="padding:0;">
+			<input type="hidden" name="inform_id" value="" id="inform_id" />
+			<input type="hidden" name="edit_status" value="" id="edit_status">
+			<input type="hidden" name="act" value="edit" id="act">
+				<input type="submit" value="提交" style="margin-right:15px;"/>	
+				<input type="button" onclick="document.getElementById('action_div').style.display='none';" value="取消" />			
+			</td>
+		</tr>
+	</table>
+</form>
+<br>
+</center>
+<p>
+客服跟踪状态：<a href="pricecut_inform.php?op_status=none">未处理</a>&nbsp;&nbsp;
+<a href="pricecut_inform.php?op_status=ever">待跟踪</a>&nbsp;&nbsp;
+<a href="pricecut_inform.php?op_status=deal">已处理</a><br/>
+自动提醒状态：<a href="pricecut_inform.php?is_deal=0&op_status={$smarty.request.op_status}">未提醒</a>&nbsp;&nbsp;
+<a href="pricecut_inform.php?is_deal=1&op_status={$smarty.request.op_status}">已提醒</a>&nbsp;&nbsp;
+<a href="pricecut_inform.php?is_deal=2&op_status={$smarty.request.op_status}">客户已取消</a>&nbsp;&nbsp;
+<a href="pricecut_inform.php?is_deal=3&op_status={$smarty.request.op_status}">客户已删除</a>&nbsp;&nbsp;<br/>
+</p><br/>
+搜素结果：
+{if $smarty.request.op_status == 'none'}未处理{elseif $smarty.request.op_status == 'ever'}待跟踪{elseif $smarty.request.op_status == 'deal'}已处理{/if} 
+{if $smarty.request.is_deal == '0'}未提醒{elseif $smarty.request.is_deal == '1'}已提醒{elseif $smarty.request.is_deal == '2'}客户已取消{elseif $smarty.request.is_deal == '3'}客户已删除{/if}
+<div class="Table3_Bo" id="Table2" style="border:none;">
+<table cellpadding="0" cellspacing="0">
+<thead>
+<tr bgcolor="#d4d0c8">
+	<th>商品</th>
+	<th>状态</th>
+	<th>设置时售价</th>
+	<th>现价</th>
+	<th>申请价格</th>
+	<th>手机号</th>
+	<th>邮件</th>
+	<th>用户名</th>
+	<th>申请时间</th>
+	<th>是否提醒</th>
+	<th>提醒时间</th>
+	<th>是否处理</th>
+	<th>处理日志</th>
+</tr>
+</thead>
+<tbody>
+
+{foreach from=$goods_list item=list}
+<tr>
+	<td><a href="{$WEB_ROOT}goods{$list.goods_id}/" target="_blank">{$list.goods_name}</a></td>
+	<td>{$list.status_name}</td>
+	<td>{$list.shop_price|price_format}</td>
+	<td>{$list.price|price_format}</td>
+	<td>{$list.price_inform-$list.price_range}～{$list.price_inform-1}元</td>
+	<td>{if check_admin_priv('check_user_tel')}{$list.user_mobile}{else}××××××{/if}</td>
+	<td>{if check_admin_priv('check_user_email')}{$list.email}{else}××××××{/if}</td>
+	<td>用户帐号：{$list.user_name}<br/>用户真名：{$list.user_realname}</td>
+	<td>{$list.date}</td>
+	<td>{$list.is_deal}</td>
+	<td>{$list.action_time}</td>
+	<td>{$list.op_status}
+	{if $list.op_status == '未处理' || $list.op_status == '待跟踪'}
+	<input type="button" onclick="change_status(window.event, 'ever', {$list.id});return false;" value="待跟踪" />
+	<input type="button" onclick="change_status(window.event, 'deal', {$list.id});return false;" value="已处理" />
+	{/if}
+	</td>
+	<td>{$list.op_note}</td>
+</tr>
+{/foreach}
+<tr>
+	<td colspan="13" style="text-align:right;padding-right:20px;">{$Pager}</td>
+</tr>
+</tbody>
+</table>
+</div>
+</body>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "handle_time_calendar",
+        button            : "handle_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+    
+    function change_status (event, status, inform_id) {
+    	//获得鼠标当前X,Y坐标
+			var x,y;
+			if(!document.all)
+			{
+			  x=event.pageX;
+			  y=event.pageY;
+			}else{
+			  x=document.body.scrollLeft+event.clientX; //鼠标X轴的值
+			  y=document.body.scrollTop+event.clientY; //鼠标Y轴的值
+			} 
+    	document.getElementById('action_div').style.top=y+'px';
+    	document.getElementById('action_div').style.display='';
+    	document.getElementById('inform_id').value=inform_id;
+    	document.getElementById('edit_status').value=status;
+    }
+</script>
+{/literal}
+</html>

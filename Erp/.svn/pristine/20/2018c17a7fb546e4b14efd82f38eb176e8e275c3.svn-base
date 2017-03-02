@@ -1,0 +1,19 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>管理文件锁</title>
+</head>
+<body>
+
+<table cellpadding="2" cellspacing="2" border="1">
+<tr><td>文件名</td><td>内容</td><td>操作</td></tr>
+{foreach from=$file_lock_list item=file_lock key=lock_name}
+<tr>
+<td>{$lock_name}</td><td>{$file_lock}</td><td><a href="filelock.php?action=del&path={$lock_name}" >删除</a></td>
+</tr>
+{/foreach}
+</table>
+
+</body>
+</html>

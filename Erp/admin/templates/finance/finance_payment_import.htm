@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <title>批量收款</title> 
+</head>
+<body>
+
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;批量收款&nbsp;</span></legend>
+  
+
+  
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">导入</h3>
+    <form id="upload" method="post" enctype="multipart/form-data">
+      请选择业务： <select name="tpl">
+      	<option value="">- 请选择</option>
+				{html_options options=$tpls_list}
+			</select>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="导入" />
+      <input type="hidden" name="act" value="upload" />
+    </form>
+	</div>
+
+
+	{if $payment_import_report}
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">导入报告</h3>
+    <br />
+    <h4>成功的: </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="12%">订单号</th>
+        <th width="12%">淘宝订单号</th>
+        <th width="12%">淘宝采购订单号</th>
+        <th width="10%">应收金额</th>
+        <th width="10%">实收金额</th>
+        <th width="10%">差异</th>
+        <th width="14%">收款时间</th>
+        <th width="20%">收款备注信息</th>
+      </tr>
+      
+      <!--{foreach from=$payment_import_report.successed item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.order_sn}</td>
+        <td>{$item.taobao_order_sn}</td>
+        <td>{$item.distribution_purchase_order_sn}</td>
+        <td>{$item.order_amount}</td>
+        <td>{$item.real_paid}</td>
+        <td>{$item.diff}</td>
+        <td>{$item.pay_time|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+        <td>{$item.pay_note}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center"><td colspan="7">无记录</td></tr>
+      
+      <!--{/foreach}-->
+      
+    </table>
+    
+    
+    <br />
+    <br />
+    <h4>失败的: </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="12%">订单号</th>
+        <th width="12%">淘宝订单号</th>
+        <th width="12%">淘宝采购订单号</th>
+        <th width="64%">错误原因</th>
+      </tr>
+      
+      <!--{foreach from=$payment_import_report.failed item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.order_sn}</td>
+        <td>{$item.taobao_order_sn}</td>
+        <td>{$item.distribution_purchase_order_sn}</td>
+        <td align="left">&nbsp;{$item.errmsg}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="3">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->
+    </table>
+    
+      
+	</div>
+  {/if}
+  
+
+  <br /><br /><br />
+
+
+</fieldset>
+
+</body>
+</html>

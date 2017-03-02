@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>CALL-CENTER</title>
+</head>
+
+<body {if $orders|@count > 0}onload="window.order_frame.location.href='{$WEB_ROOT}admin/detail_info.php?order_id={$user.order_id}'"{/if} >
+<table>
+<tr>
+<td>
+	<ul>
+	<li>用户名：{$user.user_name}</li>
+	<li>电话：{$user.tel}</li>
+	<li>手机：{$user.mobile}</li>
+	<li>用户呼入次数：{$user.call_in_times}</li>
+	<li>用户呼出次数：{$user.call_out_times}</li>
+	<li>
+	{foreach from=$orders item=order}
+	<a href="{$WEB_ROOT}admin/order_edit.php?order_id={$order.order_id}" target="order_frame">{$order.order_sn}</a> {$order.order_status|get_order_status}<br> 
+	{/foreach}
+	</li>
+	</ul>
+</td>
+<td>
+	<iframe align="right" src="about:blank" width="1000px" height="800px" name="order_frame" frameborder="0"></iframe>
+</td>
+</tr>
+
+
+</table>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>下载资料列表</title>
+<head>
+<meta charset="utf-8">
+{literal}
+<script src="./js/colorChange/dhtmlxcolorpicker.js"></script> 
+<script src="./js/colorChange/dhtmlxcommon.js"></script> 
+<script src="./js/jquery-1.3.2.js"></script> 
+<script	src="./js/jquery.ui/jquery.ui.widget.js"></script>
+<script src="./js/jquery.ui/jquery.ui.tabs.js"></script> 
+{/literal}
+{literal}
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.core.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.tabs.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.theme.css">
+<link rel="stylesheet" href="./js/colorChange/dhtmlxcolorpicker.css">
+<style type="text/css">
+body {
+	font-family: "新宋体";
+	font-size: 12px;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+
+h1 {
+	font-size: 16px;
+}
+
+.table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 12px;
+	font-family: "宋体";
+}
+
+.table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+}
+ .table th{background:#ffffff;border-bottom:1px solid #CCC;padding:4px; text-align:center;}
+#holder li {
+	padding: 4px;
+}
+
+.input {
+	width: 200px;
+	height: 20px;
+}
+#menu{
+		font-size: 16px;
+}
+
+#button {
+	text-align: center;
+}
+.styleWidth {
+	float: left;
+	width: 97%;
+	list-style-type: none;
+}
+.styleColor {
+	float: left;
+	width: 80px;
+	height: 80px;
+}
+.styleSport {
+	float: left;
+	width: 115px;
+	height: 30px;
+}
+.styleCloth {
+	float: left;
+	width: 115px;
+	height: 30px;
+}
+.li{
+	height: 30px;
+}
+</style>
+{/literal}
+</head>
+	<body onload="initColorPicker()">
+	<table id="menu" cellpadding="0" cellspacing="0">
+	 <tr>
+	 	<!-- <td><a href="goods_index.php?act=detail&&goods_id={$goods.goods_id}"><font color="#0099FF">返回详细页</font></a>　</td> -->
+	 </tr>
+	</table>
+	<br />
+<div class="demo">
+		<form id="form1" name="form1" method="post" action="goods_index.php?act=edit_data">
+<div id="tab">
+<ul>
+	<li><a href="#tabs-1">基本信息</a></li>
+</ul>
+<div id="tabs-1">
+<table class="table" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right">商品名称：</td>
+		<td><textarea name="data_name" id="data_name" rows="2" cols="100"  onblur="checkName();">{$data.data_name}</textarea>
+		<font id="data_name_info" name="data_name_info" color="red" >*</font>
+		<input type="hidden" id="name_state" name="name_state" value="1"></input>
+		</td>
+		<input type="hidden" id="data_id" name="data_id" value={$data.data_id}></input>
+	</tr>
+	
+	<tr>
+		<td align="right">下载资料分类：</td>
+		<td>{$data.cat_name}{$cat_name} </td>
+	</tr>
+	
+	<tr>
+		<td align="right">下载资料大小：</td>
+		<td><input type="text" class="input" name="data_size" id="data_size"  value="{$data.data_size}" />（单位：mb）</td>
+	</tr>
+	
+	<tr id="button">
+		<td  align="center" colspan="2">
+		<input type="hidden" name="test" value="{$cat_name}" id="test"></input>
+		　	<input type="button" name="submits" id="submits" value="提交" onclick="subEditGoods();" />　　
+		<input type="hidden" name="party_id" value="{$smarty.session.party_id}" id="party_id"></input>
+	　　　		<input type="reset" name="Submit2" value="重置" />　　
+		</td>
+	</tr>
+</table>
+</div>
+
+<div id="button"></div>
+</div>
+        </form>
+</div>
+<!-- End demo -->
+{literal}
+<script type="text/javascript">
+
+function subEditGoods(){
+	var falg_weight = true;
+	var goods_weight = $.trim($('#data_size').val());
+	var reg = /^[1-9][0-9]*$/;
+	if (goods_weight && goods_weight != 0) {
+		if (goods_weight.match(reg)) {
+			falg_weight = true;
+		} else {
+			falg_weight = false;
+		}
+		if (!falg_weight) {
+			alert("大小单位为mb，请输入整数");
+			return;
+		}
+	}
+	var state=$('#name_state').val();
+	if(state==1)
+	{
+		$('#form1').submit();
+	}else
+	{
+		alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+	}
+}
+
+
+function checkName(){
+	var dataName=$.trim($('#data_name').val());
+	if(dataName==''){
+		$('#name_state').val('0');
+		$('#data_name_info').html('您输入的值为空');
+	}
+	else {
+		$('#name_state').val('1');
+		$('#data_name_info').html('正确');
+	}
+}
+
+	$(function() {
+		$("#tab").tabs();
+	});
+</script>
+{/literal}
+</body>
+</html>

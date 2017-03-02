@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="styles/css/supplier.css" media="all" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>支付宝批量发货</title>
+</head>
+<body>
+<div>
+<form action="batch_alipay_shipping.php">
+订单号：<textarea name="batch_order_sn">{$smarty.request.batch_order_sn}</textarea>
+<input type="submit" value="搜索">
+{literal}
+<input type="submit" name="submit" value="批量发货" onclick="if (document.getElementsByName('batch_order_sn')[0].value == ''){alert('没有输入订单号');return false;} return confirm('确认要批量发货吗？')">
+{/literal}
+</form>
+</div>
+<br>
+<br>
+
+<table class="bWindow">
+<tr align="center">
+<td>订单号</td>
+<td>状态</td>
+<td>收货人</td>
+<td>快递公司</td>
+<td>支付方式</td>
+<td>结果</td>
+</tr>
+{foreach from=$orders item=order}
+<tr align="center">
+<td>
+	<a href="detail_info.php?order_id={$order.order_id}">{$order.order_sn}</a>
+	<br>
+	{$order.order_time}
+</td>
+<td>
+	{$order.order_status|get_order_status}<br>
+	{$order.shipping_status|get_shipping_status}<br>
+	{$order.pay_status|get_pay_status}
+</td>
+<td>{$order.consignee}</td>
+<td>[{$order.carrier_name}]{$order.bill_no}</td>
+<td>{$order.pay_name}</td>
+<td>{if $order.result === true}成功{elseif $order.result === false}失败{else}{$order.result}{/if}</td>
+</tr>
+{/foreach}
+</table>
+</body>
+</html>

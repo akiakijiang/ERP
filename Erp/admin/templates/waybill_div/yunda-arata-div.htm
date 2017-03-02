@@ -1,0 +1,148 @@
+
+<!--  
+$yunda_order.sender_branch
+$yunda_order.package
+$yunda_order.package_no
+$yunda_order.station_no
+$yunda_order.station
+$yunda_order.lattice_mouth_no
+
+-$arata.tracking_number
+-$arata.ydSender
+-$arata.service_type
+
+$order.consignee
+$order.mobile
+$order.tel
+$order.province
+$order.city
+$order.district
+$order.address
+$order.c_tel
+-$order.company_address
+
+
+$good.tc_code
+$good.sku_num
+
+
+$smarty.now
+
+$rank
+
+-->
+
+<div style="position:relative;display:inline-block;width:450px;height:800px;border:none;">
+	<div style="position:absolute;display:inline-block;width:450px;height:800px;border:none;">
+		<div class="inside" style="position:absolute;font-size:10pt;top:0px;left:0px;height:800px;width:450px;">
+		<div class="inside" style="position:absolute;font-size:10pt;top:0%;left:0%;height:2%;width:60%;text-align:left">
+			始发网点：{$yunda_order.sender_branch}
+		</div>
+		<div class="inside" style="position:absolute;font-size:10pt;top:0%;left:60%;height:2%;width:30%;text-align:center">
+			{$smarty.now|date_format:"%Y-%m-%d"}
+		</div>
+		<div class="inside" style="position:absolute;font-size:15pt;top:3%;left:0%;height:6%;width:20%;text-align:center;">
+			送达地址
+		</div>
+		<div class="inside" style="position:absolute;font-size:10pt;top:3%;left:23%;height:13%;width:63%;text-align:left;font-size: 20px;font-weight: bold;">
+				收件人：{$order.consignee}  <br>
+				收件人电话： {$order.mobile} {$order.tel}<br>
+				{if $order.province != ''}{$order.province}{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+		</div>
+
+		<div class="inside" style="position:absolute;font-size:15pt;top:18%;left:00%;height:3%;width:45%;text-align:left;border-left:0px;">
+			{$yunda_order.package}
+		</div>
+		<div class="inside" style="position:absolute;font-size:15pt;top:20%;left:50%;height:3%;width:35%;text-align:left;border-left:0px;">
+			<img src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=8&rotation=0&font_family=Arial.ttf&font_size=0&text={$yunda_order.package_no}&thickness=30&start=C&code=BCGcode128" 
+			 style="display:block;position:absolute;top:5%;left:0%;width:90%;height:70%;" />
+			<div class="inside" style="position:absolute;font-size:10pt;top:80%;left:10%;height:15%;width:90%;letter-spacing:6px;">
+				*{$yunda_order.package_no}*
+			</div>
+		</div>
+		<div class="left" style="position:absolute;font-size:20pt;top:25%;left:0%;height:20%;width:25%;text-align:center;border-bottom:0px;">
+		<!-- 	<img src="assets/img/Shop2DBarcodes/1953.png" style="margin-top:2px;" width="70px" height="70px"> -->
+		</div>
+		<div class="left" style="position:absolute;font-size:10pt;top:25%;left:25%;height:20%;width:55%;text-align:left;border-right:0px;border-bottom:0px;">
+			<div class="inside" style="position:absolute;font-size:32pt;top:0%;left:3%;height:100%;width:95%;font-weight: bold;">
+				{$yunda_order.station_no}<br>
+				{$yunda_order.station}<br>
+				{$yunda_order.lattice_mouth_no} 
+			</div>
+		</div>
+
+		<div class="left right" style="position:absolute;font-size:10px;top:2%;left:90%;height:60%;line-height:60px;width:20%;text-align: left;border-top:0px;border-bottom:0px;letter-spacing:3px;">
+			<img src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=36&scale=10&rotation=0&font_family=Arial.ttf&font_size=0&text={$arata.tracking_number}&thickness=30&start=C&code=BCGcode128"
+			style="display:block;position:absolute;-webkit-transform:rotate(-90deg);left:-165px;top:180px;width:400px;" />
+			<div style="border: 0px;letter-spacing: 12px;position: absolute;-webkit-transform:rotate(-90deg);left: -145px;top: 150px;">{$arata.tracking_number}</div>
+		</div>
+
+		<div style="position:absolute;top:45%;left:0%;height:3%;width:80%;text-align:left;border-left:0px;border-right:0px;">
+			<div class="inside" style="position:absolute;font-size:16pt;left:5%;height:100%;width:90%;border-bottom:3px;">
+				运单编号：{$arata.tracking_number}
+			</div>
+		</div>
+		<div class="left right" style="position:absolute;top:49%;left:0%;height:5%;width:80%;text-align:left;border-top:0px;">
+			<div class="inside" style="position:absolute;font-size:10pt;left:5%;height:100%;width:90%;">
+				收件人/代签人：  						
+				<br>
+				签收日期：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;年&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;月&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;日
+			</div>
+		</div>
+		<div class="inside" style="position:absolute;font-size:10pt;top:44%;left:0%;height:22%;width:100%;text-align:left;border-right:0px;">
+			<div style="position:absolute;font-size:10pt;top:80%;left:80%;height:15%;width:15%;">
+				已 验 视
+			</div>
+		</div>
+
+		<div style="position:absolute;top:70%;left:5%;height:5%;width:50%;text-align:center;border:0px;">
+			<img src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=8&rotation=0&font_family=Arial.ttf&font_size=0&text={$arata.tracking_number}&thickness=30&start=C&code=BCGcode128"
+			 style="position:absolute;top:5%;left:0%;width:100%;height:70%;" />
+			<div class="inside" style="position:absolute;font-size:10pt;top:80%;left:5%;height:15%;width:90%;letter-spacing:2px;">
+				*{$arata.tracking_number}*
+			</div>
+		</div>
+		<div style="position:absolute;top:70%;left:70%;height:6%;width:30%;text-align:left;border:0px;font-size: 25px;vertical-align: middle;font-weight: bold;">
+				<div style="letter-spacing: 9px;border: 0px;">YUNDA</div>
+				韵达速递
+		</div>
+
+		<div class="left" style="position:absolute;font-size:10pt;top:77%;left:0%;height:18%;width:50%;text-align:center;border-right:0px;border-bottom:0px;">
+			寄件人：{$arata.ydSender}<br>寄件人电话：{$order.c_tel}<br>
+			寄件人地址：{$order.company_address}
+			<br>
+			<br>
+			收件人：{$order.consignee}<br>
+			收件人电话：{$order.mobile} {$order.tel}<br>
+			收件人地址：{if $order.province != ''}{$order.province}{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+		</div>
+		<div class="right" style="position:absolute;top:77%;left:50%;height:18%;width:50%;text-align:center;border-bottom:0px;">
+			<div class="inside" style="position:absolute;font-size:20pt;top:2%;left:0%;height:20%;width:90%;">
+			{$arata.service_type}
+			</div>
+			<div class="inside" style="position:absolute;top:22%;left:0%;height:78%;width:90%;">
+					{if $goods}
+					商品
+					{foreach from=$goods item=good}
+					{if $good.tc_code !=''}
+					<span style="font-size:13pt;"> {$good.sku_num}; </span>
+					{else} <span style="font-size:10pt;"> {$good.sku_num}; </span>
+					{/if}
+					{/foreach}
+					{/if}
+					{$order.sendIDUser}
+					{$order.sendIDCard}
+			</div>
+		</div>
+
+		<div class="left right" style="position:absolute;font-size:10pt;top:95%;left:0%;height:5%;width:100%;text-align:left;border-bottom:0px;">
+			<div class="inside" style="position:absolute;font-size:5pt;top:5%;left:6%;height:90%;width:90%;">
+				官网地址:http://www.yundaex.com 客户热线 :95546  收件人联
+			</div>
+			<div class="inside" style="position:absolute;font-size:5pt;top:5%;left:96%;height:90%;width:5%;">
+				{if $rank !=''}{$rank}{/if}
+			</div>
+		</div>
+		</div>
+	</div>
+</div>

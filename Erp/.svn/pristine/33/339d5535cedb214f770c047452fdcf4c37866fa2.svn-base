@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>打印批拣发货单</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="./js/jquery-1.3.2.js"></script>
+	<script type="text/javascript">
+	{literal}
+	function print_single_shipment(shipment_id){
+		$.ajax({
+			url:"Deal_Shipment_Print.php",
+			type:'post',
+            datatype: "json",
+            data:{act:'ajax_record_print_action_for_single_shipment',shipment_id:shipment_id},
+            success:function(json){
+            	console.log(json);
+            	print_dispatch(shipment_id);
+            }
+		})
+	}
+	{/literal}
+	</script>
+</head>
+<body>
+		<div>
+			<h1>查询批拣发货单列表</h1>
+			<form action="Deal_Shipment_Print.php" method="post">
+				<label for="BPSN">请输入批拣单号</label>
+				<input type="text" name='BPSN' id="BPSN" value='{$BPSN}'>
+				<input type="submit" value="查询">
+			</form>
+		</div>
+		<hr style="margin:20px;">
+		{if $setBPSN}
+			{if $shipmentNum}
+			    <div>
+					<h2>该批拣单号<span>{$BPSN}</span>发货单列表</h2>
+					<table style="border">
+						<tr>
+							<th>发货单号</th>
+							<th>操作</th>
+						</tr>
+						{foreach from=$shipment_ids key=k item=value}
+						<tr>
+							<td><span>{$value}</span></td>
+							<td><a href="javascript:void(0);" onclick="print_single_shipment({$value});">打印此发货单</a></td>
+						</tr>
+						{/foreach}
+					</table>
+			    </div>
+			    <hr style="margin:50px;">
+			    <div style='display:none'>
+			    <form name="KyrieEleison" id="KyrieEleison" action="shipment_print_for_batch_pick_new.php" method='POST' target="print_frame">
+					<input type="hidden" name="print" value="1">
+					<textarea name='shipment_id'>{$sids}</textarea>
+					<input type="submit">
+				</form>
+				</div>
+				<div style="text-align:center;">
+					<h1> = = = 打印预览 = = = </h1>
+				</div>
+				<iframe name="print_frame" width="100%" height="100%" frameborder="1" src=""></iframe><!--{$src}-->
+				<script type="text/javascript">
+					document.KyrieEleison.submit();
+				</script>
+			{else}
+		        <p>不存在的批拣单号或未有发货单绑定记录!</p>
+		    {/if}
+		{/if}
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+	</body>
+</html>

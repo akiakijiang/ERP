@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>直销运单推送到淘宝</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: left;
+	}
+	.margin {
+	line-height:18px;
+	width: 100%;
+}
+	<!--{/literal}-->
+</style>
+<script language="JavaScript">
+{literal}
+</script>
+{/literal}
+</head>
+<body>
+<div style="margin: 20px auto; width: 960px;" align="left">
+<fieldset style="border: #D43FAA 2px solid;"><legend><span
+	style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;运单推送到淘宝&nbsp;</span></legend>
+<div style="width: 96%; margin: auto;">
+<fieldset style="border: #FF7FFF 1px dashed;margin-top:15px"><legend
+	class="expand">&nbsp;使用说明&nbsp;</legend>
+    <table class="margin"> 
+     <tr>
+     <td>1.需要在导入的EXCEL文件里准备订单编号、运单编号、快递。</td>
+     </tr>
+      <tr>
+     <td>2.EXCEL文件sheet命名为"同步运单号"。</td>
+     </tr>
+ </table>
+</fieldset>
+<fieldset style="border: #FF7FFF 1px dashed;margin-top:15px"><legend
+	class="expand">&nbsp;运单推送单导入ERP&nbsp;</legend>
+    <form action="waybill_push_to_taobao.php?act=action" id="upload" enctype="multipart/form-data" method="POST">
+     <table class="inner">
+        <tr>
+          <td>淘宝店铺</td>
+	      <td><select id=taobao_shop name="taobao_shop"  onchange="javascript:taobao_shop_change();">
+           <option label="-- 请选择店铺 --" value="0" selected="selected" >-- 请选择店铺  --</option>
+              {html_options options=$shops selected = $smarty.request.taobao_shop}
+	      </select></td>
+        </tr>
+        <tr>
+          <td>导入EXCEL文件
+		  <td><input type="file" size="30" name="excel">
+		  <input type="submit" value="执行"></td>
+        </tr>
+     </table>
+</form>
+ <form method="post" enctype="multipart/form-data" action="download_model.php?act=download_model_waybill">
+    	<input type="submit" value="批量导入模板下载"/>
+    </form>
+<fieldset style="border: #FF7FFF 1px dashed;margin-top:15px"><legend
+	class="expand">&nbsp;出现异常的订单展示&nbsp;</legend>
+	{if $flag == true}
+	 <DIV style = "color:red;">同步成功！</DIV>
+	{else}
+	 <DIV>{$final}</DIV>
+	 <DIV>
+	 <!--{foreach from=$errors item=error}-->
+	  {$error}<br/>
+	 <!-- {/foreach} -->
+	 </DIV>
+	{/if}
+	
+</fieldset>
+</fieldset>
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!--
+	All Hail Sinri Edogawa!
+
+	上架容器条码的标准模板
+	按照Godex EZ 1100p打印机和4*10cm热敏打印纸配置设计。
+
+	@AUTHOR ljni@i9i8.com
+	@UPDATED 20130810
+
+	@PARAM barcode
+	@PARAM sugu_print
+-->
+<HTML>
+	<HEAD>
+		<TITLE>上架容器条码打印 - {$barcode}</TITLE>
+	</HEAD>
+	<BODY {if $smarty.request.sugu_print == 1}onload="window.print();"{/if}>
+		<DIV><!-- border-style: solid; -->
+			<CENTER>
+				<div style="padding-top:0.1cm;">
+					<!-- <span style="font-size:5px;">-->
+					<span style="font-size:0.4cm;">
+						上架容器条码 - {$party_name}
+					</span><br>
+					<p>
+						<img src="code_img.php?barcode={$smarty.request.barcode}&height=50&text=0" />
+						<br>
+						<span style="font-size:0.8cm;font-weight:bold;">
+							{$smarty.request.barcode}
+						</span>
+					</p>
+				</div>
+			</CENTER>
+		</DIV>
+	</BODY>
+</HTML>

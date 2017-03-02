@@ -1,0 +1,45 @@
+<html>
+<head>
+<title>跨越速运</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:15pt;top:95px;left:120px;">东莞乐其</div>
+<div style="position:absolute;font-size:15pt;top:180px;left:220px;">乐其</div>
+<div style="position:absolute;font-size:12pt;top:180px;left:25px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:15pt;top:270px;left:10px;">{$order.goods_type}</div>
+<div style="position:absolute;font-size:12pt;top:310px;left:350px">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+
+<div style="position:absolute;font-size:15pt;top:180px;left:515px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:12pt;top:110px;left:390px;width:240px;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}(订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:12pt;top:180px;left:330px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:12pt;top:33px;left:655px;width:70px;letter-spacing:6px;">{$order.zipcode}</div>
+
+<div style="position:absolute;font-size:12pt;top:240px;left:360px;">√</div>
+<div style="position:absolute;font-size:12pt;top:260px;left:360px;">√</div>
+
+<div style="position:absolute;font-size:11pt;top:390px;left:530px;">请检查包裹再签收，<br>破损请拒收</div>
+
+<!--
+<div style="position:absolute;font-size:10pt;top:165px;left:220px;">乐其</div>
+<div style="position:absolute;font-size:12pt;top:165px;left:25px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:10pt;top:270px;left:10px;">{$order.goods_type}</div>
+<div style="position:absolute;font-size:12pt;top:310px;left:380px">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+
+<div style="position:absolute;font-size:10pt;top:180px;left:565px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:110px;left:390px;width:240px;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}(订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:12pt;top:180px;left:380px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:12pt;top:33px;left:655px;width:70px;letter-spacing:6px;">{$order.zipcode}</div>
+
+<div style="position:absolute;font-size:11pt;top:390px;left:630px;">请检查包裹再签收，<br>破损请拒收</div>
+
+-->
+</body>
+</html>

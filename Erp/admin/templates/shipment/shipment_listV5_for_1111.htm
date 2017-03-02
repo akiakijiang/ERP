@@ -1,0 +1,956 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>打印批拣单</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+	<script type="text/javascript" src="js/js_wms/shipment_listV5_filter.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+	<style>
+	{literal}
+	.vSelect-wrap,.vSelect,.vSelect li,.vSelect-trigger,.vSelect-wrap .arrow {
+		box-sizing:border-box;
+	}
+	.vSelect-wrap {
+		position: relative;
+		float: left;
+		margin-right: 10px;
+	}
+	.vSelect {
+		position: absolute;
+		top: 25px;
+		left: 0;
+		padding:0;
+		margin:0;
+		list-style: none;
+		width: 120px;
+		height: 300px;
+		overflow-y: scroll;
+		border:1px solid #808080;
+		border-top: none;
+		background-color: #fff;
+		display: none;
+	}
+	.vSelect.active {
+		display: block;
+	}
+	.vSelect li {
+		padding:3px;
+		height: 25px;
+		cursor: pointer;
+		white-space:nowrap; 
+		overflow:hidden; 
+		text-overflow:ellipsis;
+	}
+	.vSelect-trigger {
+		padding:3px 20px 3px 6px;
+		width: 120px;
+		height: 25px;
+		border:1px solid #808080;
+		margin:0;
+		cursor: pointer;
+		white-space:nowrap; 
+		overflow:hidden; 
+		text-overflow:ellipsis;
+	}
+	.vSelect li:first-child {
+		border-top: none;
+	}
+	.vSelect li:last-child {
+		border-bottom: none;
+	}
+	.vOption {
+		cursor: pointer;
+	}
+	.vSelect-wrap .arrow {
+		position: absolute;
+		font-size: 16px;
+		right: 0;
+		top: 0;
+		color: #808080;
+		width: 25px;
+		padding:2px;
+		height: 100%;
+		text-align: center;
+		border:1px solid #808080;
+		z-index: 10;
+		cursor: pointer;
+	}
+	.city-vSelect-wrap {
+		display: none;
+	}
+	{/literal}
+	</style>
+	<script type="text/javascript">
+	// <![CDATA[
+	var provinces = '{$province}';
+	var cities = '{$city}';
+	 //{literal}
+	$(document).ready(function(){
+		var arrProvinces = provinces ? provinces.split(",") : [];
+		var arrCities = cities ? cities.split(",") : [];
+		var arrProvincesLength = arrProvinces.length;
+		var arrCitiesLength = arrCities.length;
+		
+		$(".province-vSelect .vOption").attr("checked",false).attr("disabled",false);
+		$(".city-vSelect .vOption").attr("checked",false).attr("disabled",false);
+
+		$("body").bind("click",function(event){
+			if (!$(event.target).parents(".region-wrap").length) {
+				$(".vSelect").removeClass("active");
+			}
+		});
+        
+        function showAlreadySelectedProvinces () {
+			if (arrProvincesLength) {
+				var alreadySelectedProvinceNames = "";
+				for (var i=0;i<arrProvincesLength;i++) {
+					$(".province-vSelect .vOption[value="+arrProvinces[i]+"]").attr("checked",true);
+					alreadySelectedProvinceNames += $(".province-vSelect .vOption[value="+arrProvinces[i]+"]").next().text() + ",";
+				}
+				$(".province-vSelect-wrap .vSelect-trigger").html(alreadySelectedProvinceNames.substring(0,alreadySelectedProvinceNames.length-1));
+			}
+		}
+
+		function showAlreadySelectedCities () {
+			if (arrCitiesLength) {
+				var $checkbox = $(".province-vSelect").find("input[type='checkbox']");
+				var callback = function () {
+					var alreadySelectedCityNames = "";
+					for (var i=0;i<arrCitiesLength;i++) {
+						$(".city-vSelect .vOption[value="+arrCities[i]+"]").attr("checked",true);
+						alreadySelectedCityNames += $(".city-vSelect .vOption[value="+arrCities[i]+"]").next().text() + ",";
+					}
+					$(".city-vSelect-wrap .vSelect-trigger").html(alreadySelectedCityNames.substring(0,alreadySelectedCityNames.length-1));
+				}
+				showCitiesByAjax(arrProvinces[0],$checkbox,callback);
+			}
+		}
+
+		function showCitiesByAjax (provinceId,checkbox,callback) {
+			$.ajax({
+				type: 'POST',
+				url: 'ajax.php?act=get_regions',
+				data: 'type=2&parent=' + provinceId,
+				dataType: 'json',
+				beforeSend:function(){
+					checkbox.attr("disabled",true);
+				},
+				error: function() {
+					checkbox.attr("disabled",false);
+				    alert('查询地域失败');
+				},
+				success: function(data) {
+					checkbox.attr("disabled",false);
+					$(".city-vSelect-wrap .vSelect-trigger").html("请选择城市");
+					if (data.regions && data.regions != '') {
+						var cityOptionHtml = "";
+						for (var key in data.regions) {
+							cityOptionHtml += "<li><input type='checkbox' name='city[]' class='vOption' value='"+data.regions[key].region_id+"'/><span>"+data.regions[key].region_name+"</span></li>";
+						}
+						$(".city-vSelect").html(cityOptionHtml);
+						$(".city-vSelect-wrap").show();
+						$(".city-vSelect .vOption").bind("click",function(){
+							var checkbox = $(this).parents(".vSelect").find("input[type='checkbox']");
+							var selectedCityName = "";
+							for (var i=0;i<checkbox.length;i++) {
+								if (checkbox.eq(i).attr("checked")) {
+									selectedCityName += checkbox.eq(i).next().text() + ",";
+								}
+							}
+							$(this).parents(".vSelect").siblings(".vSelect-trigger").html(selectedCityName.substring(0,selectedCityName.length-1));
+						});
+					}
+					if (callback) {
+						callback();
+					}
+				}
+			});
+		}
+
+		showAlreadySelectedProvinces();
+		showAlreadySelectedCities();
+
+		(function(){
+			var selectedProvinceNumber = arrProvincesLength;
+		
+			$(".vSelect-wrap .arrow").bind("click",function(){
+				$(this).siblings(".vSelect").toggleClass("active");
+			});
+
+			$(".province-vSelect .vOption").bind("click",function(){
+				if ($(this).attr("checked")) {
+					selectedProvinceNumber ++;
+				} else {
+					selectedProvinceNumber --;
+				}
+				var $checkbox = $(this).parents(".vSelect").find("input[type='checkbox']");
+				var selectedProvinceName = "";
+				for (var i=0;i<$checkbox.length;i++) {
+					if ($checkbox.eq(i).attr("checked")) {
+						selectedProvinceName += $checkbox.eq(i).next().text() + ",";
+					}
+				}
+				$(this).parents(".vSelect").siblings(".vSelect-trigger").html(selectedProvinceName.substring(0,selectedProvinceName.length-1));
+				
+				if (selectedProvinceNumber == 1) {
+					var selectedProvinceId = "";
+					for (var i=0;i<$checkbox.length;i++) {
+						if ($checkbox.eq(i).attr("checked")) {
+							selectedProvinceId = $checkbox.eq(i).val();
+						}
+					}
+					
+					showCitiesByAjax(selectedProvinceId,$checkbox);
+				} else {
+					$(".city-vSelect .vOption").attr("checked",false);
+					$(".city-vSelect-wrap").hide();
+				}
+					
+			});
+		})();
+
+		$('.print').bind('click', function(event){
+			$checked=$('input[type=checkbox].class_1:checked');
+			if ($checked.length>0) {
+				var ids = new Array();
+				$checked.each(function(i){
+					ids.push(this.value);
+				});	
+				//alert($checked.length+" ~ "+ids.join(','));
+				hidden_print('shipment_print_for_batch_pick.php?print=1&shipment_id=' + ids.join(','));
+			} else {
+				alert('没有选中项');
+				return false;
+			}
+		});
+		$('.print_c').bind('click', function(event){
+			$checked_c=$('input[type=checkbox].class_2:checked');
+			//alert($checked_c.length);
+			if ($checked_c.length) {
+				var ids = new Array();
+				$checked_c.each(function(i){
+					ids.push(this.value);
+				});	
+				hidden_print('print_shipping_orders.php?print=1&order_id=' + ids.join(','));
+			} else {
+				alert('没有选中项');
+				return false;
+			}
+		});
+	});
+	
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+		//alert("select_all!"+node);
+	    node = node ? node : document ;
+	    $(node).find(':checkbox:enabled').each(function(i){
+			this.checked = type;
+		});
+	}
+
+	/*
+	用来限制多选
+	*/
+	function selectOne(obj,check_box_type) 
+	{
+		var check_boxs = document.getElementsByName(check_box_type);
+		for(var i=0;i<check_boxs.length;i++) {
+			if(check_boxs[i] != obj) {
+				check_boxs[i].checked = false;
+			} else {
+				check_boxs[i].checked = true;
+			}
+		}
+	}
+	
+	// 提交前检查批拣单的库位总预订数是否足够多 ljzhou 2013-09-15
+	function check_print_shippings() {
+		var check_boxs = document.getElementsByName('checkbox_shipments[]');
+
+		var checked=$('input[type=checkbox].class_1:checked');
+		var shipment_ids = new Array();
+
+		if (checked.length>0) {
+			checked.each(function(i){
+				shipment_ids.push(this.value);
+			});	
+		}
+
+		var str_shipment_ids = shipment_ids.join(',');
+
+		var result = check_merge_order_no_reserved(str_shipment_ids);
+		if(!result) {
+			alert('本次筛选存在未预定成功的合并订单或订单已取消或预定仓与批拣仓不一致，请重新筛选！');
+			return false;
+		}
+
+		var result = is_shipments_have_enough_inventory(str_shipment_ids);
+		if(!result) {
+			alert('批拣单需要的商品库位上已经不够，请重新勾选！');
+			return false;
+		}
+
+		$('#form_print_shipments').submit();
+	}
+	
+	//检查批拣单的库位总预订数是否足够多 ljzhou 2013-09-15
+	function is_shipments_have_enough_inventory(str_shipment_ids) {
+	    var result = true;
+	    $.ajax({
+	        mode: 'abort',
+	        async : false,
+	        type: 'POST',
+	        dataType: 'json',
+	        url : 'ajax.php?act=is_shipments_have_enough_inventory', 
+	        data: 'str_shipment_ids=' + str_shipment_ids,
+	        success: function(data) {
+		       	if(data.success){
+		       		result = true;
+		       	}else{
+		       		result = false;
+		       	}
+	        },
+	        error: function() {
+	        	alert('检查批拣单的库位总预订数是否足够多时ajax请求错误str_shipment_ids:' + str_shipment_ids);
+	        	result = false;
+	        }
+	    });
+	    return result;
+	}
+	
+	 //{/literal}
+	// ]]>	
+	</script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+
+
+
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+<!--
+	{php}
+	pp($_SESSIONG);
+	{/php}
+-->  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<DIV style="display:none;">
+		<p>
+			<form action="print_batch_pick.php" method="GET">
+			如果需要根据批拣单号重新打印批拣单，请在此查询并重新打印:
+				<input type="text" name="sn">
+				<input type="hidden" name="sugu_print" value="1">
+				<input type="submit" value="打印">
+			</form>
+		</p>
+		<p><input type="button" onclick="alert(getRootWebSitePath());"></p>
+	</DIV>
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;打印批拣单&nbsp;自动推荐</span></legend>
+  
+  <form method="get">
+  <div style="clear:both;"> 
+      <!-- <h3 style="color:#09F;">查询</h3> -->
+
+      <div style="color:#09F;margin: 10px 5px;">
+      	选择仓库
+      	<select name='facility_id[]'>
+			{foreach from=$facility_list key=facility_id item=facility_name}
+				<option value="{$facility_id}" {if in_array($facility_id,$sinri_test_facility_ids)}selected="selected"{/if}>{$facility_name}</option>
+			{/foreach}
+		</select>
+      </div>
+      
+      <table cellpadding="5" cellspacing="1">
+      	<tr>
+      		<td width="100">开始日期</td>
+      		<td> 
+      			<input style="width:90px;margin-top:0px" id=start_validity_time name="start_validity_time" value="{$start_validity_time}">
+      			<input type="button" value="..." id="start_validity_time_trigger"> 00:00:00 默认是十五天前。
+      		</td>
+      	</tr>
+      	<tr>
+      		<td width="100">结束日期</td>
+      		<td> 
+      			<input style="width:90px;margin-top:0px" id=end_validity_time name="end_validity_time" value="{$end_validity_time}">
+      			<input type="button" value="..." id="end_validity_time_trigger"> 23:59:59 默认是今天。
+      		</td>
+      	</tr>
+      	<tr>
+      		<td width="100">指定地区</td>
+      		<td>
+      			<div class="region-wrap">
+	      			<div class="vSelect-wrap province-vSelect-wrap">
+	      				<i class="fa fa-sort-down arrow"></i>
+	      				<p class="vSelect-trigger">
+		      				请选择省份
+		      			</p>
+		      			<ul class="vSelect province-vSelect">
+		      				{foreach from=$province_list key=plk item=pli}
+		      				<li>
+		      					<input type="checkbox" name="province[]" class="vOption" value="{$plk}"/><span>{$pli}</span>
+		      				</li>
+		      				{/foreach}
+		      			</ul>
+	      			</div>
+	      			<div class="vSelect-wrap city-vSelect-wrap">
+	      				<i class="fa fa-sort-down arrow"></i>
+	      				<p class="vSelect-trigger">
+		      				请选择城市
+		      			</p>
+		      			<ul class="vSelect city-vSelect">
+	      				</ul>
+	      			</div>
+      			</div>
+      		</td>
+      	</tr>
+        <tr>
+          <td width="100">显示</td>
+		  <td><input type='text' id='SINRI_PAGE_SIZE_VALUE' name='size' value="{if isset($sinri_size)} {$sinri_size} {else}20{/if}" style="width: 60px;"> &nbsp; 条
+
+            {foreach from=$taxonomy.page_size key=size item=size_value}
+            <!--
+          	    <input type='checkbox' id='{$size}' name='checkbox_page_size[]' onclick="selectOne(this,'checkbox_page_size[]');document.getElementById('SINRI_PAGE_SIZE_VALUE').value='{$size}';document.getElementById('SINRI_PAGE_SIZE_VALUE').readOnly=true;" >{$size_value}
+          	-->
+          		<input type='button' id='{$size}' name='button_page_size[]' onclick="document.getElementById('SINRI_PAGE_SIZE_VALUE').value='{$size}';" value="{$size_value}">
+            {/foreach}
+			<!-- All Hail Sinri Edogawa ! -->
+			<input type='checkbox' id='MANUAL' name='checkbox_page_size[]' onclick="document.getElementById('SINRI_PAGE_SIZE_VALUE').value='100';document.getElementById('SINRI_PAGE_SIZE_VALUE').readOnly=false;" checked="checked" disabled="disabled" >每页条数可以自定 &nbsp;
+			<!-- <input type='text' id='SINRI_PAGE_SIZE_VALUE' name='SINRI_PAGE_SIZE_VALUE' value="20"> -->			
+			<!-- ! All Hail Sinri Edogawa -->
+          </td>
+        </tr>
+
+		{if $taxonomy.sort_time}        
+        <tr>
+          <td width="120">排序方式</td>
+
+          <td>
+          	{*
+          		<!--依照聪颖大神的神谕拆迁-->
+				{php} $is_first=false; {/php}
+	            {foreach from=$taxonomy.sort_time key=time item=time_value}
+					{if $time==$sinri_sort}
+						{php}$is_first=true;{/php}
+					{else}
+						{php}$is_first=false;{/php}
+					{/if}
+	          	    <input type='checkbox' id='{$time}' name='checkbox_sort_time[]' onclick="selectOne(this,'checkbox_sort_time[]');document.getElementById('SINRI_SORT_VALUE').value='{$time}';" {php} if($is_first)echo "checked='checked'"; {/php}>{$time_value}
+	            {/foreach}
+				<input type="hidden" id="SINRI_SORT_VALUE" name="sort" value="reserved_time">
+			*}
+			<select name='sort'>
+				{foreach from=$taxonomy.sort_time key=time item=time_value}
+					<option value='{$time}' {if $time==$sinri_sort} selected='selected' {/if}>{$time_value}</option>
+				{/foreach}
+			</select>
+          </td>
+        </tr>
+        {/if}
+        
+        {if false and $taxonomy.facility}
+        <tr>
+          <td>
+			所处仓库
+			</td>
+			<td>
+			<!-- All Hail Sinri Edogawa ! -->
+			<!-- 聪颖大神觉得不科学于是拆迁
+			<input type='button' value='全选' onclick='sinri_select_all_facility(1);'>
+			<input type='button' value='反选' onclick='sinri_select_all_facility(2);'>
+			<script lang="javascript">
+			// <![CDATA[
+			// {literal}
+				function sinri_select_all_facility(way){					
+					var check_boxs = document.getElementsByName('facility_id[]');
+					//alert(way+ "..."+check_boxs);
+					for(i=0;i<check_boxs.length;i++){
+						if(way==1)check_boxs[i].checked=true;
+						else if (way==2) {
+							check_boxs[i].checked=!check_boxs[i].checked;
+						}
+					}
+				}
+			// {/literal}
+			// ]]>
+			</script>
+			-->
+			<!-- ! All Hail Sinri Edogawa -->
+
+          	{* <!-- 聪颖大神觉得不科学于是拆迁 -->
+          	{foreach from=$taxonomy.facility key=facility_id item=count}
+          	    <!-- <input type='checkbox' id='{$facility_id}' name='checkbox_facility[]'  checked="checked" >{$facility_list[$facility_id]}({$count}) -->
+				<input type='checkbox' id='{$facility_id}' name='facility_id[]' value="{$facility_id}">{$facility_list[$facility_id]}({$count})<!-- [{$facility_id}] -->
+            {/foreach}
+			<script lang="javascript">
+			{foreach from=$sinri_test_facility_ids item=f key=k}
+				var k=document.getElementById("{$f}");
+				if(k)k.checked=true;
+				//if(k)alert(k+"{$f}");
+			{/foreach}
+			</script>
+			*}
+			<select name='facility_id[]'>
+				{foreach from=$taxonomy.facility key=facility_id item=count}
+					<option value="{$facility_id}" {if in_array($facility_id,$sinri_test_facility_ids)}selected="selected"{/if}>{$facility_list[$facility_id]}({$count})</option>
+				{/foreach}
+			</select>
+          </td>
+        </tr>
+        {/if}
+        
+        {if $taxonomy.shipping}
+        <tr>
+          <td>快递方式</td>
+          <td>
+          	{*
+          	<!-- 聪颖大神命拆迁之 -->
+			{foreach from=$taxonomy.shipping key=shipping_id item=count}
+          	<input type='checkbox' id='CID{$shipping_id}' name='checkbox_shipping' onclick=selectOne(this,'checkbox_shipping') value='{$shipping_id}' />
+          	{$shipping_list[$shipping_id]}({$count})
+            {/foreach}
+          
+		  <script lang="javascript">
+		  			// <![CDATA[
+					var k="CID{$sinri_best_shipping_id}";
+// {literal}
+			var sel_car=document.getElementById(k);
+			if(sel_car){
+				sel_car.checked=true;
+			}
+			//{/literal}
+	// ]]>
+		  </script>
+		  *}
+		  <select name='checkbox_shipping'>
+		  	{foreach from=$taxonomy.shipping key=shipping_id item=count}
+		  		<option value='{$shipping_id}' {if $shipping_id==$sinri_best_shipping_id} selected="selected" {/if} >{$shipping_list[$shipping_id]}({$count})</option>
+		  	{/foreach}
+		  </select>
+		</td>
+        </tr>
+        {/if}
+        
+        {if $taxonomy.party}
+        <tr>
+			<td>
+				所属组织
+				</td>
+			<td>
+			
+				{php}$ci=0;{/php}
+				{foreach from=$taxonomy.party key=party_id item=count}
+					<input type='checkbox' id='{$party_id}' name='checkbox_party[]' onclick=selectOne(this,'checkbox_party[]') {php} if ($ci==0) echo "checked='checked'"; $ci++; {/php}>{$party_id|party_mapping}({$count}) <!-- [{$party_id}] -->
+				{/foreach}
+			</td>
+        </tr>
+        {/if}
+        
+        {if $taxonomy.distributor}
+        <tr>
+			<td>
+				分销商
+				</td>
+			<td>
+				<!-- All Hail Sinri Edogawa ! -->
+				<input type='button' value='全选' onclick='sinri_select_all_distributor(1)'>
+				<input type='button' value='清空' onclick='sinri_select_all_distributor(0)'>
+				<script lang="javascript">
+					// <![CDATA[
+					// {literal}
+					function sinri_select_all_distributor(way){
+						var check_boxs = document.getElementsByName('checkbox_distributor[]');
+						for(var i=0;i<check_boxs.length;i++){
+							check_boxs[i].checked=way;
+						}
+					}
+					//{/literal}
+					// ]]>
+				</script>
+				<!-- ! All Hail Sinri Edogawa -->
+          	{foreach from=$taxonomy.distributor key=distributor_id item=count}
+          	    <input type='checkbox' id='{$distributor_id}' name='checkbox_distributor[]' value="{$distributor_id}">
+          	    {$distributor_list[$distributor_id]}({$count})<!-- [{$distributor_id}] -->
+          	    {if $distributor_id|in_array:$sep_distributor_ids}
+          	    [独立发货单]
+          	    {/if}
+            {/foreach}
+			<script lang="javascript">
+				{foreach from=$sinri_test_distributor_ids item=f key=k}
+					var k=document.getElementById("{$f}");
+					if(k)k.checked=true;
+					//if(k)alert(k+"{$f}");
+				{/foreach}
+			</script>
+          </td>
+        </tr>
+        {/if}
+        
+        {if TRUE or $taxonomy.goods_type_list}
+        <tr>
+			<td>
+				订单商品类型
+			</td>
+			<td>
+				<!-- All Hail Sinri Edogawa ! -->
+				<input type='button' value='全选' onclick='sinri_select_all_goods_type(1);'>
+				<input type='button' value='清空' onclick='sinri_select_all_goods_type(0);'>
+				<script lang="javascript">
+					// <![CDATA[
+					// {literal}
+					function sinri_select_all_goods_type(way){
+						var check_boxs = document.getElementsByName('checkbox_goods_type[]');
+						for(var i=0;i<check_boxs.length;i++){
+								check_boxs[i].checked=way;
+						}
+					}
+					//{/literal}
+					// ]]>
+				</script>
+				<!-- ! All Hail Sinri Edogawa -->
+			
+          	{foreach from=$goods_type_list key=goods_type item=goods_type_value}
+          	    <input type='checkbox' id='{$goods_type}' name='checkbox_goods_type[]'  value="{$goods_type}">{$goods_type_value} <!-- [{$goods_type}] -->
+            {/foreach}
+			<script lang="javascript">
+				{php} $xxx=true; {/php}
+				{foreach from=$SingleMulti item=f key=k}
+					var k=document.getElementById("{$f}");
+					if(k)k.checked=true;
+					
+					{php} $xxx=false; {/php}
+				{/foreach}
+				{php}
+					if($xxx){
+						echo "var kk=document.getElementById('goods_type_simple');";
+						echo "if(kk)kk.checked=true;";
+					}
+				{/php}
+			</script>
+          </td>
+        </tr>
+        {/if}
+		<tr>
+			<td>
+				商品筛选（包含单品和多品）
+			</td>
+			<td style="max-height:200px; overflow:scroll;">
+	            {foreach from=$Sinri_TargetSingles item=tsone key=tskey}
+				<input type="radio" name="one_product_key"  value="{$tsone.product_key}"> {$tsone.goods_name}&nbsp;&nbsp;({$tsone.product_key}) &nbsp;&nbsp;({$tsone.sku_sum}) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		            {if $tsone.item_list}
+			            {foreach from=$tsone.item_list item=item_list}
+			            <input type="radio" name="one_product_key" value="{$item_list.product_nums}">{$item_list.product_nums}{$item_list.goods_number}&nbsp;&nbsp;({$item_list.order_num})
+			            {/foreach}
+		            {/if}
+	            <br>
+	            {/foreach}
+			</td>
+		</tr>
+		<tr>
+			<td>确认递交</td>
+			<td style="text-align:right;"><input style="width:100px;height:30px;" type="submit">{$sinri_shall_lists}</td>
+		</tr>
+
+  </div>
+   
+  <input type="hidden" name="status" value="{$filter.status}" /> 
+  <input type="hidden" name="act" value="search" />
+  </form>
+  </table>
+  <!-- All Hail Sinri Edogawa -->
+  <div>
+  	{php}print_r($shipment);{/php}
+  </div>
+  {if $sinri_shall_list }
+  {if $total > 0}
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">待拣货列表</h3>
+      <div style="align:center;color:red;font:1.5em"> 本批次共有 <strong>{$sku_nums}</strong> 种sku,本次筛选耗时<strong>{$cost_time}</strong> &nbsp;&nbsp;</div>
+      <div style="float:right;"> 共有 <strong>{$total}</strong> 条记录 显示前{$sinri_size}条 &nbsp;&nbsp;</div>
+
+
+      <div style="margin-top:10px; clear:both;">
+		<table>
+      </table>  
+      </div>
+      <br />
+      
+      <form method="post" action="Deal_Batch_Pick.php" id='form_print_shipments'>
+      <table class="bWindow" style="margin-top:10px;" id="table">
+		<tr>
+			<td colspan="13"> 
+				&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+				<input type="button" value="&nbsp;&nbsp; &nbsp;&nbsp; 全&nbsp;选&nbsp;&nbsp; &nbsp;&nbsp; " onclick="select_all('#table',1);" /> &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; 
+				<input type="button" value="&nbsp;&nbsp; &nbsp;&nbsp; 清&nbsp;空&nbsp;&nbsp; &nbsp;&nbsp; " onclick="select_all('#table',0);" /> &nbsp;&nbsp; &nbsp;&nbsp; 
+				&nbsp;&nbsp; &nbsp;&nbsp; 
+				请使用批量打印选中发货单和快递面单。如果要分开批量打印，请先打印面单，后打印发货单。
+				&nbsp;&nbsp; &nbsp;&nbsp;
+				<input type="button" name="button" value="确认递交批量拣货申请，将打印批拣单。"  onclick='check_print_shippings()'/>
+			</td>
+		</tr>
+        <tr>
+			<th width="30">No.</th>			
+			
+			<th>快递</th>
+			<!--			
+			<th colspan="2">
+				选择 面单(主订单登记ID对应)<br>
+				请扫描面单号。如果重印面单，请确认重新扫描结果。<br>
+				<input type="button" class="print_c" value="批量打印选中快递面单" /> 
+			</th>
+			-->
+			<th colspan="1">
+				选择 发货单
+<!--
+				<br>
+				<input type="button" class="print" value="批量打印选中发货单" />
+			-->
+			</th>
+			<th>sku数</th>
+			<th>主订单ID</th>
+			<th>订单SN</th>
+			<th>客户名</th>
+			<th>下单时间</th>
+			<th>确认时间</th>
+			<th>预订时间</th>
+			<!--<th>订单状态</th>-->
+			<th>操作</th>
+        </tr>
+        
+        <!--
+		{foreach from=$list item=shipment name="shipmentList"}
+        {foreach from=$shipment.order_list item=order name="orderList"}
+		-->
+        <tr align="center" {if $smarty.foreach.shipmentList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+        
+		  <!--{if $smarty.foreach.orderList.first}-->
+		  <!-- No.  -->
+			<td rowspan="{$shipment.order_list|@count}">
+				{$smarty.foreach.shipmentList.iteration}
+			</td>
+		  
+		  <!-- 快递 --> 
+          <td rowspan="{$shipment.order_list|@count}">{$order.shipping_name}</td>
+		  <!-- 选择[面单] -->
+		  <!-- <td rowspan="{$shipment.order_list|@count}">-->
+		  <!-- 
+          	{if !(isset($shipment.tracking_number) && strlen(trim($shipment.tracking_number))>0)}
+          	<input type="checkbox" name="checked_shipping_bill[]" class="class_2" value="{$order.order_id}" />{$order.order_id}
+            {else}
+          	<input type="checkbox" name="checked_shipping_bill[]" class="class_2" value="{$order.order_id}" disabled="disabled" />{$order.order_id}
+          	<a href="javascript:void(0);" onclick="print_shipment({$order.order_id})">打印</a>
+            {/if}
+			-->
+			<!--
+			<input type="checkbox" name="checked_shipping_bill[]" class="class_2" value="{$order.order_id}" />[{$order.order_id}]
+			-->
+			<!-- 大鲵觉得打印发货单就该批量打印。
+			<a href="javascript:void(0);" onclick="print_shipment({$order.order_id})">打印</a>
+			-->
+          <!-- </td> -->
+		  <!-- 面单 -->
+		  <!--
+          <td rowspan="{$shipment.order_list|@count}">    
+			{if !(isset($shipment.tracking_number) && strlen(trim($shipment.tracking_number))>0)}
+				<input type="text" name="tracking_numbers[]" id="TN{$order.order_id}" value="" />请扫入面单号
+			{else}	
+				<input type="text" name="tracking_numbers[]" id="TN{$order.order_id}" value="{$shipment.tracking_number}" />						
+				<input type="button" name="tracking_number_update[]" id="TNC{$order.order_id}" value="确认重扫"/>
+            {/if}
+          </td>		
+      	-->
+          <!-- 选择[发货单] -->
+          <td rowspan="{$shipment.order_list|@count}">
+          	<!-- 这才是真的……但是现在也不真了
+			{if !$shipment.printed}
+          	<input type="checkbox" name="checked[]" class="class_1" value="{$shipment.SHIPMENT_ID}" />{$shipment.SHIPMENT_ID}
+            {else}
+          	<input type="checkbox" name="checked[]" class="class_1" value="{$shipment.SHIPMENT_ID}" disabled="disabled" />{$shipment.SHIPMENT_ID}
+          	<a href="javascript:void(0);" onclick="print_dispatch({$shipment.SHIPMENT_ID})">重复打印</a>
+            {/if}			<br>
+			 -->
+			<!-- 这一开始只是测试 -->
+
+            {if $shipment.STORAGE_RESERVE == 'Y'} 
+			<input type="checkbox" name="checkbox_shipments[]" class="class_1" value="{$shipment.SHIPMENT_ID}" checked='true'/>{$shipment.SHIPMENT_ID}
+			{else}
+			<input type="checkbox" name="checkbox_shipments[]" class="class_1" value="{$shipment.SHIPMENT_ID}" />{$shipment.SHIPMENT_ID}
+			{/if}
+			<!--
+			<a href="javascript:void(0);" onclick="print_dispatch({$shipment.SHIPMENT_ID})">打印</a>
+			-->
+			<!-- -->
+          </td>
+		  <!-- 发货单 -->
+		  <!--
+          <td rowspan="{$shipment.order_list|@count}">{$shipment.SHIPMENT_ID}</td>
+		  -->  
+		  <!-- sku数 -->
+          <td rowspan="{$shipment.order_list|@count}">{$shipment.sku_num}</td>
+          <!--{/if}-->
+
+          <!-- 主订单ID -->
+          <td>{$order.order_id}</td>
+		  <!-- 订单SN号 -->
+          <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+		  <!-- 客户名 -->
+          <td>{$order.consignee}</td>
+		  <!-- 下单时间 -->
+          <td>{$order.order_time}</td>
+		  <!-- 确认时间 -->
+          <td>{$order.confirm_time}</td>
+		  <!-- 预订时间 -->
+          <td>{$order.reserved_time}</td>
+          <!--<td>{$order.order_status|get_order_status}，{$order.pay_status|get_pay_status}，{$order.shipping_status|get_shipping_status}</td>-->
+          <!--{if $smarty.foreach.orderList.first}-->
+		  <!-- 操作 -->
+          <td rowspan="{$shipment.order_list|@count}">
+            {if $shipment.is_merge_shipment && !$shipment.printed}
+            <a href='{$url|add_param_in_url:"act":"split"|add_param_in_url:"shipment_id":$shipment.SHIPMENT_ID}'>取消合并发货</a><br/><br/>
+            {/if}
+            <!-- <a href="javascript:void(0);" onclick="hidden_print('shipment_print_for_batch_pick.php?print=1&shipment_id={$shipment.SHIPMENT_ID}')">打印拣货单</a> -->
+			<!--
+			<a href="javascript:void(0);" onclick="print_dispatch({$shipment.SHIPMENT_ID})">打印发货单</a>
+			<a href="javascript:void(0);" onclick="print_shipment({$order.order_id})">打印快递面单</a>
+			-->
+          </td>
+          <!--{/if}-->
+          
+        </tr>
+		<!--
+        {/foreach}
+        {/foreach}
+        -->
+      </table>
+      </form>
+      <br />
+      {*
+	  {$pagination}
+  	  *}
+  
+      <!-- div style="margin-top:10px; clear:both;">
+        <input type="button" value="全选" onclick="select_all('#table');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#table');" /> &nbsp;&nbsp;
+        <input type="button" value="选中已打印的" onclick="select_reverse('#table', 'disabled');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="print" value="批量打印选中拣货单" />
+		<input type="button" class="print_c" value="批量打印选中快递面单" />
+      </div> -->
+      
+        
+  </div>
+  <br />
+  
+  {else}
+  <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录。可能的原因有：真的没人买东西了；任务都被领走了；货物还没有就位；等等。</h4></div>
+  <br /><br />
+  {/if}
+  {if $sinri_errinfo}
+  <hr style="width:75%;">
+  <div>
+  	<h2>有货物尚未上架而无法参与批拣的发货单<h2>
+  	<!--
+  	{foreach from=$sinri_errlist key=k item=f}
+  	<DEL>
+  		{$f}
+  	</DEL>
+  	&nbsp;
+  	{/foreach}
+  </div>
+  <div>
+  	-->
+  	<table class="bWindow">
+  		<tr>
+  			<td>条码</td>
+  			<td>货物名称</td>
+  			<td>预定数量</td>
+  			<td>可取数量</td>
+  			<td>product_id</td>
+  			<td>涉及发货单</td>
+  		</tr>
+  	{foreach from=$sinri_errinfo item=line key=k}
+  		<tr>
+  			{foreach from=$line item=value key=key}
+  			<td>
+  				{if $key=='SIDS'}
+  				<textarea cols="80" rows="4" style="width:98%;">{$value}</textarea>
+  				{else}
+  				{$value}
+  				{/if}
+  			</td>
+  			{/foreach}
+  		</tr>
+  	{/foreach}
+  	</table>
+  </div>
+  {/if}
+  {else}
+  	<br /><br/>
+  	<div style="text-align:center"><h4>请设定搜查条件开始查询！</h4></div>
+  	<br /><br/>
+  {/if}
+
+  
+  <br /><br />
+</fieldset>
+
+<!--
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+-->
+<!-- -->
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+<!-- -->
+
+{literal}
+	<script type="text/javascript">//<![CDATA[
+	                                          
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "start_validity_time",
+	          button            : "start_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "end_validity_time",
+	          button            : "end_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+			
+	      //]]>
+	</script>
+	{/literal}
+</body>
+</html>

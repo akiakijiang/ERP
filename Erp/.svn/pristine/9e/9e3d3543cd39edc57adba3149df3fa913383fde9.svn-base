@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+
+  <title>库存查询</title>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <!-- Sinri's Print Manage JS module -->
+  <script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+  <script type="text/javascript">
+
+  {literal}
+
+  // <![CDATA[
+
+  /**
+   * 商品搜索
+   */
+   
+   $(document).ready(function() {
+	   /**
+	   * 商品搜索
+	   */
+	   $('#goods_list').autocomplete('ajax.php?act=search_goods', {
+			dataType : 'json',
+			minChars: 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		});
+   
+   });
+	
+  
+  {/literal}
+  </script>
+</head>
+<!-- Sinri's Print Manage JS module -->
+{* 如果有打印参数就立刻调用打印窗口 *}
+{if $to_print=='1'}
+  <body onload="window.print()" >
+{else}
+  <body> 
+{/if}
+
+{* 构建打印页的URL *}
+  {php}
+  $print_url="inventory_list.php?";
+  foreach($_REQUEST as $k => $v){
+     $print_url.="$k=$v&";
+  }
+  $len=strlen($print_url);
+  $print_url=substr($print_url,0,$len-1);
+  $print_url.='&to_print=1';
+  //echo "$print_url";
+  {/php}
+  <br>
+{* 打印页面隐藏控制内容和搜索面板 *}
+{if $to_print=='1'}
+  <div style="display:none;">
+{else}
+  <div style="display:block;"> 
+{/if}
+
+   <form>
+    商品名：
+    <input id="goods_list" style="width:100px" size="50" class="ac_input" name="goods_name" autocomplete="off" value="{$smarty.request.goods_name}">
+    &nbsp;&nbsp;
+    商品条码：
+    <input style="width:100px" name="barcode" value="{$smarty.request.barcode}">
+    &nbsp;&nbsp;
+    全新：
+    <select name="is_new">
+    <option value="-1">所有</option>
+    <option value="INV_STTS_AVAILABLE" {if $smarty.request.is_new == "INV_STTS_AVAILABLE"}selected{/if}>全新</option>
+    <option value="INV_STTS_USED" {if $smarty.request.is_new == "INV_STTS_USED"}selected{/if}>二手</option>
+    </select>
+
+    &nbsp;&nbsp;
+    仓库:
+    <select name="available_facility">
+    <option value="-1">所有</option>
+    {html_options options=$available_facility selected = $smarty.request.available_facility }
+    </select>
+
+    <input type="submit" value="搜索">
+    &nbsp;&nbsp;
+    {if $smarty.request.label eq 'storage_list_summary'}
+    <input type="submit" name="type" value="库存汇总CSV">
+     <input type="submit" name="type" value="导出耗材库存" />
+    {else}
+    <input type="submit" name="type" value="库存清单CSV">
+ 	{/if}
+    <input type="hidden" name="act" value="search">
+    <input type="hidden" name="label" value="{$smarty.request.label}">
+    </form>
+
+    </br></br>
+    <div style="text-align: center;font-size:18px;">
+    {foreach from=$labels item=label_name key=label_id }
+    {if $smarty.request.label == $label_id}
+    <strong >{$label_name}</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {else}
+    <a href="?label={$label_id}">{$label_name}</a>&nbsp;&nbsp;&nbsp;
+    {/if}
+    {/foreach}
+    &nbsp;
+    
+    <span>
+    {php}
+      //echo "<a href=\"$print_url\"><input type=\"button\" value=\"PRINT\"></a>";
+      echo "<input type='button' value='打印下列清单' onclick='hidden_print(\"$print_url\");'>"
+    {/php}
+    </span>
+    </div>
+    <hr>
+  </div>
+  
+{if $to_print=='1'}
+  <div style="text-align:center;">
+    <h1>
+      {$label_name} Up to 
+      <script type="text/javascript">
+        document.write(Date());
+      </script>
+    </h1>
+  </div>   
+{/if}
+
+{if $smarty.request.label eq 'storage_list_summary'}
+{* ------------------- 库存汇总 ------------------- *}
+<table class="bWindow">
+<thead>
+	<tr>
+		<th withd="20%">商品名</th>
+		<th width="10%">新旧</th>
+		<th width="15%">商品条码</th>
+		<th width="15%">仓库</th>
+		<th width="20%">库位</th>
+		<th width="10%">串号控制</th>
+		<th width="10%">总数量</th>
+	</tr>
+<tbody>
+
+<!--{foreach from=$storage_list  item=goods}-->
+<tr align="center" height="20px;">
+  <td>{$goods.goods_name}</td>
+  <td>{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新 {else}二手 {/if}</td>
+  <td>{$goods.barcode}</td>
+  <td>{$goods.facility_name}</td>
+  <td>
+  	<table>
+  	 <!--{foreach from=$goods.location_validity_list  item=product key=key }-->
+  	 <tr>
+  		<td withd="40%" style="border:0px" align='center'>{$product.location_barcode}</td>
+  	 </tr>
+  	 <!--{/foreach}-->
+  	</table>
+  </td>
+  <td>
+  	{if $goods.is_serial == 'SERIALIZED'}
+  		是
+  	{else}
+  	          否
+  	{/if}
+  </td>
+
+  <td>{$goods.storage_count}</td>
+  
+</tr>
+<!--{/foreach}-->
+</tbody>
+</thead>
+<tbody>
+	
+</tbody>
+</table>
+{/if}
+
+{if $smarty.request.label eq 'storage_list'}
+{* ------------------- 库存清单 ------------------- *}
+<table class="bWindow">
+<thead>
+	<tr>
+		<th withd="25%">商品名</th>
+		<th width="5%">新旧</th>
+		<th width="15%">商品条码</th>
+		<th width="15%">仓库</th>
+		<th width="10%">库位</th>
+		<th width="5%">串号控制</th>
+		<th width="5%">总数量</th>
+		<th width="30%">串号</th>
+	</tr>
+<tbody>
+
+<!--{foreach from=$storage_list  item=goods}-->
+<tr align="center" height="20px;">
+  <td>{$goods.goods_name}</td>
+  <td>{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新 {else}二手 {/if}</td>
+  <td>{$goods.barcode}</td>
+  <td>{$goods.facility_name}</td>
+  <td>
+  	<table>
+  	 <!--{foreach from=$goods.location_validity_list  item=product key=key }-->
+  	 <tr>
+  		<td withd="40%" style="border:0px" align='center'>{$product.location_barcode}</td>
+  	 </tr>
+  	 <!--{/foreach}-->
+  	</table>
+  </td>
+  <td>
+  	{if $goods.is_serial == 'SERIALIZED'}
+  		是
+  	{else}
+  	          否
+  	{/if}
+  </td>
+
+  <td>{$goods.storage_count}</td>
+  <td>
+    {if $goods.is_serial == 'SERIALIZED'}
+  	<table>
+  	 <!--{foreach from=$goods.serial_numbers item=serial_number key=key }-->
+  	 <tr>
+  		<td  align='center'>{$serial_number}</td>
+  	 </tr>
+  	 <!--{/foreach}-->
+  	</table>
+  	{/if}
+  </td>
+  
+</tr>
+<!--{/foreach}-->
+</tbody>
+</thead>
+<tbody>
+	
+</tbody>
+</table>
+{/if}
+
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+
+</body>
+</html>

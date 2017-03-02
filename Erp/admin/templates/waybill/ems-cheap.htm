@@ -1,0 +1,34 @@
+<html>
+<head>
+<title>EMS经济型</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:11pt;top:30px;left:40px;">{$order.party_name}</div><!--寄件人-->
+<div style="position:absolute;font-size:12pt;top:30px;left:212px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:11pt;top:100px;left:96px;"><!--上海乐其网络科技有限公司--></div><!--单位名-->
+<div style="position:absolute;font-size:11pt;top:85px;left:46px;">请亲自检查包裹完好后再签收，</br>如有破损请拒收，并联系我们。</br>否则概不负责。</div>
+<div style="position:absolute;font-size:15pt;top:125px;left:250px;">{$order.company_zipcode}</div><!--邮政编码-->
+<div id="svg" style="width:200px;height:200px;left:300px;position:absolute;top:100px;"> </div>
+
+<div style="position:absolute;font-size:10pt;top:168px;left:46px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:12pt;top:168px;left:212px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:11pt;top:220px;left:46px;width:240px;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:12pt;top:285px;left:240px;width:70px;letter-spacing:3px;">{$order.zipcode}</div>
+<div style="position:absolute;font-size:11pt;top:365px;left:50px;">{$order.goods_type}</div>
+<div style="position:absolute;font-size:11pt;top:400px;left:400px;">{$order.shipping_worker} </div><!-- 收件人签名 -->
+<div style="position:absolute;font-size:11pt;top:257px;left:650px;"></div><!-- 收件人签名 -->
+<div style="position:absolute;font-size:11pt;top:175px;left:650px;">{$smarty.now|date_format:"%Y-%m-%d"}</div><!--年份-->
+<div style="position:absolute;font-size:11pt;top:150px;left:650px;">乐其</div>
+<div style="position:absolute;font-size:11pt;top:320px;left:650px;width:100px;">请检查包裹再签收，破损请拒收</div>
+
+{$order.zhang}
+</body>
+</html>

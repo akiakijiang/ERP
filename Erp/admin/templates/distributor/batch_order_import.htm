@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>订单导入</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+	<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+    <script type="text/javascript" src="misc/thickbox.js"></script> 
+	<script type="text/javascript" src="misc/autocomplete.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	var WEB_ROOT = '{$WEB_ROOT}';
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			// 表格变色
+			$("#table tr").hover(
+					function() {
+							if (this.cells[0].tagName != "TH") {
+									$(this).addClass('hover');
+							}
+					}, 
+					function(){
+							if (this.cells[0].tagName != "TH") {
+									$(this).removeClass('hover');
+							}
+					}
+			);
+			
+			//商品搜索
+			$('#main_goods').autocomplete('order_import.php?request=ajax&act=search_goods', {
+	            dataType : 'json',
+	            minChars: 0,
+	            mustMatch: false,
+	            formatItem : function(row, i, max, value, term) {
+	                return(row.goods_name);
+	            },
+	            formatResult : function(row) {
+	                return(row.goods_name);
+	            }
+	        }).result(function(event, row, formatted) {
+	            $('#hid_main_goods_id').val(row.goods_id);
+	            $('#hid_main_style_id').val(row.style_id);
+	        });
+			
+			/**
+	         * 赠品搜索
+	         */
+	        $('#child_goods').autocomplete('order_import.php?request=ajax&act=search_goods', {
+	            dataType : 'json',
+	            minChars: 0,
+	            mustMatch: false,
+	            formatItem : function(row, i, max, value, term) {
+	                return(row.goods_name);
+	            },
+	            formatResult : function(row) {
+	                return(row.goods_name);
+	            }
+	        }).result(function(event, row, formatted) {
+	            $('#hid_child_goods_id').val(row.goods_id);
+	            $('#hid_child_style_id').val(row.style_id);
+	        });
+			
+			/**
+			* 供应商自动显示
+			*/
+			$('#distributor').autocomplete('order_import.php?request=ajax&act=search_distributor', {
+	            dataType : 'json',
+	            minChars: 0,
+	            mustMatch: false,
+	            formatItem : function(row, i, max, value, term) {
+	                return(row.name);
+	            },
+	            formatResult : function(row) {
+	                return(row.name);
+	            }
+	        }).result(function(event, row, formatted) {
+	    
+	            $('#hid_distributor_id').val(row.distributor_id);
+	        });
+			
+	});
+	
+	function E(id)
+	{
+		return document.getElementById(id);
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		
+		do {
+			
+			var goods_id = E('hid_main_goods_id').value;
+			if(goods_id == ''){
+				alert('商品1没有选择商品');
+				break;
+			}
+			
+			var goods_num = E('main_goods_amount').value;
+			if(goods_num == '0' || goods_num == ''){
+				alert('商品1数量没填或者为0');
+				break;
+			}
+			
+			var in_use = $(':select[name="in_use"]').val();
+			if(in_use == 'able'){
+				var goods_id = E('hid_child_goods_id').value;
+				if(goods_id == ''){
+					alert('商品2没有选择商品');
+					break;
+				}
+				
+				var goods_num = E('child_goods_amount').value;
+				if(goods_num == '0' || goods_num == ''){
+					alert('商品2数量没填或者为0');
+					break;
+				}
+			}
+			
+			var distributor_id = E('hid_distributor_id').value;
+			if(distributor_id == ''){
+				alert('请选择分销商');
+				break;
+			}
+			
+			var pay_id = $(':select[name="pay_id"]').val();
+			if(pay_id == '' || pay_id == '0'){
+				alert('请选择支付方式');
+				break;
+			}
+			
+			var facility_id = $(':select[name="facility_id"]').val();
+			if(facility_id == ''){
+				alert('请选择仓库');
+			}
+			
+			
+			
+			// 成功后提交
+			message = '确认吗';
+			if (confirm(message)) {
+				$('#f_upload').submit();
+				waiting($button, 'en');
+			}
+		} while (false);
+		
+		waiting($button, 'en');
+		return;
+	}
+	
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+<div style="margin:20px auto; width:960px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;订单导入&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+	{* 消息提示 *}
+  <!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#message').slideUp("slow");
+		}, 4000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center; overflow:hidden;">
+	   {$message}
+	</div>
+  <!--{/if}-->
+
+
+	{* 导入报告 *}
+<!--{if $imported_list}-->
+	<br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;生成订单列表&nbsp;</legend>
+  <div>
+	<table class="inner" id="table">
+        <tr align="center" class="th">
+          <th>序号</th>
+          <th>ERP订单号</th>
+          <th>订单编号</th>
+          <th>订单总金额</th>
+        </tr>
+        
+        <!--{foreach from=$imported_list item=item name="importedList"}-->
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.importedList.iteration}</td>
+        	<td><a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+            <td>{$item.taobao_order_sn}</td>
+            <td>{$item.order_amount}</td>
+		</tr>
+        <!--{/foreach}-->
+        
+	</table>
+  </div>
+  </fieldset>
+  <br />
+<!--{/if}-->
+
+
+
+	{* 文件上传 *}
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;上传CSV&nbsp;</legend>
+  		<div><form id="f_upload" method="post" enctype="multipart/form-data">
+      
+      <table class="inner">
+        <tr>
+              <td align="center">商品1:&nbsp; </td>
+              <td>
+                 <input type="text" name="main_goods" id="main_goods" size="40" value=''/>&nbsp; &nbsp;&nbsp; &nbsp;数量: &nbsp;
+                 <input type="text" name="main_goods_amount" id="main_goods_amount" size="5" value=''/>
+                 <input type="hidden" name="hid_main_goods_id" id="hid_main_goods_id" value=''/>
+                 <input type="hidden" name="hid_main_style_id" id="hid_main_style_id" value=''/>
+              </td>
+        </tr>
+        
+        <tr>
+              <td align="center">商品2:&nbsp;</td>
+              <td >
+                 <input type="text" name="child_goods" id="child_goods" size="40" value=''/>&nbsp; &nbsp;&nbsp; &nbsp;数量: &nbsp;
+                 <input type="text" name="child_goods_amount" id="child_goods_amount" size="5" value=''></input>
+                 &nbsp; &nbsp;是否启用第二个商品&nbsp; &nbsp;<select name="in_use"><option value="disable">不启用</option><option value="able">启用</option></select>
+                  
+                 <input type="hidden" name="hid_child_goods_id" id="hid_child_goods_id" value=''/>
+                 <input type="hidden" name="hid_child_style_id" id="hid_child_style_id" value=''/>
+              </td>
+       </tr>
+        
+        <tr>
+              <td align="center">分销商:&nbsp; </td>
+              <td>
+                 <input type="text" name="distributor" id="distributor" size="40" value=''/>
+                 <input type="hidden" name="hid_distributor_id" id="hid_distributor_id" value=''/> 
+              </td>
+        </tr>
+        
+        <tr>
+      		<td align="center">支付方式:&nbsp; </td>
+        	<td>
+        	   <select name="pay_id"><option value="0">- 请选择</option>{html_options options=$pay_list selected=$pay_id}</select>
+        	   &nbsp; &nbsp;&nbsp; &nbsp;发货仓库: &nbsp;
+        	   <select name="facility_id">{html_options options=$available_facility }</select>
+        	</td>
+		</tr>
+		
+		
+      
+        <tr>
+          <td align="center">请选择要导入的CSV文件</td>
+          <td>
+          	<input type="file" name="excel" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+          	<input type="button" value="导入" onclick="apply_submit(this);"/>
+            <input type="hidden" name="act" value="upload"  />
+          </td>
+        </tr>
+        
+        
+      </table>
+      
+  		</form></div>    
+  </fieldset>
+
+
+  <br />
+</div>
+</fieldset>
+</div>
+
+
+</body>
+</html>

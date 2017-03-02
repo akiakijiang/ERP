@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>解绑码托条码</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+    <!--{literal}-->
+    input{
+        height:1.5em;
+    }
+    <!--{/literal}-->
+  </style>
+  
+  <script type="text/javascript">
+    //{literal}
+    // <![CDATA[
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        // 确定页面载入时鼠标焦点的定位
+        $('#tracking_no').focus();  // 定位到收货容器扫描框
+        // 解绑批拣单扫描事件
+        $('#tracking_no').bind('keyup', listen);
+
+    });
+     var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+    /**
+     * 监听
+     */
+    function listen(event) 
+    {
+        var that = $(this);
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                scan(event,that);
+                event.preventDefault();
+                break;
+        }
+    }
+    
+/**
+ * 扫描动作
+ */
+function scan(event,that)
+{ 
+    var input = that,
+    barcode = $.trim(input.val()),
+    input_id = input.attr('id');
+    if (barcode != '') {
+        if(input_id == 'tracking_no') {
+            tracking_no_scan(event,barcode);
+        }
+    } 
+}
+   
+ 
+    
+    //快递单号检测
+   var flag_tracking_no = true;
+   function tracking_no_scan(event,barcode){
+        var tracking_no = barcode;
+        // alert(KEY_MAP[event.keyCode]);
+        if (!flag_tracking_no) {
+            var tip = "当前操作还在进行...请稍等";
+            return; 
+        }
+        flag_tracking_no = false;
+        var tip = "正在验证中...请稍等";
+        //检查工牌号
+        var res_check = check_tracking_sn(tracking_no);
+        if(res_check){
+             $("input").val("");
+             $("input:eq(0)").focus();
+        }else{
+             flag_tracking_no = true;
+             return false;
+        } 
+        
+        flag_tracking_no = true;
+
+   }
+    //ajax 快递单号检测,如果存在则更新
+    function check_tracking_sn(tracking_no){      
+         if(tracking_no ==''){
+             alert("快递单号不能为空！");
+             return false;
+         }
+         var result = "";
+         $.ajax({
+             mode: 'abort',
+             async : false,
+             type: 'POST',
+             dataType: 'json',
+             url : 'pallet_unbind.php?act=check_tracking_unbind', 
+             data:{'tracking_no':tracking_no} ,
+             success: function(data) {
+                 if(data.success){
+                     result = data.success;
+                      alert("解绑成功！");
+                 }else{
+                     result = false;
+                     alert(data.error);
+                    $("input").val("");
+                    $("input:eq(0)").focus();
+                 } 
+             },
+             error: function() {
+                 result = false;
+                  $("input:eq(1)").val("");
+                 alert('ajax请求错误, 请重新扫描快递单号:'); 
+             }
+         });
+         return result;
+    }
+    
+    // ]]>
+    //{/literal}
+    </script>
+  
+</head>
+<body>
+
+<form method="post" id="form"> 
+
+    <div style="clear:both;"> 
+
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120" style="text-align:right;font-size:14px;">扫描快递单号：</td>
+        <td>
+            <input type="text" id="tracking_no" value="" size="39" /> 
+        </td>
+        <td>
+            <div class="td_node"  id="shipping_no_note"></div>
+        </td>
+        </tr>
+    </table>
+  </div>
+   
+</form>
+
+<br /><br />
+
+
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品列表</title>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.core.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.tabs.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.theme.css">
+<script src="./js/jquery-1.3.2.js"></script> <script
+	src="./js/jquery.ui/jquery.ui.widget.js"></script> <script
+	src="./js/jquery.ui/jquery.ui.tabs.js"></script> {literal}
+<style type="text/css">
+body {
+	font-family: "新宋体";
+	font-size: 12px;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+
+h1 {
+	font-size: 16px;
+}
+
+.table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 12px;
+	font-family: "宋体";
+}
+
+.table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+}
+ .table th{background:#ffffff;border-bottom:1px solid #CCC;padding:4px; text-align:center;}
+#holder li {
+	padding: 4px;
+}
+
+.input {
+	width: 200px;
+	height: 20px;
+}
+#menu{
+		font-size: 16px;
+}
+
+#button {
+	text-align: center;
+}
+.styleWidth {
+	float: left;
+	width: 97%;
+	list-style-type: none;
+}
+.styleColor {
+	float: left;
+	width: 80px;
+	height: 80px;
+}
+.styleSport {
+	float: left;
+	width: 75px;
+	height: 30px;
+}
+.styleCloth {
+	float: left;
+	width: 90px;
+	height: 30px;
+}
+</style>
+{/literal}
+</head>
+<body>
+	<br />
+<div class="demo">
+		<form id="form1"  method="post" action="goods_index.php?act=add_download_data">
+<div id="tab">
+<ul>
+	<li><a href="#tabs-1">基本信息</a></li>
+</ul>
+<div id="tabs-1">
+<table class="table" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right">下载资料名称：</td>
+		<td><textarea name="data_name" id="goods_name" rows="2" cols="100" onblur="checkName();"></textarea><font id="goods_name_info" name="goods_name_info" color="red" >*</font></td>
+		<td><input type="hidden" id="name_state" name="name_state" value="1"></input></td>
+	</tr>
+	<tr>
+		<td align="right">资料分类：</td>
+		<td>{$cat_name}</td>
+		<td><input type="hidden" id="cat_id" name="cat_id" value="{$cat_id}"></input>
+		<input type="hidden" id="test" value="{$cat_name}" name="test"></input></td>
+	</tr>
+	
+	<tr>
+		<td align="right">资料大小：</td>
+		<td><input type="text" class="input" name="goods_weight" id="goods_weight"  value="{$goods.goods_weight}" />（单位：kb）</td>
+	</tr>
+	
+</table>
+</div>
+<div id="button"><input type="button" id="sub" value="提交" onclick="applySubmit();"/>
+<input type="hidden" name="party_id" value="{$smarty.session.party_id}" id="party_id"></input>
+<input type="reset" name="Submit2" value="重置" /></div>
+</div>
+        </form>
+</div>
+<!-- End demo -->
+{literal}
+<script type="text/javascript">
+function applySubmit(){
+	var name_state = $('#name_state').val();
+	if($.trim($('#goods_name').val()) == ''){
+		$('#goods_name_info').html('您输入的商品名为空');
+		return false;
+	}
+	
+	var falg_weight = true;
+	var goods_weight = $.trim($('#goods_weight').val());
+	var reg = /^[1-9][0-9]*$/;
+	if (goods_weight && goods_weight != 0) {
+		if (goods_weight.match(reg)) {
+			falg_weight = true;
+		} else {
+			falg_weight = false;
+		}
+		if (!falg_weight) {
+			alert("大小单位为mb，请输入整数");
+			return;
+		}
+	}
+    
+	if(name_state == 1){
+		$('#form1').submit();
+	}
+	else{
+		alert('请查检您输入的信息是否正确');
+	}
+}
+function checkName(){
+	var goodsName=$.trim($('#goods_name').val());
+	if(goodsName==''){
+		$('#name_state').val('0');
+		$('#goods_name_info').html('您输入的值为空');
+	}
+	else{
+			$('#name_state').val('1');
+			$('#goods_name_info').html('正确');
+		
+		
+	}
+}
+function checkWarn(){
+	var warn_number=$('#warn_number').val();
+	
+	if(warn_number==''){
+		$('#warn_state').val('0');
+		$('#warn_number_info').html('您输入的警告库存为空');
+	}
+	else if(warn_number!=''){
+		$('#warn_state').val('1');
+		$('#warn_number_info').html('正确');
+	}
+}
+function checkBarcode(){
+	var goodsBar = $('#barcode').val();
+	if(goodsBar==''){
+		$('#code_state').val('1');
+		$('#code_info').html('您输入的条码为空的,但添加商品可成功');
+		return false;
+	}
+	$.ajax({
+		type: "POST",
+		url: "goods_index.php?act=checkBarCode&&goodsBar="+goodsBar,
+		success: function(data){
+			//alert(data);
+			if(data=='ok'){
+				$('#code_state').val('1');
+				$('#code_info').html('您输入的条码是唯一的');
+			}
+			else if(data=='-1'){
+				$('#code_state').val('0');
+				$('#code_info').html('您输入的条码已经存在,请查检后再输入');
+			}
+			else{
+				alert('出现问题,请与ERP组联系,谢谢---');
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+}
+$(function() {
+    $("#tab").tabs();}
+);
+</script>
+{/literal}
+</body>
+</html>

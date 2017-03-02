@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>导出理论运费</title>
+</head>
+
+<body>
+
+<form>
+<p>
+开始时间：
+<input type="text" name="startDate" id="startDate" value="{$smarty.request.startDate}" size="10" />
+<input type="button" id="startDate_trigger" value="..." />
+结束时间：
+<input type="text" name="endDate" id="endDate" value="{$smarty.request.endDate}" size="10" />
+<input type="button" id="endDate_trigger" value="..." />
+</p>
+ <input type="submit" name="csv" value="导出">
+<input type="hidden" name="act" value="export">
+</form>
+
+</body>
+<script type="text/javascript">
+{literal}
+function selectall() {
+    var selected = document.getElementById('selectall2').checked;
+    var invoices = document.getElementsByName('invoice_no[]');
+    for (var i=0; i<invoices.length; i++ ) {
+        invoices[i].checked = selected;
+    }
+}
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startDate",
+        button            : "startDate_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endDate",
+        button            : "endDate_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+{/literal}
+</script>
+</html>

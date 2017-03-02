@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>退款订单比例</title>
+{literal}
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+.table, td,th {
+	border:1px solid #cccccc;
+	border-collapse:collapse;
+	line-height: 30px;
+}
+.table .table_2 td{
+    border:1px solid #FFFFFF;
+	border-collapse:collapse;
+    line-height: 20px;
+}
+body {
+	font-family: "宋体";
+	font-size: 12px;
+	margin-right: auto;
+	margin-left: auto;
+}
+</style>
+<script src="js/jquery-1.3.2.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type = "text/javascript">
+function sub(){
+    var startCalendar = $('#startCalendar').val();
+    var endCalendar = $('#endCalendar').val();
+    if(startCalendar == '' || endCalendar == '')
+    {
+	    alert('请选择时间段');
+	    return false;
+    }
+    else{
+        $('#form3').submit(); 
+    }   
+}
+</script>
+{/literal}
+</head>
+<body>
+<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+	<legend><span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;退货退款订单分析&nbsp;</span></legend>
+    <div>
+</div>
+    <form id="form3" name="form3" method="post" action="refund_proportion.php?act=list">
+      <p>
+      </span>
+	  <span style="margin-top:14px;margin-left:11px;float:left;width:35px">日期:</span>
+	    <span style="margin-top:10px;margin-left:11px;float:left;width:110px">
+	    <input type="text" style="height:14px;width:100px" id="startCalendar" name="startCalendar" value="{$smarty.request.startCalendar}{$start_time}">
+	    </span>
+	    <span style="margin-top:13px;float:left;width:20px">
+	    <input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" />
+	    </span>
+	    <span style="margin-top:14px;float:left;width:20px">到</span>
+	    <span style="margin-top:10px;margin-left:11px;float:left;width:110px">
+	    <input type="text" style="height:14px;width:100px" id="endCalendar" name="endCalendar"  value="{$smarty.request.endCalendar}{$end_time}">
+	    </span>
+	    <span style="margin-top:13px;float:left;width:20px">
+	    <input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" />
+	    </span>
+	
+	    <span style="margin-top:50px;width:30px">
+	    <input type="button" name="search_status" onclick="sub();" value="搜索" />
+	    </span>
+	  </p>
+    </form>
+<br />
+<br />
+  <form id="form1" name="form1" method="post" action="order_batch_validate.php?act=validate">
+	<table width="100%" class="table" cellpadding="0px" cellspacing="0px">
+	    <caption {if $message eq ''}style="display:none"{/if}>{$message}</caption>
+		<tr>
+			<th align="center">日期</th>
+			<th align="center">退款订单数</th>
+			<th align="center">发货总订单数</th>
+			<th align="center">订单数占比</th>
+			<th align="center">退款订单总金额(折合人民币)</th>
+			<th align="center">发货总金额(折合人民币)</th>
+            <th align="center">金额占比</th>
+            <th align="center">当日发货中退款订单总数</th>
+            <th align="center">当日发货中退款订单数占比</th>
+            <th align="center">当日发货中退款订单总金额</th>
+            <th align="center">当日发货中退款订单金额占比</th>
+            <th align="center">供应商质量问题退款订单总数</th>
+            <th align="center">供应商质量问题退款订单数占比</th>
+            <th align="center">供应商质量问题退款订单总金额</th>
+            <th align="center">供应商质量问题退款订单金额占比</th>
+	</tr>
+		{foreach from=$res item=item}
+		<tr>
+			<td align="center">{$item.date}</td>
+			<td align="center">{$item.refund_amount}</td>
+			<td align="center">{$item.delivery_amount}</td>
+			<td align="center">{$item.refund_proportion}</td>
+			<td align="center">{$item.refund_price_amount}</td>
+			<td align="center">{$item.delivery_price_amount}</td>
+			<td align="center">{$item.refund_price_proportion}</td>
+            <td align="center">{$item.delivery_refund_amount}</td>
+            <td align="center">{$item.delivery_refund_proportion}</td>
+            <td align="center">{$item.delivery_refund_price_amount}</td>
+            <td align="center">{$item.delivery_refund_price_proportion}</td>
+            <td align="center">{$item.quality_problem_amount}</td>
+            <td align="center">{$item.quality_problem_proportion}</td>
+            <td align="center">{$item.quality_problem_price_amount}</td>
+            <td align="center">{$item.quality_problem_price_proportion}</td>
+	</tr>
+		{/foreach}
+	</table>
+	<br>
+	<br>
+	</form>
+</fieldset>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

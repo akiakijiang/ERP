@@ -1,0 +1,15 @@
+.single_check{
+    padding:10px;
+    position: absolute;
+    top:40px;
+    z-index:5555; 
+}
+.single_check_hidden{
+    display: none;
+}
+.single_check_btn{
+	position: absolute;
+    top:8px;
+    cursor: pointer;
+    color:blue;
+}

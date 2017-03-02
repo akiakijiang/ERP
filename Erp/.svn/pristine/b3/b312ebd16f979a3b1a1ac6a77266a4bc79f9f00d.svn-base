@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>财务查看</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+{literal}
+<script type="text/javascript">
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+function submitData(submit_button) {
+	submit_button.disabled = "disabeld";
+	E("data_form").submit();
+}
+function setEditable(order_id, value) {
+	ES("note-" + order_id)[0].disabled = value;
+	ES("shipping_status-" + order_id)[0].disabled = value;
+	ES("bill_no-" + order_id)[0].disabled = value;
+	ES("account_id-" + order_id)[0].disabled = value;
+	
+	E("order_id-" + order_id).disabled = value;
+}
+</script>
+{/literal}
+</head>
+<body>
+<form>
+商店：
+<select name="store_id">
+<option value="-1">所有</option>
+<!--{foreach from=$stores item=store}-->
+<option value="{$store.store_id}" {if $smarty.request.store_id == $store.store_id}selected{/if}>{$store.name}</option>
+<!--{/foreach}-->
+</select>
+发货状态：
+<select name="shipping_status" >
+	<option value="-1">所有</option>
+	<!--{foreach from=$all_shipping_status key=key item=shipping_status}-->
+	<option value="{$key}" {if $smarty.request.shipping_status != null && $smarty.request.shipping_status == $key}selected{/if}>{$shipping_status}</option>
+	<!--{/foreach}-->		
+</select>
+<br>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<br>
+模糊框：
+<input name="search_text" value="{$smarty.request.search_text}">
+<input type="submit" value="        搜索        ">
+<input type="hidden" value="search" name="act">
+</form>
+<br>
+
+<form method="POST" action="c2c_action.php" id="data_form">
+<table class="bWindow" style="width:1400px">
+<tr>
+<td colspan="20" align="center" style="border-right:0"><input type="reset" value="重设">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="   提交   " onclick="submitData(this)"></td>
+</tr>
+<tr>
+<td colspan="20" align="center" style="border-right:0"><font color="red">C2C物流查看</font>&nbsp;&nbsp;{$pager}</td>
+</tr>
+<tr>
+<th>操作</th>
+<th>日期</th>
+<th>订单号</th>
+<th>订单金额</th>
+<th>商品</th>
+<th>客户名</th>
+<th>收货地址</th>
+<th>发货状态</th>
+<th>快递公司</th>
+<th>快递单号</th>
+<th>支付方式</th>
+<th>备注</th>
+<th>操作</th>
+</tr>
+<!--{foreach from=$orders item=order}-->
+<tr align="center">
+<td style="width:40px">
+	<input type="button" value="编辑" onclick="setEditable('{$order.order_id}', '')">
+	<input type="button" value="取消" onclick="setEditable('{$order.order_id}', 'disabled')">
+</td>
+<td style="width:70px">{$order.order_time}</td>
+<td style="width:80px"><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a><br>{$order.store_name}</td>
+<td style="width:60px">{$order.order_amount}</td>
+<td>
+	<!--{foreach from=$order.goods_list item=goods}-->
+	{$goods.goods_name}(￥{$goods.goods_price} × {$goods.goods_number})<br>
+	<!--{/foreach}-->
+</td>
+<td style="width:50px">{$order.consignee}</td>
+<td style="width:100px">{$order.address}</td>
+<td style="width:50px">
+<select name="shipping_status-{$order.order_id}" {if $order.account_id != 0}disabled{/if}>
+	<!--{foreach from=$all_shipping_status key=key item=shipping_status}-->
+	<option value="{$key}" {if $order.shipping_status != null && $order.shipping_status == $key}selected{/if}>{$shipping_status}</option>
+	<!--{/foreach}-->		
+</select>
+</td>
+<td style="width:50px">{$order.carrier_name}</td>
+<td style="width:50px">
+	<input type='text' name='bill_no-{$order.order_id}' value='{$order.bill_no}' {if $order.account_id != 0}disabled{/if}></input>
+</td>
+<td style="width:80px">{$order.pay_name}</td>
+<td style="width:50px"><textarea name="note-{$order.order_id}" {if $order.account_id != 0}disabled{/if}>{$order.note}</textarea></td>
+<td style="width:50px">
+	<input type="button" value="编辑" onclick="setEditable('{$order.order_id}', '')">
+	<input type="button" value="取消" onclick="setEditable('{$order.order_id}', 'disabled')">
+</td>
+</tr>
+<input type="hidden" name="order_id[]" id="order_id-{$order.order_id}" value="{$order.order_id}" {if $order.account_id != 0}disabled{/if}>
+<input type="hidden" name="account_id-{$order.order_id}" value="{$order.account_id}" {if $order.account_id != 0}disabled{/if}>
+<!--{/foreach}-->
+<tr>
+<td colspan="20" align="center" style="border-right:0"><input type="reset" value="重设">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="   提交   " onclick="submitData(this)"></td>
+</tr>
+<tr>
+<td colspan="20" align="center" style="border-left:0"><font color="red">C2C物流查看</font>&nbsp;&nbsp;{$pager}</td>
+</tr>
+</table>
+<input type="hidden" name="back" value="{$back}">
+<input type="hidden" name="type" value="dc">
+</form>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

@@ -1,0 +1,4 @@
+日期,订单号,应收金额,是否收款,实收金额,差额,订单状态,客户名,手续费,快递单号,快递费用,收款方式,配送方式,备注
+{foreach from=$orders item=order name=order}
+{$order.order_time},{$order.order_sn},{$order.final_amount},{$order.pay_status_name},{$order.real_paid},{$order.final_amount-$order.real_paid},{$order.order_status_name},{$order.consignee},{$order.proxy_amount},{$order.bill_no},{$order.real_shipping_fee},{$payments[$order.pay_id].pay_name},{$order.shipping_name},{$order.note}
+{/foreach}

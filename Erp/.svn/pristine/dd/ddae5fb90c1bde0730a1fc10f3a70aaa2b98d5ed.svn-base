@@ -1,0 +1,6 @@
+仓库,商品名,是否全新,商品条码,库位,总数量,有效期,该有效期数量
+{foreach from=$storage_list item=goods}
+{foreach from=$goods.product_keys item=product}
+"{$goods.facility_name}","{$goods.goods_name}",{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if},="{$goods.barcode}","{$goods.location_seq_id}",{$goods.storage_count},{if $product.validity !=''}{$product.validity}{else}未维护有效期{/if},{$product.validity_num}
+{/foreach}
+{/foreach}

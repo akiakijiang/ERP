@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库库位管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// 载入执行
+	$(document).ready(function(){
+			/**
+			 * 商品搜索
+			 */
+			$('#goods_select').autocomplete('ajax.php?act=search_goods', {
+				dataType : 'json',
+				minChars: 1,
+				delay: 1000,
+				mustMatch: false,
+				formatItem : function(row, i, max, value, term) {
+					return(row.goods_name);
+				},
+				formatResult : function(row) {
+					return(row.goods_name);
+				}
+			}).result(function(event, row, formatted) {
+				$('#goods_id').val(row.goods_id);
+				change_goods_style_select_list(row.goods_id);
+			});
+	});
+	
+	/**
+	 * 更改样式选择的下拉项
+	 *
+	 * @param int goods_id 商品ID 
+	 */
+	function change_goods_style_select_list(goods_id)
+	{
+			var $e = $('#style_id');
+
+			$.ajax({
+ 	     		    beforeSend : function(){
+						$e.attr('disabled', true);	
+					},
+					async : false,
+					dataType : "json",
+					data: "goods_id=" + goods_id,
+					url : "ajax.php?act=search_goods_styles",
+					type : 'POST',
+					success : function(response) {
+						if (response && response!='' && response.length) {	
+							var tpl = '';
+							for (var i = 0; i < response.length; i++) {
+								tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+							}
+						} else {
+							tpl = '<option value="0">N/A</option>';	
+						}
+						if (tpl && tpl!='') {
+							$e.html(tpl);
+						}
+						return;
+					},
+					complete : function() {
+						$e.attr('disabled', false);
+					}
+			});
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		var goods_id = $('#goods_id').val();
+		if (!goods_id || goods_id==0) {
+			alert('请选择产品');
+			return;
+		}
+		$('#form').submit();
+	}
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;产品库位管理&nbsp;</span></legend>
+
+  <div style="float:right;clear:both;"><a href="product_facility_location_manage.php?facility_id={$filter.facility_id}&location_seq_id={$filter.location_seq_id}">库位产品列表</a></div>
+    
+  <div style="clear:both;"> 
+	<h3 style="color:#09F;">指定库位存放的商品</h3>
+ 	<form method="post" id="form" action="product_facility_location_update.php" autocomplete="off">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      		<td width="120">仓库 <span class="require"> * </span></td>
+	        <td>
+            	<select disabled="disabled"><option value="0">-- 选择</option>{html_options options=$facility_list selected=$filter.facility_id}</select>
+                <input type="hidden" name="product_facility_location[facilityId]" value="{$filter.facility_id}" />
+            </td>
+		</tr>
+        
+    	<tr>
+      		<td width="120">库位 <span class="require"> * </span></td>
+	        <td>
+                <input type="text" size="30" value="{if $filter.location_seq_id}{$filter.location_seq_id}{/if}" disabled="disabled" /> 
+                <input type="hidden" name="product_facility_location[locationSeqId]" value="{$filter.location_seq_id}" />
+            </td>
+		</tr>
+        
+    	<tr>
+      		<td width="120"></td>
+	        <td>
+				--
+            </td>
+		</tr>
+      
+    	<tr>
+      	    <td>商品 <span class="require"> * </span></td>
+            <td>
+              <input type="text" size="40" value="" id="goods_select" /> 
+              #<input type="text" id="goods_id"  name="product_facility_location[goodsId]" size="5" readonly="readonly" style="border:none;" /> 
+              &nbsp;&nbsp; <span class="tip">(请输入商品名，如果自动提示没有响应您的输入，请尝试按向下方向键)</span>
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>样式</td>
+            <td>
+				<select id="style_id" name="product_facility_location[styleId]"><option value="0">N/A</option></select>
+		    </td>
+		</tr>
+        
+    	<tr>
+      		<td width="120"></td>
+	        <td>
+				--
+            </td>
+		</tr>
+        
+    	<tr>
+      	    <td>最小数量</td>
+            <td>
+              <input type="text" name="product_facility_location[minQuantity]" value="" />  &nbsp;&nbsp;&nbsp;&nbsp; <span class="tip">(库存预警值，当库存低于该值时，将会收到通知)
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>移动数量</td>
+            <td>
+              <input type="text" name="product_facility_location[moveQuantity]" value="" />
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>&nbsp;</td>
+            <td>
+				<input type="button" value="保存" onclick="apply_submit(this)" />
+		    </td>
+		</tr>
+                	  
+        
+	</table>
+    
+    <input type="hidden" name="facility_id" value="{$filter.facility_id}" />
+    <input type="hidden" name="location_seq_id" value="{$filter.location_seq_id}" />
+    <input type="hidden" name="act" value="update" />
+    </form>
+  </div>
+  
+  <br />
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

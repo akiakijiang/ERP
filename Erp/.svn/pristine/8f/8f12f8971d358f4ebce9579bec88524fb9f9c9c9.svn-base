@@ -1,0 +1,665 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title> 分仓库同步 </title>
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+<!--  <script type="text/javascript" src="misc/jquery.js"></script> -->
+  <script type="text/javascript" src="gift_activity/bootstrap/js/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+
+  <!-- Calendar -->
+  <link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+  <script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+  <script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+  <!-- Calendar /-->
+  {literal}
+  <style>
+  .btn{
+    background: rgba(100,149,237,.9);
+    display: inline-block;
+    padding: 6px 12px;
+    color:white;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+  table td{
+      padding:5px 5px;
+      text-align:center;
+  }
+  table td,table th{
+    height:15px;
+    line-height:15px;
+    vertical-align: middle;
+  }
+  tr.odd {
+    background-color:#FFF;
+  }
+  tr.even {
+    background-color:#E2F9FA;
+  }
+  tr.hover {
+    background-color:#b6d1ec;
+  }
+
+  </style>
+  {/literal}
+  <script type="text/javascript"><!--
+    // <![CDATA[
+    var WEB_ROOT = '{$WEB_ROOT}';
+    var page = '{$goods_facility_mapping_page}';
+    var outer='{$goods.outer_id}';
+
+    // var province='{$province}';
+    // var city='{$city}';
+
+    // {literal}
+    function E(id) {return document.getElementById(id);}
+    function ES(name) {return document.getElementsByName(name);}
+    var property={
+      divId:"demo",
+      needTime:true,
+      yearRange:[1970,2030],
+      week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+      month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+      format:"yyyy-MM-dd hh:mm:ss"
+    };
+
+
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+          $(this).next().slideToggle('normal');
+          //location.href='suning_facility_synchronize.php';
+        }); 
+
+        
+        // canva1=$.createGooCalendar("start_time",property);
+        // canva2=$.createGooCalendar("end_time",property);
+        
+        // /**
+        //  * 搜索商品或者套餐
+        //  */
+        //  $('#distributor_id').autocomplete('suning_facility_synchronize.php?act=search_distributor', {
+        //   dataType : 'json',
+        //   minChars: 0,
+        //   mustMatch: false,
+        //   formatItem : function(row, i, max, value, term) {
+        //     return(row.distributor_id);
+        //   },
+        //   formatResult : function(row) {
+        //     return(row.distributor_id);
+        //   }
+        // }).result(function(event, row, formatted) {
+        //   $('#distributor_id').val(row.distributor_id);
+        //   $("#distributor_id").attr("goodsId",row.goods_id);
+
+        //   $('#hid_type').val(row.type);
+        //   var type = row.type;
+        //   if(type == 'taocan') {
+        //     $('#hid_tc_code').val(row.outer_id);
+        //     $("#distributor_id").attr("outerIds",row.outer_id);
+        //     $('#hid_outer_id').val('');
+        //   } else {
+        //     $('#hid_outer_id').val(row.outer_id);
+        //     $("#distributor_id").attr("outerIds",row.outer_id);
+        //     $('#hid_tc_code').val('');
+        //   }
+        // });
+      $('#distributor_add_btn').bind('click', verify_is_split_facility);
+      
+
+      $('#distributor_add_btn').bind('click', distributors_add);
+      });
+
+  /**
+   * 添加平台仓库明细
+   */
+  function distributors_add(event)
+  { 
+    $("#distributor_id").prop('disabled','disabled');
+    $("#distributor_id").css('background-color', 'rgb(241, 241, 241)');
+    $("#is_split_facility").prop('disabled','disabled');
+    $("#is_split_facility").css('background', 'rgb(241, 241, 241)');
+    var distributor_id = $("#distributor_id").find('option:selected').val();
+    var distributor_name = $("#distributor_id").find('option:selected').text();
+    var facility_name = $("#facility_id").find('option:selected').text();
+    var facility_id = $("#facility_id").find('option:selected').val();
+    var is_split_facility = $("#is_split_facility").find('option:selected').val();
+
+
+    if(''==distributor_name || null==distributor_name){
+        alert('请先选择店铺。。');
+        return false;
+      }
+    if(''==facility_name || null==facility_name){
+        alert('请先选择仓库。。');
+        return false;
+      } 
+      var facility_code="";
+      var facility_new=facility_id+"_"+facility_code;
+
+      var tpl = "<tr mapping_id='' is_split_facility=\""+is_split_facility+"\" align=\"center\" >" +
+                "  <td distributor_id=\""+distributor_id+"\"distributor_name=\""+distributor_name+"\">" + distributor_name + "</td>";
+      tpl +=  "  <td facility_id=\""+facility_id+"\"facility_name=\""+facility_name+"\">" + facility_name + "</td>";       
+      tpl += "  <td class=\"control\"><input name=\"facility_ref[" + facility_new + "][facility_code]\" size=\"8\" type=\"text\" value=''" + "/></td>";
+      tpl += "  <td ><select name=\"facility_ref[" + facility_new + "][is_sync]\"><option value=\"1\">是</option><option value=\"0\">否</option></select></td>" 
+      tpl +=  "  <td> " +
+              "    <a href=\"javascript:void(0);\" onclick=\"update_remove(this)\">删除</a>" +
+              "    <input name=\"facility_ref[" + facility_new + "][facility_id]\" type=\"hidden\" value=\"" + facility_id + "\" /> " +
+              "    <input name=\"facility_ref[" + facility_new + "][distributor_id]\" type=\"hidden\" value=\"" + distributor_id + "\" />" +
+              "  </td>" +
+              "</tr>";
+
+      $('#addTab').append(tpl);
+      changeView($('#is_split_facility').val());
+      $('.small-button').show();
+  }
+
+    /**
+   * update删除仓库
+   *
+   * @param docObject  节点对象
+   * @param string 类型 goods|item
+   */
+  function update_remove(doc, type) 
+  {
+    var $tr = $(doc).parent().parent();
+    $tr.remove();
+    var len = $("#addTab tr").length;
+    if(1 == len){
+    //$("#distributor_id").removeAttr("disabled");
+    $("#distributor_id").removeProp('disabled');
+    $("#distributor_id").css('background-color', 'rgb(255, 255, 255)');
+    //$("#is_split_facility").removeAttr("disabled");
+    $("#is_split_facility").removeProp('disabled');
+    $("#is_split_facility").css('background-color', 'rgb(255, 255, 255)');
+    }
+  }
+
+
+
+  /**
+   * 取消提交
+   */
+  function cancel_submit()
+  {
+    var message = '确定要取消吗？';
+    if(confirm(message)){
+
+    //window.location.reload();
+    //window.history.back(-1); 
+    location.href='suning_facility_synchronize.php';
+
+    } 
+    return; 
+  }
+
+    //检查输入数据格式正确性并组装数据
+    function check_input(event){
+      event.preventDefault();
+      var len = $("#addTab tr").length;
+      if(1 == len){
+        alert("请添加仓库");
+        return;
+      }
+      var total = {};//所有数据
+      var facility_row = new Array();  //前台的数据放入数组
+      for (var i = 1; i < len; i++) {
+        var facility_code = $("#addTab tr").eq(i).find("input").val();
+        var facility_id = $("#addTab tr").eq(i).find("td").eq(1).attr('facility_id');
+        var application_key = $("#addTab tr").eq(i).find("td").eq(0).attr('distributor_id');
+        var is_sync = $("#addTab tr").eq(i).find("select").val();
+        var facility_new = facility_id + "_" + facility_code;
+        var mapping_id = $("#addTab tr").eq(i).attr('mapping_id');
+        var is_split_facility = $("#addTab tr").eq(i).attr('is_split_facility');
+
+
+        if(1 == is_split_facility && (null == facility_code||''== facility_code)){
+          alert("选择分仓后平台仓库编码不能为空");
+          return;
+        }
+
+        var facility_ref  = {};
+
+        facility_ref.facility_code= facility_code;
+        facility_ref.facility_id = facility_id;
+        facility_ref.application_key = application_key;
+        facility_ref.is_sync = is_sync;
+        facility_ref.mapping_id = mapping_id;
+        facility_ref.is_split_facility = is_split_facility;
+
+        facility_row.push(facility_ref);
+      };  
+      var sendData = JSON.stringify(facility_row);
+      var comment = $("#comment").val();
+
+      if(comment == "添加"){
+        var $e = $('#add');
+        //console.log(sendData);
+        $.ajax({
+            beforeSend : function(){
+              $e.attr('disabled', true);
+            },
+            async : false,
+            dataType : "json",
+            data: "sendData=" + sendData,
+            url :  "suning_facility_synchronize.php?act=add",
+            type : 'POST',
+            success : function(response) {
+              //console.log(response);
+              if(response == true)
+                alert("添加成功");
+              $("#distributor_id").removeProp('disabled');
+              $("#is_split_facility").removeProp('disabled');
+              window.location.reload() ;
+            },
+            error: function() {
+              alert("ajax 错误");
+            },
+            complete : function() {
+              $e.attr('disabled', false);
+            }
+        });
+      }
+      else if(comment == "更新"){
+      var result=verify(application_key);
+      if(1 == result()){
+        var $e = $('#update');
+        //console.log(sendData);
+        $.ajax({
+            beforeSend : function(){
+              $e.attr('disabled', true);
+            },
+            async : false,
+            dataType : "json",
+            data: "sendData=" + sendData,
+            url :  "suning_facility_synchronize.php?act=update",
+            type : 'POST',
+            success : function(response) {
+              console.log(response);
+              if(!isNaN(response)){
+                alert("更新成功");
+                location.href='suning_facility_synchronize.php';
+              //window.history.back(-1);
+              //location.reload() ;   
+              //window.location.reload();
+              }
+            },
+            error: function() {
+              alert("ajax 错误");
+            },
+            complete : function() {
+              $e.attr('disabled', false);
+            }
+        });
+      }else{
+        return false;
+      }
+
+      }
+      
+    }
+    //日期大小的判断
+    function comptime(){
+
+      var start_time = document.getElementById('start_time').value;
+      var end_time  = document.getElementById('end_time').value;
+      start_time = start_time.replace(/[-,:,\s]/g, '');
+      end_time =  end_time.replace(/[-,:,\s]/g, '');
+      if(start_time >=  end_time ){
+        return false;
+      }
+    }
+    
+    //时间格式检查
+    function checkDateTime(str){
+      var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})( )(\d{2})(:)(\d{2})(:)(\d{2})$/);
+      if(r == null){
+        return false;
+      }else{
+        return true;
+      }
+    }
+
+  /**
+   * 切换按钮的等待状态
+   */    
+   function waiting($button, status)
+   {
+    if (status == 'en') {
+      $button.attr('disabled', false);
+    } else {
+      $button.attr('disabled', true);
+    }
+  }
+
+  //删除确认
+  function delete_confirm(){
+    return confirm("确认删除么？");
+  }
+
+  //展示列表的过滤筛选
+  function filter(){
+    $("#filter").submit();
+  }
+
+  //分仓选择下拉切换隐藏facility_code列
+  function changeView(status){
+    var comment = $("#comment").val();
+    var len = $("#addTab tr").length;
+    if(1 == status){
+      $('.control').show();
+      for (var i = 1; i < len; i++) {
+        $("#addTab tr").eq(i).attr('is_split_facility','1');//从不分仓转到分仓
+      }
+    }else{
+      $('.control').hide();
+      $('.control').find('input').val("");
+      for (var i = 1; i < len; i++) {
+        $("#addTab tr").eq(i).attr('is_split_facility','0');//从分仓转到不分仓
+      }
+    }
+  }
+ //验证新添加的仓库同步的状态一致
+  function verify_is_split_facility(){
+  var status = $("#is_split_facility").val();
+  var application_key = $("#distributor_id").val();
+    $.ajax({
+      beforeSend : function(){
+      },
+      async : false,
+      dataType : "json",
+      data: "application_key=" + application_key,
+      url :  "suning_facility_synchronize.php?act=verify",
+      type : 'POST',
+      success : function(response) {
+        var response = response.is_split_facility
+        if(response != status && response== 1){
+          alert("该店铺已经选择了分仓模式，请保持统一");
+          $("#is_split_facility").prop('value', '1');
+          var value=$("#is_split_facility").prop('value');
+          changeView(value);
+        }
+        else if(response != status && response== 0){
+          alert("该店铺已经使用了不分仓模式，请保持统一");
+          $("#is_split_facility").prop('value', '0');
+          var value=$("#is_split_facility").prop('value');
+          changeView(value);
+        }
+      },
+      error: function(data) {
+        console.log(data);  
+        alert("ajax 1213错误");
+      },
+      complete : function() {
+      }
+    });
+
+  }
+
+//更新之前检查是否发生了分仓和不分仓之间的转化
+  function verify(application_key){
+    var verify = 1 ;
+    function inner_ajax(){
+      $.ajax({
+              async : false,
+              dataType : "json",
+              data: "application_key=" + application_key,
+              url :  "suning_facility_synchronize.php?act=verify",
+              type : 'POST', 
+              success : function(response) {
+                var response = response.is_split_facility;
+                var status = $("#is_split_facility").val();
+                if(0 == status && response== 1){
+                  //alert("该店铺从分仓转换到不分仓，确定么？");
+                  var message = "该店铺从分仓转换到不分仓，确定么？";
+                  if(confirm(message)){
+                    verify = 1;
+                    return verify;
+                  }
+                  else{
+                    verify = 0;
+                    return verify;
+                  }
+                }
+                else if(1 == status && response== 0){
+                  var message = "该店铺从不分仓转换到分仓，确定么？";
+                  if(confirm(message)){
+                    verify = 1;
+                    return verify;
+                  }
+                  else{
+                    verify = 0;
+                    return verify;
+                  }
+                }
+              },
+              error: function(data) {
+                console.log(data);  
+                alert("ajax 1213错误");
+              }    
+          });
+      return verify;
+    }
+    return inner_ajax;
+  }
+
+    // {/literal}
+    // ]]>
+    --></script>
+    <!-- <link href="Level1_Arial.css" rel="stylesheet" type="text/css" /> -->
+  </head>
+  <body>
+   <!--{if $tip}-->
+   <script type="text/javascript">
+  // <![CDATA[
+  // {literal}
+  window.setTimeout(function(){
+    $('#tip').slideUp("slow");
+  }, 3000);
+
+  // {/literal}
+  // ]]>
+
+
+  </script>
+
+  <div id="tip" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+    {$tip}
+  </div>
+  <!--{/if}-->
+  <!-- ====================================店铺分仓同步==================================== -->
+
+  <div style="width:85%;margin:auto;">  
+    <fieldset style="border: rgba(220,220,220,.8) 2px solid;">
+     <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;平台仓库&nbsp;</span></legend>
+     <div style="width:90%; margin:auto;">
+      <!--{if $message}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+        window.setTimeout(function(){$('#message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+        </script>
+        <div id="message" style="border:rgba(220,220,220,.8) 2px solid; padding:5px; text-align:center;">
+          {$message}
+        </div>
+        <!--{/if}-->
+        <br/>
+
+        <fieldset style="border: rgba(2,23,2,.5) 1px dashed;">
+         <legend class="expand" style="font-size: 15px;background-color: #B8DCFF;">{if $update[0].application_key}&nbsp;编辑 &nbsp;{else}&nbsp;添加平台仓库 &nbsp;{/if}</legend>
+         <div style="display:block;" id="s1">
+           <form method="post" id="myform" >
+             <table style="margin-left: 60px;width:540px">
+              <tr>
+               <td style="width:100px;">店铺名称:</td>
+               <td style="width:280px;">
+                {if $update[0].application_key}
+                <select style="width:270px; background-color:rgb(241, 241, 241)" id="distributor_id"  disabled />
+                {else}
+                <select style="width:270px;" id="distributor_id"/>
+                {/if}
+                 {foreach from=$taobao_shop_list  item=taobao_shop}
+                <option value="{$taobao_shop.application_key}" {if $taobao_shop.application_key == $update[0].application_key}selected {/if}>{if $taobao_shop.taobao_shop_id}{$taobao_shop.taobao_shop_name}{else}请选择店铺{/if}</option> 
+                {/foreach}
+               </select>
+                <input type="hidden" name="act" value="add" />
+               </td>
+             </tr>
+             <tr>
+               <td style="width:100px;">仓库名称:</td>
+               <td style="width:280px;"><select id="facility_id" style="width:270px;" >
+                {foreach from=$available_facility  item=distributor key=key}
+                <option value="{$key}">{if $distributor}{$distributor}{else}请选择仓库{/if}</option> 
+                {/foreach}
+               </select>
+              </td>
+            </tr>
+            <tr>
+               <td style="width:100px;">分仓方式:</td>
+               <td style="width:280px;"><select id="is_split_facility" style="width:270px;"  onchange=changeView(this.value)>
+                <option value="1"  {if $update[0].is_split_facility == 1}selected {/if}>是</option> 
+                <option value="0"  {if $update[0].is_split_facility == 0}selected {/if}>否</option> 
+               </select>
+              </td> 
+              <td><input type="button" id="distributor_add_btn" value=" 添加仓库"/></td>
+            </tr>
+      </table>
+       <table style="width: 100%" id="addTab">
+        <tr align="center" bgcolor="#E2F9FA">
+          <td style="width: 9%;"><strong>店铺</strong></td>
+         <td style="width: 9%;"><strong>仓库</strong></td>
+         {if $update[0].is_split_facility == 0}
+         <td style="width: 9%;display: none" class="control" ><strong>平台仓库编码</strong></td>
+         {else}
+          <td style="width: 9%;"class="control" ><strong>平台仓库编码</strong></td>
+         {/if}
+         <td style="width: 9%;"><strong>是否同步</strong></td>
+         <td style="width: 11%"><strong>操作</strong></td>
+       </tr> 
+       {foreach from=$update item=update_facility}
+       <tr mapping_id="{$update_facility.mapping_id}" is_split_facility="{$update_facility.is_split_facility}" class="{cycle values='odd,even'}">
+        <td distributor_id="{$update_facility.application_key}" distributor_name="{$update_facility.distributor_name}">{$update_facility.distributor_name}</td>
+         <td facility_id="{$update_facility.facility_id}" facility_name="{$update_facility.facility_name}">{$update_facility.facility_name}</td>
+         <td class="control" {if $update[0].is_split_facility == 0}style="display:none"{/if}><input name="" 
+               type="text" 
+               value="{$update_facility.facility_code}"  size="8" /></td>
+         <td><select id="facility_status" name="facility_status" >
+              <option value="1" {if $update_facility.is_sync==1}selected {/if}>是</option>
+              <option value="0" {if $update_facility.is_sync==0}selected {/if}>否</option>  
+            </select></td>
+         <td>
+            <a href="?act=delete&mapping_id={$update_facility.mapping_id}&work=delete" onclick="return delete_confirm()">删除</a>
+         </td>
+       </tr>
+       {/foreach}       
+      </table>
+      {if isset($update)&&$update neq " "}
+       <table style="margin-left: 450px;">
+        <tr>  
+          <td>
+           <input id="add" class="button" type="submit" value="更新" onclick="check_input(event)" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+           <input type="hidden" name="comment" id="comment" value="更新"/>
+           <input class="button" type="button" value="取消编辑"  onclick="cancel_submit()" />
+         </td>
+       </tr>
+     </table>
+     {else}
+      <table style="margin-left: 450px;">
+        <tr>  
+          <td>
+           <input id="update" class="small-button" type="submit" value="添加" onclick="check_input(event)" style="display:none"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+           <input type="hidden" name="comment" id="comment" value="添加"/>
+           <input class="small-button" type="button" value="取消"  onclick="cancel_submit()" style="display:none"/>
+         </td>
+       </tr>
+     </table>
+    {/if}
+
+
+     <br/>
+   </form>
+ </div>
+</fieldset>
+
+<!-- 店铺分仓同步一览表 -->   
+<fieldset style="border: rgba(2,23,2,.5) 1px dashed;">
+ <legend class="expand" style="font-size: 15px;background-color: #B8DCFF;">&nbsp;店铺分仓库列表&nbsp;</legend>
+ <form method="get" id="filter">
+   <table>
+      <tr>
+      <td>
+        <laber style="width:100px;">店铺名称:</laber>
+        <select id="taobao_shop_id" name="taobao_shop_id" style="width:275px;" onchange=filter()>
+          <option value="-1">所有</option>
+            {foreach from=$taobao_shop_list  item=taobao_shop}
+                {if $taobao_shop_id_selected == $taobao_shop.application_key} 
+                  <option value="{$taobao_shop.application_key}" selected>{if $taobao_shop.taobao_shop_id}{$taobao_shop.taobao_shop_name}{else}请选择店铺{/if}</option> 
+                 {else}
+                <option value="{$taobao_shop.application_key}">{if $taobao_shop.taobao_shop_id}{$taobao_shop.taobao_shop_name}{else}请选择店铺{/if}</option> 
+                {/if}
+            {/foreach}
+        </select>
+        <input type="hidden" name="act" value="filter" />
+     </td>
+     <td>
+        <laber style="width:100px; margin-left: 20px;">仓库名称:</laber>
+        <select id="facility_id" name="facility_id" style="width:275px;" onchange=filter()>
+          <option value="-1">所有</option>
+            {foreach from=$available_facility  item=distributor key=key}
+              {if $facility_id_selected == $key} 
+                <option value="{$key}" selected>{if $distributor}{$distributor}{else}请选择仓库{/if}</option>
+                {else} 
+                <option value="{$key}" >{if $distributor}{$distributor}{else}请选择仓库{/if}</option>
+                {/if}
+            {/foreach} 
+        </select>
+     </td>
+    </tr>
+  </table>
+ </form>
+ <table style="width: 100%" id="Tab">
+  <tr align="center" bgcolor="#E2F9FA">
+   <td style="width: 9%;"><strong>店铺</strong></td>
+   <td style="width: 9%;"><strong>仓库——平台仓库</strong></td>
+   <td style="width: 9%;"><strong>是否同步</strong></td>
+   <td style="width: 11%"><strong>操作</strong></td>
+ </tr> 
+ {foreach from=$facility_list  item = facility}
+ <tr class="{cycle values='odd,even'}">
+   <td>{$facility.distributor_name}</td>
+   <td>{$facility.facility_name}&nbsp;&nbsp;——&nbsp;&nbsp;{if $facility.facility_code == ""}null{/if}{$facility.facility_code}</td>         
+   <td>{if $facility.is_sync==1}是{else $facility.is_sync==0}否{/if}</td>
+   <td>
+     <a href="?act=update&mapping_id={$facility.mapping_id}&work=update&application_key={$facility.application_key}" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+     <a href="?act=delete&mapping_id={$facility.mapping_id}&work=delete" onclick="return delete_confirm()">删除</a>
+   </td>
+ </tr>
+ {/foreach}       
+</table>
+    {$pagination}
+</fieldset> <br/>
+</body>
+</html>

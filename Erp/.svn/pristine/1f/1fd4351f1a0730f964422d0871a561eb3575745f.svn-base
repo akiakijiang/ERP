@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>批拣单摘要</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+</head>
+<body>
+<h3 align='center'>{$batch_pick_sn}</h3>
+   <p align="center" >
+    		[商品]：{$goods_name}
+   </p>
+   <h3 align="center" >
+   <img src="code_img.php?barcode={$batch_pick_sn}&width=400&height=70" />
+   </h3>
+   
+   <h3 align="center" >
+   		第一个面单号：
+   </h3>
+   <h3 align="center" >
+	{$tracking_number_first}
+   </h3>
+   <h3 align="center" >
+   		总共{$shipment_number}个，最后一个：
+   </h3>
+   <h3 align="center" >
+	{$tracking_number_last}
+   </h3>
+</body>
+</html>   

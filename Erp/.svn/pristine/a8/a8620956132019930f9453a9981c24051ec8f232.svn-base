@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>角色添加</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+														 
+		// 全选
+		$('.select').toggle(
+			function() {
+				var id = $(this).attr('id');
+				$tr = $(this).parent().parent().next();
+				$tr.find(':input[pid="'+ id +'"]').each(function(){
+					$(this).attr('checked', true);
+				});
+			},
+			function () {
+				var id = $(this).attr('id');
+				$tr = $(this).parent().parent().next();
+				$tr.find(':input[pid="'+ id +'"]').each(function(){
+					$(this).attr('checked', false);
+				});
+			}
+		);
+			
+	});
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;编辑角色&nbsp;</span></legend>
+
+
+	<div style="clear:both;"> 
+  	<form method="post" id="form">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">角色名 ： </td>
+        <td><input type="text" name="role[role_name]" value="{$role.role_name}" size="50" maxlength="20" /></td>
+		</tr>
+        
+    	<tr>
+      	<td>描述信息 ： </td>
+        <td><input type="text" name="role[description]" value="{$role.description}" size="90" maxlength="255" /></td>
+		</tr>
+      
+    	<tr>
+      	<td valign="top">权限分派 ： </td>
+        <td>
+        	<table >
+        	{foreach from=$action_group_list item=group}
+            <tr><td><strong style="color:#09F; cursor:pointer;" class="select" id="priv_{$group.action_id}">{$lang[$group.action_code]}</strong></td></tr>
+            <tr><td>
+            {foreach from=$group.priv_list item=priv}
+            	<div style="width:170px;float:left;">
+            	<label for="priv_{$priv.action_id}"><input id="priv_{$priv.action_id}" pid="priv_{$priv.parent_id}" type="checkbox" name="role[action_list][{$priv.action_id}]" value="{$priv.action_code}" {if $priv.checked}checked="checked"{/if} /> {$lang[$priv.action_code]}</label>
+                </div>
+            {/foreach}
+            </td></tr>
+            <tr><td>&nbsp;</td></tr>
+            {/foreach}
+            </table>
+        </td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit" />
+        	<input type="submit" value="保存" />
+		</td>
+		</tr>
+		</table>
+    </form>
+  </div>
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

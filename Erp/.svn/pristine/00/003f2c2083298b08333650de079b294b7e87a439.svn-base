@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/overlib.js"></script>
+</head>
+
+<body>
+<form>
+track_id:
+<input type="text" size="45" name="track_id" value="{$smarty.request.track_id}" />
+<input type="submit" value="dig it!" />
+</form>
+<br /><br />
+<table class="bWindow" style="width:700px;font-size:14px;">
+<thead><tr><th>visit time</th><th>from url</th><th>to url</th></tr></thead>
+<tbody>
+{foreach from=$tracks item=track}
+<tr {if $track.bgcolor}style="background:{$track.bgcolor};color:#fff!important;"{/if}>
+<td onmouseout="nd();" onmouseover="return overlib('{$track.visit_time}', 
+					STICKY, 
+					CLOSECLICK, 
+					CAPTION, 'detail', 
+					CLOSETEXT, '关闭',
+					WIDTH, 100,
+                    DELAY, 10,
+					TEXTSIZE, '16px',
+					DONOTHING
+					)">
+{$track.interval}</td>
+<td onmouseout="nd();" onmouseover="return overlib('{$track.referer}', 
+					STICKY, 
+					CLOSECLICK, 
+					CAPTION, 'detail', 
+					CLOSETEXT, '关闭',
+					WIDTH, 500,
+					TEXTSIZE, '16px',
+					DONOTHING
+					)" >
+<a href="{$track.referer|absurl}" target="_blank">→</a> {$track.referer_type}</td>
+<td onmouseout="nd();" onmouseover="return overlib('{$track.url}', 
+					STICKY, 
+					CLOSECLICK, 
+					CAPTION, 'detail', 
+					CLOSETEXT, '关闭',
+					WIDTH, 500,
+                    DELAY, 10,
+					TEXTSIZE, '16px',
+					DONOTHING
+					)">
+<a href="{$track.url|absurl}" target="_blank">→</a> {$track.url_type}</td>
+</tr>
+{/foreach}
+</tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+库位名,仓库名,商品名,商品条码,是否全新
+{foreach from=$goods_list  item=goods}
+{$goods.location_barcode},{$goods.facility_name},{$goods.goods_name},"{$goods.goods_barcode}",{$goods.status}
+{/foreach}

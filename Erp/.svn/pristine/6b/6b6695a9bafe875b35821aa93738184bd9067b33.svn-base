@@ -1,0 +1,399 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>订单留言回复</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/thickbox.js"></script>
+<link rel="stylesheet" type="text/css" href="misc/thickbox.css" />
+
+{literal}
+<script type="text/javascript">
+
+function E(id) {return document.getElementById(id);}
+function showReply(commentId, store_id) {
+	if (store_id > 0) {
+		var re = confirm('这个订单不属于欧酷商城，确认要回复嘛？');
+		if (!re) {
+			return ;
+		}
+	}
+	E("td_reply_" + commentId).style.heigth = E("td_reply_" + commentId).offsetHeight;
+	E("org_reply_" + commentId).style.display = 'none';
+	E("div_reply_" + commentId).style.display = '';
+	E("div_reply_" + commentId).getElementsByTagName('textarea')[0].focus();
+}
+function cancelReply(commentId) {
+	E("org_reply_" + commentId).style.display = '';
+	E("div_reply_" + commentId).style.display = 'none';	
+}
+function enterKey(id,k,e){
+		var e = e || window.event;
+		var keyCode =e.keyCode || window.event.keyCode;
+		if(e.ctrlKey && keyCode == 13){
+			E(k).focus();
+			E(id).submit();
+		}
+}
+
+/**
+ * @param comment_cat 留言类型
+ * @param order_id 订单号
+ */
+function show_order_comment_add(comment_cat, order_id) {
+	var id = 'order-comment-container';
+	
+	// 订单未确认反馈
+	if (comment_cat == 7) {
+		$('#'+id).find(':input[name="comment"]').val('订单为什么还未确认');
+		$('#'+id).find(':input[name="comment_cat"]').val(comment_cat);
+	} 
+	// 订单未发货反馈
+	else if (comment_cat == 8) {
+		$('#'+id).find(':input[name="comment"]').val('订单为什么还未发货');
+		$('#'+id).find(':input[name="comment_cat"]').val(comment_cat);
+	}
+	
+	$('#'+id).find(':input[name="order_id"]').val(order_id);
+	tb_show('添加留言', '#TB_inline?width=720&inlineId=' + id + '&modal=false', false);
+}
+</script>
+
+<style type="text/css">
+#tableId table td{padding:5px; border-color:#666;}
+#tableId table p{margin:5px 0;padding:0;}
+#tableId table table {border:0; border-collapse:collapse;}
+hr{color:#ccc;border:1px solid #ccc;height:1px;overflow:hidden;}
+button{cursor:pointer;}
+input[type="button"]{cursor:pointer;}
+input[type="submit"]{cursor:pointer;}
+</style>
+{/literal}
+</head>
+<body id="tableId">
+<form>
+模糊搜索：
+<input style="width:90px" name="search_text" value="{$smarty.request.search_text}">
+咨询类型：
+<select name="comment_cat">
+<option value="-1">所有</option>
+{html_options options=$_CFG.adminvars.comment_cat selected=$smarty.request.comment_cat}
+</select>
+是否回复：
+<select name="is_replied">
+<option value="1">未回复</option>
+<!--<option value="-1"  {if $smarty.request.is_replied == -1}selected{/if}>所有</option>-->
+<option value="2" {if $smarty.request.is_replied == 2}selected{/if}>已回复</option>
+</select>
+<br>
+<br>
+留言开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+留言结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索">
+</form>
+<br>
+<p>未回复的：
+<!--{foreach from=$_CFG.adminvars.comment_cat item=comment_cats key=key}-->
+<a href="?order_sn=&comment_cat={$key}&is_replied=1&store_id=0&start=&end=">{$comment_cats}</a>  
+<!--{/foreach}-->
+</p>
+<p>全部：
+<!--{foreach from=$_CFG.adminvars.comment_cat item=comment_cats key=key}-->
+<a href="?order_sn=&comment_cat={$key}&is_replied=-1&store_id=0&start=&end=">{$comment_cats}</a>  
+<!--{/foreach}-->
+</p>
+<br>
+
+<!--{foreach from=$orders item=order key=key}-->
+
+<table class="bWindow" style="margin:15px 0;background: #F1FFF0">
+<tr style="background:#278296;color:#fff;font-weight:bold;">
+	<td colspan="3">订单号：<a href="order_edit.php?order_id={$order.order_id}" target="_blank" style="color:#fff">{$order.order_sn}</a>&nbsp;&nbsp;&nbsp;&nbsp;下单时间：{$order.order_time}
+	{if $order.special_type_id eq 'PRESELL'}
+        <font color="Red" size="2">预售订单
+            {if $order.is_display eq 'N'}，未正式起售，请客服注意不要误操作{/if}
+        </font>
+    {/if}
+    <span style="margin-top:-15px;float:right;">
+    {if $order.is_display eq 'Y'}
+        {if $order.order_status == 0}
+        <a href="{$WEB_ROOT}admin/order_edit_action.php?action=edit_order_status&order_id={$order.order_id}&order_status=1&back={$back}" style="color:#fff;">确认订单</a>
+        {/if}
+        {if $order.order_status != 2 && $order.order_status != 3 && $order.order_status != 4}
+        <a href="order_edit.php?order_id={$order.order_id}" target="_blank" style="color:#fff;">修改订单</a>
+        {/if}
+        {if $order.order_status != 2}
+        <a href="{$WEB_ROOT}admin/order_edit_action.php?action=edit_order_status&order_id={$order.order_id}&order_status=2&back={$back}" onclick="return confirm('确认取消订单吗？')" style="color:#fff;">取消订单</a>	
+        {/if}
+    {/if}
+        </span>
+        </td>    
+</tr>
+{*
+<tr>
+	<td colspan="2">订单商品</td>
+    <td>用户信息</td>
+</tr>
+<tr>
+	<td>订单状态</td>
+	<td>支付状态</td>
+	<td>物流状态</td>
+</tr>
+*}
+<tr>
+    <td>
+    <div style="float:left;">
+    <!--{foreach from=$order.goods_list item=goods key=key}-->
+    <p><a {if $order.party_id == $smarty.const.PARTY_OUKU_SHOES}href="http://www.oukupai.com/goods_{$goods.goods_id}"{else}href="http://www.ouku.com/goods{$goods.goods_id}/"{/if} target="_blank">{$goods.goods_name}</a>{$goods.goods_price|price_format}  &chi; {$goods.goods_number} <span style="color:red;">{if $goods.storage_count > 0}库存数量：{$goods.storage_count}{else}无库存{/if}</span></p>
+    <!--{/foreach} -->
+	</div>
+    </td>
+    <td colspan="2">
+    <div style="line-height:200%;padding:10px;">
+    用户名：{$order.user_name}&nbsp;&nbsp;&nbsp;&nbsp;
+    客户姓名：{$order.consignee}&nbsp;&nbsp;&nbsp;&nbsp;
+    手机号码：{if check_admin_priv('check_user_tel')}{$order.mobile}{else}××××××{/if}&nbsp;&nbsp;&nbsp;&nbsp;
+    电话号码：{if check_admin_priv('check_user_tel')}{$order.tel}{else}××××××{/if}<br />
+    联系地址：{if check_admin_priv('check_user_address')}{$order.province|get_region_names} {$order.city|get_region_names} {$order.district|get_region_names}{$order.address}{else}××××××{/if}<br />
+		<form method="POST" action="order_reply_action.php">
+		发票抬头：<input type="text" name='inv_payee' value='{$order.inv_payee}' />
+    <input type="submit" value="修改" onclick="return confirm('确定修改吗？')">
+		<input type="hidden" name="act" value="change_inv" />
+		<input type='hidden' name='order_id' value='{$order.order_id}' />
+		<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+		</form>
+    </div>
+    </td>
+ </tr>
+ <tr>   
+   <td  width="33%">
+   <p>订单状态：<strong {if $order.order_status == 1}style="color:red;"{elseif $order.order_status == 2}style="color:#999;"{/if}>
+   {$order.order_status|get_order_status}</strong>&nbsp;&nbsp;&nbsp;&nbsp;{if $order.confirm_time}订单确认人：{$order.confirm_user}{/if}</p>
+  {if $order.confirm_time} <p>订单确认时间：{$order.confirm_time}</p>{/if}
+   
+   </td>
+    <td  width="33%">
+    <p>支付状态：<strong {if $order.pay_status  == 2}style="color:red;"{/if}>{$order.pay_status|get_pay_status}</strong>&nbsp;&nbsp;&nbsp;&nbsp;支付方式：{$order.pay_name}&nbsp;&nbsp;&nbsp;&nbsp;{if $order.pay_user}支付确认人：{$order.pay_user}{/if}</p>
+     {if $order.pay_time}支付时间：{$order.pay_time}{/if}<br /><br />
+    </td>   
+   <td  width="33%">
+   <p>物流状态：<strong {if $order.shipping_status == 1 || $order.shipping_status == 2 ||$order.shipping_status == 6}style="color:red;"{/if}>{$order.shipping_status|get_shipping_status}</strong>&nbsp;&nbsp;&nbsp;&nbsp;快递方式：<a href="{$order.web_site}" target="_blank">{$order.shipping_name}</a></p>
+    {if $order.bill_no}
+	<p>快递单号：<a href="catch_carrier_info.php?bill_no={$order.bill_no}&carrier_id={$order.carrier_id}">{$order.bill_no}</a>&nbsp;&nbsp;&nbsp;&nbsp;快递电话：{$order.phone_no}</p>
+    <p>出库时间：{$order.out_time}&nbsp;&nbsp;&nbsp;&nbsp;出库操作人：{$order.out_user}</p>
+    <p>发货时间：{$order.shipping_time}&nbsp;&nbsp;&nbsp;&nbsp;发货操作人：{$order.shipping_user}</p>
+    {/if}
+   </td>
+
+</tr>
+{*
+    <p style="padding:5px 0;border-bottom:1px solid #ccc">客户备注：{$order.postscript}</p>
+    <div style="border-bottom:1px solid #ccc">
+        <p style="padding:5px 0;">客服备注：</p>
+        {foreach from=$order.action_notes item=action_note key=key}
+        <p>{$action_note.action_user}：{$action_note.action_note}</p>
+        {/foreach}
+	</div>
+   *}  
+<tr>
+	<td colspan="3">
+		 {if $order.payment_bank.account_number}
+      开户行：{$order.payment_bank.open_bank}&nbsp;&nbsp;&nbsp;&nbsp;
+      开户名：{$order.payment_bank.account_name}&nbsp;&nbsp;&nbsp;&nbsp;
+      开户帐号：{$order.payment_bank.account_number}&nbsp;&nbsp;&nbsp;&nbsp;
+     {/if}
+     {if $order.payment_bank.alipay_account}
+      支付宝帐号：{$order.payment_bank.alipay_account}
+     {/if}
+	</td>
+</tr>
+{if $order.action_notes}
+<tr>
+<td colspan="3">
+{if $order.postscript}
+<div style="margin-left:5px;">客户备注：{$order.postscript}</div>
+{/if}
+<div style="line-height:200%;padding:5px;">
+{foreach from=$order.action_notes item=action_note}
+{$action_note.action_user}：{$action_note.action_note}<br />
+{/foreach}
+</div>
+</td>
+</tr>
+{/if}
+<tr>
+<td align="left" colspan="3" id="c_{$order.order_sn}">
+<!--{foreach from=$order.comments item=comment name=orderComment key=key}-->
+
+    <div style="border-bottom:1px solid #666;{if $comment.reply && !$smarty.foreach.orderComment.first}display:none;{/if}" {if $comment.reply}class='val'{/if} id="c_{$order.order_sn}_{$key}" {if $smarty.foreach.orderComment.first}val='first'{/if}>
+    
+        <h4 style="margin:5px 0;padding:0;font-size:14px;font-weight:normal;">咨询类型：<span style="color:red;">{$_CFG.adminvars.comment_cat[$comment.comment_cat]}</span></h4>
+        <p style="padding:0 0 5px 0;border-bottom:1px solid #ccc;margin:0;">咨询内容：{$comment.comment|nl2br}&nbsp;&nbsp;&nbsp;&nbsp;{$comment.post_datetime}</p>
+        <div id="td_reply_{$comment.order_comment_id}" style="line-height:150%;text-align:left;cursor:pointer;padding-top:5px;" onmouseover="this.style.background = '#C9FECD'" onmouseout="this.style.background = '#F1FFF0'">
+                <div id="org_reply_{$comment.order_comment_id}" style="text-align:left;padding-bottom:5px;" onclick="showReply('{$comment.order_comment_id}', '{$comment.biaoju_store_id}')" >
+    {if $comment.reply}<p>{$comment.replied_by}回复：{$comment.reply}&nbsp;&nbsp;&nbsp;&nbsp;{$comment.reply_datetime}{/if}</p>
+        </div>
+                <div {if $comment.reply}style='display:none;'{/if} id='div_reply_{$comment.order_comment_id}'>
+                 <form method="POST" action="order_reply_action.php" id="form_{$comment.order_comment_id}">
+    						
+       					{if $comment.comment_cat == 4}  {* 订单确认咨询 *}
+									{if $order.order_status == 2}      {* 订单已取消 *}
+                <textarea id='text_reply_{$comment.order_comment_id}' style="width:99%;height:20px; background-color:#EEE" name="reply">{if $comment.reply}{$comment.reply}{else}您的订单应您的要求已取消。{/if}</textarea><br>
+                <p style="text-align:left;"> <input type="submit" value="关闭咨询" id="f_{$comment.order_comment_id}" onclick="document.getElementById('act_{$comment.order_comment_id}').value='reply'">
+                <input type="hidden" name="act" id="act_{$comment.order_comment_id}" value="reply" />
+									{elseif $order.order_status == 0}  {* 订单待确认 *}
+                <textarea id='text_reply_{$comment.order_comment_id}' style="width:99%;height:20px; background-color:#EEE" name="reply">{if $comment.reply}{$comment.reply}{else}您的订单已经为您确认，正常情况下我们会在订单确认后的2个工作日内配货发货，如有特殊情况，工作人员会及时与您联系；发货后会有短信提醒，请保持电话畅通。{/if}</textarea><br>
+                <p style="text-align:left;"><input type="submit" value="确认订单" />
+                <input type="hidden" name="act" id="act_{$comment.order_comment_id}" value="confirm_order">
+                <input type="hidden" name="order_sn" value="{$order.order_sn}" />
+									{else}
+                <textarea id='text_reply_{$comment.order_comment_id}' style="width:99%;height:20px; background-color:#EEE" name="reply">{if $comment.reply}{$comment.reply}{else}您的订单已经为您确认，正常情况下我们会在订单确认后的2个工作日内配货发货，如有特殊情况，工作人员会及时与您联系；发货后会有短信提醒，请保持电话畅通。{/if}</textarea><br>
+                <p style="text-align:left;"> <input type="submit" value="发表回复" id="f_{$comment.order_comment_id}" onclick="document.getElementById('act_{$comment.order_comment_id}').value='reply'">
+                <input type="hidden" name="act" id="act_{$comment.order_comment_id}" value="reply" />
+									{/if}
+
+								{elseif $comment.comment_cat == 5}   {* 订单修改咨询 *}
+                <textarea id='text_reply_{$comment.order_comment_id}' style="width:99%;height:20px; background-color:#EEE" name="reply">{if $comment.reply}{$comment.reply}{else}您的订单修改申请审核已通过，我们已经按照您的要求修改该订单。{/if}</textarea><br>
+                <p style="text-align:left;"> <input type="submit" value="发表回复" id="f_{$comment.order_comment_id}" onclick="document.getElementById('act_{$comment.order_comment_id}').value='reply'">
+                <input type="hidden" name="act" id="act_{$comment.order_comment_id}" value="reply" />
+                
+								{else}                               {* 其他咨询类型 *}
+                <textarea id='text_reply_{$comment.order_comment_id}' onkeydown="enterKey('form_{$comment.order_comment_id}','f_{$comment.order_comment_id}',event)" style="width:99%;height:70px" name="reply">{$comment.reply}</textarea><br>
+                <p style="text-align:left;"> <input type="submit" value="发表回复" id="f_{$comment.order_comment_id}" onclick="document.getElementById('act_{$comment.order_comment_id}').value='reply'">
+                <input type="hidden" name="act" id="act_{$comment.order_comment_id}" value="reply" />
+                
+								{/if}
+                
+               &nbsp;
+               
+               {if $comment.reply}
+               <input type="button" onclick="cancelReply('{$comment.order_comment_id}')" value="取消">
+               {/if}
+                
+               {if $order.order_status == 0} 
+               <input type="button" value="添加留言" onclick="show_order_comment_add(7, {$order.order_id});">
+               {elseif $order.order_status == 1 && $order.shipping_status == 0} 
+               <input type="button" value="添加留言" onclick="show_order_comment_add(8, {$order.order_id});">
+               {/if}
+               
+               <input type="hidden" name="order_comment_id" value="{$comment.order_comment_id}">
+               <input type="hidden" name="order_id" value="{$comment.order_id}">
+               <input type="hidden" name="back" value="{$back}">
+               {*<input type="button" value="快捷回复" />
+               <input type="button" value="添加到快捷回复" />*}</p>
+               </form>
+               </div>   
+			</div>
+    </div>
+<p style="text-align:right;">
+{if $comment.reply && $smarty.foreach.orderComment.total!=1 && $smarty.foreach.orderComment.last}
+<input type="button" onclick="showComment('{$order.order_sn}',{$smarty.foreach.orderComment.total})" id="a_{$order.order_sn}" value="打开已回复咨询"/>
+<input type="button" onclick="closeComment('{$order.order_sn}',{$smarty.foreach.orderComment.total})" id="g_{$order.order_sn}" style="display:none;" value="收起已回复咨询"/>
+{/if}
+</p>
+
+<!--{/foreach}-->
+
+    </td>
+</tr>
+</table>
+
+<!--{/foreach}-->
+
+<p style="text-align:center;">{$pager}</p>
+
+
+</body>
+ <script type="text/javascript">
+
+ {literal}
+function showComment(sn,m){
+	
+	 for(var i=0;i<m;i++){
+		if(E('c_'+sn+'_'+i).className == 'val'){
+			E('c_'+sn+'_'+i).style.display = ''; 
+		}
+	 }
+	E('a_'+sn).style.display = 'none';	 
+	E('g_'+sn).style.display = '';
+ }
+ function closeComment(sn,m){
+
+	 for(var i=0;i<m;i++){
+		if(E('c_'+sn+'_'+i).className == 'val'&& !E('c_'+sn+'_'+i).getAttribute('val')){
+			E('c_'+sn+'_'+i).style.display = 'none'; 
+		}	
+	 }
+	E('a_'+sn).style.display = ''; 
+	E('g_'+sn).style.display = 'none';
+ }
+ {/literal}
+ </script> 
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+
+
+
+<!-- 添加留言 -->
+<div id="order-comment-container" style="display:none;width:720px; margin:0; padding:0;">
+<form method="post" action="order_reply_action.php">
+    <br />
+    <div>请填写留言内容后后点击“添加”</div>
+    <br />
+    <table class="bWindow"> 
+    	<tr>
+        	<td width="150px">留言类型</td>
+            <td>
+            	<select name="comment_cat">
+                	<option value="7">订单未确认反馈</option>
+                    <option value="8">订单未发货反馈</option>
+                </select>
+            </td>
+        </tr>
+		<tr>
+    		<td> 留言内容：</td>
+    		<td><textarea name="comment" rows="4" cols="100"></textarea></td>
+        </tr>
+        <tr>
+        	<td>回复内容：</td>
+            <td><textarea name="reply" rows="4" cols="100"></textarea></td>
+        </tr>
+    </table>
+    <div style="clear:both;"><br /></div>
+    <div style="text-align:center;">
+        <input type="hidden" name="order_id" />
+        <input type="hidden" name="act" value="add" />
+        <input type="submit" value="添加" />
+    </div>
+</form>
+</div>
+
+</html>

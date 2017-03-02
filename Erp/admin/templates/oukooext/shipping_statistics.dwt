@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+<title>新版发货统计</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body onload="submitEnabled('submit_button');">
+
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statistics.php">今日快递发货情况</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statistics.php?red_notice=1">24小时未发货订单({$count_1})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statistics.php?red_notice=2">48小时未发货订单({$count_2})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statistics.php?red_notice=3">4点前有库存未发货订单({$count_3})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statistics.php?red_notice=4">已出库未发货订单({$count_4})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;当天未发货总计({$count_5})
+&nbsp;&nbsp;&nbsp;&nbsp;共计({$count_6})
+</p>
+<a href="shipping_statics.php" target="_blank">旧版页面</a>
+{if $smarty.request.red_notice == null}
+<table border="0" cellpadding="0" cellspacing="0" class=bWindow>
+	<tr>
+		<td>快递
+		</td>
+		<td>发货数量
+		</td>
+		<td>备注
+		</td>
+	</tr>
+	{foreach from=$carrier_counts item=carrier_count key=key}
+	<tr>
+		<td>{$key}</td>
+		<td>{$carrier_count.carrier_count}</td>
+		<td>{$key}</td>
+	</tr>
+	{/foreach}
+	<tr>
+		<td>总计
+		</td>
+		<td>{$total_count}
+		</td>
+		<td>
+		</td>
+	</tr>
+</table>
+{/if}
+{if $smarty.request.red_notice == 1}
+24小时未发货订单({$count_1})
+{elseif $smarty.request.red_notice == 2}
+48小时未发货订单({$count_2})
+{elseif $smarty.request.red_notice == 3}
+4点前有库存未发货订单({$count_3})
+{elseif $smarty.request.red_notice == 4}
+已出库未发货订单({$count_4})
+{elseif $smarty.request.red_notice == 5}
+剩余库存订单数量({$count_5})
+{/if}
+{if $smarty.request.red_notice <= 4 && $smarty.request.red_notice >= 1}
+<form method="POST">
+<input type="submit" name="csv" value="导出CSV">
+</form>
+<p style="text-align:center;"><font color="red">物流查看</font>&nbsp;&nbsp;{$pager}</p>
+{foreach from=$orders item=order}
+<table cellpadding="0" cellspacing="0" class="bWindow">
+<tr style="background:#C1DAD7;">
+	<td>订单号：<a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+    <td>{if $smarty.request.red_notice != 4}
+		确认时间：{if $order.confirm_time != null}{$order.confirm_time}&nbsp;&nbsp;{$order.confirm_user}{/if}
+		{else}
+		已出库待发货时间: {$order.chuku_time}
+		{/if}
+	</td>
+</tr>
+
+<tr style="background:#f1fff0;">
+    <td colspan="5">
+    	<table cellpadding="0" cellspacing="0">
+			<tr>
+            	<td style="width:30%;">商品名称</td>
+                <td style="width:30%;">采购备注</td>
+                <td style="width:30%;">客服备注</td>
+            </tr>
+<!--{foreach from=$order.goods_list item=goods name=goods}-->
+{if $goods.erp_id == 0}
+	{assign var=count value=$goods.goods_number}
+{else}
+	{assign var=count value=1}
+{/if}
+<!--{section loop=$count name=inner}-->
+
+{if $order.order_sn == $pre_order_sn}
+	{assign var=goods_index value=$goods_index+1}
+{else}
+	{assign var=goods_index value=1}
+{/if}
+{assign var=pre_order_sn value=$order.order_sn}                
+		<tr valign="top">     
+	<!--{if $goods.rec_id != $pre_bg_id}-->
+			<td>
+				<font {if $goods.storage_count eq 0}color="Red"{/if} >{$goods.goods_name} × {$goods.goods_number} (库存 {$goods.storage_count})</font>
+			</td>
+	<!--{/if} -->
+	<!--{if $goods.rec_id != $pre_bg_id && $smarty.foreach.goods.iteration == 1}-->
+			<td rowspan="{$smarty.foreach.goods.total}">
+			<table border="1px solid" >
+			<tbody id="action_note_{$order.order_id}" >
+			{foreach from=$order.shipping_action item=action name=action}
+				<tr><td>{$action.action_note}</td><td>操作人：{$action.action_user}</td><td>时间：{$action.action_time}</td></tr>
+			{/foreach}
+			</tbody>
+			</table>
+				添加备注：<br>
+				<textarea style="width:250px;height:60px" name="note_{$order.order_id}" id="note_{$order.order_id}" {if $goods.erp_id != 0}disabled{/if}></textarea>
+				<input type="button" name="edit_button" value="编辑" onclick="setEditable('{$goods.rec_id}', '{$order.order_id}', '')" />
+				<input type="button" name="cancel_button" value="取消" onclick="setEditable('{$goods.rec_id}', '{$order.order_id}', 'disabled')" />
+				<input type="hidden" name="order_info_sign" id="order_info_sign_{$order.order_id}" value="{$order.order_info_sign}" />
+				<input name="submit_button" id="submit_button_{$order.order_id}" type="button" value="   提交   " onclick="submit_note({$order.order_id})" disabled />
+			</td>
+			<td rowspan="{$smarty.foreach.goods.total}">
+			<table border="1px solid" >
+			{foreach from=$order.order_action item=action name=action}
+				<tr><td>{$action.action_note}</td><td>操作人：{$action.action_user}</td><td>时间：{$action.action_time}</td></tr>
+			{/foreach}
+			</table>
+			</td>
+	<!--{/if}-->		
+		</tr>
+{assign var=pre_bg_id value=$goods.rec_id}
+<!--{/section}-->
+<!--{/foreach}-->
+        </table>
+    </td>
+</tr>
+</table>
+<br />
+{/foreach}
+<p style="text-align:center;"><font color="red">物流查看</font>&nbsp;&nbsp;{$pager}</p>
+{/if}
+<script type="text/javascript">
+// <![CDATA[
+	{literal}
+    /**
+	 * 表单提交检查
+	 */
+	function submit_note(order_id)
+	{
+	    var action_note = $.trim($('#note_'+order_id).val());
+	    if (action_note == '') {
+	        alert('请填写备注');
+	        return false;
+	    }
+		$('#submit_button_'+order_id).attr('disabled', true);
+		var order_info_sign = $('#order_info_sign_'+order_id).val();
+        $.ajax({
+            url : 'ajax.php', 
+            data: 'act=remark_not_shipped_statistics&user=purchaser&order_id='+order_id+'&action_note='+action_note+'&order_info_sign='+order_info_sign,
+            success: submit_response,
+            type: 'POST',
+            dataType: 'JSON'
+        });
+	}
+	
+	function submit_response(result) {
+	    var res = eval('('+result+')');
+	    if (res.error != null) {
+	        alert(res.error);
+	    } else {
+	        $('#note_'+res.order_id).val('');
+            $('#action_note_'+res.order_id).append('<tr><td>'+res.action_note+'</td><td>操作人：'+res.action_user+'</td><td>时间：'+res.action_time+'</td></tr>');
+	    }
+        $('#submit_button_'+res.order_id).attr('disabled', false);
+        setEditable('', res.order_id, 'false');
+	}
+	{/literal}
+// ]]>
+</script>
+</body>
+</html>

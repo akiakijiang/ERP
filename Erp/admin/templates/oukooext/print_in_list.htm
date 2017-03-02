@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{literal}
+<style type="text/css">
+.tab{text-align:center;border:1px solid #000;border-collapse:collapse;}
+.tab td{border:1px solid #000;height:30px;}
+</style>
+{/literal}
+<title>入库单</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+
+<body>
+<center id="search">
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+订单号：
+<input style="width:120px" name="order_sn" value="{$smarty.request.order_sn}">
+商品名：
+<input style="width:120px" name="goods_name" value="{$smarty.request.goods_name}">
+显示数：
+<input style="width:120px" name="size" value="{$smarty.request.size}">
+<input type="submit" value="搜索">
+<input type="button" value="打印" onclick="document.getElementById('search').style.display='none';window.print();">
+</form>
+<br>
+</center>
+
+<!--{foreach from=$goods_list item=goods name=goods}-->
+<div style="width:700px;margin:auto;font-size:12pt;">
+  <p align="right">入库单号：{$goods.in_sn}</p>
+  <h3 style="text-align:center">欧酷外购入库单</h3>
+
+  <table border="0" cellspacing="0" cellpadding="0" width="100%" >
+    <tr>
+      <td >日&nbsp;&nbsp;期：2007-11-22日 13：30 </td>
+      <td >订单号：{$goods.order_sn} </td>
+    </tr>
+    <tr>
+      <td >供应商：上海佳建通信设备有限公司 </td>
+      <td >页&nbsp;&nbsp;码：1-1 </td>
+    </tr>
+  </table>
+  <br />
+
+  <table cellspacing="0" cellpadding="0" width="100%" class="tab">
+    <tr>
+      <td>编号</td>
+      <td>商品描述</td>
+      <td>序列号</td>
+      <td>单价</td>
+      <td>数量</td>
+      <td >金额 </td>
+    </tr>
+    <tr>
+      <td style="width:50px">1</td>
+      <td style="width:200px">{$goods.goods_name}</td>
+      <td style="width:130px">{$goods.erp_goods_sn}</td>
+      <td style="width:70px">{$goods.purchase_paid_amount}</td>
+      <td style="width:50px">1</td>
+      <td style="width:70px">{$goods.purchase_paid_amount}</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border-right:0">制单：张莉 </td>
+      <td colspan="6" style="border-left:0">审核：</td>
+    </tr>
+  </table>
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<!--{if $smarty.foreach.goods.iteration % 3 == 0 && !$smarty.foreach.goods.last}-->
+<div STYLE="page-break-after: always;"></div>
+<!--{/if}-->
+<!--{/foreach}-->
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

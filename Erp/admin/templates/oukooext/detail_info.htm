@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/css_2007.9.8.css" rel="stylesheet" type="text/css">
+<title>{$order.order_sn} ({$order.party_name}) 订单信息</title>
+{literal}
+<style type="text/css">
+.tooltips{
+	position: relative; 
+	z-index: 9999;
+	text-decoration: none;
+	color: blue;
+	cursor: pointer;
+}
+.tooltips:hover{
+	z-index: 9999;
+	background: none; /* 没有这个在 IE 中不可用 */
+}
+.tooltips div{
+	display: none; /* span 不可见 */
+}
+.tooltips:hover div{ /* span 标签仅在 :hover 状态时显示 */
+	display: block;
+	position: absolute; 
+	top: -32px;
+	left: 80px;
+	width: 300px; /* ToolTips 的宽度 */
+	/* 以下是样式 */
+	border: 1px solid #D5C88B;
+	background: #C8D3F2;
+	padding: 4px;
+	color: #333;
+}
+</style>
+{/literal}
+</head>
+
+<body>
+<div class="ddan" style="margin:auto;float:none;">
+<!--{if $order.sub_orders}-->
+<div class="ddan_item">
+<h2>该订单为父订单，子订单信息</h2>
+<ul>
+<li><strong>父订单号：</strong>{$order.order_sn}</li>
+<li><strong>下单时间：</strong>{$order.order_time}</li>
+<!--{foreach from=$order.sub_orders item=sub_order}-->
+<li><strong>子订单号：</strong><a href="#{$sub_order.order_sn}">{$sub_order.order_sn}</a></li>
+<!--{/foreach}-->
+</ul>
+</div>
+<!--{/if}-->
+
+<!--{foreach from=$orders item=order name=sub}-->
+<!--{if $smarty.foreach.sub.total > 1}-->
+<br><br><hr style="border-top:2px solid #F00;" size="1"><br><br>
+<!--{/if}-->
+<div class="ddan_item">
+<h2>基本信息 SN：{$order.order_sn} 
+	&nbsp;&nbsp;&nbsp;&nbsp;组织：({$order.party_name})
+	<!--{if $smarty.foreach.sub.total > 1}--><a href="#" name="{$order.order_sn}">返回父订单</a><!--{/if}--></h2>
+<ul>
+{if $order.special_type_id eq 'PRESELL'}
+    <font color="Red" size="2">预售订单{if $order.is_display eq 'N'}，未正式起售，请客服注意不要误操作{/if}</font>
+{/if}
+<li><strong>订单号：</strong>{$order.order_sn} </li>
+<li><strong>购货人：</strong>{$order.user_name}</li>
+<li><strong>下单时间：</strong>{$order.order_time}</li>
+<li><strong>确认时间：</strong>{if $order.confirm_time > 0}{$order.confirm_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</li>
+<li><strong>付款时间：</strong>{if $order.pay_time > 0}{$order.pay_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</li>
+<li><strong>发货时间：</strong>{if $order.shipping_time > 0}{$order.shipping_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</li>
+<li><strong>订单状态：</strong>{$order.order_status_name} {$order.pay_status_name} {$order.shipping_status_name} {$order.invoice_status_name}</li>
+<li><strong>支付方式：</strong>{if $order.order_sn|strpos:"h" == false}{$order.pay_name}{/if}</li>
+<li><strong>配送方式：</strong>{$order.shipping_name} </li>
+<li><strong>运单号：</strong>[{$order.carrier_name}]{$order.bill_no}</li>
+<li><strong>所属仓库：</strong>{$order.facility_name}</li>
+</ul>
+</div>
+
+<div class="ddan_item">
+<h2>其他信息 (编辑)</h2>
+<ul>
+<li><strong>发票抬头：</strong>{$order.inv_payee}</li>
+<li><strong>客户留言：</strong>{$order.postscript}</li>
+<li><strong>发票地址：</strong>{$order.inv_address}</li>
+<li><strong>发票邮编：</strong>{$order.inv_zipcode}</li>
+</ul>
+{if $order.have_vat_invoice == 1}
+<div style="text-align:left;width:80%;margin:0 auto;">
+<p style="font-weight:bold;color:red;">增值税发票信息</p>
+<p>是否收到三证:{if $order.vat_invoice.status == 'confirmed' }已收到{else}未收到{/if}</p>
+<p>单位名称:{$order.vat_invoice.company}</p>
+<p>纳税人识别号：{$order.vat_invoice.identify_no}</p>
+<p>注册地址：{$order.vat_invoice.address}</p>
+<p>注册电话：{$order.vat_invoice.telphone}</p>
+<p>银行账户：{$order.vat_invoice.account}</p>
+<p>开户银行：{$order.vat_invoice.bank}</p>
+</div>
+{/if}
+</div>
+
+<div class="ddan_item">
+<h2>收货人信息 (编辑)</h2>
+<ul>
+<li><strong>收货人：</strong>{$order.consignee}</li>
+<li><strong>电子邮件：</strong>{if check_admin_priv('check_user_email')}{$order.email|default:$order.user_email}{else}××××××{/if}</li>
+<li><strong>地址：</strong>{if check_admin_priv('check_user_address')}[{$order.province_name}][{$order.city_name}]{if $order.district_name != ''}[{$order.district_name}]{/if}{$order.address}{else}××××××{/if}</li>
+<li><strong>邮编：</strong>{$order.zipcode}</li>
+<li><strong>电话：</strong>{if check_admin_priv('check_user_tel')}{$order.tel}
+{if $order_mask.tel}<br /><strong>面单电话号：</strong>{$order_mask.tel}{/if}
+{else}××××××{/if}</li>
+<li><strong>手机：</strong>{if check_admin_priv('check_user_tel')}{$order.mobile}
+{if $order_mask.mobile}<br /><strong>面单手机号：</strong>{$order_mask.mobile}{/if}{else}××××××{/if}</li>
+<li>{if $order.midway_address != ''}<strong>中转地址：</strong>{$order.midway_address}{/if}</li>
+</ul>
+</div>
+
+<table cellpadding="0" cellspacing="0">
+<caption>商品信息</caption>
+	<thead>
+	<tr>
+	<th>编号</th>
+	<th>标识</th>
+	<th>发票号</th>
+    <th>商品名称</th>
+	<th>单价</th>
+	{*<th>返欧币</th>*}
+	<th>数量</th>
+	<th>退换货入库数量</th>
+	<th>小计</th>
+	</tr>
+	</thead>
+	<tbody>
+	<!--{foreach from=$order.goods_list item=goods}-->
+	<tr>
+	<td>{$goods.rec_id}</td>
+	<td>{"<br>"|join:$goods.order_types}</td>
+	<td>{"<br>"|join:$goods.shipping_invoices}</td>
+	<td>{$goods.goods_name}</td>
+	<td>
+  	{if $order.order_type_id == 'PURCHASE'}
+  	{if view_provide_price($goods.category)}{$goods.goods_price}{else}N/A{/if}
+    {else}
+    {$goods.goods_price}
+    {/if}
+	</td>
+	{*<td>{$goods.return_points}</td>*}
+	<td>{$goods.goods_number}</td>
+	<td>{$goods.returned_number}</td>
+	<td>{$goods.total_price}</td>
+	</tr>
+	<!--{/foreach}-->
+	</tbody>
+	</table>
+<div class="ddan_item">
+<h2>费用信息</h2>
+<ul>
+<li><strong>商品总金额：</strong>{$order.currency} {$order.goods_amount}</li>
+<li><strong>配送费用：</strong>{$order.currency} {$order.shipping_fee}</li>
+<li><strong>包装费用：</strong>{$order.currency} {$order.pack_fee}</li>
+<li><strong>订单总金额：</strong>{$order.currency} {$order.order_amount}</li>
+<li><strong>抵用券抵用：</strong>{$order.currency} {$order.bonus}</li>
+<li><strong>欧币抵用：</strong>{$order.currency} {$order.integral_money}</li>
+<li><strong>B2C应收：</strong>{$order.currency} {$b2c_amount}</li>
+<li><strong>C2C应收(未区分代销)：</strong>{$order.currency} {$c2c_amount}</li>
+<li><strong>运费应收：</strong>{$order.currency} {$shipping_amount}</li>
+</ul>
+</div>
+<!-- -->
+<table cellpadding="0" cellspacing="0">
+<caption>订单操作信息</caption>
+	<thead>
+	<tr>
+		<th>操作者</th>
+		<th>操作时间</th>
+	    <th>订单状态</th>
+		<th>付款状态</th>
+		<th>发货状态</th>
+		<th>发票状态</th>
+	<th>备注</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td>{$order.consignee}</td>
+		<td>{$order.order_time}</td>
+		<td>未确认</td>
+		<td>未确认</td>
+		<td>未确认</td>
+		<td>未确认</td>
+		<td>新订单</td>
+	</tr>
+	<!--{foreach from=$order.actions item=action}-->
+	<tr>
+		<td>{$action.action_user}</td>
+		<td>{$action.action_time}</td>
+		<td>{if $action.order_status != -1}{$action.order_status_name}{/if}</td>
+		<td>{if $action.pay_status != -1}{$action.pay_status_name}{/if}</td>
+		<td>{if $action.shipping_status != -1}{$action.shipping_status_name}{/if}</td>
+		<td>{if $action.invoice_status != -1}{$action.invoice_status_name}{/if}</td>
+		<td>{$action.action_note}</td>
+	</tr>	
+	<!--{/foreach}-->
+	</tbody>
+</table>
+
+<table cellpadding="0" cellspacing="0">
+<caption><a href="#", onclick="document.getElementById('status_tbody').style.display = '';return false;">订单状态（新）</a></caption>
+<thead>
+<tr>
+<th>操作者</th><th>操作时间</th><th>订单</th><th>支付</th><th>仓库物流</th><th>配货单 发票 快递面单</th><th>备注</th>
+</tr>
+</thead>
+<tbody style="display:none;" id="status_tbody">
+{foreach from=$order_mixed_status_history item=status}
+<tr>
+<td rowspan="{$status.note_number}">{$status.created_by_user_login}</td>
+<td rowspan="{$status.note_number}">{$status.created_stamp}</td>
+<td rowspan="{$status.note_number}">{$status.order_status_description}</td>
+<td rowspan="{$status.note_number}">{$status.pay_status_description}</td>
+<td rowspan="{$status.note_number}">{$status.warehouse_status_description}，{$status.shipping_status_description}</td>
+<td rowspan="{$status.note_number}">{$status.pick_list_status_description} {$status.invoice_status_description} {$status.shipping_bill_status_description}</td>
+<td>{foreach from=$status.note item=note name=note}{if $smarty.foreach.note.first} {$note.note} {/if}{/foreach}</td>
+</tr>
+{foreach from=$status.note item=note name=note}{
+if !$smarty.foreach.note.first} 
+<tr>
+<td>{$note.note}</td> 
+</tr>
+{/if}
+{/foreach}
+{/foreach}
+</tbody>
+</table>
+
+{if $order.bj_comment_count > 0}
+<table cellpadding="0" cellspacing="0">
+<caption>售前咨询</caption>
+	<thead>
+	<tr>
+		<th>商品</th>
+		<th>咨询</th>
+		<th>回复</th>
+	</tr>
+	</thead>
+	<tbody>
+	<!--{foreach from=$order.goods_list item=goods}-->
+		<!--{foreach from=$goods.bj_comments item=bj_comment}-->
+	<tr>
+		<td>{$goods.goods_name}</td>
+		<td align="left">{$bj_comment.post_datetime} - {$bj_comment.comment}</td>
+		<td align="left">{$bj_comment.replied_datetime} - {$bj_comment.replied_nick}: {$bj_comment.reply}</td>
+	</tr>
+		<!--{/foreach}-->
+	<!--{/foreach}-->	
+	</tbody>
+</table>
+{/if}
+
+{if $order.order_comments|@count > 0}
+<table cellpadding="0" cellspacing="0">
+<caption>售中咨询</caption>
+<thead>
+	<tr>
+		<th>咨询</th>
+		<th>回复</th>
+	</tr>
+</thead>
+<tbody>
+<!--{foreach from=$order.order_comments item=order_comment}-->
+<tr align="left">
+	<td>{$order_comment.post_datetime} - {$order_comment.comment}</td>
+	<td>{$order_comment.reply_datetime} - {$order_comment.replied_by} : {$order_comment.reply}</td>
+</tr>
+<!--{/foreach}-->	
+</tbody>
+</table>
+{/if}
+
+{if $order.after_order_comments|@count > 0}
+<table cellpadding="0" cellspacing="0">
+<caption>售后评论</caption>
+<thead>
+	<tr>
+		<th>评论</th>
+		<th>回复</th>
+	</tr>
+</thead>
+<tbody>
+<!--{foreach from=$order.after_order_comments item=after_order_comment}-->
+<tr align="left">
+	<td>{$after_order_comment.comment_time} - {$after_order_comment.comment}</td>
+	<td>{$after_order_comment.reply_time} - {$after_order_comment.replied_by}: {$after_order_comment.reply}</td>
+</tr>
+<!--{/foreach}-->	
+</tbody>
+</table>
+{/if}
+
+<table cellpadding="0" cellspacing="0">
+<caption>商品操作信息</caption>
+	<thead>
+	<tr>
+		<th>操作者</th>
+		<th>操作时间</th>
+		<th>操作商品</th>
+		<th>商品状态</th>
+		<th>备注</th>
+	</tr>
+	</thead>
+	<tbody>
+	<!--{foreach from=$order.goods_list item=goods}-->
+		<!--{foreach from=$goods.actions item=action}-->
+	<tr>
+		<td>{$action.action_user}</td>
+		<td>{$action.action_time}</td>
+		<td>{$goods.goods_name}</td>
+		<td>{$action.goods_status_name}</td>
+		<td>{$action.action_note}</td>
+	</tr>
+		<!--{/foreach}-->
+	<!--{/foreach}-->	
+	</tbody>
+</table>
+<!--{/foreach}-->
+
+<div style="float:left;margin-left:400px;display:inline;"><a href="#" class="Button3" onclick="window.close()">关闭</a></div>
+</div>
+</body>
+</html>

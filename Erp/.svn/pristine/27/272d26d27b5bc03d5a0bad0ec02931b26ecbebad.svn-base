@@ -1,0 +1,572 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+  <!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+  <title>{if $smarty.request.type == 'order_type'}修改订单类型 {else} 批量串号输入 {/if}</title>
+</head>
+<body>
+<form action="sn_input_actionV2.php" method="POST" id="form" >
+  <input type="hidden" name="goods_item_type" value="{$goods_item_type}" />
+  <input type="hidden" name="order_id" value="{$order.order_id}" />
+  <input type="hidden" name="order_sn" value="{$order.order_sn}" />
+  <input type="hidden" name="back" value="{$back}" />
+  <input type="hidden" name="validity_type" value="{$sort_validity}" />
+  {if $is_maintain_warranty == 1}
+  <td width="120">&nbsp;&nbsp;日期录入方式</td>
+  <td>
+       <select name="sort_validity" id="sort_validity" onchange="javascript:location.href='{$url}&sort_validity=' + this.options[this.selectedIndex].value">
+          	{html_options options=$sort_validity_list selected=$sort_validity}
+       </select> 
+  </td>
+  {/if}
+  <br>
+  <table class="bWindow" id='in_table'>
+  <caption>
+  	<h2>
+  	订单：<a href='detail_info.php?order_id={$order.order_id}' target='_blank'>{$order.order_sn}</a>
+  	</h2>
+  	<h3>供应商：{$goods_info.provider_name}</h3>
+  	<div>订单所属仓库：<span style="font-weight:bold;font-size:20px;color:red;">{$order.facility_name}</span></div>
+
+    <span style="color:red">{$smarty.request.info}</span> <br><br>
+    <div align='left'; style="margin-top:5px; clear:both;">
+    	{if $is_maintain_warranty == 1}
+        <input type="button" value="全选" onclick="select_all('#in_table');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#in_table');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input name="in_time" style="width:80px" id="batch_validity"  value="{$smarty.session.in_storage.in_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="batch_validity_trigger" value="..." >
+		&nbsp&nbsp
+        <input type="button" class="edit_validity" value="批量修改日期" />
+        {/if}
+        {if $goods_item_type eq 'SERIALIZED'}
+        <span style="margin-top:5px;margin-left:100px;">批量导入串号：</span>               
+		<input type="file" id="fileToUpload" name="fileToUpload"/>
+		<input type="button" value="导入串号" onclick="bacth_in_sns()"/>	
+		{/if}
+    </div>
+    <br />
+  </caption>
+  {if $goods_item_type eq 'SERIALIZED'}
+  <tr>
+      {if $is_maintain_warranty == 1}
+      <th>选择</th>
+      {/if}
+      <th>商品名</th>
+      {if $is_maintain_warranty == 1}
+      <th style="width:30%">{$validity_info}</th>
+      {/if}
+      <th>串号</th>
+  </tr>
+  <!--{foreach from=$serial_numbers key=key item=serial_number}-->
+  <tr align="center">
+    {if $is_maintain_warranty == 1}
+    <td><input type="checkbox" name="check_validity[]" value="{$key+1}" /></td>
+    {/if}
+    <td>{$goods_info.goods_name}</td>
+    {if $is_maintain_warranty == 1}
+    <td > 
+        {$validity_info}：
+        <input id="search_in_time_{$key+1}" name="search_in_times[]" value="" >
+		<input type="button" id="search_in_time_trigger_{$key+1}" value="..." >
+		<input type="hidden" id="is_maintain_warranty" name="is_maintain_warrantys[]" value="{$is_maintain_warranty}" />
+	</td>
+	{/if}
+    <td>
+     
+     <!--{if $serial_number == ''}-->
+    	<input type="text" name="serial_numbers[]" id="sn{$key+1}" value="{$serial_number}" class="sn" index="{$key+1}" />
+      <input type="hidden" name="index_{$key+1}" value="{$key+1}" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <!--{else}-->
+      {$serial_number}
+      {*<input type="hidden" id="sn{$key+1}" value="{$serial_number}" class="sn" index="{$key+1}" />*}
+      <!--{/if}-->
+		</td>    
+  </tr>
+  <!--{/foreach}-->
+  <tr align="center">
+    <td colspan="5">
+      <br />
+      <input type="reset" name="reset" value="重设" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="button" id="submit1" name="button" onclick="check();" value="入库" />
+    </td>
+  </tr>
+  {else}
+  <tr>
+      <th>商品名</th>
+      <th>未入库数量</th>
+      <th>请输入本次入库数量和对应的{$validity_info}</th>
+      <th>打印串号</th>
+  </tr>
+  <tr align="center">
+  	<td>
+  		{$goods_info.goods_name}
+  	</td>
+  	<td>
+    	{$input_count} 
+    </td>
+    <td style="width:40%;">
+     <table style="width:80%;">
+     <tr>
+        <td style="width:50%;border:0px">
+        {if $is_maintain_warranty == 1}{$validity_info}：
+        <input style="width:40%" id="search_in_time_1" name="search_in_times[]" value="">
+		<input type="button" id="search_in_time_trigger_1" value="..." >
+		{else} 无需维护{$validity_info}
+		<input type="hidden" id="search_in_time_1" name="search_in_times[]" value="">
+		<input type="hidden" id="search_in_time_trigger_1" value="..." >
+		{/if}
+		<input type="hidden" id="is_maintain_warranty" name="is_maintain_warrantys[]" value="{$is_maintain_warranty}" />
+		</td>
+        <td style="width:50%;border:0px"> 数量：
+         <input type="hidden" id="not_in_count" name="not_in_count" value="{$input_count}" />
+         <input type="text" style="width:20%;" id="input_number_1" name="input_numbers[]" value="{$input_count}" onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" readonly />
+    	<button onclick="$('#input_number_1').attr('readonly', false);return false;">编辑</button>
+    	</td>
+    </tr>
+    <tr>
+    <td colspan="2" style="text-align:center;border:0px">
+    <a href="javascript:void(0)" id="addValidityNumber" onclick="add_validity_number()">添加日期和数量</a>  
+    </td>
+    </tr>
+
+     </table>
+
+    </td>
+    
+    <td>
+    	<input type="checkbox" name="print_sn" value="1" checked />
+        <select name="printer_id">{html_options options=$printers selected=$smarty.session.latest_printer_id}</select>
+    </td>
+  </tr>
+  <tr align="center">
+    <td colspan="4">
+      <input type="reset" name="reset" value="重设" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="button" id="submit_no_sn" name="submit_no_sn" onclick="check_validity_number();" value="入库" />
+    </td>
+  </tr>
+  {/if}
+  </table>
+</form>
+
+<script type="text/javascript">
+// <![CDATA[
+    var validity_info = '{$validity_info}';
+	// 采购订单号
+	var ORDER_ID   = '{$order.order_id}';
+	var ORDER_SN = '{$order.order_sn}';
+	var SERIAL_LENGTH = '{$serial_length}';
+    var admin_priv = '{"ck_re_in_storage"|check_admin_priv}';
+    var pass = true;
+    var confirm_info = '{$confirm_info}';
+    var goods_item_type = '{$goods_item_type}';
+    var is_maintain_warranty = '{$is_maintain_warranty}';
+    
+	{literal}
+
+	// 键盘事件, 扫描器输入以CTRL结尾
+	var KEY = { CTRL: 17 };
+		
+	$(document).ready(function(){
+		/**
+		 * 扫描后调到下一个输入框
+		 */
+		$('.sn').bind('keydown', function(event){
+			if (event.keyCode == KEY.CTRL) {
+      	        var serial_number = jQuery.trim($(this).val());
+  	            if (serial_number != '') {
+                    $.ajax({
+                        url : 'ajax.php', 
+                        data: 'act=is_in_storage&serial_number=' + serial_number + '&index=' + $(this).attr('index'),
+                        success: check_in_storage,
+                        type: 'POST',
+                        dataType: 'JSON'
+                    }); 
+  	            }
+			}
+		});
+		
+		if(goods_item_type == 'NON-SERIALIZED') {
+	        set_up_calendar("search_in_time_1","search_in_time_trigger_1");
+			document.getElementById('search_in_time_1').value = "";
+		} else {
+			if(is_maintain_warranty == 1) {
+		        set_up_calendar("batch_validity","batch_validity_trigger");
+				document.getElementById('batch_validity').value = "";
+
+				var search_in_times = document.getElementsByName('search_in_times[]');
+				for(var i=0;i<search_in_times.length;i++) {
+			        set_up_calendar("search_in_time_"+(i+1),"search_in_time_trigger_"+(i+1));
+					document.getElementById('search_in_time_'+(i+1)).value = "";
+				}
+			}
+		}
+
+		/**
+		 * 表单提交的验证
+		 */	
+//		$('#form').bind('submit', check);	
+	});
+	
+    
+    // 初始化日历函数
+    function set_up_calendar(input_field_value,button_value) {
+        Zapatec.Calendar.setup({
+            weekNumbers       : false,
+            electric          : false,
+            inputField        : input_field_value,
+            button            : button_value,
+            ifFormat          : "%Y-%m-%d",
+            daFormat          : "%Y-%m-%d"
+        });
+    }
+	
+    function get_date_format(later) {
+		var now = new Date();
+		var year = now.getFullYear();
+		var date_format = year+later;
+	    var month = now.getMonth();
+	    if(month < 10) {
+	    	date_format += "-0";
+	    } else {
+	    	date_format += "-";
+	    }
+	    date_format += month+1;
+	    var day = now.getDate();
+	    if(day < 10) {
+	    	date_format += "-0";
+	    } else {
+	    	date_format += "-";
+	    }
+	    date_format += day;
+		return date_format;
+    }
+    
+    function get_last_key_id(keys) {
+    	var last_id = keys[keys.length-1].id;
+		var newIds = last_id.split('_');
+		var newId = parseInt(newIds[newIds.length-1]);
+		return newId;
+    }
+    //批量导入串号  zxcheng 2013.07.10 
+	function bacth_in_sns() {
+		if(!ORDER_ID){
+			alert("订单号为空！请联系erp");
+			return;
+		}
+		$.ajaxFileUpload({
+			url:'batch_sn_input.php?order_id='+ORDER_ID,
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			success: function (data)
+			{
+				if(data.message == "")
+				{	
+					// 把能分配到串号依次填表
+					var serial_numbers = data.serial_numbers;
+					var input_serials = document.getElementsByName('#serial_numbers[]');
+					for(var i=0;i<serial_numbers.length;i++) {
+						for(var j=0;j<SERIAL_LENGTH;j++) {
+							if($('#sn'+(j+1)).val() == '') {
+								$('#sn'+(j+1)).val(serial_numbers[i]);
+								break;
+							}
+						}
+					}
+
+				}else{
+					alert(data.message);
+				}
+			},
+			error: function (data, status, e)
+			{
+				alert("方法调用错误，请联系ERP组"+status+e);
+			}
+		})
+	}
+    // 添加日期和数量    
+	function add_validity_number() {
+		var is_maintain_warranty = document.getElementById('is_maintain_warranty');
+		if(is_maintain_warranty.value == 0) {
+			alert('无需维护日期的商品不能添加日期！');
+			return false;
+		}
+		var search_in_time_names = document.getElementsByName('search_in_times[]');
+		var newId = get_last_key_id(search_in_time_names)+1;
+		
+		var content = " <tr><td style=\"width:50%;border:0px\">	";
+		content += validity_info + "： <input style=\"width:40%\" id=\"search_in_time_"+newId+"\" name=\"search_in_times[]\" value=\"\" >";
+		content += " <input  type=\"button\" id=\"search_in_time_trigger_"+newId+"\" value=\"...\" >";
+		content += " </td>";
+		content += " <td style=\"width:50%;border:0px\"> 数量：";
+		content += " <input style=\"width:20%\" type=\"text\" id=\"input_number_"+newId+"\" name=\"input_numbers[]\" value='1' onkeyup=\"value=value.replace(/[^\\d]/g,'')\" onbeforepaste=\"clipboardData.setData('text',clipboardData.getData('text').replace(/[^\\d]/g,''))\" readonly />";
+		content += " <button onclick=\"$('#input_number_"+newId+"').attr('readonly', false);return false;\">编辑</button>";
+	    content += " <input style=\"width:20%\" type='button' value='删除' onclick=";
+	    content += " remove_validity_number(this);return false;>";
+		content += " </td></tr>";
+
+        $('#addValidityNumber').parent().parent().before(content);
+        set_up_calendar("search_in_time_"+newId,"search_in_time_trigger_"+newId);
+
+		var numbers = document.getElementsByName('input_numbers[]');
+		return true;
+
+	}
+	
+	
+	//删除当前行
+	function remove_validity_number(obj) { 
+		if(confirm('确认删除吗？')) {
+		    $(obj).parent().parent().remove(); 
+            return true;
+		} else {
+			return false;
+		}
+	} 
+	
+	// 检测日期和数量是否正确
+	function check_validity_number() {
+		var validitys = document.getElementsByName('search_in_times[]');
+		var numbers = document.getElementsByName('input_numbers[]');
+  	    var not_in_count = $.trim($('#not_in_count').val());
+
+  	    var total_num = 0;
+		for (var i=0;i<validitys.length;i++) {
+			if(is_maintain_warranty == 1) {
+				if(!check_validity_format(validitys[i].value)) {
+					alert('请输入 “2013-01-01” 这样格式的日期!'+validitys[i].value);
+					return false;
+				}
+				
+				for (var j=i+1;j<validitys.length;j++) {
+					if(validitys[i].value == validitys[j].value) {
+						alert('同一个订单日期不能重复！'+validitys[i].value);
+						return false;
+					}
+				}
+			}
+
+			// 检测格式
+	    	if(!check_input_number(not_in_count,numbers[i].value)) {
+	    		return false;
+	    	}
+			total_num += parseInt($.trim(numbers[i].value));
+
+		}
+		// 检测总数量
+		if(parseInt(not_in_count) < parseInt(total_num)) {
+			alert('该订单总入库数量大于未入库数量');
+			return false;
+		}
+	    var orders_form = document.getElementById('form');
+	    $('#submit_no_sn').attr('disabled',true);
+	    orders_form.submit();
+	}
+	
+	function check_validity_format(validity) {
+		var exp = /^[1-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/;
+		if(!exp.test(validity)) {
+			return false;
+		}
+		return true;
+	}
+	
+	function check_input_number(input_number,number) {
+	    if (isNaN(number.trim())) {
+	        alert("请输入数字:"+ number);
+	        return false;
+	    }
+		
+		if (number.trim() == ''){
+			alert("请输入一个数字，不想入库请输入0 :"+ number);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='check_validity[]']:enabled").each(function(i){
+			this.checked = true;
+		});
+	}
+
+	/**
+	 * 反选
+	 */
+	function select_reverse(node)
+	{
+		node = node ? node : document ;
+		$(node).find("input[name='check_validity[]']:enable").each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+	
+	function batch_edit_validity(order_sns) {
+		var new_validity = $('#batch_validity').val();
+		if(!check_validity_format(new_validity)) {
+			alert('请输入 “2013-01-01” 这样格式的日期!');
+			return false;
+		}
+		
+    	for(var i=0;i<order_sns.length;i++)
+	    {
+	       document.getElementById("search_in_time_"+order_sns[i]).value = $('#batch_validity').val();
+	    }
+	}
+
+	
+	// 批量修改日期
+	$('.edit_validity').bind('click', function(event){
+		$checked = $("input[name='check_validity[]']:checked");
+		if ($checked.length) {
+			var ids = new Array();
+			$checked.each(function(i){
+			    ids.push(this.value);
+			});
+			batch_edit_validity(ids);
+		} else {
+			alert('没有选中项');
+			return false;
+		}
+	});
+	
+	/**
+	 * 生成配件串号
+	 */
+	function generate()
+	{
+		$('.sn').each(function(i){
+			var itm = $(this);
+			var idx = itm.attr('index');
+			if ($.trim(itm.val()) == '') {
+				itm.val(ORDER_SN.replace('-', '') + '' + idx);
+			}
+		});
+	}
+	
+	/**
+	 * 表单提交检查
+	 */
+	function check()
+	{
+		$('#submit1').attr('disabled', true);
+		
+		var arr = [];
+		var serial_number = '';
+		var pass = true;
+		$('.sn').each(function(i) {	
+			var id = $.trim($(this).attr('index'));
+			if(is_maintain_warranty == 1) {
+				var validity = $('#search_in_time_'+id).val();
+				if(!check_validity_format(validity)) {
+					alert('请输入 “2013-01-01” 这样格式的日期!'+validity);
+					return false;
+				}
+			}
+
+			var sn = $.trim($(this).val());
+
+			if (sn == '') {
+//				alert('商品串号不能为空');
+//				return pass = false;
+			} else if ($.inArray(sn, arr) !== -1) {
+				alert('不能有重复的商品串号');
+				$('#submit1').attr('disabled', false);
+				return pass = false;
+			} else {
+				serial_number += sn+'|';
+			    arr.push(sn);
+			}
+		});
+		
+		if (pass && serial_number != '') {
+            $.ajax({
+                url : 'ajax.php', 
+                data: 'act=is_in_storage&serial_number=' + serial_number,
+                success: re_in_storage,
+                type: 'POST',
+                dataType: 'JSON'
+            }); 
+        } else {
+            $('#submit1').attr('disabled', false);
+        }
+	}
+	
+	
+	/**
+	 * 绑定全选事件
+	 */
+	var checked = true;
+	$('#allcheck').bind('click', function(){
+		if (checked)
+		{
+			checked = false;
+		}
+		else
+		{
+			checked = true;		
+		}
+		$(':checkbox').each(function(i){
+			this.checked = checked;
+		});	
+	});
+	
+	function check_input (input_number) {
+	    if (isNaN($('#input_number').val())) {
+	        alert("请输入数字");
+	        return false;
+	    }
+		if ($('#input_number').val() > input_number) {
+			alert("输入数量超过未入库数量");
+			$('#input_number').val(input_number);
+			return false;
+		}
+        
+        if (confirm_info) {
+            if (!confirm(confirm_info)) {
+                return false;
+            }
+        }
+	}
+	function check_in_storage (result) {
+	    var res = eval('('+result+')');
+	    if (res.in_storage != null && $.trim(res.in_storage) != '') {
+   	        alert(res.in_storage+"串号已经入过库，无法入库");
+   	        $('#sn'+res.index).select().focus();
+   	        return false;
+	    }
+	    var id = '#sn' + ( parseInt(res.index) + 1 );
+		$(id).focus();
+	}
+	function re_in_storage (result) {
+	    var res = eval('('+result+')');
+	    if (res.in_storage != null && $.trim(res.in_storage) != '') {
+   	        alert(res.in_storage+"串号已经入过库，无法入库");
+   	        $('#submit1').attr('disabled', false);
+   	        return false;
+	    }
+	    $('#form').submit();
+	}
+	{/literal}
+
+// ]]>
+</script>
+
+</body>
+</html>

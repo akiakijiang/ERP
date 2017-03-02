@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>国家分区信息查询</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    .strik {
+        background-color: #ECEE9F;
+    }
+    <!--{/literal}-->
+    </style>
+    
+    <!-- Loading Calendar JavaScript files -->
+    <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+{if $smarty.request.message}
+  <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+  {$smarty.request.message}
+  </div>
+  {/if}
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+
+
+  <div class="menu-tab">
+    <div class="right-edge">&nbsp;</div>
+    <div class="active"><a href="partition_search.php">国家分区信息查询</a></div>
+    <div class="item"><a href="partition_entry.php">国家分区信息录入</a></div>
+
+    <div class="left-edge">&nbsp;</div>
+  </div>
+  <h3 style="color:#09F;">国家分区信息修改</h3>
+    <form method="post" name= "form" action="partition_search.php" id="form"  >
+	
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">修改国家分区信息</h3>
+
+  	<table cellpadding="5" cellspacing="1">
+  	 	<tr>
+          <td width="120">ID</td>
+          <td>
+          	<input name="info_id" type="text" onclick="this.select();" value="{$edit_info.id}" size="15" readonly="readonly" /> 
+          </td>
+        </tr>
+       <tr>
+      		<td width="120">国家地区号 <span class="require"> </td>
+        	<td>
+        	<input type="text" name="region_id"  value="{$edit_info.region_id}" size="30" id="region_id" readonly="readonly"/> 
+			</td>
+	   </tr>
+      
+    	<tr>
+        <td>快递分区 <span class="require"> * </span></td>
+        <td>
+           <select name="fenqu_id"><option value="0">-请选择-</option>{html_options options=$fenqu_list selected=$edit_info.fenqu_id}</select> &nbsp;&nbsp;
+           </td>
+      </tr>
+	 	
+        <tr>
+	  		<td>国家英文名</td>
+          	<td>
+        	<input type="text" name="region_name_en" value="{$edit_info.region_name_en}" size="30" id="region_name_en" /> 
+		 	</td>
+	    </tr>
+
+    	<tr>
+      		<td>国家中文名</td>
+        	<td>
+        	<input type="text" name="region_name_chs" value="{$edit_info.region_name_chs}" size="30" id="region_name_chs" /> 
+		 	</td>
+	    </tr>
+    
+        <tr>
+        	<td>生效日期</td>
+        	<td>
+        	<input type="text" name="date" value="{$edit_info.date}" size="30" id="date" /> 
+		 	</td>
+        </tr>
+      
+       
+       <!--  <tr>
+        	<td height="29">快递公司</td>
+        	<td>
+          	<input type="text" name="carrier_id"  value="{$edit_info.carrier_id}" size="30" id="carrier_id" readonly="readonly"/> 
+          	
+        	</td>
+        </tr> -->
+             
+	  </table>
+	  <div style="text-align:center">
+	  <input type="submit" value=" 更新 "  />
+	  <input type="hidden" name="act" value="update_submit" />
+	  </div>
+	  </div>
+	</form>
+   <div style="clear:both;"> 
+    <h3 style="color:#09F;">查询</h3>
+    <form method="get">
+    <table cellpadding="5" cellspacing="1" >
+        <tr><td>每页显示</td>　　
+            <td>  <select name="size" id="size">{html_options options=$page_size_list}</select>条记录</td>
+        </tr>
+        <td>快递分区 <span class="require"> * </span></td>
+        <td>
+           <select name="fenqu_id"><option value="0">-请选择-</option>{html_options options=$fenqu_list selected=$fenqu}</select> &nbsp;&nbsp;
+           </td>
+      </tr>
+        <tr>
+            <td width="120">生效时间</td>
+            <td>
+              <input type="text" id="start" name="start" value="{$start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+              <input type="text" id="end" name="ended" value="{$ended}" size="10" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+            <td>国家中文名</td>
+            <td>
+              <input type="text" name ="region_name_chs" id="region_name_chs " size="30"/>
+            </td>
+            <td>国家英文名</td>
+            <td>
+              <input type="text" name ="region_name_en" id="region_name_en " size="30"/>
+            </td>
+            <td>
+              <input type="submit" value="查询" />
+            </td>
+        </tr>
+    </table>
+    </form>
+   </div>
+   
+
+      <h3 style="color:#09F;">国家分区信息查询结果列表</h3>
+   
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+        <tr bgcolor="#f9f9f9">  
+        	<th>ID</th> 
+            
+            <th>国家地区号</th>
+            <th>分区号</th>
+            <th>国家英文名</th>
+            <th>国家中文名</th>
+            <th>生效日期</th>
+			<th>分区</th>
+			<th>最后更新时间</th>
+			<th>最后操作人</th>
+        </tr>   
+         {foreach from=$country_list item=country }
+         
+           <tr align="center" >
+            <td>{$country.id}</td>
+            <td>{$country.region_id}</td>
+            
+            <td>{$country.fenqu_id}</td>
+            <td>{$country.region_name_en}</td>
+            <td>{$country.region_name_chs}</td>
+            
+            <td>{$country.date}</td>
+			<td>{$country.region_name}</td>
+			<td>{$country.update_time}</td>
+			<td>{$country.operator}</td>
+		  	
+            <td><a href="?act=update&info_id={$country.id}">编辑</a></td>
+         </tr>     
+        
+        {/foreach}
+        <tr>
+        <td colspan="9" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        </tr>
+      </table>
+            <br/>
+</fieldset>
+  
+  <script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "start",
+    button            : "startTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "end",
+    button            : "endTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+  
+</body>
+</html>

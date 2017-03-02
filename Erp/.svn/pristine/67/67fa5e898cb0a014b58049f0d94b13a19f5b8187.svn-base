@@ -1,0 +1,4 @@
+shipping_status,reserved_status,order_id,order_sn,product_id,facility_id,reserved_quantity,reserved_time
+{foreach from=$reserved_detail item=reserved}
+"{$reserved.shipping_status}","{$reserved.status}","{$reserved.order_id}","{$reserved.order_sn}","{$reserved.product_id}","{$reserved.facility_id}","{$reserved.reserved_quantity}","{$reserved.reserved_time}"
+{/foreach}

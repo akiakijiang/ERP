@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css"></link>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css"></link>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>返点管理</title>
+</head>
+<body>
+<script type="text/javascript">
+// <![CDATA[
+	var party_id = '{$smarty.session.party_id}';
+	var WEB_ROOT = '{$WEB_ROOT}';
+	var item_type = '{$smarty.request.item_type}';
+// {literal}	
+	window.setTimeout(function(){
+	    $('#message').slideUp("slow");
+	}, 5000);
+	$(document).ready(function(){
+		$('#distributor').bind('focus', function(){
+			get_distributor(party_id);
+		});
+		if (item_type == "MANUALLY_ADD" || item_type == "") {
+			$("#span_item_type").css("display","none");
+		}
+		$("#item_type").change(function(){
+			var item_type = $(this).val();
+			if (item_type == "MANUALLY_ADD") {
+				//录入返点类型
+				$("#span_item_type").css("display","none");
+			} else {
+				$("#span_item_type").css("display","block");
+			}
+		});
+	});
+	/**
+	* 分销商搜索
+	*/
+	function get_distributor(party_id) {
+		$('#distributor').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_distributor', {
+			extraParams : {party_id:party_id},
+			dataType : 'json',
+			minChars: 1,
+			delay: 1000,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.name);
+			},
+			formatResult : function(row) {
+				return(row.name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#distributor_id').val(row.distributor_id);
+		});
+	}
+	/**
+	*  添加金额表单验证
+	*/
+	function form_submit () {
+		var start = $.trim($("#start").val());
+		if (start == '') {
+			alert("请选择日期");
+			return false;
+		}
+		if (!$.trim($("#distributor_id").val())) {
+			alert("请输入分销商");
+			return false;
+		}
+		var amount = $.trim($("#amount").val());
+		var reg = /^(-)?[1-9]([0-9]*)?(.[0-9]{1,2})?$/;
+		if (!amount || amount == '' || !reg.test(amount)) {
+			alert("请输入合法金额");
+			return false;
+		}
+		var note = $.trim($('#note').val());
+		if (note == '' || !note) {
+			alert('请填写备注');
+			return false;
+		}
+		$("#form").submit();
+	}
+	/**
+	* 检查表单
+	*/
+	function check_form_select_detail(detail_type) {
+		$("#detail_type").attr("value", detail_type);
+		var start = $("#startTime").val();
+		var end = $("#endTime").val();
+		if (start != '' && end != '' && end < start) {
+			alert("日期终止时间大于起始时间，请重新选择");
+			return false;
+		}
+		var distributor = $.trim($("#distributor").val());
+		if (distributor == '') {
+			$("#distributor_id").attr("value", "");
+		}
+		$("#form_select_detail").submit();
+	}
+// {/literal}
+// ]]>
+</script>
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+<!--{if $act == "select_total"}-->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;返点管理&nbsp;</span></legend>
+	<div class="menu-tab">
+  		<div class="right-edge">&nbsp;</div>
+    	<div class="active"><a href="rebate.php?act=select_total">返点查询</a></div>
+  		<div class="item"><a href="account_rebate.php">返点核算</a></div>
+  		<div class="left-edge">&nbsp;</div>
+    </div>
+    
+  	<div style="clear:both;"> 
+		<h3 style="color:#09F;">查询</h3>
+	  	<form method="post" action="">  
+	  	<table cellpadding="5" cellspacing="1">
+	    	<tr>
+	      	<td width="40">分销商</td>
+	        <td>
+	        	<input type="text" value="" id="distributor" name="distributor" style="width:260px;"></input>
+	        	<input type="hidden" value="" id="distributor_id" name="distributor_id"></input>
+	            <input type="hidden" name="act" value="select_total" />
+	            <input type="submit" value="查询" />  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	            <a href="rebate.php?act=insert&party_id={$smarty.session.party_id}&keepThis=true&TB_iframe=true&height=500&width=800" 
+	            	class="thickbox" title="添加返点金额">添加返点金额</a>
+	        </td>
+	        </tr>
+		</table>
+	    </form>
+	</div>
+	
+	<br />
+	<!--{if $distributor_list}-->
+	<div style="clear:both;">
+		<table class="bWindow" style="margin-top:10px;">
+	        <tr>
+	          <th width="15%">日期</th>
+	          <th width="28%">分销商</th>
+	          <th width="10%">上月核算总金额</th>
+	          <th width="10%">上月剩余总金额</th>
+	          <th width="10%">本月使用返点金额</th>
+	          <th width="10%">当前剩余总金额</th>
+	          <th width="20%">操作</th>
+	        </tr>
+        	
+        	<!--{foreach from=$distributor_list item=item}-->
+	        <tr align="center" class="{cycle values="even,odd"}">
+	            <td>{$smarty.now|date_format:'%Y-%m-%d'}</td>
+	            <td>{$item.name}</td>
+	            <td>{$item.last_month_amount|string_format:'%.2f'}</td>
+	            <td>{$item.last_month_total_amount|string_format:'%.2f'}</td>
+	            <td>{$item.used_amount|string_format:'%.2f'}</td>
+	            <td>{$item.total_amount|string_format:'%.2f'}</td>
+	            <td><a href="rebate.php?act=select_detail&distributor_id={$item.distributor_id}&party_id={$smarty.session.party_id}&keepThis=true&TB_iframe=true&height=500&width=900" 
+	            	class="thickbox" title="[交易明细] - 分销商：{$item.name}">交易明细</a> &nbsp;&nbsp;&nbsp;
+		        	<a href="rebate.php?act=insert&distributor_id={$item.distributor_id}&party_id={$smarty.session.party_id}&keepThis=true&TB_iframe=true&height=500&width=800" 
+	            	class="thickbox" title="[添加返点金额] - {$item.name}">添加返点金额</a>
+		        </td>
+	        </tr>
+	        <!--{/foreach}-->
+		</table>
+		
+		<br /><br />
+		{$pagination}<br />
+	</div>
+	<!--{/if}-->
+  <br /><br />
+</fieldset>
+<!--{/if}-->
+<!--{if $act == "insert"}-->
+	<form method="post" id="form" style="width:96%; margin:auto;" action="rebate.php">
+  	<table class="inner">
+		<tr>
+	      	<td width="100px">日期</td>
+	        <td><input type="text" value="" id="start" name="start" style="width:100px;"></input>
+	        </td>
+	    </tr>
+	    <tr>
+	      	<td width="100px">业务组织</td>
+	        <td>
+	        	<select name="party_id" id="party_id">
+	        	<!--{foreach from=$party_list item=item }-->
+	        	<option value="{$item.party_id}" {if $item.party_id == $smarty.session.party_id} selected="selected"{/if}>{$item.name}</option>
+	        	<!--{/foreach}-->
+	        	</select>
+	        </td>
+	    </tr>
+	    <tr>
+	      	<td width="100px">分销商</td>
+	        <td>
+	        	<input type="text" value="{$distributor.name}" id="distributor" name="distributor" style="width:240px;"></input>
+	        	<input type="hidden" value="{$distributor.distributor_id}" id="distributor_id" name="distributor_id"></input>
+	        </td>
+	    </tr>
+	    <tr>
+	      	<td width="100px">总返点金额</td>
+	        <td>
+	        	<input type="text" name="amount" id="amount" value=""></input>（金额可为负，例如 -100）
+	        </td>
+	    </tr>
+	    <tr>
+	      	<td width="100px">备注</td>
+	        <td>
+	        	<input type="text" name="note" id="note" value="" style="width:240px;"></input>
+	        </td>
+	    </tr>
+	    <tr>
+	      	<td width="100px"></td>
+	        <td>
+	        	<input type="button" name="button" id="button" value="提交" onclick="form_submit();"></input>
+	        	<input type="hidden" name="act" value="insert"></input>
+	        </td>
+	    </tr>
+   	</table>
+	</form>
+	<script type="text/javascript">
+	// <![CDATA[
+	{literal}
+	Zapatec.Calendar.setup({
+	    weekNumbers       : false,
+	    electric          : false,
+	    inputField        : "start",
+	    button            : "start",
+	    ifFormat          : "%Y-%m",
+	    daFormat          : "%Y-%m"
+	});
+	
+	{/literal}
+	// ]]>
+	</script>
+<!--{/if}-->
+<!--{if $act == "select_detail"}-->
+<form method="post" id="form_select_detail" style="width:96%; margin:auto;" action="">
+	<p>返点类型：
+       	<select name="item_type" id="item_type">
+       		<!--{foreach from=$item_type_list key=key item=item}-->
+       		<option value="{$key}" {if $smarty.request.item_type == $key}selected="selected"{/if}>{$item}</option>
+       		<!--{/foreach}-->
+       	</select>
+       	日期：
+       	<input type="text" id="startTime" name="startTime" value="{$smarty.request.startTime}" style="width:80px;"></input>&nbsp;&nbsp;到&nbsp;&nbsp;
+       	<input type="text" id="endTime" name="endTime" value="{$smarty.request.endTime}" style="width:80px;"></input>
+       	分销商：<input type="text" value="{$distributor.name}" id="distributor" name="distributor" style="width:240px;"></input>
+	        	<input type="hidden" value="{$distributor.distributor_id}" id="distributor_id" name="distributor_id"></input>
+    </p>
+    <p><span id="span_item_type">搜索条件：
+       	<select name="type" id="type">
+       		<!--{foreach from=$type_list key=key item=item}-->
+       		<option value="{$key}" {if $smarty.request.type == $key}selected="selected"{/if}>{$item}</option>
+       		<!--{/foreach}-->
+       	</select>
+       	关键字：
+        	<input type="text" value="{$smarty.request.key}" id="key" name="key" style="width:240px;"></input>
+        </span>
+    </p>
+    <p>
+    	<input type="button" name="search" id="search" value="搜索" onclick="check_form_select_detail('search');"></input>
+    	<input type="button" name="export" id="export" value="导出" onclick="check_form_select_detail('export');"></input>
+    	<input type="hidden" name="detail_type" id="detail_type" value=""></input>
+    	<input type="hidden" name="act" value="select_detail"></input>
+    </p>
+</form>
+<!--{if $detail_list}-->
+<table class="bWindow" style="text-align:center;">
+	<tr>
+		<td>分销商</td>
+		<!--{if $smarty.request.item_type == "MANUALLY_ADD"}-->
+		<td>返点金额</td>
+		<td>返点有效期</td>
+		<td>操作时间</td>
+		<td>备注</td>
+		<td>操作人</td>
+		<!--{else}-->
+		<td>ERP订单号</td>
+		<td>淘宝订单号</td>
+		<td>采购订单号</td>
+		<td>订单状态</td>
+		<td>订单时间</td>
+			<!--{if $smarty.request.item_type == "ORDER_DEDUCT"}-->
+			<td>操作时间</td>
+			<td>商品总金额</td>
+			<td>订单总金额</td>
+			<td>返点金额</td>
+			<td>返点类型</td>
+			<td>返点备注</td>
+			<!--{elseif $smarty.request.item_type == "ORDER_REBATE"}-->
+			<td>买家实付金额</td>
+			<td>商品名称</td>
+			<td>商品数量</td>
+			<td>返点金额</td>
+			<td>活动形式</td>
+			<!--{/if}-->
+		<!--{/if}-->
+	</tr>
+	<tr>
+		<!--{if $smarty.request.item_type == "ORDER_DEDUCT"}-->
+		<td>汇总</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td>{$detail_total.goods_amount|string_format:'%.2f'}</td>
+		<td>{$detail_total.order_amount|string_format:'%.2f'}</td>
+		<td>{$detail_total.amount|string_format:'%.2f'}</td>
+		<td></td>
+		<td></td>
+		<!--{elseif $smarty.request.item_type == "MANUALLY_ADD"}-->
+		<td>汇总</td>
+		<td>{$detail_total.amount|string_format:'%.2f'}</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<!--{else}-->
+		<td>汇总</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td>{$detail_total.total_amount}</td>
+		<td></td>
+		<!--{/if}-->
+	</tr>
+	<!--{foreach from=$detail_list item=item}-->
+		<tr>
+			<td>{$item.name}</td>
+			<!--{if $smarty.request.item_type == "MANUALLY_ADD"}-->
+			<td>{$item.amount}</td>
+			<td>{$item.date|date_format:'%Y年%m月'}</td>
+			<td>{$item.approve_time}</td>
+			<td>{$item.note}</td>
+			<td>{$item.approve_user}</td>
+			<!--{else}-->
+			<td>{$item.order_sn}</td>
+			<td>{$item.taobao_order_sn}</td>
+			<td>{$item.distribution_purchase_order_sn}</td>
+			<td>
+			<!--{if $item.order_sn}-->
+			<!--{foreach from=$_CFG.adminvars.order_status key=key item=order_status}-->
+			<!--{if $key == $item.order_status}-->{$order_status}<!--{/if}-->
+	        <!--{/foreach}-->
+	        <!--{foreach from=$_CFG.adminvars.pay_status key=key item=pay_status}-->
+			<!--{if $key == $item.pay_status}-->{$pay_status}<!--{/if}-->
+	        <!--{/foreach}-->
+	        <!--{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}-->
+			<!--{if $key == $item.shipping_status}-->{$shipping_status}<!--{/if}-->
+	        <!--{/foreach}--><!--{/if}--></td>
+	        <td>{$item.order_time|date_format:'%Y-%m-%d'}</td>
+	        	<!--{if $smarty.request.item_type == "ORDER_DEDUCT"}-->
+				<td>{$item.approve_time}</td>
+				<td>{$item.goods_amount|string_format:'%.2f'}</td>
+				<td>{$item.order_amount|string_format:'%.2f'}</td>
+				<td>{$item.amount|string_format:'%.2f'}</td>
+				<td>{if $item.item_type =='ORDER_CANCEL'}{$item_type_list.ORDER_DEDUCT}{else}{$item_type_list[$item.item_type]}{/if}</td>
+				<td>{$item.note}</td>
+				<!--{elseif $smarty.request.item_type == "ORDER_REBATE"}-->
+				<td>{$item.buyer_payment}</td>
+				<td>{$item.goods_number}</td>
+				<td>{$item.product_number}</td>
+				<td>{if $item.d_amount==0.00}{$item.amount|string_format:'%.2f'}{else}{$item.d_amount|string_format:'%.2f'}{/if}</td>
+				<td>{$item.note}</td>
+				<!--{/if}-->
+			<!--{/if}-->
+		</tr>
+	<!--{/foreach}-->
+</table>
+
+<br /><br />
+{$pagination}
+<!--{/if}-->
+<script type="text/javascript">
+	// <![CDATA[
+	{literal}
+	Zapatec.Calendar.setup({
+	    weekNumbers       : false,
+	    electric          : false,
+	    inputField        : "startTime",
+	    button            : "startTime",
+	    ifFormat          : "%Y-%m-%d",
+	    daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+	    weekNumbers       : false,
+	    electric          : false,
+	    inputField        : "endTime",
+	    button            : "endTime",
+	    ifFormat          : "%Y-%m-%d",
+	    daFormat          : "%Y-%m-%d"
+	});
+	{/literal}
+	// ]]>
+	</script>
+<!--{/if}-->
+</body>
+</html>

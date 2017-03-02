@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>顺丰</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:12pt;top:365px;left:380px;font-size:30px;">{$order.diff}</div>
+<div style="position:absolute;font-size:12pt;top:65px;left:110px;letter-spacing:10px;">乐其</div><!-- 月结帐号 -->
+<!--<div style="position:absolute;font-size:10pt;top:90px;left:5px;">上海欧酷网络科技有限公司</div>-->
+<div style="position:absolute;font-size:15pt;top:65px;left:290px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:10pt;top:115px;left:60px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。
+{if $order.center_number}<br/>{$order.center_number}{/if}</div>
+
+<!-- <div style="position:absolute;font-size:10pt;top:170px;left:1px;">0571</div> -->
+<!--<div style="position:absolute;font-size:10pt;top:170px;left:68px;">63542610</div>-->
+<div style="position:absolute;font-size:12pt;top:90px;left:70px;">{$order.c_tel}</div><!-- 电话 -->
+<div style="position:absolute;font-size:12pt;top:210px;left:285px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:12pt;top:250px;left:60px;width:260px;line-height:150%;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:12pt;top:235px;left:245px;">{$order.mobile}</div>
+<div style="position:absolute;font-size:12pt;top:235px;left:60px;">{$order.tel}</div>
+<!--<div style="position:absolute;font-size:10pt;top:325px;left:170px;">{$order.mobile}</div> 已经移到上面-->
+{if $order.insure_fee >= 1}
+<!-- <div style="position:absolute;font-size:18pt;top:320px;left:430px;"><strong>
+{$order.insure_fee|price_format}
+</strong>
+</div>
+<div style="position:absolute;font-size:25pt;top:310px;left:260px;">√</div>寄方付 -->
+{/if}
+
+<!-- 需要保价 -->
+{if $order.need_insure}
+<div style="position:absolute;font-size:25pt;top:100px;left:370px;">√</div>
+<div style="position:absolute;font-size:13pt;top:105px;left:420px;font-weight:bolder;">
+<strong>
+{$order.declared_value|price_format}
+</strong>
+</div>
+{/if}
+
+<!-- cod -->
+{if $order.is_sf_cod}
+<div style="position:absolute;font-size:25pt;top:120px;left:355px;">√</div> 
+<div style="position:absolute;font-size:12pt;top:125px;left:435px;">{$order.monthly_payment_no}</div>
+<div style="position:absolute;font-size:12pt;top:145px;left:435px;">
+{$order.sf_cod_note}
+</div>
+{/if}
+<div style="position:absolute;font-size:12pt;top:1px;left:515px;font-weight:bolder;">416362</div>
+<div style="position:absolute;font-size:12pt;top:20px;left:515px;font-weight:bolder;">010QN</div>
+<div style="position:absolute;font-size:15pt;top:20px;left:590px;font-weight:bolder;">{$order.city_code}</div>
+<div style="position:absolute;font-size:42pt;top:0px;left:80px;font-weight:bolder;">{$order.city_code}</div>
+
+<div style="position:absolute;font-size:12pt;top:100px;left:515px;font-weight:bolder;">
+	<span style="font-size:30px;">{$order.diff}</span>
+</div>
+
+<!--
+<div style="position:absolute;font-size:14pt;top:330px;left:40px;font-weight:bolder;">{if $order.party_id eq '65551'}{$order.goods_type}{/if}{if $order.insure_fee >= 1} ￥{$order.insure_fee*1000}{/if}&nbsp;&nbsp;(订单号：{$order.order_sn})</div>
+-->
+<div style="position:absolute;font-size:12pt;top:330px;left:40px;font-weight:bolder;">{$order.goods_type}(订单号：{$order.order_sn})&nbsp;&nbsp;{if $order.insure_fee >= 1} ￥{$order.insure_fee*1000}{/if}</div>
+
+<div style="position:absolute;font-size:25pt;top:240px;left:370px;">
+{if $order.is_sf_cod && $order.shipping_id neq 135}
+√
+{/if}
+</div><!--寄方付 -->
+<div style="position:absolute;font-size:25pt;top:255px;left:360px;">
+{if $order.shipping_id eq 135 || ($order.distributor_id eq 2389 && $order.shipping_id eq 136) }
+√
+{/if}
+</div><!--收方付 -->
+<div style="position:absolute;font-size:25pt;top:255px;left:490px;">{$order.third_paid}</div><!--第三方付 -->
+{if  $order.carrier_id neq '53'}
+{if $order.shipping_id neq '135'}
+<div style="position:absolute;font-size:12pt;top:290px;left:480px;">{$order.monthly_payment_no}</div>
+<div style="position:absolute;font-size:12pt;top:255px;left:555px;font-weight:bolder;">{$order.turn_no}</div>
+{/if}
+<div style="position:absolute;font-size:14pt;top:335px;left:550px;width:160px;">转寄协议客户</div>
+{/if}
+<div style="position:absolute;font-size:12pt;top:130px;left:475px;line-height:100%"><br></div>
+<div style="position:absolute;font-size:12pt;top:330px;left:420px;">{$order.sender_sign}</div>
+<div style="position:absolute;font-size:12pt;top:350px;left:410px;">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+{if $order.shipping_id eq 135}
+<div style="position:absolute;font-size:25pt;top:380px;left:410px;">到付</div>
+{/if}
+<div style="position:absolute;font-size:12pt;top:365px;left:520px;width:170px;">
+	本人签收{$order.remarks}<br>
+	{if $order.start_shipping_time != 0 || $order.end_shipping_time != 0}
+		{if $order.start_shipping_time != 0}{$order.start_shipping_time}点{else}-{/if}至{if $order.end_shipping_time != 0}{$order.end_shipping_time}点{else}-{/if}配送
+	{/if}
+</div>
+</body>
+</html>
+

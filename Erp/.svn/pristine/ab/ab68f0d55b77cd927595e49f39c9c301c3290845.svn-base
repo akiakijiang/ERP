@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>编辑开票清单对应的发票</title>
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+
+<!-- Autocomplete -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+
+<script type="text/javascript">
+var WEB_ROOT = '{$WEB_ROOT}';
+{if $smarty.request.info}
+	alert("{$smarty.request.info}");
+{/if}
+{literal}
+// <![CDATA[
+$(document).ready(function(){
+	/**
+	* 商品搜索
+	*/
+	$('#search_button').bind('click', function(){
+		var invoice_no = document.getElementById("search_invoice_no").value;
+		
+		$.ajax({
+			url: WEB_ROOT + 'admin/ajax.php?act=search_purchase_invoice_item_to_match',
+			dataType: 'json',
+			data: 'invoice_no=' + invoice_no,
+			type: 'POST',
+			async: true,
+			success : function(result) {
+				var i = 0;
+				var opts = '';
+				for (i = 0; i < result.length; i++) {
+				    if (result[i].type) {
+				        continue;
+				    }
+					opts += '<option value="' + result[i].productId + '" goods_id="' + result[i].product_map.goods_id + '" onclick="changeAmount(' +  (result[i].totalQuantity - result[i].matchedQuantity) + ')" >' + result[i].product_map.goods_name + '</option>';
+//					opts += '<option value="' + result[i].product_map.goods_id + '" onclick="changeAmount(' +  (result[i].totalQuantity - result[i].matchedQuantity) + ')" >' + result[i].product_map.goods_name + '</option>';
+				}
+				$('#search_goods_list').html(opts);
+				if (result.length > 0) {
+					changeAmount(result[0].totalQuantity - result[0].matchedQuantity);
+				}
+			}
+		});
+	});
+	
+	$('#autocomplete_goods').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+		dataType : 'json',
+		formatItem : function(row, i, max, value, term) {
+			return(row.goods_name);
+		},
+		formatResult : function(row) {
+			return(row.goods_name);
+		},
+		mustMatch: true
+	}).result(function(event, row, formatted) {
+		$('#search_goods_id').val(row.goods_id);
+		$('#autocomplete_styles').val("");
+		data = $.ajax({
+			url: WEB_ROOT + 'admin/ajax.php?act=search_goods_styles',
+			dataType: 'json',
+			data: 'goods_id=' + row.goods_id,
+			type: 'POST',
+			async: true,
+			success : function(result) {
+				$('#autocomplete_styles').autocomplete(result, {
+					formatItem : function(row, i, max, value, term) {
+						return(row.color);
+					},
+					mustMatch: true,
+					minChars : 0
+				}).result(function(event, row, formatted) {
+					$('#search_goods_style_id').val(row.style_id);
+				});
+			}
+		});
+	});
+
+});
+// ]]>
+
+function select_all_checkbox(name, value) {
+	var check_box_list = document.getElementsByName(name);
+	var i = 0;
+	for (i = 0; i < check_box_list.length; i++) {
+		check_box_list[i].checked = value;
+	}
+}
+
+function anti_checkbox(name) {
+	var check_box_list = document.getElementsByName(name);
+	var i = 0;
+	for (i = 0; i < check_box_list.length; i++) {
+		if (check_box_list[i].checked) {
+			check_box_list[i].checked = "";
+		} else {
+			check_box_list[i].checked = "checked";
+		}
+	}
+}
+
+function changeAmount(num) {
+	document.getElementById('amount').value = num;
+}
+
+function check_product() {
+	var invoice_product_id = document.getElementById("search_goods_list").value;
+	var search_goods_list = document.getElementById("search_goods_list");
+	var invoice_goods_id = search_goods_list.options[search_goods_list.selectedIndex].attributes['goods_id'].value;
+	var add_radio_list = document.getElementsByName("purchase_invoice_request_item_match_add_id");
+	var request_product_id = 0;
+	var request_goods_id = 0;
+	var i = 0;
+	for (i = 0; i < add_radio_list.length; i++ ) {
+		if (add_radio_list[i].checked) {
+			request_product_id = document.getElementById("product_id_" + add_radio_list[i].value).value;
+			request_goods_id = document.getElementById("goods_id_" + add_radio_list[i].value).value;
+			break;
+		}
+	}
+//	if (invoice_product_id != request_product_id) {
+	if (request_goods_id != invoice_goods_id) { // 要根据goods_id做判断
+		return confirm("关联的商品不一致，确认关联吗？");
+	}
+	return true;
+}
+
+</script>
+{/literal}
+</head>
+
+<body>
+<h2 align="center">编辑开票清单对应的发票&nbsp;&nbsp;<a href="purchase_invoice_request_detail.php?purchase_invoice_request_id={$smarty.request.purchase_invoice_request_id}">编辑开票清单</a></h2>
+<p>
+	<b>单号：</b>{$purchase_invoice_request->purchaseInvoiceRequestId} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>状态：</b>{assign var=status value=$purchase_invoice_request->status}{$_CFG.adminvars.purchase_invoice_request_status_mapping[$status]}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>类型：</b>{assign var=type value=$purchase_invoice_request->typeId}{$_CFG.adminvars.purchase_invoice_request_type_mapping[$type]}
+</p>
+<p>
+	<b>总金额：</b>￥{$purchase_invoice_request->totalCost|erp_price_format} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>已开票金额：</b>￥{$purchase_invoice_request->match_cost|erp_price_format}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>缺票金额：</b>￥{$purchase_invoice_request->totalCost-$purchase_invoice_request->match_cost|erp_price_format}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+</p>
+<hr noshade="noshade" />
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST" onsubmit="return check_product()">
+<p>未对应发票商品</p>
+<table class="bWindow" style="width: 900px;">
+  <tr>
+    <th width="45" height="27">选择</th>
+    <th width="86">商品代码</th>
+    <th width="107">商品名称</th>
+    <th width="55">欠票数量</th>
+    <th width="125">去税单价</th>
+    <th width="93">去税总金额</th>
+    <th width="86">含税单价</th>
+    <th width="68">含税总金额</th>
+  </tr>
+  {foreach from=$purchase_invoice_request_item_to_match_list item=purchase_invoice_request_item_to_match name=purchase_invoice_request_item_to_match}
+  <tr>
+    <td align="center" height="24">
+        {if $purchase_invoice_request_item_to_match->returnInventoryTransactionId == ''}
+        	{if $purchase_invoice_request->typeId == 'ORIGINAL'}
+            	<input name="purchase_invoice_request_item_match_add_id" type="radio" value="{$purchase_invoice_request_item_to_match->purchaseInvoiceRequestItemId}" {if $smarty.foreach.purchase_invoice_request_item_to_match.first} checked{/if} />
+            	<input type="hidden" value="{$purchase_invoice_request_item_to_match->productId}" id="product_id_{$purchase_invoice_request_item_to_match->purchaseInvoiceRequestItemId}" /><!-- 该项用于比较 开票清单明细的商品与发票的明细商品是否是同一种商品 id:product_id_XX -->
+            	<input type="hidden" value="{$purchase_invoice_request_item_to_match->product_map.goods_id}" id="goods_id_{$purchase_invoice_request_item_to_match->purchaseInvoiceRequestItemId}" /><!-- 该项用于比较 开票清单明细的商品与发票的明细商品是否是同一种商品 id:goods_id_XX -->
+        	{elseif $purchase_invoice_request->typeId == 'AVERAGE'}
+            	<input name="purchase_invoice_request_item_match_add_id" type="radio" value="{$purchase_invoice_request_item_to_match->productId}" {if $smarty.foreach.purchase_invoice_request_item_to_match.first} checked{/if} id="product_id_{$purchase_invoice_request_item_to_match->productId}" />
+            	<input type="hidden" value="{$purchase_invoice_request_item_to_match->product_map.goods_id}" id="goods_id_{$purchase_invoice_request_item_to_match->productId}" /><!-- 该项用于比较 开票清单明细的商品与发票的明细商品是否是同一种商品 id:goods_id_XX -->
+        	{/if}
+    	{/if}
+    </td>
+    <td align="center">{$purchase_invoice_request_item_to_match->product_map.goods_id}#{$purchase_invoice_request_item_to_match->product_map.style_id}</td>
+    <td>
+			{$purchase_invoice_request_item_to_match->product_map.goods_name} 
+      {if $purchase_invoice_request_item_to_match->returnInventoryTransactionId && $purchase_invoice_request_item_to_match->returnInventoryTransactionId->inventoryTransactionId}
+      <span style="color:red;">(gt调整)</span>
+			{elseif $purchase_invoice_request_item_to_match->returnInventoryTransactionId && !$purchase_invoice_request_item_to_match->returnInventoryTransactionId->inventoryTransactionId}
+      <span style="color:red;">(跨期gt调整)</span>
+      {/if} 
+		</td>
+    
+    
+    <td align="center">{$purchase_invoice_request_item_to_match->quantity}</td>
+    <td align="right">￥{$purchase_invoice_request_item_to_match->unitNetCost|invoice_price_format}</td>
+    <td align="right">￥{$purchase_invoice_request_item_to_match->unitNetCost*$purchase_invoice_request_item_to_match->quantity|invoice_price_format}</td>
+    <td align="right">￥{$purchase_invoice_request_item_to_match->unitCost|invoice_price_format}</td>
+    <td align="right">￥{$purchase_invoice_request_item_to_match->unitCost*$purchase_invoice_request_item_to_match->quantity|invoice_price_format}</td>
+  </tr>
+  {/foreach}
+</table>
+
+{if $purchase_invoice_request_item_to_match_list|@count > 0}
+<p>
+要关联的发票号： <input type="text" name="search_invoice_no" id="search_invoice_no" /><input type="button" value="搜索" id="search_button">
+发票商品：
+    <select name="product_id" id="search_goods_list" style="width: 200px;">
+      <option>请选择商品</option>
+    </select>
+待关联商品数量：
+    <input name="amount" id="amount" size="5" />
+    <input type="submit" value="关联" />
+</p>
+{/if}
+
+<input type="hidden" name="action" value="purchase_invoice_item_match_add" />
+<input type="hidden" name="purchase_invoice_request_type_id" value="{$purchase_invoice_request->typeId}" />
+<input type="hidden" name="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}" />
+<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+</form>
+
+<hr noshade="noshade" />
+<p>已对应发票商品</p>
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+<table class="bWindow" style="width: 900px;">
+    <tr>
+        <th height="35">选择</th>
+        <th>发票代码</td>
+        <th>商品代码</td>
+        <th>商品名称</td>
+        <th>数量</td>
+        <th width="90">去税单价</th>
+        <th width="93">去税总金额</th>
+        <th width="86">含税总金额</th>
+        <th>金额</th>
+    </tr>
+    {foreach from=$purchase_invoice_request_item_matched_list item=purchase_invoice_request_item_matched name=purchase_invoice_request_item_matched}
+        <tr>
+            <td align="center">
+                <input type="checkbox" name="index[]" value="{$smarty.foreach.purchase_invoice_request_item_matched.iteration}"/>
+                {if $purchase_invoice_request->typeId == 'ORIGINAL'}
+                	<input type="hidden" name="purchase_invoice_request_item_id_{$smarty.foreach.purchase_invoice_request_item_matched.iteration}" value="{$purchase_invoice_request_item_matched->purchaseInvoiceRequestItemId}"/>
+                {elseif $purchase_invoice_request->typeId == 'AVERAGE'}
+                	<input type="hidden" name="product_id_{$smarty.foreach.purchase_invoice_request_item_matched.iteration}" value="{$purchase_invoice_request_item_matched->productId}"/>
+                	{if $purchase_invoice_request_item_matched->returnInventoryTransactionId}
+                        <input type="hidden" name="purchase_invoice_request_item_id_{$smarty.foreach.purchase_invoice_request_item_matched.iteration}" value="{$purchase_invoice_request_item_matched->purchaseInvoiceRequestItemId}" />
+                	{/if}
+                {/if}
+            </td>
+            <td align="center">
+                <p>
+                	{if count($purchase_invoice_request_item_matched->match) == 1}
+                    	{$purchase_invoice_request_item_matched->match->purchaseInvoiceItem->purchaseInvoice->invoiceNo}
+                    {elseif count($purchase_invoice_request_item_matched->match) > 1}
+                    	{foreach from=$purchase_invoice_request_item_matched->match item=pii}
+                        	{$pii->purchaseInvoiceItem->purchaseInvoice->invoiceNo}<br/>
+                        {/foreach}
+                    {/if}
+                </p>
+            </td>
+            <td align="center">{$purchase_invoice_request_item_matched->product_map.goods_id}#{$purchase_invoice_request_item_matched->product_map.style_id}</td>
+            <td>
+            	{$purchase_invoice_request_item_matched->product_map.goods_name}
+              {if $purchase_invoice_request_item_matched->returnInventoryTransactionId && $purchase_invoice_request_item_matched->returnInventoryTransactionId->inventoryTransactionId}
+              <span style="color:red;">(gt调整)</span>
+              {elseif $purchase_invoice_request_item_matched->returnInventoryTransactionId && !$purchase_invoice_request_item_matched->returnInventoryTransactionId->inventoryTransactionId}
+              <span style="color:red;">(跨期gt调整)</span>
+              {/if}
+						</td>
+            <td align="center">{$purchase_invoice_request_item_matched->quantity}</td>
+            <td align="right">￥{$purchase_invoice_request_item_matched->unitNetCost|invoice_price_format}</td>
+            <td align="right">￥{$purchase_invoice_request_item_matched->unitCost|invoice_price_format}</td>
+            <td align="right">￥{$purchase_invoice_request_item_matched->unitNetCost*$purchase_invoice_request_item_matched->quantity|invoice_price_format}</td>
+            <td align="right">￥{$purchase_invoice_request_item_matched->unitCost*$purchase_invoice_request_item_matched->quantity|invoice_price_format}</td>
+        </tr>
+    {/foreach}
+</table>
+<p>
+  <input type="button" value="全选" onclick="select_all_checkbox('index[]', 'checked')" />
+  <input type="button" value="反选" onclick="anti_checkbox('index[]')" />
+  <input type="submit" value="删除发票关联" />
+</p>
+
+<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}"/>
+<input type="hidden" name="action" value="purchase_invoice_request_item_matched_delete" />
+<input type="hidden" name="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}" />
+<input type="hidden" name="purchase_invoice_request_type_id" value="{$purchase_invoice_request->typeId}" />
+</form>
+
+</body>
+</html>

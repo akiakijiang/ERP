@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>淘宝退款列表</title>
+	<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../misc/jquery.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝退款列表&nbsp;</span></legend>
+  <div style="clear:both;"> 
+    <form method="POST" >
+    <table >
+    <tr>
+    <!--<td>搜索：<input type="text" name="goods_name" value="{$smarty.request.goods_name}" /></td>-->
+    <td>状态：
+    <select name="status">
+        {html_options options=$status_list selected=$smarty.request.status }
+        <option value="ALL">不选</option>
+    </select>
+    </td>
+    <td>
+    商店名：
+    <select name="application_key" >
+      <option value="ALL">不选</option>
+      {html_options options=$application_nicks selected=$smarty.request.application_key }
+    </select>
+    </td>
+    <td>
+    <input type="hidden" name="act" value="search" />
+    <input type="submit" value="搜索" />
+    </td>
+    </tr>
+    </table>
+    </form>
+    </div>
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">淘宝退款列表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="goods_list_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th>商店名</th>
+          <th>淘宝退款id</th>
+          <th>订单号</th>
+          <th>淘宝订单号</th>
+          <th>退款商品</th>
+          <th>总金额</th>
+          <th>退款</th>
+          <th>买家</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+        
+        <!--{foreach from=$taobao_refund_list item=taobao_refund name="taobaoRefundList"}-->
+        <form method="POST" >
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td>{$smarty.foreach.taobaoRefundList.iteration}</td>
+          <td>{$taobao_refund.nick}</td>
+          <td>{$taobao_refund.refund_id}</td>
+          <td><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$taobao_refund.order_id}" target="_blank">
+            {$taobao_refund.order_sn}
+            </a>
+          </td>
+          <td><a href="http://trade.taobao.com/trade/detail/trade_item_detail.htm?biz_order_id={$taobao_refund.tid}" target="_blank">
+            {$taobao_refund.tid}
+            </a>
+          </td>
+          <td>{$taobao_refund.title}</td>
+          <td>{$taobao_refund.original_order_amount}</td>
+          <td>{$taobao_refund.refund_fee}</td>
+          <td>{$taobao_refund.buyer_nick}</td>
+          <td>{$status_list[$taobao_refund.status]}</td>
+          <td>{if $taobao_refund.romeo_refund_id}已有退款记录，退款id:{$taobao_refund.romeo_refund_id}{else}
+            {if $taobao_refund.original_order_amount eq ($taobao_refund.total_refund + $taobao_refund.refund_fee)
+                && !($taobao_refund.order_status eq 2 || $taobao_refund.order_status eq 4)}
+            订单全额退款，请取消/拒收原订单
+            {elseif !($taobao_refund.order_status eq 2 || $taobao_refund.order_status eq 4)
+                && $taobao_refund.original_order_amount 
+                neq ($taobao_refund.order_amount + $taobao_refund.total_refund + $taobao_refund.refund_fee)}
+            退款金额加订单金额不等于退款前订单总金额
+            {else}
+            <a href="{$WEB_ROOT}admin/refund_apply.php?order_id={$taobao_refund.order_id}&type=REFUND_TAOBAO&taobao_refund_id={$taobao_refund.taobao_refund_id}" target="_blank" >申请退款</a>
+            {/if}
+            {/if}
+          </td>
+        </tr>
+        </form>
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+  </div>
+  
+</fieldset>
+</body>
+</html>

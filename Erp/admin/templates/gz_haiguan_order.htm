@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>广州海关订单上传监控</title>
+  	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+  	<script type="text/javascript" src="misc/jquery.js"></script>
+  	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script> 
+  	 
+
+  	  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+			color: #888;
+		}
+	.require {
+			color: #F00;
+		}
+	.loading {
+			background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+		}
+	.strik {
+	        background-color: #ECEE9F;
+	    }
+	.cal{
+	 	border: 1px solid gray;
+	 	color: white;
+
+	 }
+	 .search{
+	 	border: 1px solid ;
+
+
+	 }
+	 .time{
+	 	width: 89px;
+	 }
+	 .sel{
+	 	width: 132px;
+	 }
+	 .list:nth-child(2n+1){
+	 	background-color: rgba(192,192,192,0.3);
+	 }
+
+/*	 a{
+	 	color: red;
+	 }
+	 a:visited{
+	 	color: black;
+	 }
+*/	<!--{/literal}-->
+	</style>	
+	<script type="text/javascript">
+	// <![CDATA[
+	var WEB_ROOT = '{$WEB_ROOT}';
+
+	// {literal}
+	/**
+	 * 提交检查
+	 */
+	function check_submit(node)
+	{
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		console.log(item);
+		if (!item || item==undefined || item.length<1) {
+			alert('没有选中项');
+			return false;
+		}
+		$('#form').submit();
+		$('input[name="checked[]"]:checked').parent().parent().remove();
+
+	}
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = true;
+		});
+	}
+	/**
+	*清空
+	*/
+	function select_none(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = false;
+		});
+	}
+	/**
+	 * 反选
+	 */
+	function select_reverse(node)
+	{
+		node = node ? node : document ;
+		$(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+	/**
+	 * 搜索栏 
+	 */
+	$(function(){ 
+		var order_status_='{$order_status}';
+		//  设置权限
+		var order_status_=$('#order_status').val();
+		if(order_status_=='order_retro' || order_status_ == ''){
+			$('.err_show').hide();
+		}
+		if(order_status_=='order_success'){
+			$('.err_show').hide();
+			//$('.err_show2').hide();
+			$('.close').hide();
+		}
+		if(order_status_!=='order_success' ){
+			$('.close').hide();
+		}
+
+	}); 
+	/**
+	 * 单个提交订单状态回退
+	 */
+	function status_back(obj)
+	{      
+				$(obj).attr("disabled",true);
+				// console.log(event.target);
+		        var order_sn= $(obj).closest('tr.list').find('.check').attr('value')
+		        var taobao_order_sn= $(obj).closest('tr.list').find('.check2').attr('value');
+		        $.ajax({
+		            type: 'post',
+	         	   	url: WEB_ROOT +'admin/gz_haiguan_order.php?act=retro_order',  
+		            data: {
+		                'order_sn': order_sn,
+		              	'taobao_order_sn':taobao_order_sn,
+		            },
+		        	dataType:'json',
+		            success: function(data) { 
+		                alert('成功！');
+		        		$(obj).closest('tr.list').remove();
+		            },
+					error:function(data){
+						alert("失败！");
+					}
+		             // $(this).resetForm(); // 提交后重置表单
+		        });
+		        return false;
+	}
+	/**
+	 * 时间判断
+	 */
+	function formsubmit(){
+      	//var start_time= $("#start").val();
+        //    if(!checkDateTime(start_time)){
+        //      alert('输入开始时间格式要正确。。。');
+        //      return false;
+        //    }
+         // s_time = s_time.replace(/[-,:,\s]/g, '');
+         // e_time =  e_time.replace(/[-,:,\s]/g, '');
+    }
+        //时间格式检查
+    function checkDateTime(str){
+      var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/);
+      if(r == null){
+        return false;
+      }else{
+        return true;
+      }
+    }
+
+ function padZero(number) {
+    if (number < 10) {
+        number = "0" + number;
+    }
+    return number;
+}
+
+function unixtime2YYMMDD(unixtime) {
+    var milliseconds = unixtime * 1000,
+        dateObject = new Date(milliseconds),
+        temp = [];
+    temp.push(dateObject.getUTCFullYear().toString().slice(0));
+    temp.push(padZero(dateObject.getUTCMonth() + 1));
+    temp.push(padZero(dateObject.getUTCDate()));
+
+    return temp.join("-");
+}
+
+	// {/literal}
+	// ]]>
+	</script>
+	
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend>
+		<span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;广州海关订单上传监控&nbsp;</span>
+	</legend> 
+	<div style="clear:both;"> 
+	    <h3 style="color:#09F;">查询</h3> 
+		<form method="get" onsubmit="return formsubmit()">
+		  	<table>
+		        <tr>
+		        	<td>&nbsp;&nbsp;订单号:</td>
+		          	<td>
+		          		<input type="text" name="order_sn" value="{$smarty.request.order_sn}" id="order_sn"/>
+		          	</td>
+		          	<td>&nbsp;&nbsp;推送状态:</td>
+			        <td>
+			            <select name="order_status" id="order_status">
+			            {html_options options=$order_status_list selected=$smarty.request.order_status}
+			            </select> 
+			        </td>
+			      	<td>&nbsp;&nbsp;错误信息:</td>
+			        <td>
+			            <input type="text" id="err_message" name="err_message" value='{$smarty.request.err_message}'>
+			        </td>
+		      	</tr>
+		        <tr>
+		          	<td width="200">&nbsp;&nbsp;订单创建开始时间:</td>
+		          	<td>
+		              	<input type="text" id="start" name="start" value="{$smarty.request.start}" size="10" class="time"/>
+		              	<input type="button" id="startTrigger" value="日历" class="cal" /> 
+		          	</td>
+		           	<td width="100">&nbsp;&nbsp;结束时间:</td>
+		          	<td>
+		              	<input type="text" id="end" name="ended" value="{$smarty.request.ended}" size="10" class="time"/>
+		              	<input type="button" id="endTrigger" value="日历" class="cal" />
+		          	</td>
+		          	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		          		<input type="submit" value="查询" class="search"/>
+			            <input type="hidden" name="act" value="search" />
+		          	</td>  
+		        </tr>
+			</table>
+		</form>
+	</div>
+ <div>
+	 <form method="post" id="form">
+	  	<h3 style="color:#09F;">订单列表</h3>
+      	<input class="back_button err_show" type="button" value="全选" onclick="select_all('#form');" /> &nbsp;&nbsp; 
+      	<input class="back_button err_show" type="button" value="清空" onclick="select_none('#form');" /> &nbsp;&nbsp;
+      	<input class="back_button err_show" type="button" value="反选" onclick="select_reverse('#form');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      	<table class="bWindow" style="margin-top:10px;">
+	        <tr style="background-color:#999999;color:white">          
+				<th class="cancel err_show">选择</th>
+	            <th>订单号</th>
+	            <th>店铺名称</th>
+	            <th>外部订单号</th>
+	            <th>上传报文名</th>
+	            <th>推送状态</th>
+	            <th>推送时间</th>
+	            <th class="err_show2">提示信息</th>
+	            <th class="cancel err_show">回退状态</th>
+	        </tr>    
+	        {foreach from=$result  item=order name=bigloop}
+	      	{if $smarty.foreach.bigloop.iteration == $result|@count}
+			{php}break;{/php}
+			{/if} 
+			<tr align="center" class="list">
+					<!-- 选择 -->
+					<td class="goods_table cancel err_show">
+						<input type="checkbox" name="checked[]" value="{$order.taobao_order_sn}" class="check2"/>
+						<input type="hidden" {if $order.order_sn} value="{$order.order_sn}" {/if} class="check" /> 
+						<input type="hidden" {if $order.application_key} value="{$order.application_key}" {/if} class="check4" /> 
+					</td>
+					<!-- 订单号 -->
+					<td><a href="order_edit.php?order_id={$order.order_id}" class="order_sn" target="_blank">{$order.order_sn}</a>
+			            <input type="hidden" value="{$order.kjg_order_id}" name="kjg_order_id" class="kjg_order_id"/>
+					</td>
+					<!-- 店铺名称 -->
+					<td class="shop_name">{if $order.nick}{$order.nick}{else}-{/if}</td>
+					<!-- 外部订单号 -->
+					<td class="">{if $order.taobao_order_sn}{$order.taobao_order_sn}{else}-{/if}</td>
+					<!-- 上传文件名 -->
+					<td class="">{if $order.file_name}{$order.file_name}{else}-{/if}</td>
+					<!-- 推送状态 -->
+					<td class="">{if $order.status eq 'SUCCESS'}推送成功{elseif $order.status eq 'RETRO'}回退待重推
+								{elseif $order.status eq 'ERROR'}推送失败{else}已推送{/if}</td>
+					<!-- 推送时间 -->
+					<td>{if $order.created_stamp}{$order.created_stamp}{else}-{/if}</td>
+					<!-- 错误信息 -->
+					<td class="err_show2">{if $order.err_message}{$order.err_message}{else}-{/if}</td>
+				  	<!-- 状态回退 -->
+				  	<td class="cancel err_show">
+			            <input type="button" value="回退状态" onclick="status_back(this)" class="button"/>
+				  	</td> 
+			</tr>
+			{/foreach}
+			<tr>
+        		<td colspan="11" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        	</tr>
+      	</table>
+      	<br/>
+      	<div style="margin-top:10px; clear:both;"> 
+        	<input class='back_button err_show' type="button" value="回退选中订单推送状态" onclick="check_submit('#form')" />
+        	<input type="hidden" name="act" value="batch_retro_order" />
+      	</div>
+    </form>
+  </div>
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+// var nowtime = Date.parse(new Date());
+// var oldtime = nowtime/1000-604800;//一周前
+// var start_time=unixtime2YYMMDD(oldtime);
+// if ($('#start').val()==null||$('#start').val()=='') {
+// $('#start').val(start_time);
+// };
+
+
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

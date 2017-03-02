@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>外包订单打标结果查询</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+
+<!-- Calendar -->
+<link rel="stylesheet" type="text/css" href="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.js"></script>
+<!-- Calendar /-->
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+var property={
+    divId:"demo",
+    needTime:true,
+    yearRange:[1970,2030],
+    week:['日','一','二','三','四','五','六'],
+    month:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+    format:"yyyy-MM-dd hh:mm:ss",
+};
+$(document).ready(function(){
+    canva1=$.createGooCalendar("start",property);
+    canva2=$.createGooCalendar("end",property);
+    var indicate_type = $("#indicate_type").val();
+	$("select[name='info[indicate_type]'] option[value='" + indicate_type + "']").attr("selected", true);
+	
+	var indicate_status = $("#indicate_status").val();
+	$("select[name='info[indicate_status]'] option[value='" + indicate_status + "']").attr("selected", true);
+	
+	var searchType = $("#searchType").val();
+	$("select[name='searchType'] option[value='" + searchType + "']").attr("selected", true);
+	
+	var timeType = $("#timeType").val();
+	$("select[name='timeType'] option[value='" + timeType + "']").attr("selected", true);
+	
+	$("#start").val($("#hidStart").val());
+	$("#end").val($("#hidEnd").val());
+	
+	/**
+	 * 商家编码搜索
+	 */
+	$('#outer_id').autocomplete('out_ship_order.php?request=ajax&act=search_outer_id', {
+	    dataType : 'json',
+	    minChars: 0,
+	    mustMatch: false,
+	    formatItem : function(row, i, max, value, term) {
+	        return(row.outer_id);
+	    },
+	    formatResult : function(row) {
+	        return(row.outer_id);
+	    }
+	}).result(function(event, row, formatted) {
+		$('#outer_id_hidden').val(row.outer_id);
+	});
+	
+});
+
+
+
+
+//{/literal}
+//]]>
+</script>
+
+</head>
+
+<body>
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+
+<!-- 指示 -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;外包订单打标结果查询&nbsp;</span></legend>
+     {if $search_message}
+         <b>{$search_message}</b>
+     {/if}    
+
+	<div class="menu-tab">
+	<div class="right-edge">&nbsp;</div>
+	<div class="active"><a href="out_ship_order.php?act=showTask">结果查询</a></div>
+	<div class="item"><a href="out_ship_order.php">打标操作</a></div>
+	<div class="left-edge">&nbsp;</div>
+	</div>
+	<div style="overflow:hidden;width:100%;">
+	<div id="search_task" style="float:left;">
+	<form id="search_task" method="post">
+	<p>
+	订单时间：
+		从&nbsp;<input type="text" value="" id="start" name="start" size="18" value="{$start}"></input>&nbsp;
+		到&nbsp;<input type="text" value="" id="end" name="end" size="18" value="{$end}"></input>&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="hidden" id="hidStart" value="{$start}"></input>
+		<input type="hidden" id="hidEnd" value="{$end}"></input>	
+	商家编码：
+		<input type="text" name="outer_id" id="outer_id" value="{$outer_id}">
+		&nbsp;&nbsp;&nbsp;&nbsp;	
+	仓库：
+		<select name="facility_id" id="facility_id">
+		{foreach from=$facility_list key=key item=facility}
+			<option value="{$key}" {if $facility_id eq $key}selected="selected"{/if}>{$facility}</option>
+		{/foreach}
+		<!-- <option value=-1 {if $facility_id eq -1}selected="selected"{/if}>--全部--</option> -->
+	</select>&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="hidden" name="act" value="search_task" />
+		<input type="submit" value="筛选"></input>
+	</p>
+	</form>
+	</div>
+	<!-- <div id="batch_export" style="float:right;position:relative;top:12px;">
+	<form id="batch_export" method="post">       
+		<input type="hidden" id="hidStart" name="start" value="{$start}" />
+		<input type="hidden" id="hidEnd" name="end" value="{$end}" />
+		<input type="hidden" name="outer_id" id="outer_id" value="{$outer_id}">
+		
+		<input type="hidden" name="act" value="batch_export" />	
+		<input type="submit" value="批量导出"> 
+	</form>
+	</div>-->
+	</div>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center" bgcolor="#62B4E8" style="color: white;">
+              <td>任务ID</td>
+              <td>仓库</td>
+              <td>快递方式</td>
+              <td>商家编码</td>
+              <td>商品名称</td>
+              <!-- <td>订单商品数量</td> -->
+              <td>订单开始时间</td>
+              <td>订单结束时间</td>
+              <td>设置打标订单数量</td>
+              <td>完成打标订单数量</td>
+              <td>状态</td>
+              <td>打标人</td>
+              <td>创建时间</td>
+              <td>最后修改时间</td>
+              <td>导出打标订单</td>
+          </tr>
+          {foreach from=$list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$result.task_id}</td>
+              <td>{$result.facility_name}</td>
+              <td>{$result.shipping_name}</td>
+              <td>{$result.outer_id}</td>
+              <td>{$result.outer_goods_name}</td>
+             <!--  <td>{$result.goods_number}</td> -->
+              <td>{$result.start_time}</td>
+              <td>{$result.end_time}</td>
+              <td>{$result.out_ship_number}</td>
+              <td>{$result.marked_count}</td>
+              <td>{$result.status}</td>
+              <td>{$result.create_user}</td>
+              <td>{$result.create_time}</td>
+              <td>{$result.last_update_time}</td>
+              <td><a href="out_ship_order.php?act=export&task_id={$result.task_id}">导出</a></td>
+          </tr>
+          {/foreach}
+      </table>
+</fieldset>
+</body>
+</html>

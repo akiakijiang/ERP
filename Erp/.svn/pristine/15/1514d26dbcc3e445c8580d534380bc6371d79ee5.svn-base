@@ -1,0 +1,448 @@
+<!DOCTYPE>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>快递交接单查询</title>
+  	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+  	<script type="text/javascript" src="misc/jquery.js"></script>
+  	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+
+  	  <style type="text/css">
+	<!--{literal}-->
+	 .search{
+	 	border: 1px solid ;
+	 }
+	 .time{
+	 	width: 89px;
+	 }
+	 .sel{
+	 	width: 132px;
+	 }
+	 .list:nth-child(2n+1){
+	 	background-color: rgba(192,192,192,0.3);
+	 }
+	 .order{
+	 	width: 100%;
+	 }
+	 .search_button{
+	 	width: 90px;
+	 	border: 1px solid  #999;
+	 	background-color: #3295DD;
+	 	color: white;
+	 	margin-left: 12px;
+	 }
+	 #print_button{
+	 	text-decoration: none;
+	 	color: black;
+	 	border: 1px solid rgb(192,192,192);
+	 	padding: 5px 10px;
+	 	border-radius: 4px;
+	 	box-shadow: 1px 1px 1px rgb(192,192,192);
+	 }
+	 .print_head{
+	 	font-weight: bold;
+	 }
+	 .tracking{
+	 	width: 15%;	 	
+	 	text-align: center;
+	 }
+	 .pallet{	 
+	 	line-height: 15px;
+	 }
+	 .head_title{
+	 	margin: 15px auto;
+	 	position: relative;
+	 	text-align: center;
+	 	line-height: 30px;
+	 }
+	 #print_foot_left{	
+	 	position: relative;
+	 	float: left;
+	 	display: inline-block;
+	 }
+	 #print_foot_right{
+	 	position: relative;
+	 	float: right;
+	 	margin-right: 80px;
+	 	display: inline-block;
+	 }
+	 .footer{
+	 	height: 30px;
+	 	line-height: 30px;
+	 }
+<!--{/literal}-->
+	</style>	
+	<script type="text/javascript">
+	// <![CDATA[
+	var WEB_ROOT = '{$WEB_ROOT}';
+	// {literal}
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = true;
+		});
+	}
+	/**
+	*清空
+	*/
+	function select_none(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = false;
+		});
+	}
+	/**
+	 * 反选
+	 */
+	function select_reverse(node)
+	{
+		node = node ? node : document ;
+		$(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+	/**
+	 * 码托条码输入
+	 */
+	$(function(){ 
+		$('#tray_barcode').bind('click', listen_tray_barcode);
+        $('#tray_barcode').bind('keyup', listen_tray_barcode).focus();  
+	}); 
+
+	var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+    /**
+     * 码托条码监听
+     */
+    function listen_tray_barcode(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                event.preventDefault();
+                break;
+        }
+    }
+    /**
+     * 载入码托条码信息
+     */
+    function load_shipment_id() 
+    {
+        var tray_barcode = $.trim($('#tray_barcode').val());
+        if (tray_barcode == '') {
+            // alert('请先输入发货单号');
+            return; 
+        }
+    }
+    // 时间检查
+	function formsubmit(){
+		var dst = $('#delivery_start_time').val();//发货开始时间
+		var det = $('#delivery_end_time').val();//发货结束时间
+		var shipping=$('#shipping').val();//快递方式
+		if(det==''||dst==''){
+			alert('请选择时间范围');
+			return false;
+		}else if (time(dst,det)=='err_time') {
+		          alert('输入的时间格式要正确~');
+		          return false;
+      	}else if(time(dst,det)=='false'){
+    			alert('结束时间不能小于开始时间');
+    			return false;
+      	}else if(shipping==""||shipping==null||shipping==undefined){
+      		alert('请选择快递方式!');
+      		return false;
+      	}
+    }
+    //时间格式检查
+    function checkDateTime(str){
+      var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/);
+      if(r == null){
+        return false;
+      }else{
+        return true;
+      }
+    }	
+    /**
+	 * 时间判断
+	 */
+    function time(start_time,end_time){
+    	if (start_time!=='') {
+    		if(!checkDateTime(start_time)){
+		          return 'err_time';
+            }
+    	};
+    	if (end_time!=='') {
+    		if(!checkDateTime(end_time)){
+		          return 'err_time';
+            }
+    	};
+    	if(start_time!==''&&end_time!==''){
+    		if (start_time>=end_time) {
+		        	return 'false';
+	    		};
+    	}
+
+    }
+
+// 部分打印
+function printme(){
+	 		var pallet_no=[];//存放码托条码
+	 		var shipping_type='';//存放快递方式
+	 		var total=0;//存储快递单总数
+	 		var tracking_number = [];//获取所有快递单号码
+	 		var item='';
+	 		var print=$("input[name='checked[]']:checked").attr("checked");
+
+	 		if(!print || print==undefined || print.length<1){	
+	 			alert('请至少选择一项来打印');
+	 		}else{
+	 			var i=0;
+	 			 $("input[name='checked[]']:checked").each(function(){ 
+	                if($(this).attr("checked")){
+	                    pallet_no.push($(this).val());
+	                    item += $(this).val()+",";
+	                    shipping_type = $(this).parent().siblings('.shipping_type').text();
+	                    total += Number($(this).parent().siblings('.total_tracking').text());
+	                }
+
+	            });
+				console.log(pallet_no);
+	            $('#total').text(total).addClass('print_head');
+	            $('#shipping_type').text(shipping_type).addClass('print_head');
+	            $('#div1').show();
+	            for(var i=0;i<pallet_no.length;i++){
+	            	console.log('#'+pallet_no[i]);
+	            	$('#'+pallet_no[i]).show();
+	            	$('#'+pallet_no[i]).children().show();
+	            	$('#'+pallet_no[i]).children().css('display','inline-block');
+	            }
+	            var time = getDay();
+				$('#print_time').text(time);
+				var size = 0;
+				size = $('.tracking_item').size();
+	            $('.tracking_item').each(function(index,element){
+	            	if((index+1) % 330 == 0){//正常情况下一行6个，一页60行，此处设置为55行
+	             		$(this).after('<p class="footer"><span id="print_foot_left">仓库发货人：</span>'+'<span id="print_foot_right">揽件人：</span></p><div style="page-break-after: always;"></div><h1 class="head_title">快递交接单</h1>'+
+	 '<p>快递方式：<span class="print_head">'+shipping_type+'</span>&nbsp;&nbsp;面单总数：<span class="print_head">'+total+'</span>'+'&nbsp;&nbsp;发货日期：<span class="print_head">'+time+'</span></p>'); 
+	            	}
+	            });
+	        	document.body.innerHTML=document.getElementById('print_div').innerHTML;
+				window.print();
+				document.location.reload();
+
+		 		}
+	}
+
+ function padZero(number) {
+    if (number < 10) {
+        number = "0" + number;
+    }
+    return number;
+	}
+function unixtime2YYMMDD(unixtime) {
+    var milliseconds = unixtime * 1000,
+        dateObject = new Date(milliseconds),
+        temp = [];
+    temp.push(dateObject.getUTCFullYear().toString().slice(0));
+    temp.push(padZero(dateObject.getUTCMonth() + 1));
+    temp.push(padZero(dateObject.getUTCDate()));
+
+    return temp.join("-");
+}
+// 获取当天时间
+function getDay(){
+	var nowtime = Date.parse(new Date());
+	var today = nowtime/1000;//当天
+	var start_time=unixtime2YYMMDD(today);
+	return start_time;
+};
+// 获取第二天时间
+function getNextDay(){
+        d = new Date();
+        d = +d + 1000*60*60*24;
+        d = new Date(d);
+        return d.getFullYear()+"-"+padZero((d.getMonth()+1))+"-"+padZero(d.getDate());
+ }
+
+	// {/literal}
+	// ]]>
+	</script>
+	
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+<!-- 需要打印的部分 -->
+<div id="print_div" hidden>
+	<!-- {$result[0].shipping_id} -->
+	<h1 class="head_title">快递交接单</h1>
+	<p>快递方式：<span id="shipping_type" class="print_head"></span>&nbsp;&nbsp;面单总数：<span id="total" class="print_head"></span>&nbsp;&nbsp;发货日期：<span id="print_time" class="print_head"></span></p>
+	{foreach from=$result  item=order}
+		<span class="pallet" id="{$order.pallet_no}" hidden><!-- {$order.pallet_no} -->
+		{foreach from=$order.tracking_number  item=tracking}
+			<span style="color:black;" class="tracking tracking_item">{$tracking}</span>
+		{/foreach}
+		</span>
+	{/foreach}
+	<p class="footer"><span id="print_foot_left">仓库发货人：</span><span id="print_foot_right">揽件人：</span></p>
+</div>
+<!-- 不需要打印的地方 -->
+<div class="noprint"> 
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend>
+		<span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;快递交接单查询&nbsp;</span>
+	</legend> 
+	<div style="clear:both;"> 
+	    <h3 style="color:#09F;">查询</h3> 
+		<form method="get" id="form" onsubmit="return formsubmit()">
+		  	<table>
+		        <tr>
+		          	<td>&nbsp;&nbsp;快递方式:</td>
+			          <td>
+	               		<select id="shipping" name="shipping_id">
+	                       {foreach from=$shipping_list item=item name=name}
+				           <option value="{$item.shipping_id}" {if $smarty.request.shipping_id == $item.shipping_id}selected="selected"{/if}>
+				            {$item.shipping_name}
+				           </option>
+				           {/foreach}
+	                  </select>
+	                </td>
+		      	</tr>
+		      	<tr>
+		          	<td>&nbsp;&nbsp;&nbsp;物理仓:&nbsp;</td>
+			          <td>
+	               		<select id="physical_facility" name="physical_facility">
+	                       {foreach from=$physical_facility_list item=physical_facility_name}
+				           <option value="{$physical_facility_name}" {if $smarty.request.physical_facility == $physical_facility_name}selected="selected"{/if}>
+				            {$physical_facility_name}
+				           </option>
+				           {/foreach}
+	                  </select>
+	                </td>
+		      	</tr>
+		        <tr>
+		          	<td width="100">&nbsp;&nbsp;发货时间:</td>
+		          	<td>
+		              	<input type="text" id="delivery_start_time" name="delivery_start_time" value="{$smarty.request.delivery_start_time}" size="10" class="time"/>
+		              	&nbsp;-&nbsp;<input type="text" id="delivery_end_time" name="delivery_end_time" value="{$smarty.request.delivery_end_time}" size="10" class="time"/>
+		          	</td>
+		        </tr>
+		        <tr>
+		        	<td>&nbsp;&nbsp;码托条码:</td>
+		          	<td>
+		          		<input class="order" type="text" name="tray_barcode" value="{$smarty.request.order_sn}" id="tray_barcode"/>
+		          	</td>
+		          	<td>
+		          		<input class="search_button search" type="submit" value="查询"  />
+			            <input type="hidden" name="act" value="search" />
+		          	</td>  
+		        </tr>
+			</table>
+		</form>
+	</div>
+
+ <div>
+ 	<!-- {debug} -->
+ {if $result.display!=='hide'}
+	 <form  id="form_table">
+	  	<h3 style="color:#09F;">订单列表</h3>
+      	<input type="button" value="全选" onclick="select_all('#form_table');" /> &nbsp;&nbsp; 
+      	<input type="button" value="清空" onclick="select_none('#form_table');" /> &nbsp;&nbsp;
+      	<input type="button" value="反选" onclick="select_reverse('#form_table');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      	<table class="bWindow" style="margin-top:10px;">
+	        <tr style="background-color:#999999;color:white">          
+				<th class="cancel">选择</th>
+	            <th>码托条码</th>
+	            <th>快递方式</th>
+	            <th>物理仓</th>
+	            <th>快递单总数</th>
+	            <th>发货时间</th>
+	        </tr>
+	       	{foreach from=$result  item=order}
+			<tr align="center" class="list">
+					<!-- 选择 -->
+					<td class="goods_table cancel err_show">
+						<input type="checkbox" name="checked[]" value="{$order.pallet_no}" class="check"/>
+					</td>
+					<!-- 码托条码 -->
+					<td class="pallet_no">{$order.pallet_no}</td>
+					<!-- 快递方式 -->
+					<td class="shipping_type">{if $order.shipping_id}{$shipping_list[$order.shipping_id].shipping_name}{else}-{/if}</td>
+					<!-- 物理仓 -->
+					<td>{$order.physical_facility}</td>
+					<!-- 快递单总数 -->
+					<td class="total_tracking">{if $order.total_tracking}{$order.total_tracking}{else}-{/if}</td>
+					<!-- 快递单号 -->
+					<td style="display:none" class="tracking_number">
+						{foreach from=$order.tracking_number  item=tracking}
+							<p class="tracking">{$tracking}</p>
+						{/foreach}
+					</td>
+					<!-- 发货时间 -->
+					<td class="order_type">{if $order.shipped_time}{$order.shipped_time}{else}-{/if}</td>
+			</tr>
+			{/foreach}
+      	</table>
+      	<br/>
+      	<div style="margin-top:10px; clear:both;"> 
+      		<a href="javascript:printme()" target="_self" id="print_button">打印</a>
+      	</div>
+    </form>
+    {/if}
+  </div>
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+// 发货时间
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "delivery_start_time",
+	button            : "delivery_start_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "delivery_end_time",
+	button            : "delivery_end_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+var start_time = getDay();
+if ($('#delivery_start_time').val()==null||$('#delivery_start_time').val()=='') {
+$('#delivery_start_time').val(start_time);
+};
+var end_time = getNextDay();
+if ($('#delivery_end_time').val()==null||$('#delivery_end_time').val()=='') {
+$('#delivery_end_time').val(end_time);
+};
+
+// {/literal}
+// ]]>
+</script>
+</div>
+</body>
+</html>

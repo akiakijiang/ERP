@@ -1,0 +1,84 @@
+<!-- 寄回快递信息 -->
+<div class="action_class">
+  
+  <a href="#" class="back_express_a">退回快递信息</a>
+</div>
+{assign var="deliver_company" value=""}{assign var="deliver_number" value=""}{assign var="deliver_fee" value=""}
+         {foreach from=$service.return_info.carrier_info key=key item=item}
+         	{if $key == "快递公司"}{assign var="deliver_company" value=$item} {/if}
+         	{if $key == "快递单号"}{assign var="deliver_number" value=$item} {/if}
+         	{if $key == "快递费用"}{assign var="deliver_fee" value=$item} {/if}
+         {/foreach}
+<table cellpadding="0" cellspacing="0" is_amount='{if $back_amounts}1{else}0{/if}' class="back_express_info" style='width:99%;margin-top:0;'>
+	 <tr>
+        <th width='25%'>寄回的快递公司</th>
+        <th width='25%'>寄回的快递单号</th>
+        <th width='25%'>快递费用</th>
+        <th width='25%'>修改</th>
+     </tr>
+     <tr>
+         <td><input type="text" value="{$deliver_company}" name="deliver_company"/></td>
+         <td><input type="text" value="{$deliver_number}" name="deliver_number"/></td>
+         <td>
+             <input type="text" value="{$deliver_fee}" name="deliver_fee" style="width:60px;"/>
+             <select name="backfee_paiedby" style="width:70px;" />
+                 <option value="USER" {if $service.backfee_paiedby == "USER"}selected="selected"{/if}>用户付</option>
+                 <option value="WE" {if $service.backfee_paiedby == "WE"}selected="selected"{/if}>我们付</option>
+             </select>   
+         </td>
+         <td style="padding:5px;">
+             <input type="button" value="修改退回快递信息" onclick="edit_service_return(this);" class="button_1">
+             <input type="hidden" name="service_id" value="{$service.service_id}" />
+         </td>
+     </tr>
+
+</table>
+
+<script type='text/javascript'>
+{literal}
+	function edit_service_return(node){
+		if(!confirm('确定提交新的快递信息？')) return;
+		var inputNode = $(node);
+		
+		//获取数据
+		var trNode = inputNode.parent().parent();
+		var deliver_company = trNode.find("input[name='deliver_company']");
+		var deliver_number = trNode.find("input[name='deliver_number']");
+		var deliver_fee = trNode.find("input[name='deliver_fee']");
+		var backfee_paiedby = trNode.find("select[name='backfee_paiedby']");
+		var service_id = trNode.find("input[name='service_id']");
+		//判断运单号格式
+		var reg = /^\d*$/;
+		if(!reg.test(deliver_number.val())){
+			alert('运单号必须为数字');
+			return;
+		}
+		//提交前对按钮的变动
+		inputNode.attr('disabled',true);
+		inputNode.val('正在提交');
+		inputNode.attr('class','button_2');
+		
+		$.ajax({                                           
+			async : false,
+			type : 'POST',
+			data : {deliver_company : deliver_company.val(),
+					deliver_number : deliver_number.val(),
+					deliver_fee : deliver_fee.val(),
+					backfee_paiedby : backfee_paiedby.val(),
+					service_id : service_id.val()
+					},
+			url : "ajax.php?act=edit_service_return",
+			success : function(data){
+				alert('修改成功');
+			},
+			error : function(data){
+				alert('ajax请求失败');
+			}
+		});
+		inputNode.attr('disabled',false);
+		inputNode.val('修改退回快递信息');
+		inputNode.attr('class','button_1');
+		
+	}
+	{/literal}
+ </script>

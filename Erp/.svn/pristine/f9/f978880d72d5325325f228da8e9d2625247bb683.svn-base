@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <title>仓库退货登记</title>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+   <style type="text/css">
+ 	{literal}
+ 	.modal-wrap{
+	    width:100%;
+	    height: 100%;
+	    position: fixed;
+	    top: 0;
+	    left: 0;
+	    background-color: rgba(0,0,0,.5);
+	    z-index: 999;
+	    display: none;
+	}
+	.modal-content{
+	    margin:100px auto 0 auto;
+	    width: 450px;
+	    max-height:400px;
+		overflow:none;
+	    padding:20px 30px;
+	    position: relative;
+	}
+	.modal-close {
+	    font-size: 30px;
+	    width: 36px;
+	    height: 36px;
+	    display: block;
+	    position: fixed;
+	    top:100px;
+	    right:35%;
+	    cursor: pointer;
+	    z-index: -1;
+	}
+	.modal-table-content{
+		border: 1px solid rgba(0,0,0,0.5);
+		border-radius: 4px;
+		background-color: white;
+		padding: 10px 15px;
+	}
+	.modal-table-content span{
+		width: 65px;
+		margin-right: 10px;
+		display: inline-block;
+	}
+	.modal-table-content h3{
+		width: 100%;
+		text-align: center;
+	}
+	.search_form{
+		margin:20px auto;
+		width: 90%;
+	}
+	.title_less,.title_more{
+		display: inline-block;
+		padding-right: 10px;
+		text-align: right;
+	}
+	.title_less{width: 80px;}
+	.title_more{width: 115px;}
+	#record{
+		width: 100px;
+		padding: 10px;
+		line-height: 30px;
+		display: inline-block;
+	}
+ 	{/literal}	
+ 	</style>
+	<script type="text/javascript">
+	{literal}
+	$(document).ready(function(){
+		$(".modal-close").click(function(){
+			$(this).parents(".modal-wrap").hide();
+		});
+		$(".modal-wrap").click(function(event){
+			var target = $(event.target).attr("class");
+			if (target == "modal-wrap") {
+				 $(".modal-wrap").hide();
+			}
+		});
+	});
+	function add_register(){
+		var tracking_number =$('#tracking_number_add').val();
+		var sender_name = $('#sender_name_add').val();
+		var sender_phone = $('#sender_phone_add').val();
+		var service_type = $('#service_type_add').val();
+		var data = "act="+act+"&tracking_number="+tracking_number+"&sender_name="+sender_name+"&sender_phone="+sender_phone+"&service_type="+service_type;
+		$.ajax({
+			data : data,
+			dataType : 'json',
+			success : function(data){
+				if(data){
+					alert(data);
+					return;
+				}
+				alert("登记成功");
+				location.reload();
+			},
+			error : function(data){
+				alert('系统异常，登记失败');
+			}
+		});
+	}
+	function show_add(){
+		clear_all();
+		act = 'addRegister';
+		show_dia();
+	}
+	function clear_all(){
+		$('#tracking_number_add').val('');
+		$('#sender_name_add').val('');
+		$('#sender_phone_add').val('');
+		$('#service_type_add').val('');
+	}
+	function show_dia(){
+		$('.modal-table-content').parents(".modal-wrap").fadeIn();
+	}
+	function cancle(){
+		$('.modal-table-content').parents(".modal-wrap").fadeOut();
+	}
+	{/literal}
+	</script>
+		<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+	<div class="search_form">
+		<form action="warehouse_service.php" id="form" method="post">
+			<span class="title_less">快递单号:</span><input id="tracking_number" name="tracking_number" value="{$smarty.request.tracking_number}"> 
+			<span class="title_less">退货类型:</span><select name="service_type"> 
+				{html_options options=$service_type_all selected = $smarty.request.service_type}
+			</select> 
+			<span class="title_more">快递单号状态:</span><select name="service_status"> 
+			{html_options options=$service_status_all selected = $smarty.request.service_status}
+			</select> 
+			<br /><br /> 
+<!-- 			<td>
+		              	<input type="text" id="start" name="start" value="{$smarty.request.start}" size="10" class="time"/>
+		              	<input type="button" id="startTrigger" value="日历" class="cal" /> 
+		          	</td>
+		           
+		          	<td>
+		              	<input type="text" id="end" name="ended" value="{$smarty.request.ended}" size="10" class="time"/>
+		              	<input type="button" id="endTrigger" value="日历" class="cal" />
+ -->
+
+			<span class="title_less">登记时间:</span><input type="text" id="register_time_start" name="register_time_start" value="{$smarty.request.register_time_start}"> 
+				<input type="button" style="background-image: url(images/image/date.gif); width: 15px; border: 0px; height: 16px;"
+				id="startTrigger" />
+				 &nbsp;至&nbsp; 
+				 <input type="text"
+				style="height: 14px; width: 100px" id="register_time_end"
+				name="register_time_end" value="{$smarty.request.register_time_end}">
+					<input type="button"
+					style="background-image: url(images/image/date.gif); width: 15px; border: 0px; height: 16px;"
+					id="endTrigger" /> 
+					
+			<span class="title_less">登记人:</span><input id="registrant_name" name="registrant_name" value="{$smarty.request.registrant_name}">
+			&nbsp;&nbsp;<input type="submit" value="查询"> 
+			<input type="hidden" name="act" value="searchRegister" />
+		</form>
+		<!-- 退货登记 -->
+		<div style="width: 90%; text-align: right">
+			<input type="button" id="record" value="+退货登记" onclick="show_add()" />
+		</div>
+		<br />
+	</div>
+	<br />
+	<br /> 
+	{if $register_infos}
+	<table class="bWindow">
+		<thead>
+			<tr>
+				<th>编号</th>
+				<th>快递单号</th>
+				<th>状态</th>
+				<th>顾客姓名</th>
+				<th>联系方式</th>
+				<th>退货类型</th>
+				<th>登记人</th>
+				<th>登记时间</th>
+			</tr>
+			<tbody>
+				{foreach from=$register_infos key=key item=register_info}
+				<tr align="center" height="20px;"
+					id='{$register_info.warehouse_service_id}'>
+					<td>{$key+1}</td>
+					<td>
+					{if $register_info.warehouse_service_type == 'whole'}
+					<a href="whole_service.php?act=load&tracking_number={$register_info.tracking_number}">{$register_info.tracking_number}</a>
+					{else}
+					<a href="part_service.php?act=load&tracking_number={$register_info.tracking_number}">{$register_info.tracking_number}</a>
+					{/if}
+					</td>
+					<td>{if $register_info.warehouse_service_status=='INIT'}已登记
+						{elseif $register_info.warehouse_service_status=='REJECT'}已拒绝
+						{elseif $register_info.warehouse_service_status=='RECOVER'}已入库
+						{else}已验货{/if}</td>
+					<td>{$register_info.sender_name}</td>
+					<td>{$register_info.sender_phone}</td>
+					<td>{if $register_info.warehouse_service_type == 'whole'}原单退回{else}顾客自退{/if}</td>
+					<td>{$register_info.registrant_name}</td>
+					<td>{$register_info.register_time}</td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</thead>
+	</table>
+	{/if}
+
+<div class="modal-wrap">
+	<div class="modal-content">
+		<div class="modal-close">
+			<i class="fa fa-times"></i>
+		</div>
+		<div class="modal-table-content">
+			<h3>退货登记</h3>
+			<span>快递单号：</span><input type="text" id="tracking_number_add" style="width: 280px" /><br />
+			<br /> 
+			<span>寄件人：</span><input type="text" id="sender_name_add" style="width: 280px" /><br />
+			<br /> 
+			<span>联系方式：</span><input type="text" id="sender_phone_add" /><br />
+			<br /> 
+			<span>退货类型：</span> <select id="service_type_add"> 
+				{html_options options=$service_type_all selected = $smarty.request.service_type}
+			</select> <br />
+			<br />
+			<div align="center">
+				<input value="确认登记" type="button" class="btn btn-default" onclick="add_register()" /> 
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<input value="取消" class="btn btn-default" type="button" onclick="cancle()" />
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "register_time_start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "register_time_end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+// {/literal}
+// ]]>
+</script>
+</html>

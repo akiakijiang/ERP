@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>库存预定状态 - 商品视图</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+    
+    <style type="text/css">
+	{literal}
+		.menu-tab {
+			height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+		}
+		.menu-tab a{
+			color:#003;
+			text-decoration:none;
+		}
+		.menu-tab a:hover{
+			color:#903;
+			text-decoration:underline;
+		}
+		.menu-tab .right-edge{
+			float:right; border-bottom:#999 1px solid; width:30px;
+		}
+		.menu-tab .left-edge{
+			float:right; border-bottom:#999 1px solid; width:30px;
+		}
+		.menu-tab .item{
+			float:right; border-bottom:#999 1px solid; padding:0 10px;
+		}
+		.menu-tab .active{
+			float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+		}
+	{/literal}
+	</style>
+    
+	<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/thickbox.js"></script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;库存预定状态&nbsp;</span></legend>
+  
+  <div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+    <div class={if $filter.status=='N'}"active"{else}"item"{/if}><a href="{$url|add_param_in_url:"status":"N"}">缺货商品</a></div>
+    <div class={if $filter.status!='N'}"active"{else}"item"{/if}><a href="{$url|add_param_in_url:"status":"_"}">订单商品</a></div>
+  	<div class="item"><a href="{"inventory_reserved_order.php"|add_param_in_url:"size":$filter.size|add_param_in_url:"status":"Y"}">有货订单</a></div>
+  	<div class="item"><a href="{"inventory_reserved_order.php"|add_param_in_url:"size":$filter.size|add_param_in_url:"status":"N"}">缺货订单</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  <form method="get"> 
+  <div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      <table cellpadding="5" cellspacing="1">
+        <tr>
+          <td>每页显示</td>
+          <td>
+          	<select name="size">
+          	{html_options options=$page_size_list selected=$filter.size}
+            </select> 条记录
+          </td>
+        </tr>
+
+        <tr>
+          <td width="120">所处仓库</td>
+          <td>
+			<select name="facility_id"><option value="">- ALL</option>{html_options options=$facility_list selected=$filter.facility_id}</select>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" value="查询" />
+          </td>
+        </tr>        
+      </table>  
+
+      <input type="hidden" name="status" value="{$filter.status}" />
+      <input type="hidden" name="act" value="search" />
+  </div>
+  </form>
+  
+  
+  
+  {if $total > 0}
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">商品列表</h3>
+      <div style="float:right;"> 共有 <strong>{$total}</strong> 条记录 &nbsp;&nbsp;</div>
+
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="30">No.</th>
+          <th>商品名</th>
+          <th>G_S_ID</th>
+          <th>PRODUCT_ID</th>
+          <th>库存状态</th>
+          <th>实时库存</th>
+          <th>可预定量</th>
+          <th>订单数</th>
+          <th>已预定订单</th>
+          <th>缺货影响订单</th>
+        </tr>
+        
+        <!--{foreach from=$list item=goods name="goodsList"}-->
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$smarty.foreach.goodsList.iteration}</td>
+          <td>{$goods.goods_name}</td>
+          <td>{$goods.goods_id}#{$goods.style_id}</td>
+          <td>{$goods.PRODUCT_ID}</td>
+          <td>{$goods.statusName}</td>
+          <td>{$goods.stockQuantity}</td>
+          <td>{$goods.availableToReserved}</td>
+          <td>{$goods.orderTotal}</td>
+          <td>{$goods.orderReserved}</td>
+          <td><a href="inventory_reserved_stockout.php?product_id={$goods.PRODUCT_ID}&status_id={$goods.STATUS_ID}&keepThis=true&TB_iframe=true&height=400&width=810" class="thickbox" title="缺货影响订单 [{$goods.goods_name}]">{$goods.orderUnreserved}</a></td>
+        </tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+      
+	  {$pagination}
+  
+  </div>
+  <br />
+  
+  {else}
+  <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录</h4></div>
+  <br /><br />
+  {/if}
+  
+  <br /><br />
+</fieldset>
+
+</body>
+</html>

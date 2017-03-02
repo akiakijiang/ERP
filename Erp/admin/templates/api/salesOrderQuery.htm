@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>订单查询</title>
+<link href="../admin/styles/api.css" rel="stylesheet" type="text/css">
+<link href="../admin/misc/thickbox.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<script type="text/javascript" src="../admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../admin/misc/thickbox.js"></script>
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+
+$(document).ready(function(){
+		// 绑定滑动效果
+		$('legend.expand').bind('click', function(event){
+			$(this).next().slideToggle('normal');
+		});
+});
+
+// {/literal}
+// ]]>
+</script>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="../admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="../admin/js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+{include file="api/api.navigation.htm"}
+
+<div style="margin:20px auto; width:1300px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;订单查询&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+{if $message}
+<div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+{/if}
+
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;查询条件&nbsp;</legend>
+  		<div>
+      <form name="form" method="post">
+      <table class="inner">      
+        
+        <tr>
+          <td> &nbsp;承运商</td>
+          <td>
+            <select name="filter[shipping_id]">
+            	<option value="-1">-ALL</option>{html_options options=$shipping_list selected=$filter.shipping_id}
+						</select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td> &nbsp;状态组合</td>
+          <td>
+          	<select name="filter[order_status]">
+            	<option value="-1">-ALL [订单状态]</option>{html_options options=$order_status_list selected=$filter.order_status}
+						</select>  &nbsp;&nbsp;&nbsp;&nbsp;
+            <select name="filter[pay_status]">
+            	<option value="-1">-ALL [收款状态]</option>{html_options options=$pay_status_list selected=$filter.pay_status}
+            </select>  &nbsp;&nbsp;&nbsp;&nbsp;
+            <select name="filter[shipping_status]">
+            	<option value="-1">-ALL [发货状态]</option>{html_options options=$shipping_status_list selected=$filter.shipping_status}
+            </select>
+					</td>
+        </tr>
+    
+        <tr>
+          <td> &nbsp;收货人</td>
+          <td><input type="text" name="filter[consignee]" value="{$filter.consignee}" size="30" /></td>
+        </tr>
+        
+        <tr>
+          <td><select name="filter[time_field]" style="border:0;"><option value="order_time" {if $filter.time_field == 'order_time'}selected="selected"{/if}>下单时间</option><option value="shipping_time" {if $filter.time_field == 'shipping_time'}selected="selected"{/if}>发货时间</option></select></td>
+          <td>
+            <input type="text" id="start" name="filter[start]" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+            <input type="text" id="end" name="filter[end]" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td colspan="2" align="center">
+          	<input type="hidden" name="act" value="filter" />
+            <input type="submit" name="action" value="查询" /> &nbsp; &nbsp;  
+            {* &nbsp; &nbsp; <input type="submit" name="action" value="导出" {if !$order_list}disabled="disabled"{/if} /> *}
+          </td>
+        </tr>
+    
+      </table>
+      </form>
+  		</div>    
+  </fieldset>
+  
+
+<br /><br />
+<fieldset style="border:#FF7FFF 1px dashed;">
+<legend class="expand">&nbsp;订单列表&nbsp;</legend>
+<div>
+<div class="inner" style="text-align:right; padding-right:20px;">
+<form method="post">
+<strong>查询出记录 {$total} 条</strong> &nbsp; &nbsp; | &nbsp; &nbsp;
+模糊搜索 ：  <input type="text" name="filter[keywords]" value="{$filter.keywords}" size="40" /> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" value="查询" /> <input type="hidden" name="act" value="search" />
+</form>
+</div>
+      
+      
+<!--{if $order_list}--> {* 如果有订单数据 *}
+<table class="inner">
+    <tr align="center" class="th">
+        <th>订单号</th>
+        <th>收货人</th>
+        <th>订单金额</th>
+        <th>下单时间</th>
+        <th>订单商品</th>
+        <th>承运商</th>
+        <th>快递单号</th>
+        <th>订单状态</th>
+        <th>外部订单号</th>
+        <th width="62">操作</th>
+    </tr>
+        
+    {foreach from=$order_list item=order name="order"}
+    <tr align="center" class="{cycle values='odd,even'}">
+        <td><a href="salesOrderDetail.php?orderSn={$order.order_sn}&keepThis=true&TB_iframe=true&height=400&width=800" class="thickbox" title="订单详情[ {$order.order_sn} ]">{$order.order_sn}</a></td>
+        <td>{$order.consignee}</td>
+        <td>{$order.order_amount}</td>
+        <td>{$order.order_time}</td>
+        <td>
+        {foreach from=$order.goods_list item=order_goods}
+        <div>{$order_goods.goods_name} × {$order_goods.goods_number} 
+        单价：{$order_goods.goods_price}</div>
+        {/foreach}
+        </td>
+        <td>{$order.shipping_name}</td>
+        <td>{$order.bill_no}</td>
+        <td>
+        {$order_status_list[$order.order_status]}, 
+        {$pay_status_list[$order.pay_status]}, 
+        {$shipping_status_list[$order.shipping_status]}
+        </td>
+        <td style="text-align:left;">{$order.taobao_order_sn}</td>
+        <td>
+        </td>
+    </tr>
+    {/foreach}
+        
+</table>
+{$pagination}
+      
+<!--{else}--> 
+  
+			<div style="text-align:center"><h4>无相关数据</h4></div>
+  
+<!--{/if}-->
+
+  </div>
+	</fieldset>
+  <br />
+
+
+</div>
+</fieldset>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

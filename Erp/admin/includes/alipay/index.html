@@ -1,0 +1,103 @@
+<%@LANGUAGE="VBSCRIPT" CODEPAGE="936"%>
+<!--#include file="alipayconfig.asp"-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>支付宝在线支付</title>
+
+
+<style type="text/css">
+<!--
+body,td,th {
+	font-size: 12px;
+}
+.style4 {color: #000000}
+.unnamed1 {
+	border: 1px solid #EE6C02;
+}
+.style6 {color: #FF0000}
+.style8 {font-size: 14px}
+a:link {
+	color: #000000;
+}
+a:visited {
+	color: #000000;
+}
+a:hover {
+	color: #FF3300;
+}
+a:active {
+	color: #FF0000;
+}
+-->
+</style>
+</head>
+
+<body>
+<table width="513" border="0" align="center" class="unnamed1">
+  <tr>
+    <td width="236" height="30" rowspan="2" bgcolor="#FFFFFF"><img src="alipay/images/alipayb.gif" width="186" height="35"></td>
+    <td width="92" valign="middle" bgcolor="#FFFFFF"><div align="center"><a href="https://www.alipay.com/redir.do?id=115&site=bizcn&target=https://www.alipay.com/user/user_register.htm" target="_blank">免费注册会员 </a></div></td>
+    <td width="9" valign="middle" bgcolor="#FFFFFF" class="style8">|</td>
+    <td width="54" valign="middle" bgcolor="#FFFFFF"><a href="http://help.alipay.com/message/emailValid.htm" target="_blank">我要提问</a></td>
+    <td width="10" valign="middle" bgcolor="#FFFFFF"><span class="style8">|</span></td>
+    <td width="82" valign="middle" bgcolor="#FFFFFF"><a href="http://forum.alipay.com/index.htm" target="_blank">支付宝社区</a></td>
+    <td colspan="3" valign="middle" bgcolor="#FFFFFF">&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="15" colspan="2" valign="top" bgcolor="#FFFFFF">&nbsp;</td>
+    <td colspan="6" valign="top" bgcolor="#FFFFFF">&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="31" colspan="9" bgcolor="#FD750B"><img src="alipay/images/icon_menu_bg.gif" width="16" height="16"><span class="style8">支付宝在线支付</span></td>
+  </tr>
+  <tr>
+    <td height="81" colspan="9"><form name="form1" method="post" action="alipay.php">
+        <table width="483" border="0" align="center">
+          <tr>
+            <td width="121" height="18"><div align="right" class="style4">支付宝的交易号为:</div></td>
+            <td colspan="3"><input name="trade_no" type="text"  value="" size="25" maxlength="50" >
+                <span class="style6">* 不能为空</span></td>
+          </tr>
+          <tr>
+            <td height="18"><div align="right" class="style4">物流公司名称:</div></td>
+            <td colspan="3"><input name="logistics_name" type="text" id="logistics_name">
+                <span class="style6">*不能为空 </span></td>
+          </tr>
+          <tr>
+            <td height="19"><div align="right">物流发货单号:</div></td>
+            <td colspan="3"><input name="invoice_no" type="text" id="invoice_no" maxlength="100">
+                <span class="style6">* 不能为空</span></td>
+          </tr>
+          <tr>
+            <td height="18"><div align="right">运输类型：</div></td>
+            <td colspan="3"><label>
+              <input name="transport_type" type="text" id="transport_type" value=""  >
+              <span class="style6">* 不能为空,为POST, EXPRESS, EMS</span></label></td>
+          </tr>
+          <tr>
+            <td height="50">&nbsp;</td>
+            <td width="107"><label><br>
+              <input type="submit" name="Submit" value="确认发货">
+            </label></td>
+            <td width="66"><br><input type="reset" name="Submit2" value="重 置">
+            </td>
+            <td width="173"><a href="http://help.alipay.com/support/463-464/464.htm" target="_blank">如何冲值?</a> </td>
+          </tr>
+        </table>
+    </form></td>
+  </tr>
+  <tr valign="middle">
+    <td height="106" colspan="7"><div align="center">
+        <table width="479" height="41" border="0" align="center" class="unnamed1">
+          <tr>
+            <td width="471"><p align="center"><a href="https://www.alipay.com/redir.do?id=115&site=bizcn&target=https://www.alipay.com/user/user_register.htm"><img src="alipay/images/text_question01b.gif" width="470" height="88" border="0"></a></p>
+                <p align="right"><a href="http://lsmsc.com/alipay-damo.rar" class="style8">下载此接口模版</a></p></td>
+          </tr>
+        </table>
+    </div></td>
+  </tr>
+</table>
+</body>
+</html>

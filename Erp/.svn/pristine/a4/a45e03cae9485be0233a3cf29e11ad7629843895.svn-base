@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>库存同步预警页面设置</title>
+    <link href="../styles/default.css" rel="stylesheet" type="text/css" />
+ </head>
+ <body>
+ <div style="clear:both;"> 
+    <h4>|— 添加用户</h4>
+    <form method="post" id="group_user_form">
+  	<table cellpadding="5" cellspacing="1">
+    	
+    	<tr>
+	      	<td>用户名</td>
+	        <td>
+	        	<input type="text" name="item[userName]" id="userName" value="{$update.user_name}" size="30" />
+			</td>
+		</tr>
+       <tr>
+	      	<td>用户邮箱</td>
+	        <td>
+	        	<input type="text" name="item[userEmail]" id="userEmail" value="{$update.user_email}" size="50" />
+			</td>
+		</tr>
+        <tr>
+	      	<td>直(分)销</td>
+	        <td>
+	        	<select name="item[warningId]" id="warningId" >
+	        	{html_options options=$warning_list selected=$update.warning_id }
+				</select>
+			</td>
+		</tr>
+    	<tr>
+    		<td>&nbsp;</td>
+	        <td>
+	        	{if $update.party_assign_email_id}
+				<input type="hidden" name="item[party_assign_email_id]" value="{$update.party_assign_email_id}" />
+				<input type="hidden" name="act" value="update_users" />
+	        	<input type="submit" value="更新" />&nbsp;&nbsp;<font color='red'>{$message}</font>
+				{else}
+				<input type="hidden" name="act" value="add_users" />
+	        	<input type="submit" value="提交" />&nbsp;&nbsp;<font color='red'>{$message}</font>
+				{/if}
+			</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+  <fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;组织下所有用户&nbsp;</span>
+		</legend>
+		
+		<div style="clear: both;">
+
+			<table class="bWindow" style="margin-top: 10px;"
+				id="users_list_table">
+				<tr>
+					<th>用户名</th>
+					<th>用户邮箱</th>
+					<th>警报id</th>
+					<th>发送状态</th>
+					<th>创建时间</th>
+					<th>修改时间</th>
+					<th>操作人</th>
+					<th>修改</th>
+				</tr>
+				<!--  {if $user_names != null} -->
+				<!-- {foreach from=$user_names item=users name="userList"} -->
+				<tr align="center" class="{cycle values='odd,even'}" party_assign_email_id="{$users.party_assign_email_id}">
+					<td>{$users.user_name}</td>
+					<td>{$users.user_email}</td>
+					{if $users.warning_id == 0}
+					<td>直销</td>
+					{else}
+					<td>分销</td>
+					{/if}
+					<td>{$users.status}</td>
+					<td>{$users.create_time}</td>
+					<td>{$users.last_modify}</td>
+					<td>{$users.action_user}</td>
+					<td><a name="act" href="inventory_syn_warning.php?id={$users.party_assign_email_id}">修改</a></td>
+				</tr>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="9" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+			</table>
+
+			<br />
+		</div>
+
+	</fieldset>
+ </body>
+</html>

@@ -1,0 +1,4 @@
+订单号,淘宝订单号,订单时间,支付时间,确认时间,预定时间,发货时间,收货人,联系电话,支付方式,订单状态,所在仓库,发货单,快递状态,快递公司,重量,快递单号,店铺信息
+{foreach from=$refs_orders_a item=order}
+="{$order.order_sn}",="{$order.taobao_order_sn}",="{$order.order_time}",="{$order.pay_time}",="{$order.confirm_time}",="{$order.reserved_time}",="{$order.shipping_time}","{$order.consignee}",="{if $order.tel}{$order.tel}{elseif $order.mobile}{$order.mobile}{/if}","{$order.pay_name}","{$adminvars.order_status[$order.order_status]}{$adminvars.pay_status[$order.pay_status]}{$adminvars.shipping_status[$order.shipping_status]}",="{$order.facility_name}","{$order.shipment_id}","{$adminvars.shipping_data_status[$order.shipping_data_status]}","{$order.shipping_name}",="{$order.shipping_leqee_weight}",="{$order.tracking_number}",="{$order.distri_name}"
+{/foreach}

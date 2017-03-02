@@ -1,0 +1,224 @@
+<!-- $Id: shop_config.htm 8961 2007-05-29 06:46:54Z wj $ -->
+{include file="pageheader.htm"}
+{insert_scripts files="../js/utils.js,../js/region.js"}
+<div class="tab-div">
+  <!-- tab bar -->
+  <div id="tabbar-div">
+    <p>
+      {foreach from=$group_list item=group name="bar_group"}<span class="{if $smarty.foreach.bar_group.iteration eq 1}tab-front{else}tab-back{/if}" id="{$group.code}-tab">{$group.name}</span>{/foreach}
+    </p>
+  </div>
+  <!-- tab body -->
+  <div id="tabbody-div">
+    <form enctype="multipart/form-data" name="theForm" action="?act=post" method="post">
+    {foreach from=$group_list item=group name="body_group"}
+    <table width="90%" id="{$group.code}-table" {if $smarty.foreach.body_group.iteration neq 1}style="display:none"{/if}>
+      {foreach from=$group.vars item=var}
+      <tr>
+        <td class="label" valign="top">
+          {if $var.desc}
+          <a href="javascript:showNotice('notice{$var.code}');" title="{$lang.form_notice}"><img src="images/notice.gif" width="16" height="16" border="0" alt="{$lang.form_notice}" /></a>
+          {/if}
+          {if $group.code eq 'bjcomment_rejectreply'}<input name="name[{$var.id}]" type="text" value="{$var.name}" />{else}{$var.name}{/if}:
+        </td>
+        <td>
+          {if $var.type eq "text"}
+          <input name="value[{$var.id}]" type="text" value="{$var.value}" size="40" />
+
+          {elseif $var.type eq "password"}
+          <input name="value[{$var.id}]" type="password" value="{$var.value}" size="40" />
+
+          {elseif $var.type eq "textarea"}
+          <textarea name="value[{$var.id}]" cols="40" rows="5">{$var.value}</textarea>
+
+          {elseif $var.type eq "select"}
+            {foreach from=$var.store_options key=key item=opt}
+            <label for="value_{$var.id}_{$key}"><input type="radio" name="value[{$var.id}]" id="value_{$var.id}_{$key}" value="{$opt}"
+              {if $var.value eq $opt}checked="true"{/if}
+              {if $var.code eq 'rewrite' and $opt eq 1}
+                onclick="return confirm('{$lang.rewrite_confirm}');"
+              {/if}
+              {if $var.code eq 'enable_gzip' and $opt eq 1}
+                onclick="return confirm('{$lang.gzip_confirm}');"
+              {/if}
+            />{$var.display_options[$key]}</label>
+            {/foreach}
+          {elseif $var.type eq "file"}
+
+          <input name="{$var.code}" type="file" size="40" />
+          {if ($var.code eq "shop_logo" or $var.code eq "no_picture" or $var.code eq "watermark" or $var.code eq "shop_slagon") and $var.value}
+            <img src="images/yes.gif" border="0" onmouseover="showImg('{$var.code}_layer', 'show')" onmouseout="showImg('{$var.code}_layer', 'hide')" />
+            <div id="{$var.code}_layer" style="position:absolute; width:100px; height:100px; z-index:1; visibility:hidden" border="1">
+              <img src="{$var.value}" border="0" />
+            </div>
+          {else}
+            {if $var.value neq ""}
+            <img src="images/yes.gif" alt="yes" />
+            {else}
+            <img src="images/no.gif" alt="yes" />
+            {/if}
+          {/if}
+          {elseif $var.type eq "manual"}
+
+            {if $var.code eq "shop_country"}
+              <select name="value[{$var.id}]" id="selCountries" onchange="region.changed(this, 1, 'selProvinces')">
+                <option value=''>{$lang.select_please}</option>
+                {foreach from=$countries item=region}
+                  <option value="{$region.region_id}" {if $region.region_id eq $cfg.shop_country}selected{/if}>{$region.region_name}</option>
+                {/foreach}
+              </select>
+                  {elseif $var.code eq "shop_province"}
+              <select name="value[{$var.id}]" id="selProvinces" onchange="region.changed(this, 2, 'selCities')">
+                <option value=''>{$lang.select_please}</option>
+                {foreach from=$provinces item=region}
+                  <option value="{$region.region_id}" {if $region.region_id eq $cfg.shop_province}selected{/if}>{$region.region_name}</option>
+                {/foreach}
+              </select>
+            {elseif $var.code eq "shop_city"}
+              <select name="value[{$var.id}]" id="selCities">
+                <option value=''>{$lang.select_please}</option>
+                {foreach from=$cities item=region}
+                  <option value="{$region.region_id}" {if $region.region_id eq $cfg.shop_city}selected{/if}>{$region.region_name}</option>
+                {/foreach}
+              </select>
+            {elseif $var.code eq "lang"}
+                  <select name="value[{$var.id}]">
+            {html_options values=$lang_list output=$lang_list selected=$var.value}
+                  </select>
+            {/if}
+          {elseif $var.type eq "checkbox"}
+              {assign var="var_id" value=$var.id}
+              <input type="hidden" name="checkbox[]" value="{$var_id}" />
+              <label><input type="checkbox" name="all_{$var_id}" onclick="checkAll('value[{$var_id}][]', this.checked);" />全选</label><br />
+              {html_checkboxes options=$var.display_options checked=$var.value name=value[$var_id] }
+          {/if}
+          {if $var.desc}
+          <br />
+          <span class="notice-span" id="notice{$var.code}">{$var.desc|nl2br}</span>
+          {/if}
+        </td>
+        <td align="left">
+        {if $group.code eq 'bjcomment_rejectreply'}<a href="?act=delete_bjcomment_rejectreply&id={$var.id}">删除</a>{/if}
+        </td>
+      </tr>
+      {/foreach}
+      {if $group.code eq "bjcomment_rejectreply"}
+      <tr>
+      	<td>
+      	<a href="javascript:void(0);" onclick="document.getElementById('bjcomment_rejectreply_area').style.display = '';document.getElementById('bjcomment_rejectreply_area_name').disabled='';document.getElementById('bjcomment_rejectreply_area_value').disabled='';">新建模板</a>
+      	</td>
+      </tr>
+      <tr id='bjcomment_rejectreply_area' style="display:none;">
+      	<td class="label" valign="top">
+      		<input id="bjcomment_rejectreply_area_name" type="text" name="bjcomment_rejectreply_area_name" disabled />:
+      	</td>
+      	<td>
+          <textarea id="bjcomment_rejectreply_area_value" name="bjcomment_rejectreply_area_value" cols="40" rows="5" disabled ></textarea>
+      	</td>
+      </tr>
+      {/if}
+      {if $group.code eq "smtp"}
+        <tr>
+          <td class="label">{$lang.cfg_name.test_mail_address}:</td>
+          <td>
+            <input type="text" name="test_mail_address" size="30" />
+            <input type="button" value="{$lang.cfg_name.send}" onclick="sendTestEmail();" class="button" />
+          </td>
+        </tr>
+      {/if}
+    </table>
+    {/foreach}
+
+    <div class="button-div">
+      <input name="submit" type="submit" value="{$lang.button_submit}" class="button" />
+      <input name="reset" type="reset" value="{$lang.button_reset}" class="button" />
+    </div>
+    </form>
+  </div>
+</div>
+{insert_scripts files="tab.js,validator.js"}
+{literal}
+<script language="JavaScript">
+region.isAdmin = true;
+onload = function()
+{
+    // 开始检查订单
+    startCheckOrder();
+}
+
+/**
+ * 测试邮件的发送
+ */
+function sendTestEmail()
+{
+  var eles              = document.forms['theForm'].elements;
+  var smtp_host         = eles['value[501]'].value;
+  var smtp_port         = eles['value[502]'].value;
+  var smtp_user         = eles['value[503]'].value;
+  var smtp_pass         = eles['value[504]'].value;
+  var reply_email       = eles['value[505]'].value;
+  var test_mail_address = eles['test_mail_address'].value;
+
+  var mail_charset = 0;
+
+  for (i = 0; i < eles['value[506]'].length; i++)
+  {
+    if (eles['value[506]'][i].checked)
+    {
+      mail_charset = eles['value[506]'][i].value;
+    }
+  }
+
+  var msg = '';
+  if (smtp_host.length == 0)
+  {
+    msg += smtp_host_empty + "\n";
+  }
+  if (smtp_port.length == 0)
+  {
+    msg += smtp_port_empty + "\n";
+  }
+  if (reply_email.length == 0)
+  {
+    msg += reply_email_empty + "\n";
+  }
+  if (test_mail_address.length == 0)
+  {
+    msg += test_email_empty + "\n";
+  }
+  if (reply_email.length > 0 && test_mail_address.length > 0)
+  {
+    if (reply_email == test_mail_address)
+    {
+      msg += email_address_same + "\n";
+    }
+  }
+
+  if (msg.length > 0)
+  {
+    alert(msg);
+    return;
+  }
+
+  Ajax.call('shop_config.php?is_ajax=1&act=send_test_email',
+    'email=' + test_mail_address + '&smtp_host=' + smtp_host + '&smtp_port=' + smtp_port +
+    '&smtp_user=' + smtp_user + '&smtp_pass=' + encodeURIComponent(smtp_pass) + '&reply_email=' + reply_email + '&mail_charset=' + mail_charset,
+    emailResponse, 'POST', 'JSON');
+}
+
+/**
+ * 邮件发送的反馈信息
+ */
+function emailResponse(result)
+{
+  alert(result.message);
+}
+function checkAll(name, checked) {
+    d = document.getElementsByName(name);
+    for (i = 0; i < d.length; i++){
+        d[i].checked = checked;
+    }
+}
+</script>
+{/literal}
+{include file="pagefooter.htm"}

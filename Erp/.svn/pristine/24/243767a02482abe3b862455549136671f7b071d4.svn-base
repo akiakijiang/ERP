@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>库存管理工具</title>
+<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+function check() {
+    var facility = $.trim($('#facility').val());
+    if (facility == -1) {
+        alert("请选择仓库");
+        return false;
+    }
+    $('#form').submit();
+}
+function check_old() {
+    var facility = $.trim($('#old_facility').val());
+    var product_id = $.trim($('#old_product_id').val());
+    if (facility == -1) {
+        alert("请选择仓库");
+        return false;
+    }
+    if (product_id == '') {
+        alert("请填写product_id");
+        return false;
+    }
+    $('#old_detail').submit();
+}
+function check_new() {
+    var facility = $.trim($('#new_facility').val());
+    var product_id = $.trim($('#new_product_id').val());
+    if (facility == -1) {
+        alert("请选择仓库");
+        return false;
+    }
+    if (product_id == '') {
+        alert("请填写product_id");
+        return false;
+    }
+    $('#new_detail').submit();
+}
+function check_atp() {
+    var facility = $.trim($('#atp_facility').val());
+    var product_id = $.trim($('#atp_product_id').val());
+    if (facility == '') {
+        alert("请填写facility_id");
+        return false;
+    }
+    if (product_id == '') {
+        alert("请填写product_id");
+        return false;
+    }
+    $('#atp_detail').submit();
+}
+function check_num() {
+    var facility = $.trim($('#num_facility').val());
+    var product_id = $.trim($('#num_product_id').val());
+    if (facility == '') {
+        alert("请填写facility_id");
+        return false;
+    }
+    if (product_id == '') {
+        alert("请填写product_id");
+        return false;
+    }
+    $('#num_detail').submit();
+}
+function check_reserved() {
+    var facility = $.trim($('#reserved_facility').val());
+    var product_id = $.trim($('#reserved_product_id').val());
+    if (facility == '') {
+        alert("请填写facility_id");
+        return false;
+    }
+    if (product_id == '') {
+        alert("请填写product_id");
+        return false;
+    }
+    $('#reserved_detail').submit();
+}
+function check_best_shipping() {
+    var batch_order_id = $.trim($('#batch_order_id').val());
+    var begin_time = $.trim($('#begin_time').val());
+    var end_time = $.trim($('#end_time').val());
+    if (batch_order_id == '') {
+        alert("请输入订单号");
+        return false;
+    }
+    if (begin_time == '') {
+        alert("请输入开始时间");
+        return false;
+    }
+    if (end_time == '') {
+        alert("请输入结束时间");
+        return false;
+    }
+    $('#best_shipping').submit();
+}
+// {/literal}
+//]]>
+</script>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;margin:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;库存管理界面&nbsp;</span></legend>
+<div style="clear:both;"> 
+<h3>|-导出耗材商品库存清单</h3>
+	<form action="storage_toolkit.php" id="form">
+	选择仓库：<select name="facility" id="facility" >
+           <option value="-1">请选择仓库</option>
+           <option value="1" {if $smarty.request.facility == 1}selected="selected"{/if}>所有上海仓库</option>
+           {html_options options=$facility selected=$smarty.request.facility}
+          </select><br/><br/>
+		  <input type="hidden" name="act" value="consumable_goods_storage_export"></input>
+		  <input type="hidden" name="csv" value="库存汇总CSV"></input>
+		  <input type="button" value="库存汇总CSV" onclick="check()"></input>
+	</form>
+</div>
+<div style="clear:both;">
+ <h3>|-导出最优快递列表(慎用:根据时间段来导)</h3>
+  <form action="storage_toolkit.php" id="best_shipping" >
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	  <td>订单号(order_id): </td>
+        <td>
+	     <textarea name="batch_order_id" id="batch_order_id">{$smarty.request.batch_order_id}</textarea>
+		</td>
+		</tr>
+		<tr>
+		 <td>
+	     起始时间：<input type="text" name="begin_time" id="begin_time">{$smarty.request.begin_time}</input>
+		 </td>
+		</tr>
+		<tr>
+		 <td>
+	     解释时间：<input type="text" name="end_time" id="end_time">{$smarty.request.end_time}</input>
+		</td>
+		</tr>
+		<tr>
+		<td>
+		  <input type="button" value="导出" onclick="check_best_shipping()"></input>
+		</td>
+		</tr>  
+		<tr>
+        <td>
+        	<input type="hidden" name="act" value="export_best_shipping" />
+        	<input type="hidden" name="csv" value="最优快递列表" />
+		</td>
+		</tr>
+	</table>
+ </form>
+</div>
+<div style="clear:both;">
+<h3>|-导出商品销售明细</h3>
+  <form action="storage_toolkit.php" id="new_detail" >
+  	<table cellpadding="5" cellspacing="1">
+  	    <tr>
+  	            选择仓库：
+  	    </tr>
+  	    <tr>
+	  	    <select name="new_facility" id="new_facility" >
+	           <option value="-1">请选择仓库</option>
+	           <option value="1" {if $smarty.request.facility == 1}selected="selected"{/if}>所有上海仓库</option>
+	           {html_options options=$facility selected=$smarty.request.facility}
+	        </select>
+  	    </tr>
+    	<tr>
+      	  <td>产品ID(product_id): </td>
+        <td>
+        	<input type="text" name="new_product_id" id="new_product_id" value="{$smarty.request.new_product_id}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+		<tr>
+		<td>
+		  <input type="button" value="导出明细" onclick="check_new()"></input>
+		</td>
+		</tr>  
+		<tr>
+        <td>
+        	<input type="hidden" name="act" value="export_new_detail" />
+        	<input type="hidden" name="csv" value="新库存销售明细" />
+		</td>
+		</tr>
+	</table>
+  </form>
+</div>
+<div style="clear:both;">
+<h3>|-导出实时已预订量库存</h3>
+ <form action="storage_toolkit.php" id="reserved_detail" >
+  	<table cellpadding="5" cellspacing="1">
+  	    <tr>
+  	         
+  	    <td> 仓库ID(facility_id): </td>
+        <td>
+        	<input type="text" name="reserved_facility" id="reserved_facility" value="{$smarty.request.reserved_facility}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+    	<tr>
+      	  <td>产品ID(product_id): </td>
+        <td>
+        	<input type="text" name="reserved_product_id" id="reserved_product_id" value="{$smarty.request.reserved_product_id}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+		<tr>
+		<td>
+		  <input type="button" value="导出" onclick="check_reserved()"></input>
+		</td>
+		</tr>  
+		<tr>
+        <td>
+        	<input type="hidden" name="act" value="export_reserved_detail" />
+        	<input type="hidden" name="csv" value="已预订量库存" />
+		</td>
+		</tr>
+	</table>
+  </form>
+</div>
+<div style="clear:both;">
+<h3>|-查看实时atp</h3>
+<form action="storage_toolkit.php" id="atp_detail" >
+  	<table cellpadding="5" cellspacing="1">
+  	    <tr>
+  	         
+  	    <td> 仓库ID(facility_id): </td>
+        <td>
+        	<input type="text" name="atp_facility" id="atp_facility" value="{$smarty.request.atp_facility}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+    	<tr>
+      	  <td>产品ID(product_id): </td>
+        <td>
+        	<input type="text" name="atp_product_id" id="atp_product_id" value="{$smarty.request.atp_product_id}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+		<tr>
+		<td>
+		  <input type="button" value="查询" onclick="check_atp()"></input>
+		</td>
+		</tr>  
+		<tr>
+        <td>
+        	<input type="hidden" name="act" value="search_atp_detail" />
+		</td>
+		</tr>
+		<th>产品ID</th>
+		<th>仓库ID</th>
+		<th>库存量</th>
+		<th>可预定量</th>
+		<th>已预定量</th>
+		<th>diff</th>
+		<!--{foreach from=$atp_detail  item=atp}-->
+		<tr style="text-align:center">
+		<td>{$atp.product_id}</td>
+		<td>{$atp.facility_id}</td>
+		<td>{$atp.stock_quantity}</td>
+		<td>{$atp.available_to_reserved}</td>
+		<td>{$atp.reserved}</td>
+		<td>{$atp.diff}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>
+  </form>
+</div>
+<h3>|-查看实时库存(新品)</h3>
+<form action="storage_toolkit.php" id="num_detail" >
+  	<table cellpadding="5" cellspacing="1">
+  	    <tr>
+  	         
+  	    <td> 仓库ID(facility_id): </td>
+        <td>
+        	<input type="text" name="num_facility" id="num_facility" value="{$smarty.request.num_facility}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+    	<tr>
+      	  <td>产品ID(product_id): </td>
+        <td>
+        	<input type="text" name="num_product_id" id="num_product_id" value="{$smarty.request.num_product_id}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+		<tr>
+		<td>
+		  <input type="button" value="查询" onclick="check_num()"></input>
+		</td>
+		</tr>  
+		<tr>
+        <td>
+        	<input type="hidden" name="act" value="inv_num" />
+		</td>
+		</tr>
+		<th>商品名</th>
+		<th>仓库ID</th>
+		<th>库存数量</th>
+		<!--{foreach from=$inv_count  item=new}-->
+		<tr style="text-align:center">
+		<td>{$new.goods_name}</td>
+		<td>{$new.facility_id}</td>
+		<td>{$new.new_num}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>
+  </form>
+</div>
+</fieldset>
+</body>
+</html>

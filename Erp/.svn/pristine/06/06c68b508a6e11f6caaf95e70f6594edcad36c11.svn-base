@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>jjshouse-更新重量</title>
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/jquery-1.3.2.js" ></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+$(document).ready(function() {
+    $(".no_submit").keypress(function(e){
+        var currKey = 0, e = e || event;
+        var currKey = e.keyCode || e.which || e.charCode;
+        if (currKey == 13) {
+            var input_obj = $(this);
+            $("#shipping_leqee_weight").focus();
+            return false;
+        }
+    });
+});
+{/literal}
+</script>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;jjshouse 重量更新&nbsp;</span></legend>
+    <p style="color:red;font-size: 18px;font-weight: bolder;">{$msg}</p>
+    <form method="post" action="jjshouse_weight.php">
+        快递单号： <input class="no_submit" name="tracking_number" />
+        重量(kg)： <input id="shipping_leqee_weight" name="shipping_leqee_weight" />
+        <select name="type">
+            <option value="add" >添加新纪录</option>
+            <option value="update" {if $smarty.request.type == "update"}selected{/if} >修改老纪录</option>
+        </select>
+        <input type="submit" value="提交" />
+        <input type="hidden" name="action" value="jjshouse_add_weight" />
+    </form>
+</fieldset>
+<br>
+<br>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;jjshouse 重量信息导出&nbsp;</span></legend>
+    <form action="jjshouse_weight.php">
+        开始时间：<input name="start_date" id="start_date" style="width: 80px;" value="{$smarty.now|date_format:'%Y-%m-%d'}" /><input type="button" id="start_trigger" value="..." />
+        结束时间：<input name="end_date" id="end_date" style="width: 80px;" value="{$smarty.now|date_format:'%Y-%m-%d'}" /><input type="button" id="end_trigger" value="..." />
+        <input type="submit" value="导出" />
+        <input type="hidden" name="action" value="jjshouse_export_weight" />
+    </form>
+</fieldset>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_date",
+        button            : "start_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_date",
+        button            : "end_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

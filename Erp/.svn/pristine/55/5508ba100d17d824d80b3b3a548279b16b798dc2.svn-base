@@ -1,0 +1,162 @@
+<!--
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    {literal}
+	<style type="text/css" media="all">
+	*{
+		margin:0;
+		padding:0;
+	}
+	div{
+		border:1px solid #fff;
+		font-family:"Times New Roman",Times New Roman,"KaiTi_GB2312",楷体_GB2312,"MicrosoftJhengHei",华文细黑;
+
+	}
+	#card{
+		width:500px;
+		height:500px;
+		margin-left:auto;
+		margin-right:auto;
+		-webkit-transform: rotate(270deg);
+		-moz-transform: rotate(270deg);
+		filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+	}
+	p{
+		font-size:12pt;
+		clear:both;
+		text-align:center;
+	}
+	h1{
+		font-size:30pt;
+		display:table-cell;
+		text-align:center;
+		vertical-align:middle;
+		height:300px;
+	}
+	#greetings{
+		height:350px;
+		width:400px;
+		margin-top:40px;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	#code{
+		height:100px;
+		width:500px;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	#bar_code_video{
+		float:left;
+		margin-top:10px;
+		margin-left:-300px;
+		width:250px;
+		height:60px;		
+	}
+	#bar_code_novideo{
+		float:left;
+		margin-top:10px;
+		margin-left:-300px;
+		width:250px;
+		height:60px;		
+	}
+	#word_novideo{
+		float:left;
+		margin-top:30px;
+		margin-left:250px;
+		width:80px;
+		height:45px;
+	}
+	#word_video{
+		float:left;
+		margin-left:265px;
+		margin-top:0px;
+	}
+	#two_dimension_code_video{
+		float:left;
+		margin-left:380px;
+		margin-top:-22px;
+		width:100px;
+		height:100px;
+	}
+	#two_dimension_code_novideo{
+		float:left;
+		margin-left:0px;
+		margin-top:10px;
+		width:80px;
+		height:80px;
+	}
+	#dot_novideo{
+		float:left;
+		margin-top:30px;
+		margin-left:-8px;
+		width:55px;
+		height:38px;
+	}
+	#dot_novideo p{
+		font-size:25pt;
+		font-weight:bold;
+	}
+	</style>
+    {/literal}
+
+    <title>打印贺卡</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<div id="card">
+	<div id='greetings' align="center">
+	{if $card_info.greetings}
+		<h1>
+		{$card_info.greetings}
+		</h1>
+	{else}
+		<h1>
+		Forever Love
+		</h1>
+	{/if}
+	</div>
+	{if $video}
+	<div id="code">
+		<div id="bar_code_video">
+		<img src="code_img.php?barcode={$shipment_id}&height=40&width=500&text=1" alt="BARCODE:{$shipment_id}" style="width:100%;height:100%;" />
+		</div>
+
+		<div id="two_dimension_code_video">
+			<img src="img/qr.png" id="qr" style="width:100%;height:100%;" />
+		</div>
+		<div id="word_video">
+			<p>亲启视频：TA致您的暖意祝福</p>
+		</div>
+	</div>
+	{else}
+	<div id="code">
+		<div id="bar_code_novideo">
+		<img src="code_img.php?barcode={$shipment_id}&height=40&width=500"  alt="BARCODE:{$shipment_id}" style="width:100%;height:100%;" />
+		</div>
+		<div id="word_novideo">
+			<p>指尖亲启</p>
+			<p>挚爱绽放</p>
+		</div>
+		<div id="dot_novideo"  >
+		<p>·></p>
+		</div>
+		<div id="two_dimension_code_novideo">
+			<img src="img/qr.png" id="qr" style="width:100%;height:100%;" />
+		</div>
+	</div>
+	{/if}
+
+</div>
+
+
+{if $smarty.request.print != 1}
+	<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+	<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+
+</body>
+</html>

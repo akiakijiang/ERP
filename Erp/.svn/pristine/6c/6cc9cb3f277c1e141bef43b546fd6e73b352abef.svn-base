@@ -1,0 +1,68 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>库存总表页面</title>
+    <!-- Calendar -->
+    <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+    <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+    <!-- Calendar /-->
+</head>
+<body>
+<fieldset>
+    <legend>检索/导出</legend>
+<form method="POST">
+<ul class="sType">
+<li>库存类型：
+<select name="status_id">
+<option value="">所有</option>
+{html_options options=$inventory_status_mapping selected=$smarty.request.status_id }
+</select>
+&nbsp;&nbsp;仓库：
+<select name="facility_id">
+<option value="">所有</option>
+{html_options options=$facility_list selected=$smarty.request.facility_id }
+</select>
+</li>
+<li>
+<input type="submit" value="     搜索     ">
+</li>
+</ul>
+</form>
+</fieldset>
+<h2 align="center">库存总表页面</h2>
+<table class="bWindow">
+    <thead>
+        <th>库存类型</th>
+        <th>仓库id</th>
+        {*<th>容器id</th>*}
+        <th>商品名称</th>
+        <th>库存量</th>
+        <th>可预定量</th>
+        <th>创建时间</th>
+        <th>修改时间</th>
+    </thead>
+    <tbody>
+    {foreach from=$inventory_summary_list item=inventory_summary}
+        <tr>
+            <td>
+			{assign var="status_id" value=$inventory_summary->statusId}
+			{$inventory_status_mapping.$status_id}
+			</td>
+            <td>
+			{assign var="facility_id" value=$inventory_summary->facilityId}
+			{$facility_list.$facility_id}</td>
+            {*<td>{$inventory_summary->containerId}</td>*}
+            <td>{$inventory_summary->goodsName}</td>
+            <td>{$inventory_summary->stockQuantity}</td>
+            <td>{$inventory_summary->availableToReserved}</td>
+            <td>{$inventory_summary->createdStamp}</td>
+            <td>{$inventory_summary->lastUpdatedStamp}</td>
+        </tr>
+    {/foreach}
+    </tbody>
+</table>
+</body>
+</html>

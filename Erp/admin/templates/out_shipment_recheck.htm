@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>外包批拣货单复核</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    <!--{/literal}-->
+  </style>
+  
+  <script type="text/javascript">
+    // <![CDATA[
+    
+    var alert_message = '{$alert_message}';
+    var SHOW_SCAN_TRACKING_NUMBER = '{$show_scan_tracking_number}';
+   
+    // {literal}
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        
+        // 绑定加载发货单事件
+        $('#load_batch_pick_sn').bind('click', load_batch_pick_sn);
+        $('#batch_pick_sn').bind('keyup', listen_batch_pick_sn).focus();
+        
+        // 绑定加载面单事件
+        $('#load_tracking_number_first').bind('click', load_tracking_number_first);
+        $('#tracking_number_first').bind('keyup', listen_tracking_number_first).focus();
+        
+        // 绑定加载面单事件
+        $('#load_tracking_number_last').bind('click', load_tracking_number_last);
+        $('#tracking_number_last').bind('keyup', listen_tracking_number_last).focus();
+
+        // 确定页面载入时鼠标焦点的定位
+        if(SHOW_SCAN_TRACKING_NUMBER) {
+        	$('#tracking_number_first').focus();
+        } else{
+        	$('#batch_pick_sn').focus();
+        }
+    });
+  
+
+    var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+   
+    /**
+     * 发货单监听
+     */
+    function listen_batch_pick_sn(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+            	load_batch_pick_sn();
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    /**
+     * 面单监听
+     */
+    function listen_tracking_number_first(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load_tracking_number_first();
+                event.preventDefault();
+                break;
+        }
+    }
+    /**
+     * 面单监听
+     */
+    function listen_tracking_number_last(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load_tracking_number_last();
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    /**
+     * 载入发货单信息
+     */
+    function load_batch_pick_sn() 
+    {
+        var batch_pick_sn = $.trim($('#batch_pick_sn').val());
+        if (batch_pick_sn == '') {
+            alert('请先输入发货单号');
+            return; 
+        }
+        $('#tracking_number_first').val('');
+        $('#tracking_number_last').val('');
+        location.href = "out_shipment_recheck.php?act=check&batch_pick_sn="+batch_pick_sn;
+    }
+    
+    /**
+     * 载入订单商品和信息
+     */
+    function load_tracking_number_first() 
+    {
+        var batch_pick_sn = $.trim($('#batch_pick_sn').val());
+        if (batch_pick_sn == '') {
+            alert('请先输入批次单号');
+            return; 
+        }
+        var tracking_number_first = $.trim($('#tracking_number_first').val());
+        if (tracking_number_first == '') {
+            alert('请先输入（第一个）面单号');
+            return; 
+        }
+		
+        if(tracking_number_first == $('#hidden_tracking_number_first').val()){
+        	$('#tracking_number_last').val('');
+        	$('#tracking_number_last').focus();
+        } else {
+        	alert('第一个面单号输入错误！');
+        	$('#tracking_number_first').val('');
+        	return;
+        }
+    }
+
+    /**
+     * 载入订单商品和信息
+     */
+    function load_tracking_number_last() 
+    {
+    	var batch_pick_sn = $.trim($('#batch_pick_sn').val());
+        if (batch_pick_sn == '') {
+            alert('请先输入批次单号');
+            return; 
+        }
+        var tracking_number_first = $.trim($('#tracking_number_first').val());
+        if (tracking_number_first == '') {
+            alert('请先输入（第一个）面单号');
+            return; 
+        }
+		
+        if(tracking_number_first != $('#hidden_tracking_number_first').val()){
+        	alert('第一个面单号输入错误！');
+        	$('#tracking_number_first').val('');
+        	return;
+        }
+        var tracking_number_last = $.trim($('#tracking_number_last').val());
+        if (tracking_number_last == '') {
+            alert('请先输入（最后一个）面单号');
+            return; 
+        }
+		
+        if(tracking_number_last != $('#hidden_tracking_number_last').val()){
+        	alert('最后一个面单号输入错误！');
+        	$('#tracking_number_last').val('');
+        	return;
+        }else{
+        	location.href = "out_shipment_recheck.php?act=update_batch_status&batch_pick_sn="+batch_pick_sn;
+        }
+        
+    }
+    // {/literal}
+    // ]]>
+  </script>
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;发货单复核&nbsp;</span></legend>
+<form method="post" id="form"> 
+
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">配送信息</h3>
+
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">扫描批次号</td>
+        <td>
+            <input type="text" id="batch_pick_sn" value="{$batch_pick_sn}" size="39" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" id="load_batch_pick_sn" value="加载" />
+            <input type="hidden"  id='hidden_tracking_number_first' value="{$tracking_number_first}"/>
+            <input type="hidden"  id='hidden_tracking_number_last' value="{$tracking_number_last}"/>
+        </td>
+        </tr>
+    </table>
+  </div>
+  
+<!--{if $show_scan_tracking_number}-->
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">面单信息</h3>
+
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">扫描（第一个）面单号</td>
+        <td>
+            <input type="text" id="tracking_number_first" value="" size="39" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" id="load_tracking_number_first" value="加载" />
+        </td>
+        </tr>
+        
+    </table>
+  </div>
+  
+  <div style="clear:both;"> 
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">扫描（最后一个）面单号</td>
+        <td>
+            <input type="text" id="tracking_number_last" value="" size="39" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" id="load_tracking_number_last" value="加载" />
+        </td>
+        </tr>
+        
+    </table>
+  </div>
+<!--{/if}-->
+</form>
+
+<br /><br />
+
+</fieldset>
+</body>
+</html>

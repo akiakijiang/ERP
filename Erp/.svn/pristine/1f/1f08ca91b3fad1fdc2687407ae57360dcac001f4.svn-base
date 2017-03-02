@@ -1,0 +1,103 @@
+
+<div style="position:relative;display:inline-block;width:450px;height:800px;border:1px solid black;">
+	<div style="position:absolute;display:inline-block;width:450px;height:800px;">
+<div class="inside" style="position:absolute;font-size:10pt;top:0px;left:0px;height:800px;width:450px;">
+<div class="left-top" style="position:absolute;font-size:20pt;top:2%;left:0%;height:5%;width:50%;text-align:center;border-right:0px;border-bottom:0px;">
+	测试快递[{$order.order_id}]
+</div>
+<div class="right-top" style="position:absolute;font-size:20pt;top:2%;left:50%;height:5%;width:50%;text-align:center;border-bottom:0px;">
+	上海市场部
+</div>
+
+<div class="left" style="position:absolute;font-size:20pt;top:7%;left:0%;height:5%;width:75%;border-right:0px;border-bottom:0px;">
+	<div class="inside" style="position:absolute;font-size:10pt;top:5%;left:10%;height:90%;width:40%;">
+		358142787648
+	</div>
+	<div class="inside" style="position:absolute;font-size:5pt;top:50%;left:50%;height:30%;width:40%;">
+		日期：2015-12-01
+	</div>
+</div>
+<div class="left" style="position:absolute;font-size:10pt;top:12%;left:0%;height:5%;width:75%;text-align:left;border-right:0px;border-bottom:0px;">
+	<div class="inside" style="position:absolute;font-size:5pt;top:5%;left:3%;height:90%;width:95%;">
+		寄件人：乐其-金佰利   联系方式：0571-28329302
+		<br>
+		地址：上海市场部已验视
+	</div>
+</div>
+<div class="right" style="position:absolute;font-size:20pt;top:7%;left:75%;height:10%;width:25%;text-align:center;border-bottom:0px;">
+	<!-- <img src="assets/img/Shop2DBarcodes/1953.png" style="margin-top:2px;" width="70px" height="70px">  -->
+</div>
+<div class="left right" style="position:absolute;font-size:20pt;top:17%;left:0%;height:10%;width:100%;border-bottom:0px;">
+	<div class="inside" style="position:absolute;font-size:15pt;top:10%;left:6%;height:90%;width:90%;">
+		<b>收件人：快递批次单打印测试2       电话：15309282800 </b>　
+		<br>
+		<b>地址：北京[东城区][路南区]红庙坡街道大兴东路2号锦翔梧桐坊2902室</b>
+	</div>
+</div>
+<div class="left right" style="position:absolute;font-size:30pt;top:32%;left:0%;height:8%;line-height:60px;width:100%;text-align:center;vertical-align:middle;letter-spacing:5px;filter:dropshadow(color=black,offx=1,offy=0) dropshadow(color=black,offx=2,offy=0) dropshadow(color=black,offx=3,offy=0)">
+	北京东城区
+</div>		
+<div style="position:absolute;top:40%;left:0%;height:5%;width:100%;text-align:center;border:0px;">
+<div class="inside" style="position:absolute;top:2%;left:0%;height:100%;width:90%;">
+						商品
+						 <span style="font-size:10pt;"> 6923589460017-1; </span>
+									 <span style="font-size:10pt;"> 6923589482163-1; </span>
+										</div>
+</div>
+<div style="position:absolute;top:45%;left:0%;height:9%;width:100%;text-align:center;border:0px;">
+	<img src="code_img.php?barcode=358142787648&amp;height=80&amp;width=450&amp;text=0" style="position:absolute;left:4%;top:5%;width:92%;height:70%;margin-top:2px;">
+	<div class="inside" style="position:absolute;font-size:10pt;top:80%;left:5%;height:15%;width:90%;letter-spacing:15px;">
+		*358142787648*
+	</div>
+</div>
+<div class="left-bottom" style="position:absolute;font-size:10pt;top:55%;left:0%;height:5%;width:70%;text-align:left;border-right:0px;">
+	<div class="inside" style="position:absolute;font-size:10pt;top:5%;left:5%;height:90%;width:95%;">
+	已验视<br>
+	您对此单的签收，代表您已验货，确认商品商品信息无误，包装完好
+	</div>
+</div>
+<div class="right-bottom" style="position:absolute;font-size:10pt;top:55%;left:70%;height:5%;width:30%;text-align:left;">
+	<div class="inside" style="position:absolute;font-size:15pt;top:10%;left:5%;height:90%;width:80%;">
+		签收
+	</div>
+</div>
+
+<!-- divide -->
+<div style="position:absolute;top:65%;left:3%;height:5%;width:100%;text-align:left;border:0px;font-size: 20px">
+	ZTO中通快递
+</div>
+<div style="position:absolute;top:70%;left:0%;height:10%;width:100%;text-align:center;border:0px;">
+	<img src="code_img.php?barcode=358142787648&amp;height=80&amp;width=450&amp;text=0" style="position:absolute;top:5%;left:5%;width:90%;height:70%;">
+	<div class="inside" style="position:absolute;font-size:10pt;top:80%;left:5%;height:15%;width:90%;letter-spacing:15px;">
+		*358142787648*
+	</div>
+</div>
+
+<div class="left" style="position:absolute;font-size:20pt;top:80%;left:0%;height:4%;width:50%;text-align:center;border-right:0px;border-bottom:0px;">
+	母婴用品
+</div>
+<div class="right" style="position:absolute;font-size:15pt;top:80%;left:50%;height:4%;width:50%;text-align:center;border-bottom:0px;">
+	358142787648
+</div>
+
+<div class="left right" style="position:absolute;font-size:10pt;top:84%;left:0%;height:5%;width:100%;text-align:left;border-bottom:0px;">
+	<div class="inside" style="position:absolute;font-size:5pt;top:5%;left:6%;height:90%;width:90%;">
+		寄件人：乐其-金佰利       联系方式：0571-28329302
+		<br>
+		地址：上海市场部已验视
+	</div>
+</div>
+
+<div class="left right" style="position:absolute;font-size:20pt;top:89%;left:0%;height:12%;width:100%;border-bottom:0px;">
+	<div class="inside" style="position:absolute;font-size:10pt;top:5%;left:6%;height:70%;width:90%;">
+		收件人：快递批次单打印测试2  电话：15309282800 
+		<br>
+		地址：北京[东城区][路南区]红庙坡街道大兴东路2号锦翔梧桐坊2902室
+		
+	</div>
+	<div class="inside" style="position:absolute;font-size:10pt;top:75%;left:90%;height:10%;width:5%;">
+			</div>
+</div>
+</div>
+	</div>
+</div>

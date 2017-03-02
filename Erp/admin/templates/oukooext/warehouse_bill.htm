@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>仓库出入库单据列表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css" />
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;仓库出入库单据列表&nbsp;</span></legend>
+    
+    <form method="get">
+  	<table cellpadding="5" cellspacing="1">
+        <tr>
+          <td>出入库</td>
+          <td>
+            <select name="type">
+              {html_options options=$type_mapping selected=$smarty.request.type }
+            </select>
+          </td>
+        </tr>
+       
+       <tr>
+          <td>
+            <label for="order_type_id1">采购</label> <input type="radio" name="order_type_id" value="PURCHASE" id="order_type_id1" {if $smarty.request.order_type_id=='PURCHASE'}checked="checked"{/if} /> 
+          </td>
+          <td>
+            供应商
+            <select name="provider_id" >
+              <option value="">不选</option>
+              {html_options options=$providers selected=$smarty.request.provider_id} 
+            </select>
+          </td>
+       </tr>
+       
+       <tr>
+          <td>
+            <label for="order_type_id2">直销</label> <input type="radio" name="order_type_id" value="SALE" id="order_type_id2" {if $smarty.request.order_type_id=='SALE'}checked="checked"{/if} /> 
+          </td>
+          <td>
+            分销商
+            <select name="distributor_id" >
+              <option value="">不选</option>
+              {html_options options=$distributors selected=$smarty.request.distributor_id }
+            </select>
+          </td>
+       </tr>
+       
+       <tr> 
+         <td>
+         	起始时间
+         </td> 	
+         <td>
+            <input style="width: 80px;" id="start_time" name="start" value="{$smarty.request.start}" />
+            <input id="start_time_trigger" type="button" value="..." />
+    	    到
+            <input style="width: 80px;" id="end_time" name="end" value="{$smarty.request.end}" />
+            <input id="end_time_trigger" type="button" value="..." />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+	        
+         </td>
+       </tr> 
+       <!--<tr>
+         <td>搜索订单号：</td>
+         <td><input type="text" name="search_text" value="{$smarty.request.search_text}" /></td>
+       </tr>-->
+       <tr><td><input type="submit" value="搜索" /></td></tr>
+
+    </table>
+    </form>
+    
+    
+    <br />
+    <div style="clear:both;">
+        <h3 style="color:#09F;">仓库出入库单据列表</h3>
+        <input type="checkbox" onclick="select_all(this);" checked="checked" id="select_button" /> 
+        <label for="select_button">全选</label>
+        <input type="button" value="批量打印出入库单" onclick="print_all();" />
+        <table class="bWindow" style="margin-top:10px;">
+        <tr>
+            <th>操作</th>
+            <th>编号</th>
+            <th>出入库日期</th>
+            <th>供应商或用户名称</th>
+            <th>合计金额</th>
+            <th>类型</th>
+            <th>出入库</th>
+            <th>修改编号</th>
+            <th>打印日期 
+            <form method="POST" onsubmit="update_print_date()">
+            <input type="hidden" name="act" value="update_print_date" />
+            <input type="hidden" name="update_bill_ids" id='update_bill_ids' value=""  />
+            <input style="width: 80px;" id="print_date" name="print_date" value="{$smarty.request.print_date}" />
+            <input id="print_date_trigger" type="button" value="..." />
+            <input type="submit" value="批量修改" />
+            </form></th>
+            <th>关联信息(订单号，原始订单，发票号)</th>
+        </tr>
+        {assign var=total_amount value=0.00}
+        <!--{foreach from=$warehouse_bills item=bill}-->
+        <tr align="center" class="{cycle values='odd,even'}">
+            <td><input type="checkbox" name="warehouse_bill_id[]" checked="checked" value="{$bill.warehouse_bill_id}" onclick="select_one(this);"/>
+                <a target="_blank" href="warehouse_bill.php?act=print&print=1&warehouse_bill_str={$bill.warehouse_bill_id}" >打印</a>
+            </td>
+            <td>{$bill.bill_batch_id}</td>
+            <td>{$bill.bill_date}</td>
+            <td>{$bill.partner_name}</td>
+            <td id="bill_amount_{$bill.warehouse_bill_id}" value="{$bill.bill_amount}" >{$bill.bill_amount}</td>
+            <td>{$bill.order_type_name}</td>
+            <td>{$bill.type_name}</td>
+            <td>
+                <form method="POST">
+                <input type="hidden" name="act" value="update_print_batch_id" />
+                <input type="hidden" name="update_bill_id" value="{$bill.warehouse_bill_id}" />
+                <input type="text" style="width: 85px;" name="print_batch_id" value="{$bill.bill_batch_id}" />
+                <input type="submit" value="修改" />
+                </form>
+            </td>
+            <td><form method="POST">
+            <input type="hidden" name="act" value="update_print_date" />
+            <input type="hidden" name="update_bill_ids" value="{$bill.warehouse_bill_id}" />
+            <input type="text" style="width: 90px;" name="print_date" value="{$bill.print_date}" />
+            <input type="submit" value="修改" />
+            </form></td>
+            <td>{$bill.relation}</td>
+            {assign var=total_amount value=$total_amount+$bill.bill_amount}
+        </tr>
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        <tr align="center" bgcolor="Gray">
+            <td>总计</td>
+            <td colspan="3"></td>
+            <td id="total_amount" >{$total_amount|string_format:"%.2f"}</td>
+            <td colspan="10"></td>
+        </tr>
+        </table>
+        <br />
+        <input type="checkbox" onclick="select_all(this);" checked="checked" id="select_button_2" /> 
+        <label for="select_button_2">全选</label>
+        <input type="button" value="批量打印出入库单" onclick="print_all();" />
+    </div>
+  
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start_time",
+	button            : "start_time_trigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end_time",
+	button            : "end_time_trigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "print_date",
+	button            : "print_date_trigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+function select_one(obj) {
+    var all = false;
+    if (obj.checked)  {
+        all = true;
+    }
+    var total_amount = parseFloat(document.getElementById('total_amount').innerHTML);
+    var bill_amount = parseFloat(document.getElementById('bill_amount_'+obj.value).innerHTML);
+    if (all) {
+        total_amount = cal(total_amount, bill_amount);
+    } else {
+        total_amount = cal(total_amount, -bill_amount);
+    }
+    document.getElementById('total_amount').innerHTML = total_amount;
+}
+
+function select_all(obj) {
+    var warehouse_bill_ids = document.getElementsByName('warehouse_bill_id[]');
+    var all = false;
+    if (obj.checked)  {
+        all = true;
+    }
+    document.getElementById('select_button').checked = all;
+    document.getElementById('select_button_2').checked = all;
+    var total_amount = 0;
+    for (var i=0; i<warehouse_bill_ids.length; i++) {
+        warehouse_bill_ids[i].checked = all;
+        if (all) {
+            total_amount = cal(total_amount, parseFloat(document.getElementById('bill_amount_'+warehouse_bill_ids[i].value).innerHTML));
+        }
+    }
+    document.getElementById('total_amount').innerHTML = total_amount;
+}
+
+function cal(total_amount, bill_amount) {
+    total_amount = parseInt(100 * total_amount);
+    bill_amount = parseInt(100 * bill_amount);
+    total_amount = parseFloat(total_amount + bill_amount) / 100;
+    return total_amount;
+}
+function get_ids_checked() {
+    var id_str = '';
+    var warehouse_bill_ids = document.getElementsByName('warehouse_bill_id[]');
+    for (var i=0; i<warehouse_bill_ids.length; i++) {
+        if (warehouse_bill_ids[i].checked) id_str += (warehouse_bill_ids[i].value + ",");
+    }
+    return id_str;
+}
+function print_all() {
+    var id_str = get_ids_checked();
+    hidden_print('warehouse_bill.php?act=print&print=1&warehouse_bill_str='+id_str);
+}
+function hidden_print(url) {
+    window.print_frame.location.href = url;
+}
+
+function update_print_date() {
+    var id_str = get_ids_checked();
+    document.getElementById('update_bill_ids').value = id_str;
+}
+// {/literal}
+// ]]>
+</script>
+<iframe name="print_frame" width="0" height="0" src="about:blank" >
+</iframe>
+</body>
+</html>

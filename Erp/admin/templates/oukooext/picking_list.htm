@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>打印拣货单</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+        
+	<script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/thickbox.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+		// 多选打印事件
+		$('.print').bind('click', function(event){
+			$checked = $(':checkbox:checked');
+			if ($checked.length) {
+				var ids = new Array();
+				$checked.each(function(i){
+					ids.push(this.value);
+				});	
+				hidden_print('print_invoice.php?print=1&order_ids=' + ids.join(','));
+			} else {
+				alert('没有选中项');
+				return false;
+			}
+		});
+	});
+
+	/**
+	 * 打印
+	 */
+	function hidden_print(url) {
+    	window.print_frame.location.href = url;
+	}
+	
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find(':checkbox:enabled').each(function(i){
+			this.checked = true;
+		});
+	}
+
+	/**
+	 * 反选
+	 */
+	function select_reverse(node, type)
+	{
+		node = node ? node : document ;
+		if (type == 'disabled') {
+			expr = ':checkbox:disabled';
+		} else {
+			expr = ':checkbox:enabled';
+		}
+		$(node).find(expr).each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;打印拣货单&nbsp;</span></legend>
+  
+  <div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      <table cellpadding="5" cellspacing="1">
+        <tr>
+          <td>每页显示</td>
+          <td>
+          	<select name="size" onchange="javascript:location.href='{$url}&size=' + this.options[this.selectedIndex].value">
+          	{html_options options=$page_size_list selected=$filter.size}
+            </select> 条记录
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <select name="strike" onchange="javascript:location.href='{$url}&strike=' + this.options[this.selectedIndex].value">
+				<option value="0">正常订单 [{$taxonomy.normal}]</option>
+            	<option value="1" {if $filter.strike == 1}selected="selected"{/if}>客服特殊标记的 [{$taxonomy.strike}]</option>
+            </select>
+          </td>
+        </tr>
+        
+        {if $taxonomy.facility}
+        <tr>
+          <td width="120">所处仓库</td>
+          <td>
+          	{foreach from=$taxonomy.facility key=facility_id item=count}
+            	<a href="{$url|add_param_in_url:"facility_id":$facility_id}">{$facility_list[$facility_id]}</a>({$count})&nbsp;&nbsp;&nbsp;&nbsp;
+            {/foreach}
+          </td>
+        </tr>
+        {/if}
+         
+        {if $taxonomy.type}      
+        <tr>
+          <td>订单类型</td>
+          <td>
+          	{foreach from=$taxonomy.type key=order_type_id item=count}
+            	<a href="{$url|add_param_in_url:"order_type_id":$order_type_id}">{$order_type_list[$order_type_id]}</a>({$count})&nbsp;&nbsp;&nbsp;&nbsp;
+            {/foreach}
+          </td>
+        </tr>
+        {/if}
+        
+        {if $taxonomy.distributor}
+        <tr>
+          <td>订单渠道</td>
+          <td>
+          	{foreach from=$taxonomy.distributor key=distributor_id item=count}
+            	<a href="{$url|add_param_in_url:"distributor_id":$distributor_id}">{$distributor_list[$distributor_id]}</a>({$count})&nbsp;&nbsp;&nbsp;&nbsp;
+            {/foreach}
+          </td>
+        </tr>
+        {/if}
+        
+        {if $taxonomy.shipping}
+        <tr>
+          <td>快递方式</td>
+          <td>
+          	{foreach from=$taxonomy.shipping key=shipping_id item=count}
+            	<a href="{$url|add_param_in_url:"shipping_id":$shipping_id}">{$shipping_type_list[$shipping_id]}</a>({$count})&nbsp;&nbsp;&nbsp;&nbsp;
+            {/foreach}
+          </td>
+        </tr>
+        {/if}
+         
+      </table>  
+  </div>
+  
+  
+  
+  {if $total > 0}
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">待拣订单列表</h3>
+      <div style="float:right;"> <strong>{$total}</strong> 订单已预定库存 &nbsp;&nbsp;</div>
+      
+      <div style="margin-top:10px; clear:both;">
+        <input type="button" value="全选" onclick="select_all('#table');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#table');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="print" value="打印拣货单" />
+      </div>
+      <br />
+
+      <table class="bWindow" style="margin-top:10px;" id="table">
+        <tr>
+          <th width="30">No.</th>
+          <th width="50">选择</th>
+          <th>订单号</th>
+          <th>客户名</th>
+          <th>下单时间</th>
+          <th>确认时间</th>
+          <th>渠道</th>
+          <th>配送方式</th>
+          <th colspan="2">操作</th>
+        </tr>
+        
+        <!--{foreach from=$list item=order name=orderList}-->
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td>{$smarty.foreach.orderList.iteration}</td>
+          <td>
+          	{if !$order.printed}
+          	<input type="checkbox" name="checked[]" value="{$order.order_id}" />
+            {else}
+          	<input type="checkbox" name="checked[]" value="{$order.order_id}" disabled="disabled" />
+            {/if}
+          </td>
+          <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td>{$order.consignee}</td>
+          <td>{$order.order_time|date_format:"%Y-%m-%d %H:%M"}</td>
+          <td>{$order.confirm_time|date_format:"%Y-%m-%d %H:%M"}</td>
+          <td>{$order.distributor_name}</td>
+          <td>{$order.shipping_name}</td>
+          <td><a href="javascript:void(0);" onclick="hidden_print('print_invoice.php?print=1&order_id={$order.order_id}')">打印</a></td>
+          <td><a href="order_detail.php?order_sn={$order.order_sn}&keepThis=true&TB_iframe=true&height=550&width=810" class="thickbox" title="订单详情,单号 [{$order.order_sn}]">详情</a></td>
+        </tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+      
+	  {$pagination}
+      
+      <div style="margin-top:10px; clear:both;">
+        <input type="button" value="全选" onclick="select_all('#table');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#table');" /> &nbsp;&nbsp;
+        <input type="button" value="选中已打印的" onclick="select_reverse('#table', 'disabled');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="print" value="打印拣货单" />
+      </div>
+  
+  </div>
+  
+  
+  {else}
+  <br /><br />
+  <div style="text-align:center"><h4>没有已预定库存订单</h4></div>
+  <br /><br />
+  {/if}
+  
+  <br />
+</fieldset>
+
+
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * $Id: slave_config.php 15685 2008-12-12 07:54:56Z zwsun $
+ * 
+ * @modby Zandy 2007-10-17
+ */
+/*OUKOO图片路径*/
+define('ImagePath','http://img.ouku.com/imgs/');
+// 定义论坛路径
+define('BBSPath','http://localbbs.ouku.com/');
+
+// database host
+$db_host   = "192.168.1.2:33306";
+// database name
+$db_name   = "ecshop";
+// database username
+$db_user   = "ecshop";
+// database password
+$db_pass   = "ecshopMySQL";
+
+//手机频道配置 add by taofei  
+//// database host
+$mc_db_host   = "192.168.1.2:33306";
+//// database name
+$mc_db_name   = "CP_PDAFANS_RESOURCE";
+$crawler_db_name   = "CRAWLER";
+//// database username
+$mc_db_user   = "ecshop";
+//// database password
+$mc_db_pass   = "ecshopMySQL";
+
+// BBSAPI
+$bbsapi = "http://192.168.1.2/bbs/rpc.php";
+
+// COOKIE_DOMAIN
+$COOKIE_DOMAIN = "";
+
+// membership rpc host
+$membership_rpc_host = "192.168.1.170";
+$membership_rpc_path = "/RpcService.php";
+$membership_rpc_port = "81";
+
+// biaoju rpc host
+$biaoju_rpc_host = "192.168.1.2";
+$biaoju_rpc_path = "/rpc/jrpc";
+$biaoju_rpc_port = "38080";
+
+// sso rpc host
+$sso_rpc_host = '192.168.1.2';
+$sso_rpc_path = '/rpc/jrpc';
+$sso_rpc_port = '38080';
+
+// payment rpc host
+$payment_rpc_host = '192.168.1.2';
+$payment_rpc_path = '/rpc/jrpc';
+$payment_rpc_port = '38080';
+
+// payment rpc host
+$search_rpc_host = '192.168.1.2';
+$search_rpc_path = '/rpc/jrpc';
+$search_rpc_port = '38080';
+
+
+// table prefix
+$prefix    = "ecs_";
+
+$timezone    = "Asia/Shanghai";
+
+$cookie_path    = "/";
+
+$cookie_domain    = "";
+
+$admin_dir = "admin";
+
+$session = "1440000";
+
+// {{{ 商品评论用
+define('BBSAPI', $bbsapi);
+define('COOKIE_DOMAIN', $COOKIE_DOMAIN);
+// }}}
+
+
+?>

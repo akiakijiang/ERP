@@ -1,0 +1,1093 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>销售订单录入</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  <link rel="stylesheet" type="text/css" href="misc/thickbox.css" />
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	// 已添加的订单商品  (可理解为JS端的购物车)
+	var order_goods_array = new Array();
+	var added_goods_list = new Array();
+	// 初始化商品购物车
+	{foreach from=$cart_goods_list item=goods}
+	var _g = {ldelim}ix:'{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}', price:'{$goods.shop_price}', number:{$goods.quantity}, parent_id:{$goods.parent_id}{rdelim};
+	order_goods_array.push(_g);
+	{/foreach}
+	
+	// {literal}
+	
+
+	/**
+	 * 改变地域的下拉框
+	 */
+	var Region = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+				{name: 'order[province]', data:{type:2} }, // 省
+				{name: 'order[city]',     data:{type:3} }, // 市
+				{name: 'order[district]'}                  // 区
+		],
+		
+		expr : ':select[name="?"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+				for (var i = 0; i < this.regions.length; i++) {
+					var node = $(this.expr.replace('?', this.regions[i].name));
+					node.bind('change', this.regions[i].data, this.change_region_list);
+					if (i > 0) {
+						var prev = $(this.expr.replace('?', this.regions[i-1].name));
+						var value = parseInt(prev.val());
+						if (isNaN(value) || value < 1) {
+							node.hide();
+						} else {
+                            node.show();	
+						}
+					}					
+				}
+		},
+
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = Region.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == Region.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				if (!last) {
+					$c = $(Region.expr.replace('?', Region.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(Region.expr.replace('?', Region.regions[i].name)).hide();	
+					}
+				}
+			
+				$c.unbind();
+				$.ajax({
+					type: 'POST',
+					url: WEB_ROOT + 'admin/ajax.php?act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', Region.regions[next].data, Region.change_region_list);
+							}
+						}
+					}
+				});	
+		}
+	};	
+	
+	
+	
+	// 载入执行
+	$(document).ready(function(){
+														 
+			// 提交禁用按钮
+			$(':button, :submit').attr('disabled', false);
+			$('form').bind('submit', function(){
+			    $(':button, :submit').attr('disabled', true);
+			});
+			
+			// 绑定添加商品按钮事件
+			$('#order_goods_add_btn').bind('click', order_goods_add);
+			
+			// 绑定 选择省会改变地区的事件
+			Region.init();
+
+			$(':select["facility_id"]').bind('change',refreshCODExpress);
+			$(':select["pay_id"]').bind('change',refreshCODExpress);
+			
+			/**
+			 * 商品搜索
+			 */
+			$('#order_goods_add_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+				dataType : 'json',
+				minChars: 1,
+				delay: 1000,
+				mustMatch: false,
+				formatItem : function(row, i, max, value, term) {
+					return(row.goods_name);
+				},
+				formatResult : function(row) {
+					return(row.goods_name);
+				}
+			}).result(function(event, row, formatted) {
+				$('#order_goods_add_goods_id').val(row.goods_id);
+				change_goods_style_select_list(row.goods_id);
+			});
+			
+			/**
+			 * 如果更改了分类, 则改变商品的查询范围
+			 */
+			$('#order_goods_add_category').bind('change', function(){
+				$('#order_goods_add_select').val('');																										 
+				$('#order_goods_add_select').flushCache().setOptions({
+					extraParams : {'category':$(this).val()}
+				}); 																						 
+			});
+			var init_category = $('#order_goods_add_category').val();
+			if (init_category) {
+				$('#order_goods_add_select').flushCache().setOptions({
+					extraParams : {'category':init_category}
+				}); 	
+			}
+			
+			/**
+			 * 用户搜索
+			 */
+			$('#order_user_id_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_user', {
+				dataType : 'json',
+				minChars: 1,
+				mustMatch: false,
+				delay: 1200,
+				formatItem : function(row, i, max, value, term) {
+					return(row.user_name);
+				},
+				formatResult : function(row) {
+					return(row.user_name);
+				}
+			}).result(function(event, row, formatted) {
+				$(':input[name="order[user_id]"]').val(row.user_id);
+			});
+	});
+	
+	/**
+	 * 更改样式选择的下拉项
+	 *
+	 * @param int goods_id 商品ID 
+	 */
+	function change_goods_style_select_list(goods_id)
+	{
+			var $e = $('#order_goods_add_style_id');
+			
+			$.ajax({
+ 	     		    beforeSend : function(){
+						$e.attr('disabled', true);	
+					},
+					async : false,
+					dataType : "json",
+					data: "goods_id=" + goods_id,
+					url : WEB_ROOT + "admin/ajax.php?act=search_goods_styles",
+					type : 'POST',
+					success : function(response) {
+						if (response.length) {	
+							var tpl = '';
+							for (var i = 0; i < response.length; i++) {
+								tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+							}
+						} else {
+							tpl = '<option value="0">N/A</option>';	
+						}
+						$e.html(tpl);
+					},
+					complete : function() {
+						$e.attr('disabled', false);
+					}
+			});
+	}
+	/**
+	 * 批量导入销售订单
+	 */
+	function batch_purchase(){
+		var party_id = $('#party_id').val();
+		
+		$.ajaxFileUpload({
+			url:'batch_purchase.php?party_id='+party_id,
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			success: function (data)
+	        {
+	        	added_goods_list = data.content;
+	        	if(data.message == ""){
+	        		batch_order_goods_add();
+	        	}else{
+	        		alert(data.message);
+	        	}
+	        },
+	        error: function(data,status,e){
+	        	alert("方法调用错误，请联系erp组");
+	        }
+		})
+	}
+	
+	function batch_order_goods_add()
+	{
+		for(var i = 0;i < added_goods_list.length; i++){
+			var goods_id = added_goods_list[i][0];
+			var style_id = added_goods_list[i][1];
+			var num = added_goods_list[i][2];
+			var price = added_goods_list[i][3];
+			// 查询出该商品详情并添加到列表
+			$.ajax({
+				type: 'POST',
+				url: 'sales_order_entry.php?request=ajax&act=add_goods',
+				data: 'goods_id=' + goods_id + '&style_id=' + style_id + '&goods_number=' + num +'&price='+price,
+				dataType: 'json',
+				success: order_goods_add_callback,
+				error: function() { 
+					alert('查询该商品数据失败'); 
+				}
+			});
+		}
+		// 添加商品到列表
+		function order_goods_add_callback(data) {
+			if (data.error) {
+				alert(data.error);
+				return;
+			}
+			
+			var amount = money_format(data.shop_price * data.goods_number);
+			var ix = data.goods_id + '_' + data.style_id + '_' + data.parent_id;
+			var g = {ix:ix, price:data.shop_price, number:parseInt(data.goods_number), parent_id:data.parent_id};
+			if (cart_add(g)) {
+			    var tpl = "<tr align=\"center\" ix=\"" + ix +"\" gid=\"" + data.goods_id + "\" bgcolor=\"#f9f9f9\">" +
+		  		    	  "  <td align=\"left\" style=\"padding-left:10px\">" + data.goods_name + "</td>" +
+					      "  <td>" + data.goods_id + "#" + data.style_id +"</td>" +
+    					  "  <td>" + data.shop_price + "</td>" +
+	    				  "  <td>" + data.goods_number + "</td>" +
+                          "  <td><a href=\"javascript:void(0);\" onclick=\"order_goods_package_list("+ data.goods_id +")\">套餐</a></td>" +
+			    		  "  <td> " +
+				    	  "    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this)\">删除</a>" +
+					      "    <input name=\"order_goods[" + ix + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+    					  "    <input name=\"order_goods[" + ix + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+	    				  "    <input name=\"order_goods[" + ix + "][goods_number]\" type=\"hidden\" value=\"" + data.goods_number + "\" /> " +
+                          "    <input name=\"order_goods[" + ix + "][parent_id]\" type=\"hidden\" value=\"" + data.parent_id + "\" /> " +
+                          "    <input name=\"order_goods[" + ix + "][price]\" type=\"hidden\" value=\"" + data.shop_price + "\" /> " +
+			    		  "  </td>" +
+                          "  <td><a href=\"http://www.ouku.com/goods" + data.goods_id + "/\" target=\"_blank\">详细</a></td>" +
+				    	  "</tr>";
+                $('#order_goods_list').append(tpl); 
+            }
+
+		}
+	}
+	
+	/**
+	 * 添加商品
+	 */
+	function order_goods_add(event)
+	{
+		// 添加按钮
+		var $button = $('#order_goods_add_btn');
+		waiting($button);
+		
+		// 判断是否输入了商品数量
+		var num = $.trim($('#order_goods_add_num').val());
+		if (num == '' || !/^\d+$/.test(num) || num < 1) {
+			alert('请输入正确的商品数量');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的订单商品id
+		var goods_id = $('#order_goods_add_goods_id').val();
+		if (!goods_id) {
+			alert('请先选择商品');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的商品样式id
+		var style_id = $('#order_goods_add_style_id').val();
+
+		// 查询出该商品详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'sales_order_entry.php?request=ajax&act=add_goods',
+			data: 'goods_id=' + goods_id + '&style_id=' + style_id + '&goods_number=' + num,
+			dataType: 'json',
+			success: order_goods_add_callback,
+			error: function() { 
+				waiting($button, 'en'); 
+				alert('查询该商品数据失败'); 
+			}
+		});
+		
+		// 添加商品到列表
+		function order_goods_add_callback(data) {
+			if (data.error) {
+				alert(data.error);
+				waiting($button, 'en');
+				return;
+			}
+			
+			var amount = money_format(data.shop_price * num);
+			var ix = data.goods_id + '_' + data.style_id + '_' + data.parent_id;
+			var g = {ix:ix, price:data.shop_price, number:parseInt(num), parent_id:data.parent_id};
+			if (cart_add(g)) {
+			    var tpl = "<tr align=\"center\" ix=\"" + ix +"\" gid=\"" + data.goods_id + "\" bgcolor=\"#f9f9f9\">" +
+		  		    	  "  <td align=\"left\" style=\"padding-left:10px\">" + data.goods_name + "</td>" +
+					      "  <td>" + data.goods_id + "#" + data.style_id +"</td>" +
+    					  "  <td>" + data.shop_price + "</td>" +
+	    				  "  <td>" + num + "</td>" +
+                          "  <td><a href=\"javascript:void(0);\" onclick=\"order_goods_package_list("+ data.goods_id +")\">套餐</a></td>" +
+			    		  "  <td> " +
+				    	  "    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this)\">删除</a>" +
+					      "    <input name=\"order_goods[" + ix + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+    					  "    <input name=\"order_goods[" + ix + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+	    				  "    <input name=\"order_goods[" + ix + "][goods_number]\" type=\"hidden\" value=\"" + num + "\" /> " +
+                          "    <input name=\"order_goods[" + ix + "][parent_id]\" type=\"hidden\" value=\"" + data.parent_id + "\" /> " +
+			    		  "  </td>" +
+                          "  <td><a href=\"http://www.ouku.com/goods" + data.goods_id + "/\" target=\"_blank\">详细</a></td>" +
+				    	  "</tr>";
+                $('#order_goods_list').append(tpl); 
+            }
+
+			waiting($button, 'en');
+		}
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+
+    /**
+     * 显示商品套餐
+     */
+    function order_goods_package_list(goods_id) 
+    {
+        $('#goods-package-list').empty().append('<tr align="center"><th>选择</th><th>商品名称</th><th>商品编码</th><th>单价</th><th></th></tr>');
+        this.blur();
+        $.ajax({
+			type: 'POST',
+			url: 'ajax.php?act=search_goods_fittings',
+			data: 'goods_id=' + goods_id,
+			dataType: 'json',
+			success: order_goods_package_list_callback,
+			error: function() { 
+				alert('查询该商品套餐数据失败'); 
+			}
+        }); 
+
+        function order_goods_package_list_callback(data) {
+            if (!data || data.length == 0) {
+                alert('该商品没有套餐信息');
+                return false;
+            }
+            $('#goods-package-parent').val(goods_id);
+            for (var i = 0; i < data.length; i++) {
+		        var tpl = "<tr align=\"center\">"+
+                          "  <td><input type=\"checkbox\" value=\"" + data[i].goods_id + "_" + data[i].style_id + "\" /></td>" + 
+					      "  <td align=\"left\" style=\"padding-left:10px\">" + data[i].goods_name + "</td>" +
+					      "  <td>" + data[i].goods_id + "#" + data[i].style_id +"</td>" +
+					      "  <td>" + data[i].goods_price + "</td>" +
+                          "  <td><a href=\"http://www.ouku.com/goods" + data[i].goods_id +"/\" target=\"_blank\"> 查看 </a></td>" +
+					      "</tr>"; 
+                $('#goods-package-list').append(tpl);                      
+            }
+            tb_show('添加商品套餐', '#TB_inline?width=720&inlineId=goods-package-container&modal=false', false); 
+        }
+    }
+	
+    /**
+     * 添加套餐商品
+     */
+    function order_goods_package_add() 
+    {
+    	var $button = $('#order_goods_package_add_btn');
+		waiting($button);
+
+        // 被选中的商品
+        var $c = $('#goods-package-list').find(':checkbox:checked');
+        if ($c.length < 1) {
+            alert('没有选中商品');
+            waiting($button, 'en');
+            return false;
+        }
+        
+        // 父商品的ID
+        var parent_id = $('#goods-package-parent').val();
+        $c.each(function(i){
+            if (!this.value) { return true; }
+            var s = this.value.split('_');
+            var goods_id = s[0];
+            var style_id = s[1];
+            var num = 1;
+		    // 查询出该商品详情并添加到列表
+		    $.ajax({
+          	    async: false,  // 重要，在循环中一定要把异步设置为false
+			    type: 'POST',
+			    url: 'sales_order_entry.php?request=ajax&act=add_goods',
+			    data: 'goods_id=' + goods_id + '&style_id=' + style_id + '&goods_number=' + num + '&parent_id=' + parent_id,
+			    dataType: 'json',
+			    success: order_goods_package_add_callback
+		    });
+        });
+
+        $c.attr('checked', false);
+        waiting($button, 'en');
+        alert('您选择的商品已添加, 请查看商品列表');
+
+        function order_goods_package_add_callback(data) {
+			if (data.error) {
+				return true;
+			}
+            
+            var num = 1;
+			var ix = data.goods_id + '_' + data.style_id + '_' + data.parent_id;
+			var g = {ix:ix, price:data.shop_price, number:num, parent_id:data.parent_id};
+			if (cart_add(g)) {
+		    	var tpl = "<tr align=\"center\" ix=\"" + ix +"\" pid=\"" + data.parent_id + "\">" +
+    				      "  <td align=\"left\" style=\"padding-left:15px\">| - " + data.goods_name + "</td>" +
+	    				  "  <td>" + data.goods_id + "#" + data.style_id +"</td>" +
+		    			  "  <td>" + data.shop_price + "</td>" +
+			    		  "  <td>" + num + "</td>" +
+                          "  <td></td>" +
+					      "  <td> " +
+    					  "    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this)\">删除</a>" +
+	    				  "    <input name=\"order_goods[" + ix + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+		    			  "    <input name=\"order_goods[" + ix + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+                          "    <input name=\"order_goods[" + ix + "][parent_id]\" type=\"hidden\" value=\"" + data.parent_id + "\" /> " +
+				    	  "    <input name=\"order_goods[" + ix + "][goods_number]\" type=\"hidden\" value=\"" + num + "\" /> " +
+					      "  </td>" +
+                          "  <td><a href=\"http://www.ouku.com/goods" + data.goods_id + "/\" target=\"_blank\">详细</a></td>" +
+    					  "</tr>";            
+                // 找到父节点，然后添加到父节点下面
+                $('#order_goods_list').find('tr[gid="' + data.parent_id + '"]').after(tpl);
+            }
+        }
+    }
+	
+	/**
+	 * @return boolean 返回商品是否存在了
+	 */
+	function cart_add(g)
+	{
+    	// 判断该商品是否存在了
+		for (var i = 0; i < order_goods_array.length; i++ ) {
+			// 商品存在则更改数量并返回false
+			if (order_goods_array[i].ix == g.ix) {
+				// 更改商品数
+				order_goods_array[i].number += g.number;
+
+				// 更改显示的商品数和表单隐藏域
+				var $tr = $('#order_goods_list').find('tr[ix="' + g.ix +'"]');
+				$tr.children('td').get(3).innerHTML = order_goods_array[i].number; 
+				$tr.find('input[name="order_goods[' + g.ix +'][goods_number]"]').val(order_goods_array[i].number);
+				
+				return false;
+			}
+		}
+			
+		// 该商品还没有添加
+		order_goods_array.push(g);
+		return true;
+	}
+
+	/**
+	 * 删除商品
+	 *
+	 * @param docObject  节点对象
+	 */
+	function order_goods_remove(doc) 
+	{
+    	var $tr = $(doc).parent().parent();
+        var ix = $tr.attr('ix');
+        var gid = $tr.attr('gid');
+
+		$.ajax({
+			type: 'POST',
+			url: 'sales_order_entry.php?request=ajax&act=remove_goods',
+			data: 'goods_style_parent_id=' + ix,
+			dataType: 'json',
+            complete: function(response) {
+                if (gid && (gid != undefined) && parseInt(gid) > 0) {
+                    // 如果是主商品，下面的套餐商品也要删除
+                    $('#order_goods_list').find('tr[pid="' + gid + '"]').remove();
+                    for (var i = 0; i < order_goods_array.length; i++) {
+                        if (order_goods_array[i].parent_id == gid) {
+                            order_goods_array.splice(i, 1);
+                        }
+                    }
+                }
+                // 删除节点
+		        $tr.remove();
+
+        		// 从已添加堆栈中删除该商品
+		        for (var i = 0; i < order_goods_array.length; i++) {
+			        if (order_goods_array[i].ix == ix) {
+        				order_goods_array.splice(i, 1);
+		        		break;
+			        }
+		        }
+            } 
+		});
+	}
+
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		
+		do {
+		    // 外部订单类型匹配
+			if ($(':select[name="order[outer_type]"]').val() != -1) {
+    			if (($(':select[name="order[outer_type]"]').val() == 'taobao'
+    			  && $(':select[name="order[pay_id]"]').val() != 65
+    			  && $(':select[name="order[pay_id]"]').val() != 73 
+    			  && $(':select[name="order[pay_id]"]').val() != 74
+    			  ) || 
+    			 ($(':select[name="order[outer_type]"]').val() == 'youa'
+    			  && $(':select[name="order[pay_id]"]').val() != 69)) {
+    			    alert('支付方式与外部订单类型不匹配');
+    			    break;
+    			}
+    			if ($.trim($(':input[name="order[taobao_order_sn]"]').val()) == '') {
+    			    alert('请填写外部订单号');
+			        break;
+    			}
+    			var regTid = new RegExp("^[0-9]{14}([0-9])?(\-.+)?$");
+    			if($(':select[name="order[outer_type]"]').val() == 'taobao' && !regTid.test($.trim($(':input[name="order[taobao_order_sn]"]').val()))){
+    				alert("订单号以14位数字开头~");
+    				break;
+    			}
+			}
+			
+			// 外部订单类型
+			if ($.trim($(':input[name="order[taobao_order_sn]"]').val()) != ''
+			  && $(':select[name="order[outer_type]"]').val() == -1) {
+			    alert('请选择外部订单类型');
+			    break;
+			}
+			
+			// 外部渠道
+			if ($(':select[name="order[outer_type]"]').val() == 'taobao'
+			  && $(':select[name="order[sub_outer_type]"]').val() == -1) {
+			    alert('请选择外部渠道');
+			    break;
+			}
+			
+			// 外部渠道
+			/*
+			if (($(':select[name="order[pay_id]"]').val() == 65 
+			  && $(':select[name="order[sub_outer_type]"]').val() != 'jmhu@ouku.com') ||
+			  ($(':select[name="order[pay_id]"]').val() == 73 
+			  && $(':select[name="order[sub_outer_type]"]').val() != 'zhuang_tb1@163.com') ||
+			  ($(':select[name="order[pay_id]"]').val() == 74 
+			  && $(':select[name="order[sub_outer_type]"]').val() != 'erpchenlei@163.com')) {
+			    alert('请选择外部渠道');
+			    break;
+			}
+			*/
+			
+			// 收货人
+			if ($.trim($(':input[name="order[consignee]"]').val()) == '') {
+				alert('请填写收货人');
+				break;
+			}
+			
+			// 用户
+			if ($.trim($(':input[name="order[user_id]"]').val()) == '') {
+				alert('请选择订单用户');
+				break;
+			}
+			
+			// 联系电话
+			/*
+			if ($.trim($(':input[name="order[tel]"]').val()) == '') {
+				alert('请填写联系电话');
+				break;
+			}
+			*/
+			
+			// 收货地址
+			var $p = $(':select[name="order[province]"]');
+			var $c = $(':select[name="order[city]"]');
+			if ($.trim($p.val()) == '' || $p.val() == '0' || $.trim($c.val()) == '' || $c.val() == '0') {
+				alert('请选择收货地址');
+				break;
+			}
+			
+			// 邮政编码
+			/*
+			if ($.trim($(':input[name="order[zipcode]"]').val()) == '') {
+				alert('请填写邮政编码');
+				break;
+			}
+			*/
+			
+			// 配送
+			if ($(':select[name="order[shipping_id]"]').val() == 0) {
+				alert('请选择配送方式');
+				break;
+			}
+			
+			// 支付
+			if ($(':select[name="order[pay_id]"]').val() == 0) {
+				alert('请选择配送方式');
+				break;
+			}
+			
+			// 配送费用
+			/*
+			if ($.trim($(':input[name="order[shipping_fee]"]').val()) == '') {
+				alert('请填写配送费用');
+				break;
+			}
+			*/
+			
+			// email
+			/*
+			if ($.trim($(':input[name="order[email]"]').val()) == '') {
+				alert('请填写Email');
+				break;
+			}
+			*/
+			
+			// 成功后提交
+			message = '确认吗';
+			if (confirm(message)) {
+				$('#form').submit();
+				waiting($button, 'en');
+			}
+		} while (false);
+
+		waiting($button, 'en');
+		return;	
+	}
+	
+	/**
+	 * 格式化金额
+	 */
+	function money_format(number) 
+	{
+		var num = Math.round(number * 100) / 100 ;
+		return num.toFixed(2);
+	}
+
+	/**
+	坑爹的COD
+	100170588	依云HOD上海
+	100170589	依云HOD北京
+	83972713	亚马逊仓
+	---
+	212	依云—货到付款
+	218	亚马逊COD－ECCO
+	171	安怡－上海宅急送COD
+	172	安满－上海宅急送COD
+	--
+	11	宅急送快递_货到付款
+	125	优速COD
+	130	亚马逊COD－ECCO
+	**/
+	function refreshCODExpress(){
+		var $f = $(':select[name="order[facility_id]"]');
+		var $s = $(':select[name="order[shipping_id]"]');
+		var $p = $(':select[name="order[pay_id]"]');
+		var isCODlimited=false;
+		if($p.val()==212){//212	依云—货到付款
+			if($f.val()==100170589){//100170589	依云HOD北京
+				$isCODlimited=true;
+				$s.val(11);//11	宅急送快递_货到付款
+			}else if ($f.val()==100170588){//100170588	依云HOD上海
+				$isCODlimited=true;
+				$s.val(125);//125	优速COD
+			}
+		}else
+		if($p.val()==171 || $p.val()==172){
+			//171	安怡－上海宅急送COD //172	安满－上海宅急送COD
+			$isCODlimited=true;
+			$s.val(11);//11	宅急送快递_货到付款
+		}else
+		if($p.val()==218 && $f.val()==83972713){
+			//218	亚马逊COD－ECCO
+			//83972713	亚马逊仓
+			$isCODlimited=true;
+			$s.val(130);//130	亚马逊COD－ECCO
+		}
+		if(isCODlimited){
+			$s.attr('disabled',$isCODlimited);
+		}
+	}
+
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;销售订单录入&nbsp;</span></legend>
+  
+ 	<form method="post" id="form" action="sales_order_entry.php" >  
+
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">订单信息</h3>
+
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">所属用户 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="order[user_name]" value="{$order.user_name}" id="order_user_id_select" size="20" /> 
+          #<input type="text" name="order[user_id]" value="{$order.user_id}" style="border:none; width:50px;" /> &nbsp;
+        	<span class="tip">可以通过用户名或用户邮箱搜索用户</span>
+				</td>
+			</tr>
+      
+    	<tr>
+      	<td>收货人 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="order[consignee]" value="{$order.consignee}" /> &nbsp;
+          性别 <select name="order[sex]"><option value="unknown">未知</option><option value="male">先生</option><option value="female">女士</option></select>
+				</td>
+			</tr>
+      
+    	<tr>
+      	<td>联系电话</td>
+        <td>
+        <input type="text" name="tel[0]" value="{$tel.0}" size="8" />-
+        <input type="text" name="tel[1]" value="{$tel.1}" size="30" />-
+        <input type="text" name="tel[2]" value="{$tel.2}" size="8" /></td>
+			</tr>
+      
+    	<tr>
+      	<td>手机</td>
+        <td><input type="text" name="order[mobile]" value="{$order.mobile}" size="30" /></td>
+			</tr>
+      
+      <tr>
+        <td>收货地址 <span class="require"> * </span></td>
+        <td>
+           <select name="order[province]"><option value="0">-请选择-</option>{html_options options=$province_list selected=$order.province}</select>省 &nbsp;&nbsp;
+           <select name="order[city]" style="display:none"><option value="0">-请选择-</option>{html_options options=$city_list selected=$order.city}</select> &nbsp;&nbsp;
+           <select name="order[district]" style="display:none"><option value="0">-请选择-</option>{html_options options=$district_list selected=$order.district}</select>
+        </td>
+      </tr>
+        
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+        	<input type="text" name="order[address]" value="{$order.address}" maxlength="254" size="50" /> &nbsp; 
+        	<span class="tip">详细的路名、街名和具体的门牌号</span>
+				</td>
+      </tr>
+        
+    	<tr>
+      	<td>支付方式 <span class="require"> * </span></td>
+        <td><select name="order[pay_id]"><option value="0">- 请选择</option>{html_options options=$pay_list selected=$order.pay_id}</select></td>
+			</tr>
+              
+      <tr>
+        <td>发票抬头</td>
+        <td>
+          <input type="text" name="order[inv_payee]" value="{$order.inv_payee}" maxlength="128" /> &nbsp;&nbsp;
+          是否需要发票 ：<input type="checkbox" name="order[need_invoice]" value="1" checked="checked" />
+        </td>
+      </tr>
+      
+      <tr>
+        <td>快递费用</td>
+        <td>
+          <input type="text" name="order[shipping_fee]" value="{if $order.shipping_fee}{$order.shipping_fee}{else}0.00{/if}" size="10" maxlength="128" /> &nbsp;
+          <span class="tip">如果不填写运费，则系统会根据快递目的地来自动计算</span>
+        </td>
+      </tr>
+          
+      <tr>
+        <td>包装费用</td>
+        <td>
+          <input type="text" name="order[pack_fee]" value="{if $order.pack_fee}{$order.pack_fee}{else}2.00{/if}" size="10" maxlength="128" />
+        </td>
+      </tr>
+      
+      <tr>
+        <td>配送方式 <span class="require"> * </span></td>
+        <td>
+          <select name="order[shipping_id]"><option>- 请选择</option>{html_options options=$shipping_list selected=$order.shipping_id}</select>
+          COD订单请选择合理的COD运送方式（部分COD已经加上限制）。
+        </td>
+      </tr>
+      
+      <tr>
+        <td>用户Email</td>
+        <td>
+          <input type="text" name="order[email]" value="{$order.email}" size="40" maxlength="128" />
+        </td>
+      </tr>
+      
+      <tr>
+        <td>外部类型</td>
+        <td>
+          <select name="order[outer_type]" >
+            <option value="-1">无</option>
+            {html_options options=$outer_type_options selected=$order.outer_type}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>外部订单渠道</td>
+        <td>
+      	<select name="order[sub_outer_type]">
+      	  <option value="-1">无</option>
+      	  {html_options options=$sub_outer_type_options selected=$order.sub_outer_type}
+      	</select>
+      	</td>
+      </tr>
+      <tr>
+        <td>外部订单号</td>
+        <td>
+          <input type="text" name="order[taobao_order_sn]" value="{$order.taobao_order_sn}" maxlength="64" size="32" />&nbsp;
+          <span class="tip">如：123456789123456或者123456789123456-CF</span>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>外部积分折扣</td>
+        <td>
+          <input type="text" name="order[taobao_point_fee]" value="{$order.taobao_point_fee}" size="32" />
+          <span class="tip">单位:分，如1元则填写100</span>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>发货仓库</td>
+        <td>
+          <select name="order[facility_id]">{html_options options=$available_facility selected=$order.facility_id}</select>
+        </td>
+      </tr>
+      
+       <!-- 如果是faucetland组织，则添加币种选择 -->
+       {if $smarty.session.party_id == '65560'}
+        <tr>
+          <td>货币种类</td>
+          <td>
+            <select name="currency">{html_options options=$currency }</select>
+          </td>
+        </tr>
+       {/if}
+      
+      <tr>
+      	<td>用户备注</td>
+        <td><input name="order[postscript]" value="{$order.postscript}" maxlength="255" size="50" /><td>
+			</tr>
+        
+		</table>
+  </div>
+  
+  
+  
+  
+  <br />
+  <div style="clear:both; width:750px;">
+  
+      <h3 style="color:#09F;">订单商品</h3>
+  
+    	<table cellpadding="5" cellspacing="1">
+      
+        {if $kf_batch_order_entry }
+        <tr>
+          <input type="hidden" name="party_id" id="party_id" value="{$smarty.session.party_id}"/>
+          <td  width="120">导入销售订单文件：</td>
+          <td><input type="file" id="fileToUpload" name="fileToUpload"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id="batch_order_goods_add_btn" type="button" value="导入EXCEL" onclick="batch_purchase()"/></td>
+        </tr>
+        {/if}
+        
+        <tr>
+      	  <td>&nbsp;</td>
+          <td> </td>
+        </tr>
+        
+    	<tr>
+      	<td width="120">品类</td>
+        <td>
+        	<select id="order_goods_add_category">
+            <option value="0">- 不限</option>
+            <option value="mobile">手机</option>
+            <option value="fittings">配件</option>
+            <option value="dvd">DVD</option>
+            <option value="education">电教产品</option>
+            <option value="shoes">鞋品</option>
+            <option value="notebook">笔记本</option>
+            <option value="other">其他</option>
+					</select> 
+        	&nbsp;
+          <span class="tip">选择品类可以缩小商品的查询范围</span>
+				</td>
+			</tr>
+      
+      <tr>
+      	<td>商品</td>
+        <td>
+        	<input type="text" id="order_goods_add_select" size="60" /> #<input type="text" id="order_goods_add_goods_id" size="5" readonly="readonly" style="border:none;" /> &nbsp;&nbsp;
+          样式 <select id="order_goods_add_style_id"><option value="0">N/A</option></select> &nbsp;
+				</td>
+      </tr>
+      
+      <tr>
+      	<td>&nbsp;</td>
+        <td><span class="tip">请输入商品名，如果自动提示没有响应您的输入，请尝试按向下方向键</span></td>
+      </tr>
+      
+      <tr>
+      	<td>数量</td>
+        <td>
+        	<input id="order_goods_add_num" type="text" size="10" value="1" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        	<input id="order_goods_add_btn" type="button" value="添加到商品列表" />
+				</td>
+      </tr>
+      
+      <tr>
+      	<td>&nbsp;</td>
+        <td> </td>
+      </tr>
+
+      </table>
+      
+      <h4>已添加商品</h4>
+      <table id="order_goods_list" class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="45%">商品名称</th>
+          <th width="15%">商品编码</th>
+          <th width="12%">单价</th>
+          <th width="8%">数量</th>
+          <th width="20%" colspan="3">操作</th>
+        </tr>   
+        
+        <!--{foreach from=$cart_goods_tree item=goods}-->
+		<tr align="center" ix="{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}" gid="{$goods.goods_id}" bgcolor="#f9f9f9">
+		    <td align="left" style="padding-left:10px;">{$goods.goods_name}</td>
+			<td>{$goods.goods_id}#{$goods.style_id}</td>
+			<td>{$goods.shop_price}</td>
+			<td>{$goods.quantity}</td>
+            <td><a href="javascript:void(0);" onclick="order_goods_package_list({$goods.goods_id})">套餐</a></td>
+			<td>
+				<a href="javascript:void(0);" onclick="order_goods_remove(this)">删除</a>
+				<input name="order_goods[{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}][goods_id]" type="hidden" value="{$goods.goods_id}" />
+				<input name="order_goods[{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}][style_id]" type="hidden" value="{$goods.style_id}" />
+				<input name="order_goods[{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}][goods_number]" type="hidden" value="{$goods.quantity}" />
+				<input name="order_goods[{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}][parent_id]" type="hidden" value="{$goods.parent_id}" />
+			</td>
+            <td>
+                <a href="http://www.ouku.com/goods{$goods.goods_id}/" target="_blank">详细</a>
+            </td>
+		</tr>
+        
+        {* 如果有套餐商品 *}
+        <!--{if $goods.children}--> 
+        <!--{foreach from=$goods.children item=child}-->
+		<tr align="center" ix="{$child.goods_id}_{$child.style_id}_{$child.parent_id}" pid="{$goods.goods_id}">
+		    <td align="left" style="padding-left:15px;">| - {$child.goods_name}</td>
+			<td>{$child.goods_id}#{$child.style_id}</td>
+			<td>{$child.shop_price}</td>
+			<td>{$child.quantity}</td>
+            <td>&nbsp;</td>
+			<td>
+				<a href="javascript:void(0);" onclick="order_goods_remove(this)">删除</a>
+				<input name="order_goods[{$child.goods_id}_{$child.style_id}_{$child.parent_id}][goods_id]" type="hidden" value="{$child.goods_id}" />
+				<input name="order_goods[{$child.goods_id}_{$child.style_id}_{$child.parent_id}][style_id]" type="hidden" value="{$child.style_id}" />
+				<input name="order_goods[{$child.goods_id}_{$child.style_id}_{$child.parent_id}][goods_number]" type="hidden" value="{$child.quantity}" />
+				<input name="order_goods[{$child.goods_id}_{$child.style_id}_{$child.parent_id}][parent_id]" type="hidden" value="{$child.parent_id}" />
+			</td>
+            <td>
+                <a href="http://www.ouku.com/goods{$child.goods_id}/" target="_blank">详细</a>
+            </td>
+		</tr>
+        <!--{/foreach}-->
+        <!--{/if}-->
+
+        <!--{/foreach}-->
+        
+      </table>
+      
+  </div>
+  
+  
+  <br /><br /><br />
+	<div style="text-align:center"><input type="button" value="生成订单" onclick="apply_submit(this);" /></div>
+  <br />
+  
+  <input type="hidden" name="act" value="done" />
+  
+  </form>
+  
+  
+</fieldset>
+
+<!-- 商品套餐列表 -->
+<div id="goods-package-container" style="display:none;width:720px; margin:0; padding:0;">
+    <br />
+    <div>请选择需要添加的商品后点击“添加”</div>
+    <br />
+    <table class="bWindow" id="goods-package-list"> 
+    <!-- 表格内容由JS填充 -->
+    </table>
+    <div style="clear:both;"><br /></div>
+    <div style="text-align:center;">
+        <input type="hidden" value="" id="goods-package-parent" />
+        <input type="button" value="添加" id="order_goods_package_add_btn" onclick="order_goods_package_add()" />
+    </div>
+</div>
+
+</body>
+</html>

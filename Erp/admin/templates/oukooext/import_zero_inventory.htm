@@ -1,0 +1,68 @@
+<html>
+<head>
+	<title>零库存导出</title>
+	<link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/bootstrap/4.0.0-alpha/css/bootstrap.min.css">
+	<script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+	{literal}
+	<style type="text/css">
+		body {
+			font-family: Microsoft YaHei;
+		}
+		#mainBox {
+			width: 96%;
+			margin: 20px auto; 
+			padding: 30px 15px 15px; 
+			border: 1px solid #DDDDDD; 
+			border-radius: 4px; 
+			position: relative;
+		}
+		#mainBox h4 {
+			text-align: center;
+			margin-bottom: 20px
+		}
+		.checkbox {
+			margin-left: 10px;
+		}
+		.import {
+			margin-left: 50px;
+			display: block;
+			float: right;
+			margin-top: 10px;
+			margin-right: 30px;
+		}
+		.clear {
+			clear: both;
+		}
+	</style>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('.import').click(function(){
+				var selected = $('input[name="party_ids[]"]:checked').length;
+				console.log(selected);
+				if(selected > 5){
+					alert("业务组最多只能选择5个！");
+					return false;
+				}
+			});
+		});
+	</script>
+	{/literal}
+</head>
+<body>
+	<div id="mainBox">
+		<h4>零库存导出</h4>
+		<form class="form-inline" method="post">
+			{foreach from=$party_list item=party_list}
+		   	<div class="checkbox">
+		      	<label>
+		      		<input type="checkbox" name="party_ids[]" value="{$party_list.party_id}"> {$party_list.name}
+		      	</label>
+		   	</div>
+		   	{/foreach}
+		   	<button type="submit" class="btn btn-info btn-sm import">导出</button>
+		   	<div class="clear"></div>
+		   	<input type="hidden" value="import_zero" name="type" />
+		</form>
+	</div>
+</body>
+</html>

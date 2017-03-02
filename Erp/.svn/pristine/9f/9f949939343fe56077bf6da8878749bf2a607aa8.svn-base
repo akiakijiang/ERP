@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>发票打印列表</title>
+</head>
+
+<body>
+<form>
+状态：
+<select name="status">
+<option value="-1">所有</option>
+<option value="PENDING" {if $smarty.request.status == 'PENDING'}selected{/if}>等待</option>
+<option value="DELETED" {if $smarty.request.status == 'DELETED'}selected{/if}>作废</option>
+<option value="PRINTED" {if $smarty.request.status == 'PRINTED'}selected{/if}>已打印</option>
+</select>
+订单号：
+<input name="order_sn" value="{$smarty.request.order_sn}">
+<input type="submit" value="搜索">
+<input type="hidden" name="act" value="search">
+
+<a href="brand_code_edit.php" target="_blank">编辑品牌编码</a>
+</form>
+<br>
+<table class="bWindow">
+<tr>
+<th>订单号</th>
+<th>抬头</th>
+<th>内容</th>
+<th>串号</th>
+<th>erp_ids</th>
+<th>状态</th>
+<th>操作</th>
+</tr>
+{foreach from=$orders item=order}
+<tr align="center">
+<td><a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+<td>{$order.mingcheng}</td>
+<td>{$order.print_content|nl2br}</td>
+<td>{$order.chuanhao|nl2br}</td>
+<td>{$order.erp_ids}</td>
+<td>{if $order.status == 'PENDING'}等待{elseif $order.status == 'DELETED'}作废{elseif $order.status == 'PRINTED'}已打印{/if}</td>
+<td>
+{if $order.status == 'PENDING'}
+<form method="POST" action="print_shipping_invoice_list.php">
+<input type="submit" value="作废" 
+    onclick="return confirm('作废前请确保发票打印程序还没开始打印！\n确认要作废吗？')" />
+<input type="hidden" name="print_order_invoice_id" value="{$order.print_order_invoice_id}">
+<input type="hidden" name="act" value="delete">
+<input type="hidden" name="back" value="{$back}">
+</form>
+{/if}
+</td>
+</tr>
+{/foreach}
+<tr align="center">
+<td colspan="30">{$pager}</td>
+</tr>
+</table>
+</body>
+</html>

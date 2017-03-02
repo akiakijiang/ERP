@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>打印出库单</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+{literal}
+<style>
+body{background:#fff;}
+.tmain thead th{border-bottom:1px solid #000;}
+.tmain {margin-left:-50px;
+border-collapse:collapse;width:100%;clear:both;
+font-size:12pt;
+}
+.tmain td,.tmain th{border: solid 1px #000;}
+</style>
+{/literal}
+</head>
+
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+{foreach from=$sales_invoice_items key=i item=sales_invoice_item name=main}
+<div align="center" style="width:18.4cm;margin:0 auto;height:12.5cm;">
+  <table class="tmain" style="margin-top:{if !$smarty.foreach.main.first}13{else}2{/if}px;">
+    <tr>
+      <td colspan="12" valign="top" align="center"><p><strong style="font-size:15pt;">东莞市乐其网络科技有限公司销售出库单</strong></p></td>
+    </tr>
+    <tr>
+      <td colspan="5"></td>
+      <td >编号：F{$smarty.request.begin_no+$i|string_format:"%010d"}</td>
+    </tr>
+    <tr>
+      <td width="74" colspan="5">客户：{$sales_invoice.partner_name}</td>
+      <td>日期：{$smarty.request.print_date}</td>
+    </tr>
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+    <tr>
+      <td width="330">产品描述</td>
+      <td width="60">单位</td>
+      <td width="60">数量</td>
+      <td width="100">单价</td>
+      <td width="100">金额</td>
+      <td width="180">说明</td>
+    </tr>
+    {assign var=quantity_sum value=0}
+    {assign var=total_amount value=0}
+    {foreach from=$sales_invoice_item item=item name=sales_invoice}
+    {if $item.item_name neq '' && $item.uom neq '' && $item.quantity neq '' }
+    <tr>
+      <td nowrap>{$item.item_name}</td>
+      <td>{$item.uom}</td>
+      <td align="right" >{$item.quantity}</td>
+      <td align="right" >{if $item.item_name}{$item.unit_price|string_format:"%.4f"}{/if}</td>
+      <td align="right" >{if $item.item_name}{$item.goods_amount|string_format:"%.2f"}{/if}</td>
+      <td></td>
+    </tr>
+    {assign var=quantity_sum value=$quantity_sum+$item.quantity}
+    {assign var=total_amount value=$total_amount+$item.goods_amount}
+    {else}
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+    {/if}
+    {/foreach}
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td align="right" >{$quantity_sum}</td>
+      <td></td>
+      <td colspan="10">合计金额：{$total_amount|string_format:"%.2f"}</td>
+    </tr>
+  </table>
+  <table class="tmain">
+    <tr>
+      <td width="200">制单：杨新</td>
+      <td width="200">发货人：罗斌</td>
+      <td width="200">复核：刘志刚</td>
+      <td width="200">审批：</td>
+    </tr>
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+  </table>
+</div>
+<div STYLE="page-break-after: always;"></div>
+{if $smarty.request.print != 1}
+<span class="right" onclick="factory.printing.paperSize='ouku_invoice';this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+{/foreach}
+</body>
+</html>

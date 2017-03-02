@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>主分销商管理</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap.min.css" type="text/css"/>
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap-theme.min.css" type="text/css"/>
+  <script type="text/javascript" src="styles/bootstrap/js/jquery.min.js"></script>
+  <script type="text/javascript" src="styles/bootstrap/js/bootstrap.min.js"></script>
+	<!-- // <script type="text/javascript" src="misc/jquery.js"></script> -->
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  {literal}
+	<style type="text/css">
+    body{
+      font-size: 16px !important;
+    }
+  </style>
+  {/literal}
+</head>
+<body>
+<div class="main">
+  <fieldset>
+    <!-- <legend class="header_background">
+      <h3>&nbsp;主分销商管理&nbsp;</h3>
+    </legend> -->
+    <div class="main_content">
+      {if $smarty.request.message}
+      <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$smarty.request.message}
+      </div>
+      {/if}
+	    <br />
+      <fieldset class="top_circle_main_fenxiao">
+      <legend class="expand expand_font_size">&nbsp;{if $edit_distributor}编辑{else}添加{/if}&nbsp;</legend>
+      <form method="post" id="form" class="form-horizontal">
+        <div class="form-group">
+          <label class="col-sm-2 control-label font_size">分销商名称</label>
+          <div class="col-sm-3">
+            <input name="distributor[name]" class="form-control text_width" type="text" value="{$edit_distributor.name}" {if $edit_distributor} disabled="true" {else}{/if}/>
+          </div>
+        <!-- </div>
+        <div class="form-group"> -->
+          <label class="col-sm-2 control-label font_size">联系人</label>
+          <div class="col-sm-3">
+            <input name="distributor[contact]" class="form-control text_width" type="text" value="{$edit_distributor.contact}" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label font_size">预付款预警金额</label>
+          <div class="col-sm-3">
+            <input name="distributor[min_amount]" class="form-control text_width" type="text" value="{$edit_distributor.min_amount}" />
+          </div>
+        <!-- </div>
+        <div class="form-group"> -->
+          <label class="col-sm-2 control-label font_size">所属业务</label>
+          <div class="col-sm-3">
+            <select class="form-control text_width" name="distributor[party_id]" {if $edit_distributor}disabled="disabled"{/if}>
+            <option value="">- 请选择</option>
+            {html_options options=$party_list selected=$edit_distributor.party_id}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label font_size">手机号码</label>
+          <div class="col-sm-3">
+            <input name="distributor[mobile]" class="form-control text_width" type="text" value="{$edit_distributor.mobile}" size="50" />
+          </div>
+        <!-- </div>
+        <div class="form-group"> -->
+          <label class="col-sm-2 control-label font_size">类型</label>
+          <div class="col-sm-3 radio_margin">
+            <input name="distributor[type]" type="radio" value="fenxiao" {if $edit_distributor}disabled="disabled"{/if} {if $edit_distributor.type=='fenxiao'}checked="checked"{/if} /> 分销
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input name="distributor[type]" type="radio" value="zhixiao" {if $edit_distributor}disabled="disabled"{/if} {if $edit_distributor.type=='zhixiao'}checked="checked"{/if} /> 直销
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-2 col-sm-offset-8">
+            <input type="submit" class="btn btn-primary btn-sm" value=" {if $smarty.request.act == 'update'}更新{else}创建{/if} "  />
+          </div>
+        </div>
+      	<input type="hidden" name="main_distributor_id" value="{$edit_distributor.main_distributor_id}" />
+	      <input type="hidden" name="act" value="{if $smarty.request.act == 'update'}update_submit{else}add_submit{/if}" />
+	    </form>
+    </div>
+  </fieldset>
+  <fieldset class="bottom_circle_main_fenxiao">
+    <legend class="expand expand_font_size">&nbsp;查询分销商&nbsp;</legend>
+    <div>
+      <div class="inner form_margin" style="text-align:right; padding-right:20px;">
+        <form class="form-horizontal">
+          模糊搜索 ：
+          <input name="keyword" class="input-height" type="text" size="30" value="{$smarty.request.keyword}" /> 
+          <input type="hidden" name="act" value="search" />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          <input type="submit" class="btn btn-default btn-sm" value="查询" />
+        </form>
+      </div>      
+      <table class="inner table table-condensed table_hover">
+        <tr align="center" class="table_header">
+          <th>分销商ID</th>
+          <th>分销商名称</th>
+          <th>类型</th>
+          <th>联系人</th>
+          <th>所在组织</th>
+          <th width="82">操作</th>
+        </tr>
+        {foreach from=$main_distributors item=distributor}
+			<tr align="center" class="{cycle values='odd,even'}">
+				<td>{$distributor.main_distributor_id}</td>
+				<td>{$distributor.name}</td>
+                   <td>{if $distributor.type=='fenxiao'}分销{elseif $distributor.type=='zhixiao'}<span style="color:#FF0000; font-weight:bold;">直销</span>{/if}</td>
+				<td>{$distributor.contact}</td>
+				<td>{$distributor.party_name}</td>
+				<td>
+					{if $distributor.status == 'NORMAL'}
+          <a href="?act=delete&main_distributor_id={$distributor.main_distributor_id}">停用</a>
+ 
+          {/if}				
+				    <a href="?act=update&main_distributor_id={$distributor.main_distributor_id}">编辑</a>
+				</td>
+			</tr>
+		{/foreach}
+      </table>    
+  </div>
+	</fieldset>
+  <br />
+
+</div>
+</fieldset>
+</div>
+
+<script type="text/javascript">
+  // <![CDATA[
+  // {literal}
+
+  $(document).ready(function(){
+      // 绑定滑动效果
+      $('legend.expand').bind('click', function(event){
+          $(this).next().slideToggle('normal');
+      });
+  });
+  
+  // {/literal}
+  // ]]>
+  </script>
+</body>
+</html>

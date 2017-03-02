@@ -1,0 +1,325 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>盘点RF枪扫描</title>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <!-- RF枪键盘监听，页面跳转 -->
+  <script type="text/javascript" src="js/js_wms/rf_scan.js"></script>
+  
+  <!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+ <!-- Calendar /-->  
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    <!--{/literal}-->
+  </style>
+  
+	<script type="text/javascript">
+	//{literal}
+	// <![CDATA[
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        
+        // 确定页面载入时鼠标焦点的定位
+        $('#from_location').focus();  // 定位到收货容器扫描框
+        
+        // 绑定收货容器扫描事件
+        $('#from_location').bind('keyup', scan);
+
+        // 绑定上架容器扫描事件
+        $('#to_location').bind('keyup', scan);
+  	 
+        // 绑定商品条码扫描事件
+        $('#goods_barcode').bind('keyup', scan);
+        
+        // 绑定商品数量按键事件
+        $('#goods_number').bind('keyup', scan);
+        
+        // 绑定生产日期按键事件
+        $('#validity').bind('keyup', scan);
+
+ 　　     
+        data_init();
+
+        // 看商品的属性来展示
+
+    });
+    
+    // 上架容器检测
+    var flag_from_location = true;
+    function from_location_scan(event,location_barcode,location_id)
+    {
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_from_location) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_from_location = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+        //储位容器检查
+        res_check = check_to_location_barcode(location_barcode,'IL_LOCATION');
+        $note.removeClass('loading'); 
+        if(res_check){
+        	$note.val('扫描成功哦');
+        }else{
+        	$note.val('');
+        	flag_from_location = true;
+        	return false;
+        }
+        flag_from_location = true;
+        sub_mouse_down(location_id);
+    }
+
+   
+    // 商品条码检测
+    var flag_goods_barcode = true;
+    function goods_barcode_scan(event,goods_barcode,location_id)
+    {
+    	var location_barcode = $('#from_location').val();
+    	var goods_barcode = $('#goods_barcode').val();
+         
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_goods_barcode) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_goods_barcode = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+
+        //检查商品条码
+        var res = check_take_stock_goods_barcode(goods_barcode);
+        if(!res['success']) {
+        	$note.val('');
+            $note.removeClass('loading');
+    	    flag_goods_barcode = true;
+        	return false;
+        }
+    	$note.val('检测成功');
+        $note.removeClass('loading');
+	    flag_goods_barcode = true;
+
+    }
+    
+      // 盘点商品条码检查
+	 function check_take_stock_goods_barcode(goods_barcode)
+	 {
+	   	 var goods_barcode = $.trim($('#goods_barcode').val());
+	   	 if(!goods_barcode) {
+	   		 alert('商品条码不能为空!');
+	   		 return false;
+	   	 }
+	     var result = Array();
+	     $.ajax({
+	         async : false,
+	         type: 'POST',
+	         dataType: 'json',
+	         url : 'ajax.php?act=check_take_stock_goods_barcode', 
+	         data: 'goods_barcode=' + goods_barcode,
+	         error: function() { alert("简单盘点商品条码检测ajax请求错误！"); result = false; },
+	         success: function(data) {
+		       	if(data.success) {
+		       		result['is_serial'] = data['is_serial'];
+		       		result['success'] = true;
+		       	} else {
+		       		alert(data.error);
+		       		result['success'] = false;
+		       	}
+	         }
+	     }); 
+	     return result;
+	 }
+    
+    // 商品数量检测
+    var flag_goods_number = true;
+    function goods_number_scan(event,input_number,location_id)
+    {
+    	var grouding_location_barcode = $('#from_location').val();
+    	var goods_barcode = $('#goods_barcode').val();
+    	var input_number = $('#goods_number').val();
+
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_goods_number) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_goods_number = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+        
+    	//数量检测
+    	if(!check_take_stock_input_number(input_number)){
+            flag_goods_number = true;
+    		$note.removeClass('loading');
+    		$note.val('');
+    		return false;
+    	}
+    	
+    	$note.removeClass('loading');
+    	$note.val('检测正确');
+        flag_goods_number = true;
+        
+        //sub_mouse_down(location_id);
+    }
+    
+     // 简单盘点商品完结
+	 function take_stock_simple_goods_transaction()
+	 {
+	     var location_barcode = $('#from_location').val();
+	   	 var goods_barcode = $('#goods_barcode').val();
+	   	 var goods_number = $('#goods_number').val();
+	   	 
+	   	 var serial_number = '';
+	 	 //商品条码检测
+	     var res = check_take_stock_goods_barcode(goods_barcode);
+	     if(!res['success']) {
+	     	return false;
+	     } else {
+	     	//判断是否串号控制
+	     	if(res['is_serial']) {
+	     		  serial_number = goods_barcode;
+	        	  var res_barcode = get_goods_barcode(serial_number); // 根据串号得到条码
+	           	  goods_barcode = res_barcode['goods_barcode'];
+	     	}
+	     }
+	   	 
+	   	 alert('location_barcode:'+location_barcode+' goods_barcode:'+goods_barcode+' goods_number:'+goods_number+' serial_number:'+serial_number);
+	   	 //return true;
+	     var result = "";
+	     $.ajax({
+	         async : false,
+	         type: 'POST',
+	         dataType: 'json',
+	         url : 'ajax.php?act=inventory_stock_count', 
+	         data: 'location_barcode=' + location_barcode + '&goods_barcode=' + goods_barcode +'&serial_number=' + serial_number +'&goods_number='+goods_number,
+	         error: function() { alert("简单盘点商品完结ajax请求错误！"); result = false; },
+	         success: function(data) {
+		       	if(data.success) {
+		       		alert("简单盘点商品完结成功！");
+		       		result = true;
+		       	} else {
+		       		if(data.error) {
+		       			alert(data.error);
+		       			result = false;
+		       		}
+		       	}
+	         }
+	     }); 
+	     return result;
+	 }
+    
+  
+	// ]]>
+	//{/literal}
+	</script>
+</head>
+
+<body>
+
+<form method="post" >
+<table class="bWindow" style="margin-top:5px;">
+
+<tr id="tr_from_location" align="center">
+  <td>储位号</td>
+  <td >
+  		<input type="text" style="width:80%" id="from_location"  value="" >
+  </td>
+</tr>
+
+<tr id="tr_from_location_note" align="center">
+  <td>提示</td>
+  <td>
+		<input type="text" style="width:80%" id="from_location_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_barcode" align="center">
+  <td>商品条码或串号</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_barcode" value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_barcode_note" align="center">
+  <td>提示</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_barcode_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_number" align="center">
+  <td>数量</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_number" value="">
+  </td>
+</tr>
+
+<tr id="tr_goods_number_note" align="center">
+  <td>提示</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_number_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_current_page" align="center">
+  <td>提示</td>
+  <td>
+		<input type="hidden" id="current_page" value="" />当前页面
+  </td>
+</tr>
+<tr id="tr_current_func" align="center">
+  <td>提示</td>
+  <td>
+		<input type="hidden" id="current_func" value="take_stock_simple" />当前功能
+  </td>
+</tr>
+
+
+</table>
+</form>
+
+
+
+</body>
+</html>

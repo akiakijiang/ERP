@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>邮政小包</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:11pt;top:53px;left:20px;">{$order.party_name}</div><!--寄件人-->
+<div style="position:absolute;font-size:12pt;top:53px;left:150px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:10pt;top:90px;left:20px;">请检查包裹完好后再签收，如有破损请拒收。</div>
+<div style="position:absolute;font-size:12pt;top:110px;left:200px;">{$order.company_zipcode}</div><!--邮政编码-->
+<div id="svg" style="width:200px;height:200px;left:300px;position:absolute;top:50px;"> </div>
+
+<div style="position:absolute;font-size:10pt;top:160px;left:20px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:12pt;top:160px;left:150px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:11pt;top:190px;left:20px;width:240px;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:12pt;top:240px;left:200px;width:70px;letter-spacing:3px;">{$order.zipcode}</div>
+<div style="position:absolute;font-size:11pt;top:320px;left:30px;">{$order.goods_type}(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:11pt;top:180px;left:500px;">{$smarty.now|date_format:"%Y  %m  %d"}</div>
+<div style="position:absolute;font-size:11pt;top:300px;left:530px;">{$order.post_office} </div><!-- 收寄局名 -->
+</body>
+</html>

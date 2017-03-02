@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<script type="text/javascript" src="js/erp.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<script type="text/javascript">
+function selectAll(obj) {
+	var isCheck = obj.checked;
+	var checkboxes = document.getElementsByName("index[]");
+	for (i = 0; i < checkboxes.length; i++) {
+		checkboxes[i].checked = isCheck;
+	}
+}
+</script>
+{/literal}
+<title>提货单</title>
+</head>
+<body>
+
+{* 查询框 *}
+<div style="width:98%; margin: 10px auto;">
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+订单号：
+<input style="width:120px" name="order_sn" value="{$smarty.request.order_sn}">
+商品类别：
+<select name="goods_cagetory">
+<option value="-1">所有</option>
+<option value="1" {if $smarty.request.goods_cagetory == 1}selected{/if}>手机</option>
+<option value="2" {if $smarty.request.goods_cagetory == 2}selected{/if}>手机配件</option>
+<option value="3" {if $smarty.request.goods_cagetory == 3}selected{/if}>电教产品</option>
+<option value="4" {if $smarty.request.goods_cagetory == 4}selected{/if}>补货商品</option>
+<option value="5" {if $smarty.request.goods_cagetory == 5}selected{/if}>健康电子</option>
+</select>
+<input type="submit" value="搜索">
+</form>
+<br>
+</div>
+
+
+{* 排序 *}
+<div style="width:98%; margin: 10px auto;">
+<a href="{$smarty.server.REQUEST_URI|add_param_in_url:"shortage":"0"}">库存量不足</a>&nbsp;&nbsp;
+<a href="{$smarty.server.REQUEST_URI|add_param_in_url:"shortage":"1"}">需补货</a>&nbsp;&nbsp;
+<a href="{$smarty.server.REQUEST_URI|add_param_in_url:"shortage":"2"}">全部</a>&nbsp;&nbsp;
+排序：订单的确认时间
+<select name="sort_time" onchange="window.location='{$smarty.server.REQUEST_URI|add_param_in_url:more:1|remove_param_in_url:sort_time}&sort_time='+this.options[this.selectedIndex].value;">
+<option value="0" {if $smarty.request.sort_time == 0}selected{/if}>不限制</option>
+<option value="1" {if $smarty.request.sort_time == 1}selected{/if}>最新确认的订单</option>
+<option value="2" {if $smarty.request.sort_time == 2}selected{/if}>最早确认的订单</option>
+</select>
+品牌
+<select name="sort_cat" onchange="window.location='{$smarty.server.REQUEST_URI|add_param_in_url:more:1|remove_param_in_url:sort_cat}&sort_cat='+this.options[this.selectedIndex].value;">
+<option value="0" {if $smarty.request.sort_cat == 0}selected{/if}>不限制</option>
+<option value="1" {if $smarty.request.sort_cat == 1}selected{/if}>{if $smarty.request.goods_cagetory == 2}品类{else}品牌{/if}</option>
+</select>
+</div>
+
+{*<table class="bWindow" style="width:98%" align="center">
+<caption><h2>未保存订单</h2><br></caption>
+<tr>
+<th>订单号</th>
+<th>日期</th>
+<th>收货人</th>
+<th>商品名</th>
+<th>商品数量</th>
+</tr>
+<!--{foreach from=$unconfirm_order item=order}-->
+<tr align="center">
+<td><a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+<td>{$order.order_time}</td>
+<td>{$order.consignee}</td>
+<td>{$order.goods_name}</td>
+<td>{$order.goods_number}</td>
+</tr>
+<!--{/foreach}-->
+</table>
+<br>*}
+
+<form action="print_delivery_order.php" method="POST" target="_blank" id="form_delivery">
+<table class="bWindow" style="width:98%" align="center">
+<caption>
+	<h2>采购提货清单</h2><br /> 
+  <input value="显示打印清单" type="submit">
+  <input type="submit" onclick="E('form_delivery').action = 'print_delivery_order.php';" name="csv" value="导出CSV"><br><br>
+</caption>
+<tr>
+<th>选<input type="checkbox" checked onclick="selectAll(this)">择</th>
+<th>商品</th>
+<th>备注</th>
+</tr>
+
+{foreach from=$goods_list item=goods name=goods}
+
+<tr align="center">
+<td style="width:50px"><input type="checkbox" checked name="index[]" value="{$smarty.foreach.goods.iteration}">
+<input type="hidden" name="goods_id-{$smarty.foreach.goods.iteration}" value="{$goods.goods_id}" />
+<input type="hidden" name="style_id-{$smarty.foreach.goods.iteration}" value="{$goods.style_id}" />
+</td>
+<td valign="top" width="33%">
+	<table width="100%">
+	<tr>
+  
+		<td width="65%">
+        {$goods.goods_name} × {$goods.total_number}
+        <!--{if $goods.storage_number > 0}-->
+        <span style="color:red"><br>库存中有{$goods.storage_number}台</span>
+        <!--{/if}-->
+        <textarea style="display:none" name="goods_number-{$smarty.foreach.goods.iteration}">{$goods.goods_name} × {$goods.total_number}{if $goods.storage_number > 0}<br><span style="color:red">库存中有{$goods.storage_number}台</span>{/if}</textarea>
+        <input type="hidden" value="{$goods.total_number}" name="goods_number_csv-{$smarty.foreach.goods.iteration}" />
+        <input type="hidden" value="{$goods.storage_number}" name="storage_number_csv-{$smarty.foreach.goods.iteration}" />
+        {if $goods.size}<br /><span style="color:#C60;">[实际尺寸 {$goods.size}]</span>{/if}
+		</td>
+    
+		<td>
+        <ul>
+        {foreach from=$goods.customized_group key=key item=num}
+        <li>{if $key == 'not-applicable'}其他{elseif $key == 'mobile'}移动{elseif $key == 'non-mobile'}非移动{/if}: <font color="Red">{$num}</font></li>
+        {/foreach}
+        </ul>
+        
+        <textarea style="display:none" name="customized-{$smarty.foreach.goods.iteration}">
+        <ul>
+        {foreach from=$goods.customized_group key=key item=num}
+        <li>{if $key == 'not-applicable'}其他{elseif $key == 'mobile'}移动{elseif $key == 'non-mobile'}非移动{/if}: <font color="Red">{$num}</font></li>
+        {/foreach}
+        </ul>
+        </textarea>
+        
+        <textarea style="display:none" name="customized_csv-{$smarty.foreach.goods.iteration}">{foreach from=$goods.customized_group key=key item=num}{if $key == 'not-applicable'}其他{elseif $key == 'mobile'}移动{elseif $key == 'non-mobile'}非移动{/if}: {$num};{/foreach}</textarea>
+		</td>
+        <td nowrap>
+        <ul>
+        {foreach from=$goods.shipping_group key=key item=num}
+        <li>{$key}: <font color="Red">{$num}</font></li>
+        {/foreach}
+        </ul>
+        
+        <textarea style="display:none" name="shipping-{$smarty.foreach.goods.iteration}">
+        <ul>
+        {foreach from=$goods.shipping_group key=key item=num}
+        <li>{$key}: <font color="Red">{$num}</font></li>
+        {/foreach}
+        </ul>
+        </textarea>
+        
+        <textarea style="display:none" name="shipping_csv-{$smarty.foreach.goods.iteration}">{foreach from=$goods.shipping_group key=key item=num}{$key}: {$num};{/foreach}</textarea>
+		</td>
+	</tr>
+	</table>
+</td>
+
+<td align="left">
+
+	{foreach from=$goods.order_group item=order}
+	<a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a> {$order.shipping_name} {$order.order_time}
+	<br /> &nbsp;&nbsp;&nbsp;
+		{foreach from=$order.action_notes item=note}
+	{$note.action_note} {$note.action_user} {$note.action_time} <br />
+		{/foreach}
+	{/foreach}
+  
+	<textarea style="display:none" name="action_notes-{$smarty.foreach.goods.iteration}">
+	{foreach from=$goods.order_group item=order}
+	{$order.order_sn} {$order.shipping_name} {$order.order_time}
+	<br />
+	{foreach from=$order.action_notes item=note}
+		{$note.action_note}	{$note.action_time}<br />
+	{/foreach}
+	{/foreach}
+	</textarea>
+</td>
+</tr>
+
+{/foreach}
+<tr align="center"><td colspan="30"><input value="显示打印清单" onclick="E('form_delivery').action = 'print_delivery_order.php';E('form_delivery').target='_blank';" type="submit"></td></tr>
+</table>
+
+<input name="act" type="hidden" id="act" value=""/>
+<input name="deal_list" type="hidden" id="deal_list" value="{$deal_list}">
+</form>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+
+</body>
+</html>

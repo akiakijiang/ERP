@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>申报系统仓库映射表</title>
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="misc/autocomplete.js"></script>
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<style type="text/css">
+	{literal}
+		body{
+			font-family: "Times New Roman","Microsoft YaHei",Serif;
+			font-size: 14px;
+		}
+		div {
+			/*border: 1px solid red;*/
+			text-align: center;
+			margin: 10px auto;
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+		h3 {
+			text-align: center;
+			color:#333;
+			margin:10px 0;
+		}
+		table {
+			font-size: 13px;
+			margin:0px auto;
+			width: 50%
+		}
+		table th, table td{
+			font-weight: normal;
+			text-align: center;
+			border: 1px solid #62b4e8;
+		}
+		table td {
+			padding:6px 0;
+		}
+		table th {
+			padding: 10px 0;
+			background:#62b4e8;
+			color:#fff;
+		}
+		table tbody tr:nth-child(even) {
+			background-color: #E4F2FC;
+		}
+	{/literal}
+	</style>
+	<script>
+	{literal}
+	$(document).ready(function(){
+		var simpNewBtn = $(".simpNewBtn");
+		var simpDelBtn = $(".simpDelBtn");
+		
+		simpNewBtn.click(function(){
+			var that = $(this);
+			var erp_facility_id = that.parent().parent().find(".pro_erp_facility_id").val();
+			var declaration_facility = that.parent().parent().find(".pro_declaration_facility").val();
+			
+			var data = "erp_facility_id=" + erp_facility_id 
+						+"&declaration_facility="+declaration_facility;
+			if( erp_facility_id == "" || declaration_facility == ""){
+				alert("数据不能为空~");
+			}else{
+				$.ajax({
+					type:'post',
+					dataType:'json',
+					data:data,
+					url:'declaration_facility_mapping.php?act=insert_facility_mapping',
+					success:function(data){
+						if(data.msg == 'SUCCESS') {
+							alert("新建成功");
+							window.location.href ='declaration_facility_mapping.php';
+						} else {
+							alert("新建失败，请重试！");
+						}	
+					},
+					error:function(data){
+						alert("ajax erro");
+					}
+				});
+			}
+		});
+		
+		simpDelBtn.click(function(){
+			var that = $(this);
+			var mapping_id = that.parent().parent().find(".mapping_id").val();
+			
+			var data = "mapping_id=" + mapping_id;
+			if( mapping_id == ""){
+				alert("数据不能为空~");
+			}else{
+				$.ajax({
+					type:'post',
+					dataType:'json',
+					data:data,
+					url:'declaration_facility_mapping.php?act=delete_facility_mapping',
+					success:function(data){
+						if(data.msg == 'SUCCESS') {
+							alert("删除成功");
+							window.location.href ='declaration_facility_mapping.php';
+						} else {
+							alert("删除失败，请重试");
+						}
+						
+					},
+					error:function(data){
+						alert("ajax erro");
+					}
+				});
+			}
+		});
+
+		$('#facility_select').autocomplete('declaration_facility_mapping.php?request=ajax&act=facility_select', {
+			dataType : 'json',
+			minChars: 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.facility_name);
+			},
+			formatResult : function(row) {
+				return(row.facility_name);
+			}
+		}).result(function(event, row, formatted) {
+			$(':input[name="pro_erp_facility_name[]"]').val(row.facility_name);
+			var erp_facility_id = row.facility_id;
+			$(':input[name="pro_erp_facility_id[]"]').val(erp_facility_id);
+		});
+	});
+	{/literal}
+	</script>
+</head>
+<body>
+<h3>申报系统【逻辑仓——实际仓】映射表</h1>
+<div id="search">
+	<form action="declaration_facility_mapping.php">
+		<label for="erp_facility_name">逻辑仓：</label>
+		<input type="text" name="erp_facility_name" value="{$smarty.request.erp_facility_name}" />
+		<label for="declaration_facility">实际仓：</label>
+		<input type="text" name="declaration_facility" value="{$smarty.request.declaration_facility}">
+		<input type="submit" class="submit" value=" 搜索 ">
+		<input type="hidden" name="act" value="search">
+	</form>
+</div>
+
+<div id="content">
+	<form action="declaration_facility_mapping.php" method="post">
+		<table>
+			<thead>
+				<tr>
+					<th>erp逻辑仓名称</th>
+					<th>申报系统实际仓名称</th>
+					<th>创建时间</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<input type="text" name="pro_erp_facility_name[]"  class="pro_erp_facility_name"  value="" id="facility_select">
+						<input type="hidden" name="pro_erp_facility_id[]" class="pro_erp_facility_id">
+					</td>
+					<td>
+						<select name="pro_declaration_facility" class="pro_declaration_facility">
+							{foreach from=$declaration_facility_list item=declaration_facility}
+							<option value="{$declaration_facility}">{$declaration_facility}</option>
+							{/foreach}
+						</select>
+					</td>
+					<td></td>
+					<td><input type="button" value="添加" class="button simpNewBtn"></td>
+				</tr>
+				{foreach from=$facility_mapping key=k item=facility}
+				<tr>
+					<td>{$facility.facility_name}</td>
+					<td>{$facility.declaration_facility}</td>
+					<td>{$facility.created_stamp}</td>
+					<td>
+					<input type="button" value="删除" class="button simpDelBtn">
+					<input type="hidden" class="mapping_id" value="{$facility.mapping_id}">
+					</td>
+				</tr>
+				{/foreach}
+				<tr>
+					<td colspan="4" style="text-align:right;padding-right:20px;">{$Pager}</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+</div>
+
+	
+</body>
+</html>

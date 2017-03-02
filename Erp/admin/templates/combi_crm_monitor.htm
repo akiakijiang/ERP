@@ -1,0 +1,413 @@
+<!DOCTYPE>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>康贝CRM订单监控页</title>
+  	<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+  	<script type="text/javascript" src="../misc/jquery.js"></script>
+  	<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>  
+
+  	  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+			color: #888;
+		}
+	.require {
+			color: #F00;
+		}
+	.loading {
+			background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+		}
+	.strik {
+	        background-color: #ECEE9F;
+	    }
+	.cal{
+	 	border: 1px solid gray;
+	 	color: white;
+	 }
+	 .search{
+	 	border: 1px solid ;
+	 }
+	 .time{
+	 	width: 89px;
+	 }
+	 .sel{
+	 	width: 132px;
+	 }
+	 .list:nth-child(2n+1){
+	 	background-color: rgba(192,192,192,0.3);
+	 }
+	 .order{
+	 	width: 100%;
+	 }
+	 .search_button{
+	 	width: 90px;
+	 	border: 1px solid  #999;
+	 	background-color: #3295DD;
+	 	color: white;
+	 	margin-left: 12px;
+
+	 }
+
+<!--{/literal}-->
+	</style>	
+	<script type="text/javascript">
+	// <![CDATA[
+	var WEB_ROOT = '{$WEB_ROOT}';
+	// {literal}
+	/**
+	 * 提交检查
+	 */
+	function check_submit(node)
+	{
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		console.log(item);
+		if (!item || item==undefined || item.length<1) {
+			alert('没有选中项');
+			return false;
+		}
+		$('#form').submit();
+		// console.log('AAA');
+		// $('input[name="checked[]"]:checked').parent().parent().remove();
+
+	}
+	/**
+	 * 搜索栏 
+	 */
+	$(function(){ 
+		//  设置权限
+		// if(bird_authority=='no_authority'){
+		// 			$('.button').attr("disabled",true); 
+		//         	$('.check').attr("disabled",true);
+		//         	$('.cancel').hide();
+		// }
+		// $('.back_button').click(function(){
+		// 	$('#form').submit();
+		// 	console.log('AAA');
+		// });
+	}); 
+	
+	function formsubmit(){
+		var ost = $('#order_start_time').val();
+		var oet = $('#order_end_time').val();
+		var dst = $('#delivery_start_time').val();
+		var det = $('#delivery_end_time').val();
+		var lst = $('#last_start_time').val();
+		var let = $('#last_end_time').val();
+
+      	if (time(ost,oet)=='err_time'||time(dst,det)=='err_time'||time(lst,let)=='err_time') {
+		          alert('输入的时间格式要正确~');
+		          return false;
+      	}else if(time(ost,oet)=='false'||time(dst,det)=='false'||time(lst,let)=='false'){
+    			alert('结束时间不能小于开始时间');
+    			return false;
+      	}
+    }
+        //时间格式检查
+    function checkDateTime(str){
+      	var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/);
+      if(r == null){
+        return false;
+      }else{
+        return true;
+      }
+    }
+
+    /**
+	 * 单个提交订单状态回退
+	 */
+
+	function status_back(obj)
+	{           
+				$(obj).attr("disabled",true);
+				// console.log(event.target);
+				var sync_status=$(obj).parent().siblings('.sync_status').text();/*sync_status文本中文字后面还有空格，需要注意*/
+		        var order_id= $(obj).siblings('.order_id').attr('value');
+		        if (sync_status=='未推送(init) '||sync_status=='-'){
+		        	alert('状态已经是未推送INIT');
+		        }else{
+		        	url = WEB_ROOT +'admin/SinriTest/combi_crm_monitor.php?act=retro_order';
+			        console.log(url);
+			        $.ajax({
+			            type: 'post',
+		         	   	url: WEB_ROOT +'admin/SinriTest/combi_crm_monitor.php?act=retro_order',  
+			            data: {
+			                'order_id': order_id,
+			            },
+			        	dataType:'json',
+			            success: function(data) { 
+			                alert('操作成功！');
+			                $(obj).parent().siblings('.sync_status').text('未推送(init) ');
+			        		// $(obj).closest('tr.list').remove();
+			            },
+						error:function(data){
+							alert("操作失败！");
+			                console.log(data);
+						}
+			             // $(this).resetForm(); // 提交后重置表单
+			        });
+		        }
+		        return false;
+	}
+    /**
+	 * 时间判断
+	 */
+    function time(start_time,end_time){
+    	if (start_time!=='') {
+    		if(!checkDateTime(start_time)){
+		          return 'err_time';
+            }
+    	};
+    	if (end_time!=='') {
+    		if(!checkDateTime(end_time)){
+		          return 'err_time';
+            }
+    	};
+    	if(start_time!==''&&end_time!==''){
+    		if (start_time>=end_time) {
+		        	return 'false';
+	    		};
+    	}
+
+    }
+
+ function padZero(number) {
+    if (number < 10) {
+        number = "0" + number;
+    }
+    return number;
+	}
+function unixtime2YYMMDD(unixtime) {
+    var milliseconds = unixtime * 1000,
+        dateObject = new Date(milliseconds),
+        temp = [];
+    temp.push(dateObject.getUTCFullYear().toString().slice(0));
+    temp.push(padZero(dateObject.getUTCMonth() + 1));
+    temp.push(padZero(dateObject.getUTCDate()));
+
+    return temp.join("-");
+}
+
+
+
+	// {/literal}
+	// ]]>
+	</script>
+	
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend>
+		<span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;康贝CRM订单监控页面&nbsp;</span>
+	</legend> 
+	<div style="clear:both;"> 
+	    <h3 style="color:#09F;">查询</h3> 
+		<form method="get" onsubmit="return formsubmit()">
+		  	<table>
+		        <tr>
+		        	<td>&nbsp;&nbsp;ERP订单号:</td>
+		          	<td>
+		          		<input class="order" type="text" name="order_sn" value="{$smarty.request.order_sn}" id="order_sn"/>
+		          	</td>
+		          	<td>&nbsp;&nbsp;淘宝订单号:</td>
+		          	<td>
+		          		<input class="order" type="text" name="taobao_order_no" value="{$smarty.request.taobao_order_no}" id="taobao_order_no"/>
+		          	</td>
+		          	<td>&nbsp;&nbsp;ERP订单类别:</td>
+			        <td>
+			            <select  name="order_type" id="order_type">
+			            {html_options options=$order_type_list selected=$smarty.request.order_type}
+			            </select> 
+			        </td>
+		      	</tr>
+		        <tr>
+		          	<td width="100">&nbsp;&nbsp;订单时间:</td>
+		          	<td>
+		              	<input type="text" id="order_start_time" name="order_start_time" value="{$smarty.request.order_start_time}" size="10" class="time"/> -
+		              	<!-- <input type="button" id="order_startTrigger" value="日历" class="cal" />  -->
+		              	<input type="text" id="order_end_time" name="order_end_time" value="{$smarty.request.order_end_time}" size="10" class="time"/>
+		              	<!-- <input type="button" id="order_endTrigger" value="日历" class="cal" /> -->
+		          	</td> 
+		          	<td width="100">&nbsp;&nbsp;发货时间:</td>
+		          	<td>
+		              	<input type="text" id="delivery_start_time" name="delivery_start_time" value="{$smarty.request.delivery_start_time}" size="10" class="time"/> -
+		              	<!-- <input type="button" id="delivery_startTrigger" value="日历" class="cal" />  -->
+		              	<input type="text" id="delivery_end_time" name="delivery_end_time" value="{$smarty.request.delivery_end_time}" size="10" class="time"/>
+		              	<!-- <input type="button" id="delivery_endTrigger" value="日历" class="cal" /> -->
+		          	</td>
+		        </tr>
+		        <tr>
+		          	<td>&nbsp;&nbsp;推送状态:</td>
+			        <td>
+			            <select  name="send_status" id="send_status">
+			            <!-- {html_options options=$send_status_list selected=$smarty.request.sync_status} -->
+
+			            {foreach from=$send_status_list item=status}
+						    <option value="{$status.sync_status}">{$status.name}（{$status.count}）</option>
+						{/foreach}
+			            </select> 
+			        </td>
+		          	<td width="100">&nbsp;&nbsp;推送时间:</td>
+		          	<td>
+		              	<input type="text" id="last_start_time" name="last_start_time" value="{$smarty.request.last_start_time}" size="10" class="time"/> -
+		              	<!-- <input type="button" id="last_startTrigger" value="日历" class="cal" />  -->
+		              	<input type="text" id="last_end_time" name="last_end_time" value="{$smarty.request.last_end_time}" size="10" class="time"/>
+		              	<!-- <input type="button" id="last_endTrigger" value="日历" class="cal" /> -->
+		          	</td>
+		          	<td>
+		          		<input class="search_button" type="submit" value="查询" class="search"/>
+			            <input type="hidden" name="act" value="search" />
+		          	</td>  
+		        </tr>
+			</table>
+		</form>
+	</div>
+ <div>
+	 <form  id="form">
+	  	<h3 style="color:#09F;">订单列表</h3>
+<!--       	<input type="button" value="全选" onclick="select_all('#form');" /> &nbsp;&nbsp; 
+      	<input type="button" value="清空" onclick="select_none('#form');" /> &nbsp;&nbsp;
+      	<input type="button" value="反选" onclick="select_reverse('#form');" /> &nbsp;&nbsp;&nbsp;&nbsp; -->
+      	<table class="bWindow" style="margin-top:10px;">
+	        <tr style="background-color:#999999;color:white">          
+				<th class="cancel">选择</th>
+	            <th>ERP订单号</th>
+	            <th>淘宝订单号</th>
+	            <th>ERP订单类别</th>
+	            <th>订单时间</th>
+	            <th>发货时间</th>
+	            <th>推送状态</th>
+	            <th>同步日志</th>
+	            <th>推送时间</th>
+	            <th class="cancel">操作</th>
+	        </tr>    
+	        {foreach from=$result  item=order name=bigloop}
+	      	{if $smarty.foreach.bigloop.iteration == $result|@count}
+			{php}break;{/php}
+			{/if} 
+			<tr align="center" class="list">
+					<!-- 选择 -->
+					<td class="goods_table cancel err_show">
+						<input type="checkbox" name="checked[]" value="{$order.order_id}" class="check"/>
+						<!-- <input type="hidden" {if $order.out_biz_code} value="{$order.out_biz_code}" {/if}> -->
+					</td>
+					<!-- ERP订单号 -->
+					<td><a href="../order_edit.php?order_id={$order.order_id}" class="order_sn" target="_blank">{$order.order_sn}</a></td>
+					<!-- 淘宝订单号 -->
+					<td class="">{if $order.orderno}{$order.orderno}{else}-{/if}</td>
+					<!-- ERP订单类别 -->
+					<td class="">{if $order.order_type}{$order.order_type}{else}-{/if}</td>
+					<!-- 订单时间 -->
+					<td class="shop_name">{if $order.order_date}{$order.order_date}{else}-{/if}</td>
+					<!-- 发货时间 -->
+					<td class="order_type">{if $order.shipdate}{$order.shipdate}{else}-{/if}</td>
+					<!-- 推送状态 -->
+					<td class="sync_status">{if $order.sync_status}{$order.sync_status}{else}-{/if}</td>
+					<!-- 同步日志 -->
+					<td class="order_type">{if $order.sync_note}{$order.sync_note}{else}-{/if}</td>
+					<!-- 推送时间 -->
+					<td >{if $order.last_updated_stamp}{$order.last_updated_stamp}{else}-{/if}</td>
+				  	<!-- 操作 -->
+				  	<td class="cancel">
+			            <input type="button" value="初始化同步" onclick="status_back(this)" class="button"/>
+			            <input type="hidden" class="order_id" value="{$order.order_id}">
+				  	</td> 
+			</tr>
+			{/foreach}
+			<tr>
+        		<td colspan="11" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        	</tr>
+      	</table>
+      	<br/>
+      	<div style="margin-top:10px; clear:both;"> 
+        	<input class='back_button err_show' type="button" value="回退选中订单推送状态" onclick="check_submit('#form')" />
+        	<input type="hidden" name="act" value="batch_retro_order" />
+      	</div>
+    </form>
+  </div>
+</fieldset>
+<!-- {debug} -->
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+// 订单时间
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "order_start_time",
+	button            : "order_start_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "order_end_time",
+	button            : "order_end_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// 发货时间
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "delivery_start_time",
+	button            : "delivery_start_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "delivery_end_time",
+	button            : "delivery_end_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// 最后更新时间
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "last_start_time",
+	button            : "last_start_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "last_end_time",
+	button            : "last_end_time",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+
+// var nowtime = Date.parse(new Date());
+// var oldtime = nowtime/1000-604800;//一周前
+// var start_time=unixtime2YYMMDD(oldtime);
+// if ($('#order_start_time').val()==null||$('#order_start_time').val()=='') {
+// $('#order_start_time').val(start_time);
+// };
+
+
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

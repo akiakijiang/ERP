@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+{literal}
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+table, td,th {
+	border:1px solid #cccccc;
+	border-collapse:collapse;
+	line-height: 30px;
+}
+body {
+	font-family: "宋体";
+	font-size: 12px;
+	margin-right: auto;
+	margin-left: auto;
+}
+#show_edid{
+	margin-right: auto;
+	margin-left: auto;
+}
+</style>
+{/literal}
+{literal}
+<script src="../js/jquery-1.3.2.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+function search_status_invoice(){
+    var order_sn = $.trim($('#order_sn').val());
+    var start_time = $.trim($('#startCalendar').val());
+    var end_time = $.trim($('#endCalendar').val());
+    var shipping_status = $('#shipping_status').val();
+    window.location.href = 'invoice_add.php?act=list&start_time='+start_time+'&end_time='+end_time+'&order_sn='+order_sn+'&shipping_status='+shipping_status+'&type=search';
+}
+</script>
+{/literal}
+</head>
+<body>
+<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+	<legend><span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;未添加补寄发票多美滋COD列表&nbsp;</span></legend>
+<div>
+</div>
+    <form id="form3" name="form3" method="post" action="invoice_cod_export.php">
+    <span style="margin-top:14px;margin-left:11px;float:left;width:45px">订单号:</span>
+    <span style="margin-top:14px;margin-left:11px;float:left;width:110px;"><input style="height:14px;width:100px" type="text" id="order_sn" name="order_sn" value="{$order_sn}">  </input></span>
+    <span style="margin-top:14px;margin-left:11px;float:left;width:50px;">发货状态</span>
+    <span style="margin-top:10px;margin-left:5px;float:left;width:110px;">
+		<select style="height:21px;width:100px" name="shipping_status" id ="shipping_status">
+		<option value="-1">所有状态</option>
+		{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}
+		<option value="{$key}" {if $smarty.request.shipping_status != null && $smarty.request.shipping_status == $key}selected{/if}>{$shipping_status}</option>
+		{/foreach}
+		</select>
+	</span>
+    <span style="margin-top:14px;margin-left:11px;float:left;width:35px">日期:</span>
+	<span style="margin-top:10px;margin-left:11px;float:left;width:110px"><input type="text" style="height:14px;width:100px" id="startCalendar" name="startCalendar" value="{$smarty.request.startCalendar}{$start_time}"></span>
+	<span style="margin-top:13px;float:left;width:20px"><input type="button" style="background-image:url(../images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" /></span>
+	<span style="margin-top:14px;float:left;width:20px">到</span>
+	<span style="margin-top:10px;margin-left:11px;float:left;width:110px"><input type="text" style="height:14px;width:100px" id="endCalendar" name="endCalendar"  value="{$smarty.request.endCalendar}{$end_time}"></span>
+	<span style="margin-top:13px;float:left;width:20px"><input type="button" style="background-image:url(../images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" /></span>
+	
+	<span style="margin-top:13px;width:20px"><input type="button" name="search_status" onclick="search_status_invoice()" value="搜索" /></span>
+	{if $type == 'search'}<span style="margin-top:13px;width:20px;" id = "show_export" name="show_export"><input type="submit" name="export" value="导出订单信息" /></span>
+	{/if}
+	</form>
+<br />
+<br />
+	<table width="100%">
+		<tr>
+			<th align="center">订单号</th>
+			<th align="center">下订单时间</th>
+			<th align="center">收件人</th>
+			<th align="left">收件地址</th>
+			<th align="left">用户留言</th>
+			<th align="left">商品金额</th>
+			<th align="left">发票抬头</th>
+			<th align="center">编辑</th>
+		</tr>
+		{foreach from=$codOrder item=order_info}
+		<tr>
+			<td align="center"><a href="../order_edit.php?order_id={$order_info.order_id}" target="_blank">{$order_info.order_sn}</a></td>
+			<td align="center">{$order_info.order_time}</td>
+			<td align="center">{$order_info.consignee}</td>
+			<td align="left">{$order_info.country_name}{$order_info.province_name}{$order_info.city_name}{$order_info.district_name}{$order_info.address}</td>
+			<td align="left">{$order_info.postscript}</td>
+			<td align="left">{$order_info.order_amount}</td>
+			<td align="left">{$order_info.inv_payee}</td>
+
+			<td align="center"><a href="invoice_add.php?act=search&order_link={$order_info.order_sn}" onclick="">添加补寄发票</a></td>
+		</tr>
+		{foreachelse}
+		<tr>
+			<td align="center" colspan="8">无信息,请选择多美滋组织查看列表</td>
+		</tr>
+		{/foreach}
+		<tr>
+			<td colspan="8" align="right">{$pagination}</td>
+		</tr>
+	</table>
+</fieldset>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+
+</html>

@@ -1,0 +1,4 @@
+食品名称,收件人地址,收件人姓名,电话,应收货款,备注,邮件号码,邮编
+{foreach from=$res item=list key=myID}
+{if $list.consignee eq ''}{else}奶粉{/if},"{$list.add2}{$list.address}","{$list.consignee}","{if $list.mobile eq ''}{$list.tel}{else}{$list.mobile}{/if}","{$list.order_amount}","","{$list.tracking_number}","{$list.zipcode}"
+{/foreach}

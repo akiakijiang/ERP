@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>积分统计</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/tablesorter.js"></script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <script type="text/javascript">
+	{literal}
+	// <![CDATA[
+	$(document).ready(function(){
+			// 没有激活的tab默认隐藏
+			$('#tab').find('.item,.active').each(function(i, n){
+					t = $(n);
+					if (t.attr('class') != 'active') {
+							div = t.children('a').attr('href');
+							$(div).hide();
+					}
+			});
+			// 绑定点击切换tab事件
+			$('#tab').find('.item,.active').bind('click', function(event){
+					event.preventDefault();
+					$this = $(this);
+					
+					if ($this.attr('class') == 'item') {
+						$('#tab').find('.item,.active').each(function(i, n){
+							t = $(n);
+							if (t.attr('class') == 'active') {
+								t.removeClass('active').addClass('item');
+							}
+
+							div = t.children('a').attr('href');
+							$(div).hide();
+						});
+						
+						$this.removeClass('item').addClass('active');
+						div = $this.children('a').attr('href');
+						$(div).show();
+					}
+			});
+	});
+	// ]]>
+	{/literal}
+	</script>
+
+  <style type="text/css">
+	{literal}
+	a {
+		text-decoration:none;
+	}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+</head>
+<body>
+
+
+
+<fieldset style="-moz-border-radius:6px;padding:10px; min-width:700px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;积分统计&nbsp;</span></legend>
+
+ 	<form method="get" id="stat">
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  时间区间 ： &nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="start" name="start" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+  <input type="text" id="end" name="end" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="act" value="查询" />
+  </div>
+  </form>
+  
+  
+<!--{if 1}-->  {* 有记录才显示 *}
+
+ 
+  <!-- Tab1 留言转换率和确认订单平均时间 -->
+  <div style="clear:both;" id="tab1">
+      <br />
+      <h3 style="color:#09F; margin-bottom:25px;">统计数据</h3>
+
+
+    	<h4>|— 积分生成情况</h4>
+      <table class="bWindow" style="margin-top:10px;">
+        <tr align="center" style="background-color:#F6F6F6">
+          <th width="22%">来源</td>
+          <th width="13%">生成积分数</td>
+          <th width="13%">用户参与数</td>
+          <th width="13%">订单总数</th>
+          <th width="13%">商品总数</th>
+          <th width="13%">注册用户数</th>
+          <th width="13%">登录用户数</th>
+        </tr>
+        
+        {foreach from=$point_source item=item key=source}
+        <tr align="center">
+          <td align="left">&nbsp;&nbsp;&nbsp;&nbsp;{$item}</td>
+          <td>{$point_stat.add[$source].total_point|default:0}</td>
+          <td>{$point_stat.add[$source].total_user|default:0}</td>
+          <td>{$point_stat.add[$source].total_order}</td>
+          <td>{$point_stat.add[$source].total_goods}</td>
+          <td>{$point_stat.add[$source].total_register_user} {if $point_stat.add[$source].total_regiser_emailvalid_user}/{$point_stat.add[$source].total_register_emailvalid_user}(已验证){/if}</td>
+          <td>{$point_stat.add[$source].total_login_user}</td>
+        </tr>
+        {/foreach}
+      </table>
+      
+ 
+      
+
+      <br />
+    	<h4>|— 积分兑换情况</h4>
+      <table class="bWindow" style="margin-top:10px;">
+        <tr align="center">
+          <td width="22%">消耗积分</td>
+          <td>{$point_stat.exchange.total_point}</td>
+        </tr>
+        <tr align="center">
+          <td width="22%">兑换红包数</td>
+          <td>{$point_stat.exchange.total_bonus_number}</td>
+        </tr>
+        <tr align="center">
+          <td width="22%">兑换红包总金额</td>
+          <td>{$point_stat.exchange.total_bonus_value}</td>
+        </tr>
+      </table>
+      
+      
+      
+      
+      <br />
+    	<h4>|— 红包使用情况 &nbsp;&nbsp; <span style="font-weight:normal; color:#666;">（积分兑换的红包）</span></h4>
+      <table class="bWindow" style="margin-top:10px;">
+        <tr align="center">
+          <td width="22%">订单使用数</td>
+          <td>{$point_stat.used.total_order_number}</td>
+        </tr>
+      </table>
+  </div>
+        
+<!--{/if}-->
+
+  <br /><br />
+  
+</fieldset>
+
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

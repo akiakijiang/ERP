@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<title>开票清单编辑</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+<!-- Autocomplete -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+
+<script type="text/javascript">
+{if $smarty.request.info}
+alert("{$smarty.request.info}");
+{/if}
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+// <![CDATA[
+$(document).ready(function(){
+    /**
+    * 商品搜索
+    */
+    $('#autocomplete_goods').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+        dataType : 'json',
+        mustMatch: true,
+        minChars : 0,
+        formatItem : function(row, i, max, value, term) {
+            return(row.goods_name);
+        },
+        formatResult : function(row) {
+            return(row.goods_name);
+        }
+    }).result(function(event, row, formatted) {
+        $('#search_goods_id').val(row.goods_id);
+        
+        });
+
+    /**
+    * 供应商
+    */
+    $('#autocomplete_provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+        minChars: 0,
+        mustMatch: true,
+        dataType : 'json',
+        formatItem : function(row, i, max, value, term) {
+            return(row.provider_name);
+        },
+        formatResult : function(row) {
+            return(row.provider_name);
+        }
+    }).result(function(event, row, formatted) {
+        // 将隐藏域的值设为供应商的id
+        $('#provider_id').val(row.provider_id);
+    });
+
+});
+// ]]>
+
+function select_all_checkbox(name, value) {
+    var check_box_list = document.getElementsByName(name);
+    var i = 0;
+    for (i = 0; i < check_box_list.length; i++) {
+        check_box_list[i].checked = value;
+    }
+}
+
+function anti_checkbox(name) {
+    var check_box_list = document.getElementsByName(name);
+    var i = 0;
+    for (i = 0; i < check_box_list.length; i++) {
+        if (check_box_list[i].checked) {
+            check_box_list[i].checked = "";
+        } else {
+            check_box_list[i].checked = "checked";
+        }
+    }
+}
+
+function status_submit(status) {
+    var form_obj = document.getElementById("status_form");
+    form_obj.status.value = status;
+    form_obj.submit();
+    return true;
+}
+
+function open_close(obj_id) {
+    var obj = document.getElementById(obj_id);
+    if (obj == null) return;
+
+    if (obj.style.display == '') {
+        obj.style.display = 'none';
+    } else {
+        obj.style.display = '';
+    }
+}
+
+function init_request(){
+    var request_id = document.getElementById("purchase_invoice_request_id").value;
+    $.ajax( {
+        url : "purchase_invoice_request_detail.php",
+        data : "request=ajax&act=init_request&request_id="+request_id,
+        type : "POST",
+        cache : false,
+        dataType: 'json',
+        error : function(XMLHttpRequest, textStatus, errorThrown) {
+             // alert("检索失败：" + XMLHttpRequest.responseText);
+             alert(XMLHttpRequest.status) ;
+         },
+         success : function(data) {
+            alert(data.message);
+            if(data.success == 1){
+                window.location.reload();
+            }
+         }
+    });
+}
+
+
+</script>
+{/literal}
+</head>
+    
+<body>
+<form id="status_form" action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+    <input type="hidden" name="status" />
+    <input type="hidden" name="purchase_invoice_request_id" id="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}" />
+    <input type="hidden" name="action" value="purchase_invoice_request_status_change" />
+</form>
+
+<h2 align="center">编辑开票清单{if $purchase_invoice_request->status != "INIT"}&nbsp;&nbsp;<a href="match.php?purchase_invoice_request_id={$smarty.request.purchase_invoice_request_id}">编辑关联</a>{/if}</h2>
+
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+<p>
+    <b>单号：</b>{$purchase_invoice_request->purchaseInvoiceRequestId}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>状态：</b>{assign var=status value=$purchase_invoice_request->status}{$_CFG.adminvars.purchase_invoice_request_status_mapping[$status]}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    {if $purchase_invoice_request->status == "CONFIRM"}
+    <input type="button" value="修改成未确认" onclick="init_request();"/>
+    {/if}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b>价格策略：</b>
+        {if $purchase_invoice_request->status == "INIT"}
+        <select name="type_id">
+            <option value="AVERAGE" {if $purchase_invoice_request->typeId == "AVERAGE"}selected{/if}>平均价格</option>
+            <option value="ORIGINAL" {if $purchase_invoice_request->typeId == "ORIGINAL"}selected{/if}>原始价格</option>
+        </select>
+        {else}
+            {assign var=type value=$purchase_invoice_request->typeId}{$_CFG.adminvars.purchase_invoice_request_type_mapping[$type]}
+        {/if}
+    <!--<input type="button" value="打印" {if $purchase_invoice_request->status == "INIT"}disabled{/if} />-->
+    <input type="button" value="导出" onclick="location.href='{$smarty.server.REQUEST_URI|add_param_in_url:"csv":"csv"}'" {if $purchase_invoice_request->status == "INIT"}disabled{/if}/>
+</p>
+<p>
+    <b>起始时间：</b> {$purchase_invoice_request->startTime|date_format:"%Y-%m-%d"}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>结束时间：</b>{$purchase_invoice_request->endTime|date_format:"%Y-%m-%d"}
+</p>
+<p>
+    <b>供应商代码</b>：{$purchase_invoice_request->supplierId} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>供应商名称</b>：
+        {if $purchase_invoice_request->status == "INIT"}
+            <input value="{$purchase_invoice_request->supplierId|get_provider_name}" size="40" id="autocomplete_provider"/>
+            <input type="hidden" name="provider_id" value="{$purchase_invoice_request->supplierId}" id="provider_id" />
+        {else}
+            {$purchase_invoice_request->supplierId|get_provider_name}
+        {/if}
+    
+</p>
+<p>
+    <b>总金额：</b>￥{$purchase_invoice_request->totalCost|erp_price_format} &nbsp;&nbsp;&nbsp;&nbsp;
+    <b>已开票金额：</b>￥{$purchase_invoice_request->match_cost|erp_price_format}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>缺票金额：</b>￥{$purchase_invoice_request->totalCost-$purchase_invoice_request->match_cost|erp_price_format}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</p>
+<p>
+    <b>录入人：</b>{$purchase_invoice_request->createdUser}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>录入时间：</b>{$purchase_invoice_request->createdStamp|date_format:"%Y-%m-%d %T"}&nbsp;&nbsp;&nbsp;&nbsp;
+    {if $purchase_invoice_request->close_history}
+        <b>关闭人：</b>{$purchase_invoice_request->close_history->createdUser}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>关闭时间：</b>{$purchase_invoice_request->close_history->createdStamp|date_format:"%Y-%m-%d %T"} </p>
+    {/if}
+    
+    {if $purchase_invoice_request->status == "CONFIRM" && $match_list|@count > 0}
+        <input type="button" value="关闭" onclick="if (confirm('确认要关闭吗？')) status_submit('CLOSE');" />    
+    {/if}
+<p>
+    <b>备注：</b><br><br>
+    {if $purchase_invoice_request->status == "INIT"}
+        <textarea name="note" style="width: 600px;height: 60px;">{$purchase_invoice_request->note}</textarea>
+    {else}
+        {$purchase_invoice_request->note}
+    {/if}
+    {if $purchase_invoice_request->status == "INIT"}
+        <input type="submit" value="修改开票清单" />
+    {/if}
+</p>
+
+<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+<input type="hidden" name="action" value="purchase_invcoie_request_edit" />
+<input type="hidden" name="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}" />
+</form>
+
+{if "cg_edit_purchase_invoice"|check_admin_priv}
+    {if $purchase_invoice_request->status == "INIT"}
+        <input type="button" value="添加开票项" onclick="open_close('item_add');"/>
+    {/if}
+<hr noshade="noshade" />
+<div style="background: #DEF8E0; padding: 10px; {if $smarty.request.search == ''} display:none;{/if}" id="item_add" >
+<form autocomplete="off" action="{$smarty.server.REQUEST_URI}" method="GET" >
+<p>添加商品到开票清单</p>
+<p>
+    采购入库开始时间： <input name="start_in_time" id="start_in_time" size="10" {if $smarty.request.start_in_time}value="{$smarty.request.start_in_time}"{else}value="{$start}"{/if} /><input type="button" id="start_in_time_trigger" value="...">
+    结束时间：
+    <input name="end_in_time" id="end_in_time" size="10" {if $smarty.request.end_in_time}value="{$smarty.request.end_in_time}"{else}value="{$end}"{/if} /><input type="button" id="end_in_time_trigger" value="...">
+    仓库名：
+    <select name="facility_id">
+        <option value="-1">所有</option>
+        <!--{foreach key=facility_id item=facility_name from=$facility_list }-->
+        <option value="{$facility_id}" {if $smarty.request.facility_id == $facility_id}selected{/if}>{$facility_name}</option>
+        <!--{/foreach}-->
+    </select>
+    采购单号：
+    <input id="order_sn" name="order_sn" value="{$smarty.request.order_sn}" />
+    商品：
+    <input id="autocomplete_goods" name="search_goods_name" size="40" value="{$smarty.request.search_goods_name}" />
+    <input type="hidden" id="search_goods_id" name="search_goods_id" value="{$smarty.request.search_goods_id}" />
+    单价：
+    <input  size="10" id="search_goods_price" name="search_goods_price" value="{$smarty.request.search_goods_price}" />
+    <br/>
+    供应商采购订单号：
+    <input name="provider_order_sn" type="text" value="{$smarty.request.provider_order_sn}"/>
+    批次号：
+    <input name="batch_order_sn" type="text" value="{$smarty.request.batch_order_sn}"/>
+    <input type="hidden" name="search" value="search" />
+    <input type="submit" value="搜索" />
+    <input type="submit" name="csv" value="搜索结果导出csv" />
+</p>
+<input type="hidden" name="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}">
+</form>
+
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+<input type="hidden" name="action" value="purchase_invoice_request_item_add" />
+<input type="hidden" name="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}" />
+<p>
+{if $purchase_invoice_request->status == "INIT"}
+    <input type="button" value="全选" onclick="select_all_checkbox('index_add[]', 'checked')" />
+    <input type="button" value="反选" onclick="anti_checkbox('index_add[]')" />
+    <input type="submit" value="添加至开票清单" />
+{/if}
+</p>
+<table class="bWindow" style="width: 1150px;">
+  <tr>
+    <th>序号</th>
+    <th height="26">选择</th>
+    <th>出入库订单号#订单时间</th>
+    <th>出入库时间</th>
+    <th>类型</th>
+    <th>仓库</th>
+    <th>商品代码</th>
+    <th>商品名称</th>
+    <th>串号</th>
+    <th>单价</th>
+    <th>数量</th>
+    <th>金额</th>
+    <th>供应商采购订单号</th>
+  </tr>
+  {foreach from=$search_purchase_invoice_request_items item=search_purchase_invoice_request_item name=search_purchase_invoice_request_item}
+  { if $smarty.foreach.search_purchase_invoice_request_item.iteration <= 150 }
+  <tr>
+    <td align="center">{$smarty.foreach.search_purchase_invoice_request_item.iteration}</td>
+    <td align="center" height="29">
+        {if $purchase_invoice_request->status == "INIT"}
+            <input type="checkbox" name="index_add[]" value="{$smarty.foreach.search_purchase_invoice_request_item.iteration}"/>
+            <input type="hidden" name="product_id_{$smarty.foreach.search_purchase_invoice_request_item.iteration}" value="{$search_purchase_invoice_request_item->productId}" />
+            <input type="hidden" name="serial_number_{$smarty.foreach.search_purchase_invoice_request_item.iteration}" value="{$search_purchase_invoice_request_item->serialNumber}" />
+            <input type="hidden" name="fixed_cost_{$smarty.foreach.search_purchase_invoice_request_item.iteration}" value="{$search_purchase_invoice_request_item->unitCost}" />
+            <input type="hidden" name="amount_{$smarty.foreach.search_purchase_invoice_request_item.iteration}" value="{$search_purchase_invoice_request_item->quantity}" />
+            <input type="hidden" name="transaction_id_{$smarty.foreach.search_purchase_invoice_request_item.iteration}" value="{$search_purchase_invoice_request_item->inventoryTransaction->inventoryTransactionId}"/>
+            <input type="hidden" name="order_sn_{$smarty.foreach.search_purchase_invoice_request_item.iteration}" value="{$search_purchase_invoice_request_item->purchaseInvoiceRequestItemId}"/>
+        {/if}
+    </td>
+    <td align="center" {if $search_purchase_invoice_request_item->purchaseInvoiceRequestItemId|strpos:"-gt" !== false}style="color:red"{/if}>
+        {$search_purchase_invoice_request_item->purchaseInvoiceRequestItemId}{*由于没有订单号的字段，使用purchaseInvoiceRequestItemId顶替下*}
+    </td>
+    <td align="center">{$search_purchase_invoice_request_item->inventoryTransaction->createdStamp|date_format:"%Y-%m-%d %T"}</td>
+    <td align="center">
+        {if $search_purchase_invoice_request_item->purchaseInvoiceRequestItemId|strpos:"-c" !== false}采购入库{/if}
+        {if $search_purchase_invoice_request_item->purchaseInvoiceRequestItemId|strpos:"-gt" !== false}采购退货{/if}
+    </td>
+    <td align="center">{$search_purchase_invoice_request_item->facilityName}</td>
+    <td align="center">{$search_purchase_invoice_request_item->product_map.goods_id}#{$search_purchase_invoice_request_item->product_map.style_id}</td>
+    <td>{$search_purchase_invoice_request_item->product_map.goods_name}</td>
+    <td>{$search_purchase_invoice_request_item->serialNumber}</td>
+    <td align="right">￥{$search_purchase_invoice_request_item->unitCost|invoice_price_format}</td>
+    <td align="center">{$search_purchase_invoice_request_item->quantity}</td>
+    <td align="right">￥{$search_purchase_invoice_request_item->unitCost*$search_purchase_invoice_request_item->quantity|invoice_price_format}</td>
+    <td align="center">{$search_purchase_invoice_request_item->provider_order_sn}</td>
+  </tr>
+  {/if}
+  {/foreach}
+</table>
+<p>
+{if $purchase_invoice_request->status == "INIT"}
+    <input type="button" value="全选" onclick="select_all_checkbox('index_add[]', 'checked')" />
+    <input type="button" value="反选" onclick="anti_checkbox('index_add[]')" />
+    <input type="submit" value="添加至开票清单" />
+{/if}
+</p>
+</form>
+</div>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "start_in_time",
+    button            : "start_in_time_trigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "end_in_time",
+    button            : "end_in_time_trigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+
+{/if}{* end if "cg_edit_purchase_invoice"|check_admin_priv *}
+
+<hr noshade="noshade" />
+
+<p>已添加以下商品</p>
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST" id="delete_added_item_form">
+<table class="bWindow" style="width: 900px;">
+  <tr>
+    <th>序号</th>
+    <th width="66">选择</th>
+    <th width="124">商品代码</th>
+    <th width="154">商品名称</th>
+    <th width="66">数量</th>
+    <th width="90">去税单价</th>
+    <th width="85">含税单价</th>
+    <th width="93">去税总金额</th>
+    <th width="86">含税总金额</th>
+  </tr>
+  {foreach from=$added_purchase_invoice_request_items item=added_purchase_invoice_request_item name=added_purchase_invoice_request_item}
+  <tr>
+    <td align="center">{$smarty.foreach.added_purchase_invoice_request_item.iteration}</td>
+    <td align="center" height="24">
+    {if $purchase_invoice_request->status == "INIT"}
+        <input type="checkbox" name="index_delete[]" value="{$smarty.foreach.added_purchase_invoice_request_item.iteration}" />
+        {if $purchase_invoice_request->typeId == "AVERAGE"}
+            <input name="product_id_{$smarty.foreach.added_purchase_invoice_request_item.iteration}" type="hidden" value="{$added_purchase_invoice_request_item->productId}" />
+            {if $purchase_invoice_request->returnInventoryTransactionId == 0}
+                <input name="purchase_invoice_request_item_id_{$smarty.foreach.added_purchase_invoice_request_item.iteration}" type="hidden" value="{$added_purchase_invoice_request_item->purchaseInvoiceRequestItemId}" />
+            {/if}
+        {else if $purchase_invoice_request->typeId == "ORIGINAL"}
+            <input name="purchase_invoice_request_item_id_{$smarty.foreach.added_purchase_invoice_request_item.iteration}" type="hidden" value="{$added_purchase_invoice_request_item->purchaseInvoiceRequestItemId}" />
+        {/if}
+    {/if}
+    </td>
+    <td align="center">{$added_purchase_invoice_request_item->product_map.goods_id}#{$added_purchase_invoice_request_item->product_map.style_id}</td>
+    <td>
+        {$added_purchase_invoice_request_item->product_map.goods_name}
+        {if $added_purchase_invoice_request_item->returnInventoryTransactionId && $added_purchase_invoice_request_item->inventoryTransaction->inventoryTransactionId}
+      <span style="color:red;">(gt调整)</span>
+      {elseif $added_purchase_invoice_request_item->returnInventoryTransactionId && !$added_purchase_invoice_request_item->inventoryTransaction->inventoryTransactionId}
+      <span style="color:red;">(跨期gt调整)</span>
+      {/if}
+        </td>
+    <td align="center">{$added_purchase_invoice_request_item->quantity}</td>
+    <td align="right">￥{$added_purchase_invoice_request_item->unitNetCost|invoice_price_format}</td>
+    <td align="right">￥{$added_purchase_invoice_request_item->unitCost|invoice_price_format}</td>
+    <td align="right">￥{$added_purchase_invoice_request_item->unitNetCost*$added_purchase_invoice_request_item->quantity|invoice_price_format}</td>
+    <td align="right">￥{$added_purchase_invoice_request_item->unitCost*$added_purchase_invoice_request_item->quantity|invoice_price_format}</td>
+  </tr>
+  {/foreach}
+</table>
+{if $purchase_invoice_request->status == "INIT"}
+<p>
+    <input type="button" value="全选" onclick="select_all_checkbox('index_delete[]', 'checked')" />
+    <input type="button" value="反选" onclick="anti_checkbox('index_delete[]')" />
+    <input type="submit" value="删除选中" />
+    （确认后不能删除） 
+</p>
+{/if}
+<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+<input type="hidden" name="purchase_invoice_request_id" value="{$smarty.request.purchase_invoice_request_id}"/>
+<input type="hidden" name="purchase_invoice_request_type_id" value="{$purchase_invoice_request->typeId}"/>
+<input type="hidden" name="action" value="purchase_invoice_request_item_delete" />
+</form>
+    {if $purchase_invoice_request->status == "INIT"}
+        <input type="button" value="确认" onclick="status_submit('CONFIRM');" />
+    {/if}
+
+
+</body>
+</html>

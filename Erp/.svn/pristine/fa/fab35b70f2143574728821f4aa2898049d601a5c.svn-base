@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="misc/jquery.js"></script>
+    <title>打印商品标识</title>
+    <script type="text/javascript">
+//<![CDATA[
+// {literal}
+function check_barcode() {
+    var barcode = $.trim($('#barcode').val());
+    if (barcode == '') {
+        alert("请输入商品条码O(∩_∩)O~~");
+        return false;
+    }
+    $('#search_barcode').submit();
+}
+// {/literal}
+//]]>
+</script>
+</head>
+<body>
+<div>
+<fieldset style="-moz-border-radius:6px;padding:10px;margin:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;打印商品标识&nbsp;</span></legend>
+   <form action="print_goods_identify.php" method="post" id="search_barcode">
+     <table style="padding-left:20px">
+      <tr>
+        <td><h3>请输入商品条码： </h3></td>
+        <td><input type="text" name="barcode" id="barcode"></input></td>
+      </tr>
+      <tr>
+       <td><h3>请输入打印数量(不填默认1张)： </h3></td>
+       <td><input type="text" name="number" id="number"></input></td>
+       <td><input type="button" value="提交打印" onclick="check_barcode()"></input></td>
+      </tr>
+     </table>
+		<input type="hidden" name="act" value="search_barcode" />
+   </form>
+  </fieldset>
+</div>
+<hr style="margin:20px;"/>
+<!--  -->
+{if $smarty.request.barcode != ''}
+<div style="text-align:center;">
+	<h1> = = = 打印预览 = = = </h1>
+</div>
+<div>
+ <iframe name="print_frame" id="print_frame" width="1550px" height="800px" frameborder="1" 
+		 src="search_goods_identify.php?barcode={$barcode}&number={$number}"></iframe>
+</div> 
+{/if}
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <title>淘宝商品上传</title> 
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+ 
+ <!-- {if ! $list} -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝商品上传&nbsp;</span></legend>
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">选择Excel文件</h3>
+    <form id="upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="excel" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="导入" />
+      <input type="hidden" name="act" value="upload" />
+      <div style="clear:both; margin-top:5px; color:#888;" >请严格按照excel模板导入</div>
+    </form>
+	</div>
+  <br /><br />
+</fieldset>
+<!-- {/if} -->
+
+<!-- {if $list} -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;上传结果&nbsp;</span></legend>
+     <h3 style="color:#09F;">上传结果</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>货号</td>
+              <td>商家编码</td>
+              <td>淘宝商品id(num_iid)</td>
+              <td>是否已存在该商家编码(N:新增; Y:修改)</td>
+              <td>是否成功上传</td>
+              <td>错误编码</td>
+              <td>错误节点</td>
+              <td>错位信息</td>
+          </tr>
+          {foreach from=$list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$result.goods_no}</td>
+              <td>{$result.outer_id}</td>
+              <td>{$result.num_iid}</td>
+              <td>{$result.is_exists}</td>
+              <td>{$result.is_success}</td>
+              <td>{$result.error_code}</td>
+              <td>{$result.error_method}</td>
+              <td>{$result.error_msg}</td>
+          </tr>
+          {foreachelse}
+             无结果
+          {/foreach}
+      </table>
+  <br>
+<!-- {/if} -->
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>包裹码托查询</title>
+  	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+  	<script type="text/javascript" src="misc/jquery.js"></script>
+  	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+	<script type="text/javascript">
+	// <![CDATA[ 
+	// {literal} 
+	$(document).ready(function(){
+        $('#tracking_number_btn').bind('click', load_tracking_number);
+        $('#tracking_number').bind('keyup', listen_tracking_number).focus();
+        
+    });
+	
+	var KEY = {
+        RETURN: 13,  // 回车 
+        CTRL: 17,    // CTRL 
+        TAB: 9
+    };
+    function listen_tracking_number(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+            	load_tracking_number();
+                event.preventDefault();
+                break;
+        }
+    }
+    function load_tracking_number() 
+    {
+        var tracking_number = $.trim($('#tracking_number').val());
+        if (tracking_number == '') {
+            alert('请先输入面单号');
+            return; 
+        }
+        location.href = "search_pallet_bind.php?tracking_number="+tracking_number;
+    }
+
+	// {/literal} 
+	// ]]> 
+	</script>
+</head>
+<body>
+	<div style="font-size: 20px;">
+		<table class="inner">
+			<tr>
+				<td >快递单号：</td>
+				<td><input type="text" id="tracking_number"
+					value="{$tracking_number}" name="tracking_number"
+					size="24" /> &nbsp;&nbsp;&nbsp;&nbsp; <input type="button"
+					id="tracking_number_btn" value="加载" /></td>
+			</tr>
+			<tr></tr>
+			<tr>
+			<td></td>
+			<td>
+			{if $message}
+			 <span style="color: red;">{$message}</span>  
+			{/if}
+			</td>
+			</tr>
+		</table>
+		
+	</div>
+</body>
+</html>

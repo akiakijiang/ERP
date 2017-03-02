@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>条码打印</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<link href="{$WEB_ROOT}admin/styles/general.css" rel="stylesheet" type="text/css" />
+	<link href="{$WEB_ROOT}admin/styles/main.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+	<script type="text/javascript" src="../admin/misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script> 
+	<script type="text/javascript">
+	{literal}
+	/*
+	  BARCODE_TYPE = new Array('grouding','order_sn');
+
+	  $(document).ready(function() {
+		 show_hide_ids('grouding');
+	  });
+	*/
+	  function check_input_number(number) {
+		  if (isNaN(number.trim())) {
+		      alert("请输入数字:"+ number);
+		      return false;
+		  }
+			
+		  if (number.trim() == ''){
+			  alert("请输入一个数字:"+ number);
+			  return false;
+		  }
+		  return true;
+	  }
+	  /*
+	  //现在没有用
+	  function show_hide_ids(type){
+	      for(var i=0;i<BARCODE_TYPE.length;i++){
+	    	  if(type == BARCODE_TYPE[i]) {
+	    		  //$('#menu_barcode_'+type).addClass('on');
+	    	      $('#barcode_'+type).show();
+	    	  } else {
+			      //$('#menu_barcode_'+BARCODE_TYPE[i]).removeClass('on');  
+		    	  $('#barcode_'+BARCODE_TYPE[i]).hide();
+	    	  }
+	      }
+	  }
+
+	  function check_order_sn() {
+	  	alert("你妹的倒是给我干活啊！");
+		  return true;
+	  }
+	  */
+	  
+	  /**
+	  找出可打印的字符
+	  **/
+	  function check_grouding_number() {
+		$gouding_number = $('#grouding_number').val();//打印数量
+		if(!check_input_number($gouding_number)) {//检查数量是否为数字
+		 	return false;
+		}
+		var $gouding_barcodes = get_grouding_location_barcodes($gouding_number);//获取所有的条码编号
+		document.getElementById('GN_LIST').value='';//将隐藏的列表设置为空
+		document.getElementById('GN_LIST_SHOW').value='';//将显示的列表设置为空
+		for(var i=0;i<$gouding_barcodes.length;i++) {
+			//alert($gouding_barcodes[i]);
+			document.getElementById('GN_LIST').value+=$gouding_barcodes[i];//将条码全部放进去
+			if(i<$gouding_barcodes.length-1) document.getElementById('GN_LIST').value+=',';
+			//if(i%10==9) document.getElementById('GN_LIST').value+='\r\n';
+			if(i==0){
+				document.getElementById('GN_LIST_SHOW').value+='自 '+$gouding_barcodes[i];
+			} else if (i==$gouding_barcodes.length-1){
+				document.getElementById('GN_LIST_SHOW').value+=' 到 '+$gouding_barcodes[i]+"("+Date()+") 待打印...";
+			}
+		}
+		if($gouding_barcodes.length>0) return true;
+		else return false;
+		/*
+		if($to_print){
+	  		// 打印该条码
+			if($gouding_barcodes) {
+				print_barcodes($gouding_barcodes);
+			}
+		}
+		*/		
+	  } 
+	  // 码托  barcode_tray
+	 function check_barcode_tray_number() {
+		$barcode_tray = $('#barcode_tray').val();//打印数量
+		if(!check_input_number($barcode_tray)) {//检查数量是否为数字
+		 	return false;
+		}
+		var $gouding_barcodes = get_tray_barcodes($barcode_tray);//获取所有的条码编号
+		document.getElementById('GN_TRAY_LIST').value='';//将隐藏的列表设置为空
+		document.getElementById('GN_TRAY_LIST_SHOW').value='';//将显示的列表设置为空
+		for(var i=0;i<$gouding_barcodes.length;i++) {
+			//alert($gouding_barcodes[i]);
+			document.getElementById('GN_TRAY_LIST').value+=$gouding_barcodes[i];//将条码全部放进去
+			if(i<$gouding_barcodes.length-1) document.getElementById('GN_TRAY_LIST').value+=',';
+			//if(i%10==9) document.getElementById('GN_LIST').value+='\r\n';
+			if(i==0){
+				document.getElementById('GN_TRAY_LIST_SHOW').value+='自 '+$gouding_barcodes[i];
+			} else if (i==$gouding_barcodes.length-1){
+				document.getElementById('GN_TRAY_LIST_SHOW').value+=' 到 '+$gouding_barcodes[i]+"("+Date()+") 待打印...";
+			}
+		}
+		if($gouding_barcodes.length>0) return true;
+		else return false;
+	  }
+	   /**
+	  控制注册 码托 空条码和打印的入口
+	  **/
+	  function I_GNs_TRAY(work){
+	  	if (work==1){
+	  		document.getElementById("IprintGNs_tray").disabled=false;
+			document.getElementById("IgetGNs_tray").disabled=true;
+	  	} else if (work==2){
+	  		document.getElementById("IprintGNs_tray").disabled=true;
+			document.getElementById("IgetGNs_tray").disabled=false;
+			document.getElementById('GN_TRAY_LIST').value='';
+			document.getElementById('GN_TRAY_LIST_SHOW').value+=" ("+Date()+") 已打印。";
+	  	}
+	  }
+
+	  /**
+	  控制注册空条码和打印的入口
+	  **/
+	  function I_GNs(work){
+	  	if (work==1){
+	  		document.getElementById("IprintGNs").disabled=false;
+			document.getElementById("IgetGNs").disabled=true;
+	  	} else if (work==2){
+	  		document.getElementById("IprintGNs").disabled=true;
+			document.getElementById("IgetGNs").disabled=false;
+			document.getElementById('GN_LIST').value='';
+			document.getElementById('GN_LIST_SHOW').value+=" ("+Date()+") 已打印。";
+	  	}
+	  }
+
+	  /*
+	  function print_grouding_number() {
+	  	var url='print_barcode.php?sugu_print=1&type=grouding&barcodes=';
+	  	var codes=document.getElementById('GN_LIST').value;
+	  	hidden_print(url+codes);
+	  }
+	  */
+	  
+	  function get_grouding_location_barcodes($gouding_number) {
+		  var result = "";
+		  $.ajax({
+			  async:false,
+		      dataType:'json',
+		      type:'post',
+		      url:'ajax.php?act=get_grouding_location_barcodes',
+		      data:'number='+$gouding_number,
+		      error:function(){},
+		      success:function(data) {
+		    	  if(!data.success) {
+		    		  alert(data.error);
+		    	  } else {
+		    		  result = data.res;//获取所有的条码编号
+		    	  }
+		      }
+		  });
+		  return result;
+	  }
+	  // 码托
+	  function get_tray_barcodes($gouding_number) {
+		  var result = "";
+		  $.ajax({
+			  async:false,
+		      dataType:'json',
+		      type:'post',
+		      url:'ajax.php?act=get_tray_barcodes',
+		      data:'number='+$gouding_number,
+		      error:function(){},
+		      success:function(data) {
+		    	  if(!data.success) {
+		    		  alert(data.error);
+		    	  } else {
+		    		  result = data.res;//获取所有的码托条码编号
+		    	  }
+		      }
+		  });
+		  return result;
+	  }
+	  // 打印条码入口
+	  function print_barcodes($gouding_barcodes) {
+		  alert('yes');
+	  }
+		
+	</script>
+	{/literal}
+
+<style type="text/css">
+
+{literal}
+.order_liTab{float:left;margin-bottom:-1px;margin-top:20px;}
+.order_liTab li{width:110px;height:21px;padding-top:11px;background:url(images/order_liBg_1.gif) 0 5px no-repeat;float:left;text-align:center;margin-left:-1px;cursor:pointer;list-style:none;}
+.order_liTab li.on{background:url(images/order_liOn.png) no-repeat;font-weight:bold;font-size:14px;margin-bottom:-1px;position:relative;cursor:default;color:#000;}
+.order_liTab li a{color:#fff;}
+.order_liTab li.on a{color:#000;}
+
+.ddan{
+width:900px;
+float:left;
+}
+</style>
+{/literal}
+
+</head>
+
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;条码打印&nbsp;</span></legend>
+  <div class="main-div" style="clear:both;" id="barcode_grouding">
+  	<p>
+  		本仓库条码打印系统针对Godex EZ 1100p打印机和40*100mm条码打印纸组合配置设计，请在条码打印前确保纸型等配置准确。<br>
+  		打印时请取消各种页边距和页眉页脚等项。如需帮助，请点击<a href="BarcoderHelp.htm" target="new">这里</a>。
+  	</p>
+  	<p>
+  		如需检查配置正确性，请<a href="javascript:void(0)" onclick="print_barcodes_for_test('00000000')">打印测试页</a>。<br>
+  		要查看配置正常的情况下测试页打印效果，请点击<a href="images/BarcodeTestTip.jpg" target="new">这里</a>。
+  	</p>
+  </div>
+
+<!-- 暂时不用以后再说
+<div class="ddan">
+      <input type="button" id="menu_barcode_grouding" onclick="show_hide_ids('grouding')" value="进入打印上架容器条码"> &nbsp;&nbsp;&nbsp;
+      <input type="button" id="menu_barcode_order_sn" onclick="show_hide_ids('order_sn')" value="进入打印订单条码">
+</div>
+</br></br></br></br>
+-->
+
+<!-- 打印上架容器条码 -->
+<div class="main-div" id="barcode_grouding"> <!-- style="float:left" -->
+<form method="post">
+<table>
+  <tr>
+  	<td>
+  		<h1>打印上架容器条码</h1>
+  	</td>
+  </tr>
+  <tr><td style='color:red'>当前组织：{$party_name}</td></tr>
+  <tr>
+    <td>
+                         数量：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+         <input type="text"  id="grouding_number" name="grouding_number" value="5" onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"  />
+    	 <input type='button' id="IgetGNs" onclick='if(check_grouding_number())I_GNs(1);' value='列出打印条码'>
+    	 <input type='button' id="IprintGNs" disabled="disabled" onclick='if(print_grouding_numbers())I_GNs(2);' value='打印'>
+    </td>
+  </tr>
+   <tr>
+  	<td>
+  		<div>
+  			<p>
+  				条码打印信息 &nbsp;
+  				<input type='hidden' id='GN_LIST' name="GN_LIST" value="{$GN_LIST_STR}">
+  				<input style="width: 80%;" readOnly="readOnly" type='text' id='GN_LIST_SHOW' name="GN_LIST_SHOW" value="就绪。">
+  			</p>
+  		</div>
+  	</td>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 打印订单条码 -->
+<!-- 暂时不支持，不管 
+<div class="main-div" style="float:left" id="barcode_order_sn">
+<form method="post">
+<table >
+	<tr>
+  	<td>
+  		<h1>打印订单条码</h1>
+  	</td>
+  </tr>
+   <tr>
+    <td>
+                         订单号：
+         <input type="text"  id="order_sn" name="order_sn" value="5"/>
+    	 <input type='button' onclick=check_order_sn() value='打印'></input>
+    </td>
+  </tr>
+  
+</table>
+</form>
+</div>
+--> 
+
+<!-- 商品条码 -->
+<div class="main-div" id="barcode_goods">
+<form method="post">
+<table >
+	<tr>
+  	<td>
+  		<h1>打印商品条码</h1>
+  	</td>
+  </tr>
+    <tr><td style='color:red'>当前组织：{$party_name}</td></tr>
+   <tr>
+    <td>
+         商品条码：<input type="text" id="goods_barcode" name="goods_barcode"/> &nbsp;
+         打印数量：<input type="text" id="goods_number" name="barcode_number" /> &nbsp;
+    	 <input type='button' onclick="
+    	 	var barcode=document.getElementById('goods_barcode').value;
+    	 	var num=eval(document.getElementById('goods_number').value);
+    	 	if(barcode!='' && num>0)print_goods_barcodes(barcode,num);
+    	 	else alert('打印请求非法而被驳回！');
+    	 " value='打印'></input>
+    </td>
+  </tr>
+  
+</table>
+</form>
+</div>
+
+<!-- 商品串号 -->
+<div class="main-div" id="serial_number">
+<form method="post">
+<table >
+	<tr>
+  	<td>
+  		<h1>打印商品串号（内部使用，乱用必究）</h1>
+  	</td>
+  </tr>
+    <tr><td style='color:red'>当前组织：{$party_name}</td></tr>
+   <tr>
+    <td>
+    	商品条码：<input type="text" id="SN_goods_barcode" name="goods_barcode"/> &nbsp;
+        起始串号：<input type="text" id="SN_start" name="SN_start"/> &nbsp;
+        打印数量：<input type="text" id="SN_number" name="goods_number" /> &nbsp;
+    	 <input type='button' onclick="
+    	 	var barcode=document.getElementById('SN_goods_barcode').value;
+    	 	var start=eval(document.getElementById('SN_start').value);
+    	 	var num=eval(document.getElementById('SN_number').value);
+    	 	if(barcode!='' && num>0 && start>=0)print_SN_barcodes(barcode,start,num);
+    	 	else alert('打印请求非法而被驳回！');
+    	 " value='打印'></input>
+    </td>
+  </tr>
+  
+</table>
+</form>
+</div>
+
+<!-- 库位条码 -->
+<div class="main-div" id="barcode_goods">
+<form method="post">
+<table >
+	<tr>
+  	<td>
+  		<h1>打印库位条码</h1>
+  	</td>
+  </tr>
+    <tr><td style='color:red'>当前组织：{$party_name}</td></tr>
+   <tr>
+    <td>
+         库位条码：<input type="text" id="location_barcode" name="location_barcode"/> &nbsp;
+         打印数量：<input type="text" id="location_number" name="location_number" /> &nbsp;
+    	 <input type='button' onclick="
+    	 	var barcode=document.getElementById('location_barcode').value;
+    	 	var num=eval(document.getElementById('location_number').value);
+    	 	if(barcode!='' && num>0)print_location_barcodes(barcode,num);
+    	 	else alert('打印请求非法而被驳回！');
+    	 " value='打印'></input>
+    </td>
+  </tr>
+  
+</table>
+</form>
+</div>
+<!-- 打印码托 MT201602290001-->
+<div class="main-div" id="barcode_grouding"> <!-- style="float:left" -->
+<form method="post">
+<table>
+  <tr>
+  	<td>
+  		<h1>打印码托条码</h1>
+  	</td>
+  </tr>
+  <tr>
+    <td>
+                         数量：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+         <input type="text"  id="barcode_tray" name="barcode_tray" value="5" onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))"  />
+    	 <input type='button' id="IgetGNs_tray" onclick='if(check_barcode_tray_number())I_GNs_TRAY(1);' value='列出打印条码'>
+    	 <input type='button' id="IprintGNs_tray" disabled="disabled" onclick='if(print_tray_numbers())I_GNs_TRAY(2);' value='打印'>
+    </td>
+  </tr>
+   <tr>
+  	<td>
+  		<div>
+  			<p>
+  				码托条码打印信息 &nbsp;
+  				<input type='hidden' id='GN_TRAY_LIST' name="GN_TRAY_LIST" value="{$GN_LIST_STR}">
+  				<input style="width: 80%;" readOnly="readOnly" type='text' id='GN_TRAY_LIST_SHOW' name="GN_TRAY_LIST_SHOW" value="就绪。">
+  			</p>
+  		</div>
+  	</td>
+  </tr>
+</table>
+</form>
+</div>
+
+  <br /><br />
+</fieldset>
+
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+
+</body>
+</html>

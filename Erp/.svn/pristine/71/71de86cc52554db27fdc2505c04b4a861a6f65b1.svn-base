@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>库存详情</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+		*.margin: 0;
+  </style>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<div style="width:900px; margin:0 auto;">
+	<form method="get">
+	<table>
+	<tr>
+		<td>
+			期初时间 <input type="text" name="filter_start" id="start" value="{$filter.filter_start}" size="10" />	
+		</td>
+		<td>
+			期末时间 <input type="text" name="filter_end" id="end" value="{$filter.filter_end}" size="10" />	
+		</td>
+		
+		<td>
+			&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="筛选" />
+		</td>
+	</tr>
+	</table>
+	<input type="hidden" name="filter_outerId" id="outerId" value="{$outerId}" />
+	</form>
+</div>
+<br />
+
+<div style="width:900px; margin:0 auto;">
+<table class="bWindow">
+	<tr align="center">
+		<th width="100">淘宝商品id</th>
+		<th width="100">淘宝商品sku_id</th>
+	  	<th width="100">商家编码</th>
+	  	<th width="100">商品库存总数量</th>
+	  	<th width="100">冻结商品数量</th>
+	  	<th width="100">待发货商品数量</th>
+	  	<th width="100">供应商待发货商品数量</th>
+	  	<th width="100">可预定商品数量</th>
+	  	<th width="100">淘宝商品数量</th>
+	  	<th width="100">库存同步时间</th>
+	</tr>
+	{foreach from=$inventory_info item=item}
+	<tr align="center">
+		<td>{$item.num_iid}</td>
+		<td>{$item.sku_id}</td>
+		<td>{$item.outer_id}</td>
+		<td>{$item.stock_quantity}</td>
+		<td>{$item.facility_reserved_quantity}</td>
+		<td>{$item.wait_send_quantity}</td>
+		<td>{$item.supplier_return_quantity}</td>
+		<td>{$item.new_quantity}</td>
+		<td>{$item.taobao_quantity}</td>
+		<td>{$item.created_time}</td>
+	</tr>
+
+  {foreachelse}
+	<tr align="center">
+		  <td colspan="10" style="height:100px; line-height:100px;">没有查询到交易记录</td>
+	</tr>
+  
+  {/foreach}
+    
+<table>
+</div>
+
+<br />
+{$pagination}
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

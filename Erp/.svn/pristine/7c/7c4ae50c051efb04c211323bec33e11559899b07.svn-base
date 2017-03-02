@@ -1,0 +1,579 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>工单管理</title>
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+
+	$(document).ready(function(){
+	    // 绑定滑动效果
+	    $('legend.expand').bind('click', function(event){
+	        $(this).next().slideToggle('normal');
+	    });
+			
+			/**
+			 * 供应商自动完成
+			 */
+			$('#autocomplete_provider').autocomplete('../ajax.php?act=get_provider_jjs', {
+					minChars: 0,
+					mustMatch: true,
+					dataType : 'json',
+					formatItem : function(row, i, max, value, term) {
+						return(row.provider_name);
+					},
+					formatResult : function(row) {
+						return(row.provider_name);
+					}
+			}).result(function(event, row, formatted) {
+					// 将隐藏域的值设为供应商的id
+					$('#provider_id').val(row.provider_id);
+			});
+			
+			var provider_list = {};
+			$.ajax({
+				type: "POST",
+				url: '../ajax.php?act=get_provider_jjs',
+				data: "",
+				cache: false,
+				dataType: "json",
+				success: function(s){
+					provider_list = s;
+					$('.autocomplete_provider').each(function(){
+						var _this = this;
+						var _old_provider_id = $(_this).attr('id').replace("_provider_id_", "_old_provider_id_");
+						for (var i in s) {
+							var sss = $('#' + _old_provider_id).val() == s[i].provider_id ? ' selected' : '';
+							sss = $(_this).attr('defaultProviderId') == s[i].provider_id ? ' selected' : sss;
+							$(_this).append('<option value="' + s[i].provider_id + '"'+sss+'>' + s[i].provider_name + '</option>');
+						}
+					});
+				}
+			});
+			
+			/**
+			 * 表单提交验证
+			 */
+			$('form').bind('submit', function(event){
+			});
+			
+			/**
+			 * 选中该条以提交
+			 */
+			$('.td_sbmt').each(function(){
+				var _this = this;
+				$(_this).click(function(){
+					$(_this).find('input').attr('checked', !$(_this).find('input').attr('checked'));
+					var a = 1 * $('#select_count').html();
+					a = a + ($(_this).find('input').attr('checked') ? 1 : -1);
+					$('#select_count').html(a + '');
+				});
+				$(_this).find('input').click(function(event){
+					return false;
+					$(_this).find('input').attr('checked', !$(_this).find('input').attr('checked'));
+					var a = 1 * $('#select_count').html();
+					a = a + ($(_this).find('input').attr('checked') ? 1 : -1);
+					$('#select_count').html(a + '');
+				});
+			});
+
+	});
+
+    function cancelDispatchList(dispatchListId) {
+    	if (confirm("请确认取消工单")) {
+            location.href="create_update.php?act=cancel&dispatchListId=" + dispatchListId;    
+        }
+    }
+    
+    function confirmDispatchList(dispatchListId) {
+    	if (confirm("请确认工单已完成")) {
+            location.href="create_update.php?act=confirm&dispatchListId=" + dispatchListId;    
+        }
+    }
+	
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+<div style="margin:0px auto; width:99%;" align="left">
+
+<div>
+
+  {if $smarty.request.message || $message}
+    <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+    {$smarty.request.message}
+    {$message}
+    </div>
+  {/if}
+
+
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp; 查询工单 &nbsp;({$act})</legend>
+  <form method="get" id="form" autocomplete="off">
+	<input type="hidden" name="act" value="{$act}" />
+	
+  	{if (($act != 'pickup') && ($act != 'notice')) && ($act != 'current') }
+  	  <table class="inner">
+        <tr>
+          <td width="120">状态</td>
+          <td>
+                                工单状态:
+          	<select name="row[dispatchStatusId]">
+          	{html_options options=$dispatchStatusIds selected=$smarty.request.row.dispatchStatusId}
+          	</select>
+          	
+           &nbsp;&nbsp;&nbsp;是否加急:
+           <select name="row[priority]">
+            {html_options options=$prioritys selected=$smarty.request.row.priority}
+            </select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td width="120">工单号</td>
+          <td>
+          	<input type="text" name="row[dispatchSn]" value="{$smarty.request.row.dispatchSn}" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>供应商</td>
+          <td>
+          	<input type="text" id="autocomplete_provider" value="{$selectProviderName}" size="45" />  &nbsp; (可输入供应商编码搜索)
+            <input type="hidden" id="provider_id" name="row[providerId]" value="{$smarty.request.row.providerId}" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>工单交货时间</td>
+          <td>
+                                   从
+          	<input type="text" size="10" id="beginDueDate" name="row[beginDueDate]" value="{$smarty.request.row.beginDueDate}" />
+          	<input type="button" value="..." id="beginDueDateBtn" />
+          	到
+          	<input type="text" size="10" id="endDueDate" name="row[endDueDate]" value="{$smarty.request.row.endDueDate}" />
+          	<input type="button" value="..." id="endDueDateBtn" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>工单创建时间</td>
+          <td>
+                                   从
+            <input type="text" size="10" id="beginCreatedStamp" name="row[beginCreatedStamp]" value="{$smarty.request.row.beginCreatedStamp}" />
+            <input type="button" value="..." id="beginCreatedStampBtn" />
+            到
+            <input type="text" size="10" id="endCreatedStamp" name="row[endCreatedStamp]" value="{$smarty.request.row.endCreatedStamp}" />
+            <input type="button" value="..." id="endCreatedStampBtn" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>订单婚期时间</td>
+          <td>
+                                   从
+            <input type="text" size="10" id="beginImportantDay" name="row[beginImportantDay]" value="{$smarty.request.row.beginImportantDay}" />
+            <input type="button" value="..." id="beginImportantDayBtn" />
+                                   到
+            <input type="text" size="10" id="endImportantDay" name="row[endImportantDay]" value="{$smarty.request.row.endImportantDay}" />
+            <input type="button" value="..." id="endImportantDayBtn" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>订单创建时间</td>
+          <td>
+                                   从
+            <input type="text" size="10" id="beginOrderTime" name="row[beginOrderTime]" value="{$smarty.request.row.beginOrderTime}" />
+            <input type="button" value="..." id="beginOrderTimeBtn" />
+                                   到
+            <input type="text" size="10" id="endOrderTime" name="row[endOrderTime]" value="{$smarty.request.row.endOrderTime}" />
+            <input type="button" value="..." id="endOrderTimeBtn" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>关联销售订单编号</td>
+          <td>
+          	<input type="text" name="row[orderSn]" value="{$smarty.request.row.orderSn}" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>关联外部订单编号</td>
+          <td>
+          	<input type="text" name="row[externalOrderSn]" value="{$smarty.request.row.externalOrderSn}" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>dress number</td>
+          <td>
+          	<input type="text" name="row[externalGoodsId]" value="{$smarty.request.row.externalGoodsId}" /> 
+          </td>
+        </tr>
+    {else}
+    	<!--  催货单和提货单只能够按照供应商来查询 -->
+    	<tr>
+          <td>供应商</td>
+          <td>
+          	<input type="text" id="autocomplete_provider" value="{$selectProviderName}" size="45" />  &nbsp; (可输入供应商编码搜索)
+            <input type="hidden" id="provider_id" name="providerId" value="{$smarty.request.providerId}" />
+          </td>
+        </tr>
+    {/if}
+
+     </table>
+  	</div>
+         
+  	  <br />
+  	  
+	    <div style="text-align:center">
+        <input type="hidden" value="{$smarty.request.sort}" name="sort" />
+      	<input type="submit" 
+      	onclick="document.getElementById('subAct').value='search';document.getElementById('form').target='';" 
+      	value=" 查询工单 "  />
+      	&nbsp;&nbsp;&nbsp;&nbsp;
+      	<input type="submit" 
+      	onclick="document.getElementById('subAct').value='export';document.getElementById('form').target=''" 
+      	value=" 导出html " />
+      	&nbsp;&nbsp;&nbsp;&nbsp;
+      	<input type="submit" 
+      	onclick="document.getElementById('subAct').value='print';document.getElementById('form').target='_blank'" 
+      	value=" 可打印版本 " />
+      	<input type="hidden" id="subAct" name="subAct" value="" />
+      	<input type="hidden" name="act" 
+	      	{if ($act)}
+	      		value="{$act}"
+	      	{else}
+	      		value="search" 
+	      	{/if}
+      	/>
+      </div>
+	</form>
+  </fieldset>
+
+  <br /><br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;工单列表&nbsp; ({$selectProviderName})</legend>
+  <div>
+   
+<!--{if $list}-->  {* 如果有数据 *}
+
+<!-- {if $smarty.get.row.dispatchStatusId == 'PREPARE'} -->
+<div style="position: fixed; right: 3px; top: 50px;">
+	<input style="background-color: blue; color: #fff; word-break: break-all; word-wrap: break-word; min-width: 30px; width: 30px; white-space:pre-wrap;" type="button" id="btn_save" value="分派选择的工单">
+	<p style="background-color:#eee;margin:0px;">(<span id="select_count" style="color:red;">0</span>)</p>
+</div>
+<div style="background-color:#f6f6f6;position: fixed; right: 100px; top: 10px; display: none;" id="runresult">
+<table border="1" style="border-collapse: collapse">
+	<tr>
+		<td colspan="2" align="right">
+			<button style="color: red; font-weight: bold; cursor: pointer; margin: 0px;" onclick="$('#runresult').hide();">点此关闭信息提示栏</button>
+		</td>
+	</tr>
+	<tr>
+		<td><b>成功</b></td>
+		<td><b>失败</b></td>
+	</tr>
+	<tr>
+		<td id="runresult_ok"></td>
+		<td id="runresult_failed"></td>
+	</tr>
+</table>
+</div>
+<!-- {/if} -->
+
+      <table class="inner">
+        <caption style="font-weight:bold;margin:0;padding5px;text-align:left;">共 {$count} 条记录</caption>
+        <img src="../images/cancell.png"></img>代表相同订单有取消的工单，<img src="../images/finished.png"></img>代表相同订单有已完成的工单。
+         <tr align="center" class="th">
+          <th width="40">标识</th>
+          <th>工单号</th>
+          <th>状态</th>
+      	  <th>关联的销售订单</th>
+          <th>关联的外部订单</th>
+          <th>关联的采购订单</th>
+          <!--   <th>商品</th> -->
+          <th><a href="{$smarty.server.REQUEST_URI|add_param_in_url:"sort":"dressnumber"}">dress number</a></th>
+          <th>商品图片</th>
+          <th>供价</th>
+          <th>供应商</th>
+          <th>选择</th>
+          <th>婚期</th>
+          <th>工单交货时间</th>
+          <th>打印</th>
+        </tr>
+        <!--{foreach from=$list item=item}-->
+		<tr align="center" class="{cycle values='odd,even'}" {if $item->bgColor}style="color:{$item->bgColor}"{/if}>
+			<td>{if $item->cancelledCount != 0}<img src="../images/cancell.png"></img>{/if}<br>{if $item->finishedCount != 0}<img src="../images/finished.png"></img>{/if}</td>
+			<td>{$item->dispatchSn}
+
+			{if (($act != 'pickup') && ($act != 'notice')) }
+						
+				{if $item->dispatchStatusId == 'PREPARE' or $item->dispatchStatusId == 'OK'}
+				<br />
+				<input type="button" onclick="cancelDispatchList('{$item->dispatchListId}')" value="取消" />
+				{/if}
+				
+				{if $item->dispatchStatusId != 'FINISHED' and $item->dispatchStatusId != 'CANCELLED' and $item->dispatchStatusId != 'OK'}
+				<br /> 
+				<input type="button" onclick="location.href='create_update.php?dispatchListId={$item->dispatchListId}&act=updatePre'" value="编辑" />
+				{/if}
+				
+				{if $item->dispatchStatusId == 'OK'}
+				<br />
+				<input type="button" onclick="confirmDispatchList('{$item->dispatchListId}')" value="完成" />
+				{/if}
+			{else}
+			    <br />
+				<img src="../code_img.php?height=60&barcode={$item->dispatchSn}&&1.jpg" />
+			{/if}
+			</td>
+			<td>{$item->statusName}</td>
+			<td>
+			<a href="../order_edit.php?order_id={$item->orderId}" target="_blank">
+			{$item->orderSn}
+			</a>
+			</td>
+			<td>
+			<a href="https://cms.jjshouse.com/?q=admin/main/order/view/order_sn/{$item->externalOrderSn}" target="_blank">
+			{$item->externalOrderSn}
+			</a>
+			</td>
+			<td><a href="../order_edit.php?order_id={$item->purchaseOrderId}" target="_blank">{$item->purchaseOrderSn}</a></td>
+			<!-- 
+			<td>{$item->goodsName}</td>
+			 -->
+            <td><a href="stat.php?jjshouse_goods_id={$item->jjshouseGoodsId}" target="_blank">{$item->jjshouseGoodsId}</a></td>
+			<td><img height="60" src="{$item->imageUrl}" /></td>
+			<td>
+			{if $item->latestPrice}最近一次价格：{$item->latestPrice}<br>
+				{if $item->wrapPrice > 0}
+				<div style="color: red; background-color: green;">带马甲</div>
+				{/if}
+			<input value="{$item->latestPrice}" id="_price_{$item->dispatchListId}" size="6" />
+			{else}
+				{if $item->wrapPrice > 0}
+				<div style="color: red; background-color: green;">带马甲</div>
+				{/if}
+			<input value="{$item->price}" id="_price_{$item->dispatchListId}" size="6" />
+			{/if}
+			</td>
+			<td>
+			{if $item->latestProvider}{$item->latestProvider}<br>{/if}
+			<!-- {if $item->providerName}{$item->providerName}<br>{/if} -->
+			<select class="autocomplete_provider" id="_provider_id_{$item->dispatchListId}" defaultProviderId="{$item->defaultProviderId}">
+			<option value="">--选择供应商--</option>
+			</select>
+			<input type="hidden" id="_old_provider_id_{$item->dispatchListId}" value="{$item->providerId}" />
+			</td>
+			<td class="td_sbmt">
+			<input type="checkbox" value="1" class="cb_sbmt" id="_sbmt_{$item->dispatchListId}" />
+			</td>
+			<td>{$item->importantDay}</td>
+			<td>{$item->dueDate}</td>
+			<td>
+			{if $item->dispatchStatusId != 'PREPARE' 
+			&& $item->dispatchStatusId != 'REVISION'
+			&& $item->dispatchStatusId != 'SUSPENDED'}
+				<input name="" 
+					onclick="location.href='print.php?dispatchListId={$item->dispatchListId}'" 
+					type="button" value="打印" />
+			{else}
+			当前状态不能打印({$item->dispatchStatusId})
+			{/if}
+			</td>
+			
+		</tr>
+		<!--{/foreach}-->
+      </table>
+      
+<!--{else}-->  {* 如果没有数据 *}
+
+			<div style="text-align:center"><h4>无相关数据</h4></div>
+
+<!--{/if}-->
+      
+  </div>
+	</fieldset>
+  <br />
+
+
+</div>
+
+</div>
+
+<script type="text/javascript">
+// <![CDATA[{literal}
+
+$(document).ready(function(){
+
+	/**
+	 * 提交处理
+	 */
+	$('#btn_save').click(function(){
+		$('#runresult_ok').html("");
+		$('#runresult_failed').html("");
+		$('#runresult').show();
+		
+		var cb_count = 0;
+		$('.cb_sbmt').each(function(){
+			var _this = this;
+			if ($(this).attr('checked')) {
+				cb_count++;
+				// {{{
+				var sbmt_id = $(_this).attr('id');
+				var dispatch_list_id = sbmt_id.replace("_sbmt_", "");
+				var current_price_e = sbmt_id.replace("_sbmt_", "_price_");
+				var current_provider_id_e = sbmt_id.replace("_sbmt_", "_provider_id_");
+				if ($('#'+current_price_e).val() > 0 && $('#'+current_provider_id_e).val() > 0) {
+					$(_this).parent().css({"background-color": ""});
+					
+					setTimeout(function() {
+					$.ajax({
+						'type': 'POST',
+						'url': "create_update.php?act=updateSubmitAjax",
+						'data': 'dispatchListId=' + dispatch_list_id + '&price=' + $('#'+current_price_e).val() + '&providerId=' + $('#'+current_provider_id_e).val(),
+						'cache': false,
+						'dataType': 'json',
+						'async' : false,
+						'success': function(r) {
+							if (r.code == 0) {
+								//alert(r.msg);
+								$('#runresult_ok').append(r.msg + "<br>");
+								$(_this).parent().parent().remove();
+								var a = 1 * $('#select_count').html();
+								if (a > 0) {
+									a = a - 1;
+									$('#select_count').html(a + '');
+								}
+							} else {
+								//alert(r.msg);
+								$('#runresult_failed').append(r.msg + "<br>");
+							}
+						},
+						'error': function(r) {
+							//alert('服务器出现错误：' + r);
+							$('#runresult_failed').append('服务器出现错误：' + r + "<br>");
+						}
+					});
+					}, 1000);
+					
+				} else {
+					//alert('该项没填完整');
+					$('#runresult_failed').append('该项没填完整' + "<br>");
+					$(_this).parent().css({"background-color": "red"});
+				}
+				// }}}
+			}
+		});
+		if (cb_count > 0) {
+			//
+		} else {
+			alert('请选择要提交的项');
+		}
+	});
+});
+// ]]>{/literal}
+</script>
+
+{if (($act != 'pickup') && ($act != 'notice') && ($act != 'current')) }
+	{literal}
+	<script type="text/javascript">//<![CDATA[
+		Zapatec.Calendar.setup({
+		  weekNumbers       : false,
+		  electric          : false,
+		  inputField        : "beginCreatedStamp",
+		  button            : "beginCreatedStampBtn",
+		  ifFormat          : "%Y-%m-%d",
+		  daFormat          : "%Y-%m-%d"
+		});
+		
+		Zapatec.Calendar.setup({
+		  weekNumbers       : false,
+		  electric          : false,
+		  inputField        : "endCreatedStamp",
+		  button            : "endCreatedStampBtn",
+		  ifFormat          : "%Y-%m-%d",
+		  daFormat          : "%Y-%m-%d"
+		});
+		
+		Zapatec.Calendar.setup({
+		  weekNumbers       : false,
+		  electric          : false,
+		  inputField        : "beginDueDate",
+		  button            : "beginDueDateBtn",
+		  ifFormat          : "%Y-%m-%d",
+		  daFormat          : "%Y-%m-%d"
+		});
+		
+		Zapatec.Calendar.setup({
+		  weekNumbers       : false,
+		  electric          : false,
+		  inputField        : "endDueDate",
+		  button            : "endDueDateBtn",
+		  ifFormat          : "%Y-%m-%d",
+		  daFormat          : "%Y-%m-%d"
+		});
+		
+		Zapatec.Calendar.setup({
+		  weekNumbers       : false,
+		  electric          : false,
+		  inputField        : "beginImportantDay",
+		  button            : "beginImportantDayBtn",
+		  ifFormat          : "%Y-%m-%d",
+		  daFormat          : "%Y-%m-%d"
+		});
+		
+		Zapatec.Calendar.setup({
+		  weekNumbers       : false,
+		  electric          : false,
+		  inputField        : "endImportantDay",
+		  button            : "endImportantDayBtn",
+		  ifFormat          : "%Y-%m-%d",
+		  daFormat          : "%Y-%m-%d"
+		});
+
+
+		Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "beginOrderTime",
+          button            : "beginOrderTimeBtn",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+
+        Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "endOrderTime",
+          button            : "endOrderTimeBtn",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+
+		
+	//]]>
+	</script>
+	{/literal}
+{/if}
+
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<title>拒收货物处理</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<script type="text/javascript">
+	var back = escape('{$back}');
+	{if $smarty.request.info != ''}
+	alert('{$smarty.request.info}');
+	{/if}
+	{literal}
+	$(document).ready(function(){
+	
+		// 点击生成退款申请
+		$('.refund_apply').bind('click', function(){
+				$i = $(this);
+				$i.attr('disabled', true);
+				if (!confirm('确定要生成退款申请吗?')) {
+					$i.attr('disabled', false);
+					return false;
+				}
+
+				var order_id = $i.attr('oid'); // 订单id
+				
+				$.ajax({
+					type: 'POST',
+					url: 'ajax.php?act=create_refund_apply',
+					data: 'order_id=' + order_id + '&check_exists=1&refund_type=3', // 检查该订单是否拥退款申请, 退款类型为订单拒收
+					dataType: 'json',
+					success: function(data){
+						$i.attr('disabled', false);
+						alert(data.message);
+					},
+					error: function(){
+						$i.attr('disabled', false);
+					}
+				});
+		});
+		
+	});
+{/literal}
+</script>
+<style type="text/css">
+{literal}
+#sale p{margin:5px 0;padding:0;}
+#sale td{padding:5px;border-color:#666;}
+.searchul{list-style:none;}
+.searchul li{margin:5px 0;}
+
+{/literal}
+</style>
+</head>
+<body id="sale">
+<fieldset>
+	<legend>搜索</legend>
+<form method="get">
+<ul class="searchul">
+<li>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+</li>
+<li>
+搜索类型：
+<select name="search_type" style="width:150px;">
+<option label="订单号" value="order_sn">订单号</option>
+<option label="收货人" value="consignee">收货人</option>
+<option label="运单号" value="bill_no">运单号</option>
+</select>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+关键字：
+<input name="search_text" value="">
+</li>
+<li>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 仓库：
+<select name="available_facility">
+<option value="-1">所有</option>
+{html_options options=$available_facility selected = $smarty.request.available_facility }
+</select>
+</li>
+
+</ul>
+<input type="submit" value="搜索" />
+</form>
+</fieldset>
+目前所处仓库：
+<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+
+{foreach from=$orders item=order}
+<form action="" id="reject_form_{$order.order_id}" method="post" onsubmit="return check({$order.order_id});">
+<table class="bWindow" style="margin:15px 0;background:#F1FFF0">
+	<tr style="background:#278296;color:#fff;font-weight:bold;">
+    	<td colspan="5">
+      		订单号：<a href="order_edit.php?order_id={$order.order_id}" target="_blank" style="color:#fff;">{$order.order_sn}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        	下单时间：{$order.order_time}&nbsp;&nbsp;&nbsp;&nbsp;
+        	订单金额：￥{$order.order_amount}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        	{if !$order.can_return}
+        	               生成的退货订单号：{foreach from=$order.back_orders item=back_order name=back_order}<a href="order_edit.php?order_id={$back_order.order_id}" target="_blank" style="color:#fff;">{$back_order.order_sn}</a>&nbsp;&nbsp;{/foreach}
+          		{if $order.pay_status != 4 && !$order.is_cod}
+        			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="refund_apply" oid="{$order.order_id}" value="退款申请" />
+          		{/if}
+        	{/if}
+    	</td>
+   </tr>
+   <tr>
+    	<td colspan="2">用户名：{$order.user_name}&nbsp;&nbsp;&nbsp;&nbsp;收货人：{$order.consignee}</td>
+    	<td>送货方式：{$order.shipping_name}</td>
+        <td colspan="2">支付方式：{$order.pay_name}</td>
+    </tr>
+
+{foreach from=$order.goods_list item=goods key=key}
+    <tr>
+    	<td width="270px">{$goods.goods_name}&nbsp;X&nbsp;{$goods.goods_number}</td>
+        <td width="150px" align="center">
+            {if $goods.is_serial}
+            	串号控制商品
+        	{else}
+        		非串号控制商品
+        	{/if}
+        </td>
+		<td width="200px" align="center">{if $goods.shipping_invoice}销售发票：{$goods.shipping_invoice}{else}还未开发票{/if}</td>
+	    <td width="200px" colspan="2">
+	    	{if $goods.is_serial}
+	    		{foreach from=$goods.serial_numbers item=serial_number}
+		    		<input type="text" name="serial_number" value="{$serial_number}(串号)" disabled="disabled"/>
+		       		<input type="radio" name="goodsType[{$serial_number}][]" value="new" checked="checked"/> 
+		       		全新
+		       		<input type="radio" name="goodsType[{$serial_number}][]" value="old" />
+		       		二手
+		       		<br/>
+	       		{/foreach}
+	       	{else}
+	       		{foreach from=$goods.serial_numbers item=serial_number name=sName key=key1}
+	       			<input type="text" name="serial_number" value="{$serial_number}(条码)" disabled="disabled"/>
+		       		<input type="radio" name="goodsType[{$serial_number}][{$key}_{$key1}]" value="new" checked="checked"/> 
+		       		全新
+		       		<input type="radio" name="goodsType[{$serial_number}][{$key}_{$key1}]" value="old" /> 
+		       		二手
+		       		<br/>
+	       		{/foreach}
+	       	{/if}
+	    </td>
+    </tr>
+{/foreach}
+{if $order.can_return}
+   <tr>
+    	<td colspan="3"></td>
+        <td colspan="2" >
+        <input type="hidden" name="act" value="reject_in">
+        <input type="hidden" name="order_id" value="{$order.order_id}">
+        <input type="hidden" name="back" value="{$back}">
+        <input type="submit" id="reject_{$order.order_id}" value="拒收入库" /></td>
+    </tr>
+{else}
+    <tr>
+    	<td colspan="3"></td>
+        <td colspan="2" ><span style="color:red;font-size:15px;">已拒收退回</span></td>
+    </tr>
+{/if}
+</table>
+</form>
+{/foreach}  
+<div>{$pager}</div>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+
+<script type="text/javascript">
+//<![CDATA[
+//{literal}
+	/*$(document).ready(function(){
+    	// 提交申请请求时防止多次操作
+    	$('#reject').attr('disabled', false).bind('click', check);
+	});*/
+	
+	/**
+	* 表单提交
+	*/
+	function check(order_id)
+	{
+    	// 禁用提交按钮
+    	$('#reject_' + order_id).attr('disabled', true);
+    	// 出库提交
+    	if(!confirm('确认要拒收入库吗？')){
+    		$('#reject_' + order_id).attr('disabled', false);
+    		return false;
+    	}else{
+    		return true;
+    	}
+  	}
+//{/literal}
+// ]]>
+</script>
+</body>
+</html>

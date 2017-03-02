@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>转仓（新）</title>
+	<link href="styles/css/css.css" rel="stylesheet" type="text/css"/>
+	{literal}
+	<style>
+	.express_fieldset{
+		border:1px solid rgba(220,220,220,.9);
+		-moz-border-radius: 6px;
+		-webkit-border-radius: 6px;
+		border-radius:6px;
+		padding:10px;
+	}
+	.legend_font{
+		font-weight:bold; 
+		font-size:18px; 
+		color:#2A1FFF;
+	}
+	.content_align{
+		text-align: left;
+	}
+	.express_word_width{
+		display:inline-block;
+		width:80px;
+		font-size: 12px;
+		padding-top: 2px;
+		padding-right: 5px;
+		text-align: right;
+		padding-left: 5px;
+	}
+	.align_left{
+		margin-right: -25px;
+		padding-left: 20px;
+		padding-right: 1px !important;
+		text-align: left;
+	}
+	.form_first_tr_margin{
+		height:50px;
+		line-height: 50px;
+	}
+	.form_table{
+		border-collapse: collapse;
+		width:100%;
+	}
+	.form_table tr th,.form_table tr td{
+		border: 1px solid rgba(220,220,220,0.6);
+		/*padding:1px 1px;*/
+		/*text-align: center;*/
+	}
+	.form_table tr:nth-child(odd){
+		background: rgba(220,220,220,.8);
+	}
+	.form_table tr:first-child:hover,.form_table tr:first-child{
+		border:transparent;
+		font-size: 14px;
+		padding:10px;
+		background: white;
+		color: black;
+	}
+	.form_table tr:first-child td:hover,.form_table tr:first-child td{
+		border:transparent;
+	}
+
+	.form_table tr:hover{
+		background: rgba(255,218,185,.6);
+	}
+	.form_table_th,.form_table_th:hover{
+		background:#62B4E8 !important;
+		height:40px;
+		color:white;
+	}
+	</style>
+	{/literal}
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+
+			//防止用户不断点击筛选按钮
+			$('.btn_choose').bind('click',function(event){
+				if($(this).hasClass('new_choose')){
+					return false;
+				}else{
+					$(this).addClass('new_choose');
+					setTimeout(function(){
+						$(this).removeClass('new_choose');
+					},1000);
+					return true;
+				}
+			})
+			// 移库+改快递
+			$('#transfer').bind('click', function(event){
+				if($(this).hasClass('has_click')){
+					$(this).attr("disabled","disabled");
+					return false;
+				}
+				if (!check()) { 
+					event.preventDefault();
+					return false; 
+				}
+				div = $('#order-facility-shipping-transfer');
+				div2 = $('#order-shipping-facility-transfer');
+				if (div.is(':hidden') || div2.is(':hidden')) {
+					div.show();
+					div2.show();
+					$('#form').find(":hidden[name='act']").val('transfer');
+					event.preventDefault();
+					return false;
+				}
+				
+				fid = $.trim($('#form').find(":input[name='facility_id']").val());
+				ship = $.trim($('#form').find(":input[name='shipping_id']").val());
+				if (fid=='-1' && ship=='-1') {
+					alert('请选择要转去的仓库与快递方式');
+					event.preventDefault();
+					return false; 
+				}
+				if(confirm('确认要将这些订单转到指定发货仓/快递吗?')){
+					$(this).val("转仓中");
+					$(this).addClass('has_click');
+					return true;
+				}else{
+					return false;
+				}
+				// return confirm('确认要将这些订单转到指定发货仓/快递吗?');	
+			});
+			
+            // 全选
+            $(':checkbox').attr('checked', $(this).attr('checked'));
+            $('#checkAll').bind('click', function(){
+            	$(':checkbox').attr('checked', $(this).attr('checked'));
+            });
+        });
+
+function check() {
+	if (!$('#form').find('input:checked').length) {
+		alert('没有选中项');
+		return false;
+	}
+
+	return true;
+}
+
+  // {/literal}
+	// ]]>
+	</script>
+
+
+</head>
+<body>
+	<fieldset class="express_fieldset">
+		<legend><span class="legend_font">&nbsp;订单转仓转快递&nbsp;</span></legend>
+		<div class="Search_Bo content_align">
+			<form name="form" method="post">
+				<table>
+					<tr>
+						<td class="express_word_width">分销商</td>
+						<td>
+							<select name="distributor_id" class="form-control-bigger">
+								<option value="-1">-ALL</option>
+								{foreach from=$distributor_list item=item} 
+								<option value="{$item.distributor_id}" {if $item.distributor_id==$smarty.request.exchange.distributor_id} selected="selected"{/if}>{$item.name}</option>
+								{/foreach} 
+							</select> 
+						</td>
+						<td class="express_word_width">原始仓库</td>
+						<td>
+							<select name="facility_id" class="form-control-bigger">
+								<option value="-1">-ALL</option>
+								{html_options options=$available_facility selected=$smarty.request.exchange.facility_id}
+							</select>
+						</td>
+						<td class="express_word_width align_left">原始快递</td>
+						<td>
+							<select name="shipping_id" class="form-control-bigger">
+								<option value="-1">-ALL</option>
+								{foreach from=$shipping_list item=item} 
+								<option value="{$item.shipping_id}" {if $item.shipping_id==$smarty.request.exchange.shipping_id} selected="selected"{/if}>{$item.shipping_name}</option>
+								{/foreach} 
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td class="express_word_width">订单状态</td>
+						<td>
+							<select name="order_reserve_status" class="form-control-bigger">
+								<option value="-1">-ALL </option>{html_options options=$order_reserve_status_list selected=$smarty.request.exchange.order_reserve_status}
+							</select>
+						</td>
+						<td class="express_word_width">收款状态</td>
+						<td>
+							<select name="pay_status" class="form-control-bigger">
+								<option value="-1">-ALL </option>{html_options options=$pay_status_list selected=$smarty.request.exchange.pay_status}
+							</select>
+						</td>
+						<td class="express_word_width align_left">发货状态</td>
+						<td>
+							<select name="shipping_status" class="form-control-bigger" disabled="disabled">
+								{html_options options=$shipping_status_list selected=$smarty.request.exchange.shipping_status}
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td class="express_word_width">订单时间</td>
+						<td>
+							<input type="text" class="new_input word_width_bigger" id="order_time" name="order_time" value="{$smarty.request.exchange.order_time}" size="10" />
+							<input type="button"  id="startTrigger" value="..." />
+						</td>
+						<td class="express_word_width">截止日期</td>
+						<td>
+							<input type="text" class="new_input word_width_bigger" id="order_time_end" name="order_time_end" value="{$smarty.request.exchange.order_time_end}" size="10" />
+							<input type="button"  id="endTrigger" value="..." />
+						</td>
+						<td class="express_word_width align_left">查询记录</td>
+						<td>
+							<select name="size" class="form-control-bigger">
+								{html_options options=$page_size_list selected=$smarty.request.exchange.size}
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td class="express_word_width">商家编码</td>
+						<td>
+							<input type="text" class="new_input word_width_bigger" name="goods_style_id" value="{$smarty.request.exchange.goods_style_id}"></input>
+						</td>
+						<td class="express_word_width">订单区域</td>
+						<td>
+							<select name="province_region_id" class="form-control-bigger">
+								<option value="-1">-所有省&nbsp;&nbsp;&nbsp;</option>
+								{foreach from=$province_query item=item}<option value="{$item.region_id}" {if $item.region_id==$smarty.request.exchange.province_region_id} selected="selected"{/if}>{$item.region_name}</option>{/foreach}
+							</select>
+						</td>
+						<td class="express_word_width align_left">
+							<input type="submit" name="action" class="btn btn-primary btn-sm btn_choose" value="筛选" /> 
+						</td>
+						<td>
+							<input type="hidden" name="act" value="search" />
+							<font color="red">合并订单不操作转仓</font><br>
+							{if $count>0}<span>满足条件订单共{$count}个</span>
+							{/if}
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<div>
+			{if $order_list}
+			<form method="post" id="form" >
+				<table class="form_table">    
+					<tr class="form_first_tr_margin">
+						<td align="center"><input type="checkbox" id="checkAll" /></td>  
+						<td colspan="9" align="left">
+							<label>全选; &nbsp;对选中的订单做 : &nbsp;&nbsp;</label>
+							<!-- 移库+改快递  -->
+							<span id="order-facility-shipping-transfer" style="display:none; margin:0; padding:0;" >
+								<span>目标仓库</span>
+								<select name="facility_id_new" class="form-control">
+									{html_options options=$available_facility}
+								</select>
+							</span>
+							<span id="order-shipping-facility-transfer" style="display:none; margin:0; padding:0;">
+								<span>目标快递</span>
+								<select name="shipping_id_new" class="form-control" >
+									{foreach from=$shipping_list item=item} 
+									<option value="{$item.shipping_id}" >{$item.shipping_name}</option>
+									{/foreach} 
+								</select> 
+							</span>
+							<span style="display: inline;">
+								<input type="hidden" name="act" />
+								<input class="btn btn-default" type="submit" value="转仓/快递"  id="transfer" /> 
+							</span>
+						</td>
+					</tr>  
+					<tr  class="form_table_th">
+						<th>选择</th>
+						<th>订单号</th>
+						<th>淘宝订单号</th>
+						<th>订单状态</th>
+						<th>订单时间</th>
+						<th>分销商</th>
+						<th>仓库</th>
+						<th>快递方式</th>
+						<th>支付方式</th>
+						<th>省</th>
+					</tr>
+					{foreach from=$order_list item=order name="order" }
+					<tr align="center" style="height: 30px;">
+						<td>
+							<input type="checkbox" name="checked[]" value="{$order.order_id}" />
+						</td>
+						<td class="a_href">
+							<a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a>
+						</td>
+						<td>{$order.taobao_order_sn}</td>
+						<td>{$order_status_list[$order.order_status]}, {$pay_status_list[$order.pay_status]}, {$shipping_status_list[$order.shipping_status]}, {$order.reserve_status}</td>
+						<td>{$order.order_time}</td>
+						<td>{$order.distributor_name}</td>
+						<td>{$order.facility_name}</td>
+						<td>{$order.shipping_name}</td>
+						<td>{$order.pay_name}</td>
+						<td>{$order.region_name}</td>
+					</tr>
+					{/foreach}
+
+				</table>
+				<br /> 
+				<input type="hidden" name="distributor_id_hidden_form" value="{$smarty.request.exchange.distributor_id}"/>
+				<input type="hidden" name="facility_id_hidden_form" value="{$smarty.request.exchange.facility_id}"/>
+				<input type="hidden" name="shipping_id_hidden_form" value="{$smarty.request.exchange.shipping_id}"/>
+				<input type="hidden" name="order_reserve_status_hidden_form" value="{$smarty.request.exchange.order_reserve_status}"/>
+				<input type="hidden" name="pay_status_hidden_form" value="{$smarty.request.exchange.pay_status}"/>
+				<input type="hidden" name="shipping_status_hidden_form" value="{$smarty.request.exchange.shipping_status}"/>
+				<input type="hidden" name="order_time_hidden_form"  value="{$smarty.request.exchange.order_time}"/>
+				<input type="hidden" name="order_time_end_hidden_form"  value="{$smarty.request.exchange.order_time_end}"/>
+				<input type="hidden" name="size_hidden_form"  value="{$smarty.request.exchange.size}"/>
+				<input type="hidden" name="goods_style_id_hidden_form"  value="{$smarty.request.exchange.goods_style_id}"/>
+				<input type="hidden" name="province_region_id_hidden_form"  value="{$smarty.request.exchange.province_region_id}"/>
+			</form> 
+			{else}
+			<div style="text-align:center"><h4>无相关数据</h4></div>
+			{/if}
+		</div>
+	</fieldset>
+
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "order_time",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S",
+	showsTime         :true
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "order_time_end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S",
+	showsTime         :true
+});
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

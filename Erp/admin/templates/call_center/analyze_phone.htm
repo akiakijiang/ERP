@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  {literal}
+  <style type="text/css">
+  dl{font-size:12px;}
+  dd{margin-left:10px;font-weight:bold;}
+  </style>
+  {/literal}
+  <link rel="stylesheet" href="../misc/tablesorter.css" />
+	<title>CALL-CENTER统计数据</title>
+</head>
+
+<body>
+<h3>从{$start}到{$end}的统计数据</h3>
+<script type="text/javascript">
+{literal}
+// <![CDATA[
+function form_submit(act)
+{
+	var form = document.getElementById('stat');
+	form.action = 'analyze_phone.php?act='+act;
+	form.submit();
+}
+// ]]>
+{/literal}
+</script>
+<form name="stat" id="stat" method="post">
+  统计开始时间：
+  <input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+  统计结束时间：
+  <input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+  <input type="button" value="查看统计" onclick="form_submit('view')" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="button" value="导出" onclick="form_submit('export')" />
+</form>
+<br />
+<br />
+
+
+{* ------------ 座席分布 ------------- *}
+<fieldset>
+<legend><strong>座席分布情况</strong></legend>
+<div style="padding:5px;">
+
+<div style="float:left; width:49%; text-align:center;">
+座席利用率 = （呼入呼出通话时间 + 电话等待时间）/（11小时*3600*工作天数）<br />
+<table class="tablesorter" cellSpacing="1" cellPadding="0" border="0">
+  <thead>
+  	<tr align="center">
+    	<th>坐席</th>
+      <th>利用率</th>
+    </tr>
+  </thead>
+  <tbody>
+    {foreach from=$workers item=workerid}
+    <tr align="center" class="{cycle values='even,odd'}">
+    	<td>{if $workerid == ''}未知{else}{$workerid}{/if}</td>
+    	<td>{$worker_usage_percents.$workerid}</td>
+		</tr>
+    {/foreach}
+	</tbody>
+</table>
+</div>
+
+<div style="float:right; width:49%; text-align:center;">
+每天处理电话数（呼入、呼出）<br />
+<table class="tablesorter" cellSpacing="1" cellPadding="0" border="0">
+	<thead>
+		<tr align="center">
+    	<th>坐席</th>
+      <th>呼入</th>
+      <th>呼出</th>
+		</tr>
+	</thead>
+  <tbody>
+    {foreach from=$workers item=workerid}
+    <tr align="center" class="{cycle values='even,odd'}">
+    	<td>{if $workerid == ''}未知{else}{$workerid}{/if}</td>
+      <td>{$worker_call_in_counts.$workerid}</td>
+      <td>{$worker_call_out_counts.$workerid}</td>
+    </tr>
+    {/foreach}
+		<tr align="center">
+    	<td><strong>小计</strong></td>
+      <td>呼入 {$worker_call_in_counts_total}</td>
+      <td>呼出 {$worker_call_out_counts_total}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+</fieldset>
+<br />
+<br />
+
+
+
+{* ------------ 时间段分布 ------------- *}
+<fieldset>
+<legend><strong>时间段分布情况</strong></legend>
+<div style="padding:5px;">
+
+<div style="float:left; width:49%; text-align:center;">
+呼入<br />
+<table class="tablesorter" cellSpacing="1" cellPadding="0" border="0">
+<thead>
+	<tr align="center">
+  	<th>时间段</th>
+    <th>售前</th>
+    <th>售中</th>
+    <th>售后</th>
+    <th>管理</th>
+   </tr>
+</thead>
+<tbody>
+  {foreach from=$call_in item=call_count key=hour}
+  <tr align="center" class="{cycle values='odd,even'}">
+  	<td>{$hour}点</td>
+    <td>{$call_count[80194091]|default:0}</td>
+    <td>{$call_count[22097779]|default:0}</td>
+    <td>{$call_count[94769287]|default:0}</td>
+    <td>{$call_count[80078125]|default:0}</td>
+  </tr>
+  {/foreach}
+  <tr align="center">
+  	<td><strong>小结</strong></td>
+    <td>{$call_in_total[80194091]|default:0}</td>
+    <td>{$call_in_total[22097779]|default:0}</td>
+    <td>{$call_in_total[94769287]|default:0}</td>
+    <td>{$call_in_total[80078125]|default:0}</td>
+  </tr>  
+</tbody>
+</table>
+</div>
+
+<div style="float:right; width:49%; text-align:center;">
+呼出<br />
+<table class="tablesorter" cellSpacing="1" cellPadding="0" border="0">
+<thead>
+	<tr align="center">
+  	<th>时间段</th>
+    <th>售前</th>
+    <th>售中</th>
+    <th>售后</th>
+    <th>管理</th>
+	</tr>
+</thead>
+<tbody>
+  {foreach from=$call_out item=call_count key=hour}
+  <tr align="center" class="{cycle values='odd,even'}">
+  	<td>{$hour}点</td>
+  	<td>{$call_count[80194091]|default:0}</td>
+    <td>{$call_count[22097779]|default:0}</td>
+    <td>{$call_count[94769287]|default:0}</td>
+    <td>{$call_count[80078125]|default:0}</td>
+  </tr>
+  {/foreach}
+  <tr align="center">
+  	<td><strong>小结</strong></td>
+    <td>{$call_out_total[80194091]|default:0}</td>
+    <td>{$call_out_total[22097779]|default:0}</td>
+    <td>{$call_out_total[94769287]|default:0}</td>
+    <td>{$call_out_total[80078125]|default:0}</td>
+  </tr> 
+</tbody>
+</table>
+</div>
+
+</div>
+</fieldset>
+
+
+
+
+<dl>
+<dt>呼叫放弃率 = 放弃电话数/接入电话数*100%</dt>
+<dd>售前 {$before_sale_giveup_percent}</dd>
+<dd>售中 {$sale_giveup_percent}</dd>
+<dd>售后 {$saleservice_giveup_percent}</dd>
+<dd>管理 {$admin_giveup_percent}</dd>
+</dl>
+
+<dl><dt>平均放弃等待时间 = 放弃呼叫前在线等待时间/放弃电话数量</dt><dd>{$giveup_avgtime} 秒</dd></dl>
+<dl><dt>平均应答时间 = 被接通用户在线等待时间/接起电话总数</dt><dd>{$answer_wait_avgtime} 秒</dd></dl>
+<dl><dt>平均延迟时间 = 平均用户在线等待时间</dt><dd>{$delay_avgtime} 秒</dd></dl>
+<dl><dt>售前、售中、售后、管理电话量</dt><dd>售前 {$before_sale_count} 次</dd><dd>售中 {$sale_count} 次</dd><dd>售后 {$saleservice_count} 次</dd>
+<dd>管理 {$admin_count} 次</dd></dl>
+<dl>
+<dt>电话呼入后用户订单情况</dt>
+<dd><a href="javascript:void(0)" onclick="document.getElementById('buy_after_callin_order').style.display=(document.getElementById('buy_after_callin_order').style.display==''?'none':'');">电话呼入后用户订单数量 {$buy_after_callin_count}</a></dd>
+<dd id="buy_after_callin_order" style="display:none;">
+<table class="bWindow">
+{foreach from=$buy_after_callin_list item=buy_after_callin}
+<tr><td><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$buy_after_callin.order_id}" target="_blank">{$buy_after_callin.order_sn}</a></td><td>{$buy_after_callin.consignee}</td><td>{$buy_after_callin.tel}<br />{$buy_after_callin.mobile}</td></tr>
+{/foreach}
+</table>
+</dd>
+<dd>电话呼入后用户订单转换率 {$buy_after_callin_percent}</dd>
+</dl>
+<dl>
+<dt>电话呼出后用户订单情况</dt>
+<dd>电话呼出后用户订单数量 {$buy_after_callout_count}</dd>
+<dd>电话呼出后用户订单转换率 {$buy_after_callout_percent}</dd>
+</dl>
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

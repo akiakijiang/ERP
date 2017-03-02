@@ -1,0 +1,177 @@
+<!--
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    {literal}
+	<style type="text/css" media="all">
+	*{
+		margin:0;
+		padding:0;
+	}
+	h2{
+		font-size:12pt;
+		clear:both;
+		margin:10px 0;
+	}
+	h3{
+		font-size:10pt;
+		clear:both;
+		margin:8px 0;
+	}
+	ul{
+		list-style:none;
+		font-size:10pt;
+		width:49%;
+		float:left;
+	}
+	ul li{
+		height:40px;
+		line-height:40px;
+	}
+
+	table{
+		width:80%;
+		font-size:8pt;
+		font-family: '方正黑体_GBK';
+		color: #77787b;
+		text-align:center;
+		/*border:0px solid #000;*/
+		border-collapse:collapse;
+		margin:20px 0 20px 2px;
+	}
+	table td{
+	    padding:5px 5px;
+	}
+	table td,table th{
+		/*border:1px solid #000;*/
+		height:20px;
+		line-height:20px;
+	}
+	table.print_table_1{
+		width: 435px;
+
+	}
+	table.print_table_2{
+		width: 435px;
+
+	}
+	table.print_table_2 td,table.print_table_1 td{
+		text-align: center;
+		word-wrap:break-word;
+		word-break:break-all;
+
+	}
+    table.print_table_2 {
+        margin:0px 0 20px 2px;
+
+    }
+	p{
+		font-size:10pt;
+		clear:both;
+		text-align:center;
+	}
+	.left{
+		float:left;
+		margin-left:40px;
+		display:inline;
+	}
+	.right{
+		float:right;
+		margin-right:20px;
+	}
+	h1{
+		text-align:center;
+		font-size:15pt;
+	}
+	li.c{
+		clear:both;
+		width:100%;
+	}
+	.postscript {
+	    font-size:15px;
+	    font-family: "黑体";
+	    font-weight:bold;
+	}
+	.top{
+	    margin-top:140px;
+	    margin-left:0px;
+	}
+	</style>
+    {/literal}
+
+    <title>打印发货单</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+ {foreach from=$or_list item=shipment name=shipment}
+ <div style="height: 23px;"></div>
+ 	<div style="text-align:right;margin-right:80px">
+ 		<img style="width:230px;" src="code_img.php?barcode={$shipment.shipmentId}&height=80&width=300&text=1" alt="BARCODE:{$shipment.shipmentId}"/>
+ 	</div>
+ 	<div style="height:50px;width:40%;text-align:right;float:left;font-size:8pt;">
+ 		{foreach from=$shipment.saleSetList item=saleSet}
+ 			{$saleSet.name}<br>
+ 		{/foreach}
+ 	</div>
+ 	<div style="clear: both;"></div>
+	<div style="min-height:85px;margin-top:65px;">
+		<center>
+		<table class="print_table_1">
+	 		{foreach from=$shipment.header key=sid item=order_header}
+	 		<tr>
+	 			<!-- 50,90.2,107.3,97.4,91.64,83.6 -->
+	 		<td style="width:80px;padding:5px 0 0 0;">{if $order_header.taobao_order_sn}{$order_header.taobao_order_sn}{else} {/if}</td>
+	 		<td style="width:85px;padding:5px 5px 0;">{if $order_header.order_sn}{$order_header.order_sn}{else} {/if}</td>
+	 		<td style="width:70px;">{if $order_header.taobao_user_id}{$order_header.taobao_user_id}{else} {/if}</td>
+	 		<td style="width:70px;">{if $order_header.consignee}{$order_header.consignee}{else} {/if}</td>
+	 		<td style="width:90px;">{if $order_header.mobile}{$order_header.mobile}{else} {/if}</td>
+	 		<td style="width:75px;">{if $order_header.order_amount}{$order_header.order_amount}{else} {/if}</td>
+	 		</tr>
+	 		{/foreach}
+	 	</table>
+	 	</center>
+	</div>
+	<div style="margin-top:32px;">
+		<center>
+		<table class="print_table_2" >
+	 		{foreach from=$shipment.body key=bid item=order_body}
+	 		<tr>
+	 			<!-- 15,25,20,25,15-->
+	 		<td style="width:20px;">{if $bid}{$bid}{else} {/if}</td>
+	 		<td style="width:175px;">{if $order_body.goods_name}{$order_body.goods_name}{else} {/if}</td>
+	 		<td style="width:50px;padding-right:20px;">{if $order_body.goods_number}{$order_body.goods_number}{else} {/if}</td>
+	 		<td style="width:65px;padding-left:10px;">{if $order_body.product_code}{$order_body.product_code}{else} {/if}</td>
+	 		<td style="width:70px;">{$order_body.location_seq_id}
+						 			 {if $order_body.validity_batch_sn}
+						 			 </br>
+									 (
+									 {foreach from=$order_body.validity_batch_sn item=validity_sn}
+										{if $validity_sn.batch_sn != ''} {$validity_sn.batch_sn}-{$validity_sn.quantity}, {/if}
+									 {/foreach}
+									 )
+									 {/if}
+	 		</td>
+	 		</tr>
+	 		{/foreach}
+	 	</table>
+	 	</center>
+	</div>
+
+
+	{if !$smarty.foreach.shipment.last}
+		<div STYLE="page-break-after: always;">
+		</div>
+	{/if}
+
+{/foreach}
+
+{if $smarty.request.print != 1}
+	<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+	<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+
+</body>
+</html>

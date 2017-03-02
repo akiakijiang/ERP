@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>活动商品规则管理</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css" />
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+
+
+	var WEB_ROOT = '{$WEB_ROOT}';
+
+	// {literal}
+
+	// 载入执行
+	$(document).ready(function(){
+
+	    // 提交禁用按钮
+//	    $(':button, :submit').attr('disabled', false);
+	    $('#form_add').bind('submit', function(){
+	        $(':button, :submit').attr('disabled', true);
+	    });
+
+	    /**
+	    * 商品搜索
+	    */
+	    $('#goods_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+	        dataType : 'json',
+	        minChars: 1,
+	        delay: 1000,
+	        mustMatch: true,
+	        formatItem : function(row, i, max, value, term) {
+	            return(row.goods_name);
+	        },
+	        formatResult : function(row) {
+	            return(row.goods_name);
+	        }
+	    }).result(function(event, row, formatted) {
+	        $('#goods_id').val(row.goods_id);
+	        change_goods_style_select_list(row.goods_id);
+	    });
+
+	});
+
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $smarty.request.message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+window.setTimeout(function(){
+    $('#message').slideUp("slow");
+}, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$smarty.request.message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;活动商品规则管理&nbsp;</span></legend>
+    <div style="clear:both;"> 
+    <form method="POST" >
+    <table >
+    <tr>
+    <td>搜索：<input type="text" name="goods_name" value="{$smarty.request.goods_name}" /></td>
+    <td>期限：
+    <select name="expired">
+        <option value="-1">不选</option>
+        <option value=">=">有效</option>
+        <option value="<">过期</option>
+    </select></td>
+    <td>状态：
+    <select name="status">
+        <option value="-1">不选</option>
+        <option value="OK">启用</option>
+        <option value="DELETE">删除</option>
+    </select></td>
+    <td>快递方式：
+    <select name="shipping_type" >
+        <option value="-1">不选</option>
+        <option value="ALL">所有</option>
+        <option value="COD">货到付款</option>
+        <option value="NOCOD">先款后货</option>
+    </select>
+    </td>
+    <td>活动：
+    <select name="code" >
+        <option value="-1">不选</option>
+        <option value="SHIPPING_FREE">免运费</option>
+    </select></td>
+    <td>
+    <input type="hidden" name="act" value="search" />
+    <input type="submit" value="搜索" />
+    </td>
+    </tr>
+    </table>
+    </form>
+    </div>
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">活动商品信息</h3>
+
+  	<table cellpadding="5" cellspacing="1" class="bWindow">
+  	  <tr>
+      	<td width="20">#</td>
+      	<td width="120">商品名</td>
+      	<td width="70">快递方式</td>
+      	<td width="120">活动开始时间</td>
+      	<td width="120">活动结束时间</td>
+      	<td width="70">活动</td>
+      	<td width="120">说明</td>
+      	<td width="60">期限</td>
+      	<td width="60">状态</td>
+      	<td width="60">操作</td>
+      </tr>
+  	  <form method="post" id="form_add" >  
+      <tr>
+        <td><input type="hidden" name="goods_extra_rules_id" value="0" /></td>
+        <td>
+        <input type="text" id="goods_select" size="60" /> #
+        <input type="text" id="goods_id" size="5" readonly="readonly" style="border:none;" name="goods_id"/>
+        <span class="tip">请输入商品名，如果自动提示没有响应您的输入，请尝试按向下方向键</span>
+        </td>
+        <td>
+        <select name="shipping_type" >
+            <option value="ALL">所有</option>
+            <option value="COD">货到付款</option>
+            <option value="NOCOD">先款后货</option>
+        </select>
+        </td>
+        <td>
+        <input style="width:125px" id="startCalendar" name="start_date" value="">
+        <input type="button" value="..." id="startTrigger">
+        </td>
+        <td>
+        <input style="width:125px" id="endCalendar" name="end_date" value="">
+        <input type="button" value="..." id="endTrigger">
+        </td>
+        <td>
+        <select name="code" >
+            <option value="SHIPPING_FREE">免运费</option>
+        </select>
+        </td>
+        <td><input type="text" name="description" size="60"/></td>
+        <td></td>
+        <td><select name="status" >
+            <option value="OK" >使用中</option>
+            <option value="DELETE" >已删除</option>
+            </select></td>
+        <td><input type="button" value="添加" onclick="$('#form_add').submit();" />
+        <input type="hidden" value="edit" name="act" /></td>
+      </tr>
+      </form>
+      {foreach from=$goods_extra_rules_list item=goods_extra_rules name=goods_extra_rules }
+      <form method="post" id="form" >  
+      <tr class="{cycle values='even,odd'}">
+        <td>{$smarty.foreach.goods_extra_rules.iteration}
+        <input type="hidden" name="goods_id" value="{$goods_extra_rules.goods_id}" />
+        <input type="hidden" name="goods_extra_rules_id" value="{$goods_extra_rules.goods_extra_rules_id}" /></td>
+        <td>
+        {$goods_extra_rules.goods_name}
+        </td>
+        <td>
+        <select name="shipping_type" >
+            <option value="ALL" {if $goods_extra_rules.shipping_type eq 'ALL'}selected{/if} >所有</option>
+            <option value="COD" {if $goods_extra_rules.shipping_type eq 'COD'}selected{/if} >货到付款</option>
+            <option value="NOCOD" {if $goods_extra_rules.shipping_type eq 'NOCOD'}selected{/if} >先款后货</option>
+        </select>
+        </td>
+        <td>{$goods_extra_rules.start_date}
+        <input type="hidden" name="start_date" value="{$goods_extra_rules.start_date}" />
+        </td>
+        <td>{$goods_extra_rules.end_date}
+        <input type="hidden" name="end_date" value="{$goods_extra_rules.end_date}" />
+        </td>
+        <td>
+        <select name="code" >
+            <option value="SHIPPING_FREE">免运费</option>
+        </select>
+        </td>
+        <td><input type="text" value="{$goods_extra_rules.description}" name="description" size="60" /></td>
+        <td>{if $goods_extra_rules.expired}过期{else}有效{/if}</td>
+        <td><select name="status" >
+            <option value="OK" {if $goods_extra_rules.status eq 'OK'}selected{/if} >使用中</option>
+            <option value="DELETE" {if $goods_extra_rules.status eq 'DELETE'}selected{/if} >已删除</option>
+            </select></td>
+        <td><input type="submit" value="修改" />
+        <input type="hidden" value="edit" name="act" /></td>
+      </tr>
+      </form>  
+      {/foreach}
+	</table>
+  </div>
+</fieldset>
+
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d %H:%M:%S",
+        daFormat          : "%Y-%m-%d %H:%M:%S"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d %H:%M:%S",
+        daFormat          : "%Y-%m-%d %H:%M:%S"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>抵用券领取记录</title>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;查询用户抵用券&nbsp;</span></legend>
+
+
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">查询</h3>
+    <form method="get">
+      用户： 
+      <input type="text" name="user" value="{$filter.user}" size="40" /> &nbsp;&nbsp;&nbsp;&nbsp;      
+      <input type="submit" name="act" value="查询">
+    </form>
+	</div>
+  
+  
+  {if $gts}
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">用户抵用券列表</h3>
+    <br />
+  
+  
+    <table class="bWindow">
+      <tr>
+        <th>编号</th>
+        <th>配置ID</th>
+        <th>金额</th>
+        <th>生成人</th>
+        <th>生成关联订单</th>
+        <th>红包类型</th>
+        <th>发送人</th>
+        <th>备注</th>
+        <th>时限</th>
+        <th>领取时间</th>
+        <th>使用的订单</th>
+      </tr>
+    
+      <!--{foreach from=$gts item=gt}-->
+      <tr align="center" class="{cycle values='odd,even'}">
+        <td>{$gt.gt_code}</td>
+        <td>{$gt.gtc_id}</td>
+        <td>{$gt.gtc_value}</td>
+        <td>{$gt.gt_creator|getUserName}</td>
+        <td><a href="order_edit.php?order_id={$gt.refer_order.order_id}" target="_blank">{$gt.refer_order.order_sn}</a></td>
+        <td>{$gt.type}</td>
+        <td>{$gt.give_user}</td>
+        <td>{$gt.give_comment}</td>
+        <td>
+        	{if $gt.gt_state == 1}
+          已禁用
+          {elseif $gt.gt_state == 2}
+          {$gt.gtc_stime|date_format:"%Y-%m-%d"} <br /> {$gt.gtc_etime|date_format:"%Y-%m-%d"}
+          {elseif $gt.gt_state == 3}
+          无时间限制
+          {elseif $gt.gt_state == 4}
+          已使用
+          {/if}
+        </td>
+        <td>{if $gt.draw_time}{$gt.draw_time|date_format:"%Y-%m-%d"}{/if}</td>
+        <td>{if $gt.used_order_id}<a href="order_edit.php?order_id={$gt.used_order_id}">查看订单</a>{else}无{/if}</td>
+      </tr>
+      <!--{/foreach}-->
+    </table>
+
+
+    <br />
+		{$pagination}
+    
+  </div>
+  {/if}
+  
+  <br /><br />
+
+</fieldset>
+
+</body>
+</html>

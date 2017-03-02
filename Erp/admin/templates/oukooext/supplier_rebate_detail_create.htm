@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<title>新建返利</title>
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript">
+{literal}
+var process_request = '..';
+
+function disable_input(id) {
+  document.getElementById(id).disabled = true;
+  document.getElementById(id).readonly = true;
+}
+function enable_input(id) {
+  document.getElementById(id).disabled = false;
+  document.getElementById(id).readonly = false;
+}
+
+function changesupplierRebateTypeId(obj) {
+  var supplierRebateTypeId_enum = new Array('SINGLEPRODUCT', 'ORDERPRODUCT', 'PROVIDERPRODUCT', 'PROVIDER');
+  enable_input('serialNumber');
+  enable_input('originalOrderId');
+  enable_input('search');
+  enable_input('keyword');
+  for (var i = 0; i< supplierRebateTypeId_enum.length; i++) {
+    if(supplierRebateTypeId_enum[i] == 'ORDERPRODUCT') {
+      disable_input('serialNumber');
+    }
+    if(supplierRebateTypeId_enum[i] == 'PROVIDERPRODUCT') {
+      disable_input('originalOrderId');
+    }
+    if(supplierRebateTypeId_enum[i] == 'PROVIDER') {
+      disable_input('search');
+      disable_input('keyword');
+    }
+    if(obj.value == supplierRebateTypeId_enum[i]) break; 
+  }
+}
+
+function changesupplierRebateModeId(obj) {
+  if(obj.value == 'GIFTED') {
+    disable_input('expectedAmount');
+    enable_input('expectedGiftAmount');
+  } else {
+    disable_input('expectedGiftAmount');
+    enable_input('expectedAmount');
+  }
+}
+
+
+{/literal}
+</script>
+</head>
+
+<body>
+<h3>新建返利</h3>
+<p><a href="supplier_rebate_list.php" >查看返利列表</a></p>
+<p style="color:red;font-size:14px;font-weight:bold;">{$smarty.request.info}</p>
+
+<form action="?act=create_submit" method="POST">
+<table class="bWindow" style="width:700px;" cellpadding="5">
+  <tr>
+    <td width="150" class="lefttd">返利类型</td><td>
+    <select name="supplierRebateTypeId" id="supplierRebateTypeId">
+    {foreach from=$supplierRebateTypeId_enum item=supplierRebateTypeId_description key=supplierRebateTypeId_item}
+    <option value="{$supplierRebateTypeId_item}" {if $smarty.request.supplierRebateTypeId == $supplierRebateTypeId_item} selected="selected" {/if} >{$supplierRebateTypeId_description}</option>
+    {/foreach}
+    </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利形式</td><td>
+    <select name="supplierRebateModeId" id="supplierRebateModeId" onchange="changesupplierRebateModeId(this)">
+    {foreach from=$supplierRebateModeId_enum item=supplierRebateModeId_description key=supplierRebateModeId_item}
+    <option value="{$supplierRebateModeId_item}" {if $smarty.request.supplierRebateModeId == $supplierRebateModeId_item} selected="selected" {/if}>{$supplierRebateModeId_description}</option>
+    {/foreach}
+    </select>
+    </td>
+  </tr>
+  
+  <tr>
+    <td class="lefttd">供应商 </td><td>
+    <select name="supplierId" id="supplierId" onchange="changeSupplier();">
+    <option value="0">请选择供应商</option>
+    {foreach from=$providers item=provider}
+    <option value="{$provider.provider_id}"{if $smarty.request.supplierId == $provider.provider_id} selected="selected" {/if}>{$provider.provider_name}</option>
+    {/foreach}
+    </select>
+    
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利规则</td><td>
+    <select name="supplierRebateRuleIdSelect" id="supplierRebateRuleIdSelect" onchange="changeSupplierRebateRuleId();">
+    </select> <input type="button" value="刷新返利规则" onclick="changeSupplier();" /> 请先选择供应商后选择规则
+    <input type="hidden" name="supplierRebateRuleId" id="supplierRebateRuleId" value="0" />
+    <p id="supplierRebateResultTips"></p>
+    <div id="supplierRebateResult"></div>
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">查询满足条件的预期返利</td>
+    <td>
+    <div id="supplierQuery" style="margin:5px;">
+    </div>
+    <div id="supplierQueryResult" style="margin:10px;">
+    </div>
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">预期返利金额</td><td>
+    <input type="text" name="expectedAmount" id="expectedAmount" value=""  />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">预期返利实物数量</td><td>
+    <input type="text" name="expectedGiftAmount" id="expectedGiftAmount" value="" disabled="true" />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利的详细项目</td><td>
+    <textarea name="items" id="items" cols="45" rows="10"></textarea>
+    <div style="color:red;"> 如果有串号，请选择返利类型为 单个机器返利 </div>
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利的描述</td><td>
+    <textarea name="description" id="description" cols="45" rows="5">{$SupplierRebate->description}</textarea>
+    </td>
+  </tr>
+  <tr><td colspan="2">
+  <input type="submit" name="button" id="button" value="新建返利" />
+  </td>
+  </tr>
+</table>
+</form>
+
+
+
+
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+  function changeSupplier() {
+    var supplierId = document.getElementById('supplierId').value;
+    Ajax.call('supplier_rebate_rule_stat.php?act=querySupplierRebateRulesBySupplierId&supplierId='+supplierId, '', changeSupplierResponse, 'GET', 'JSON');
+  }
+  
+  function changeSupplierResponse(result) {
+    var html ='';
+    if(result.error) alert(result.message);
+    for(var i=0; i < result.SupplierRebateRules.length; i++) {
+      html += '<option rid="' + result.SupplierRebateRules[i].supplierRebateRuleId + '" value="' + result.SupplierRebateRules[i].modulePageURL + '">' + result.SupplierRebateRules[i].description + '</option>';
+    }
+    document.getElementById('supplierRebateRuleIdSelect').innerHTML = '<option value="#" rid="0">请选择返利规则</a>' + html;
+  }
+  
+  function changeSupplierRebateRuleId() {
+    var supplierRebateRuleIdSelect =  document.getElementById('supplierRebateRuleIdSelect');
+    var url = supplierRebateRuleIdSelect.value;
+    var selectedIndex = supplierRebateRuleIdSelect.selectedIndex;
+    document.getElementById('supplierRebateRuleId').value = supplierRebateRuleIdSelect.options[selectedIndex].attributes['rid'].value;
+    Ajax.call(url, '', changeSupplierRebateRuleIdResponse, 'GET', 'JSON');
+    var url = 'supplier_rebate_rule_stat.php?act=querySupplierRebate&supplierId=' + document.getElementById('supplierId').value + '&supplierRebateRuleId=' + document.getElementById('supplierRebateRuleId').value;
+//    alert(url);
+    Ajax.call(url, '', querySupplierRebateResponse, 'GET', 'JSON');
+  }
+  
+  function changeSupplierRebateRuleIdResponse(result) {
+    document.getElementById('supplierQuery').innerHTML = result.content;
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "begin",
+        button            : "begin_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end",
+        button            : "end_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      }); 
+  }
+  
+  function querySupplierRebateResponse(result) {
+    
+    if(result.error == 0) {
+      var html = '';
+      var color;
+      var supplierRebate;
+      if(result.SupplierRebates) {
+        for(var i=0 ;i<result.SupplierRebates.length; i++) {
+          supplierRebate = result.SupplierRebates[i];
+          if(supplierRebate.supplierRebateStatusId == 'CONFIRMED') color = 'green';
+          else {if(supplierRebate.supplierRebateStatusId == 'UNPAID') color = 'black';
+          else color = 'gray';}
+          html += ('<p style="color:' + color + '"> <a href="supplier_rebate_detail.php?supplierRebateId=' + supplierRebate.supplierRebateId + '" target="_blank">' + supplierRebate.supplierRebateId + '</a> ' + supplierRebate.supplierRebateStatusId_description + ' ' + supplierRebate.supplierRebateTypeId_description + ' ');
+          if(supplierRebate.supplierRebateModeId == 'GIFTED') {
+            html += ('返实物：预期 ' + supplierRebate.expectedGiftAmount + ' 确认 ' + supplierRebate.confirmedGiftAmount + ' 收到 ' + supplierRebate.receivedGiftAmount);
+          } else {
+            if(supplierRebate.supplierRebateModeId == 'DEDUCTED') { html += '抵扣货款：'; } 
+            else { html += '返现金：';  }
+            html += (' 预期 ' + supplierRebate.expectedAmount + ' 确认 ' + supplierRebate.confirmedAmount + ' 收到 ' + supplierRebate.receivedAmount);
+          }
+          html += '</p>';
+        }
+      }
+      document.getElementById('supplierRebateResult').innerHTML = html;
+      document.getElementById('supplierRebateResultTips').innerHTML = '该供应商在该返利规则下的已创建返利';
+    } else {
+      document.getElementById('supplierRebateResultTips').innerHTML = '';
+      document.getElementById('supplierRebateResult').innerHTML = '该供应商在该返利规则下无已创建返利';
+    }
+  }
+    
+  function queryRebateResponse(result) {
+//    alert(result.content);
+    document.getElementById('supplierQueryResult').innerHTML = result.content + '<br /><input type="button" value="复制选择的串号" onclick="chooseSerialNumber();" /> <input type="button" value="复制选择的商品ID" onclick="chooseProductId();" /> <input type="button" value="复制选择的采购订单号"  onclick="choosePurchaseOrderSn();" />';
+  }
+  
+  function chooseSerialNumber() {
+    var checkeds = document.getElementsByName('toselect');
+    var html = '';
+    for(var i=0; i<checkeds.length; i++) {
+      if(checkeds[i].checked) {
+        html += document.getElementById('erp_goods_sn_' + checkeds[i].value).value + "\n";
+      }
+    }
+    document.getElementById('items').innerHTML += html;
+  }
+  
+  function chooseProductId() {
+    var checkeds = document.getElementsByName('toselect');
+    var html = '';
+    for(var i=0; i<checkeds.length; i++) {
+      if(checkeds[i].checked) {
+        html += document.getElementById('productId_' + checkeds[i].value).value + "\n";
+      }
+    }
+    document.getElementById('items').innerHTML += html;
+  }
+  
+  function choosePurchaseOrderSn() {
+    var checkeds = document.getElementsByName('toselect');
+    var html = '';
+    for(var i=0; i<checkeds.length; i++) {
+      if(checkeds[i].checked) {
+        html += document.getElementById('order_id_' + checkeds[i].value).value + "\n";
+      }
+    }
+    document.getElementById('items').innerHTML += html;
+  }
+  
+  function searchGoods()
+  {
+    /* 填充列表 */
+    var keyword = document.getElementById("keyword").value;
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+//      alert('fd');
+	  var sel = document.getElementById('goods_id');
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+    		var opt = document.createElement('OPTION');
+    		opt.value = '';
+    		opt.text = '';
+    		sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+        }
+      }
+    }
+  }
+  function searchGoodsStyle(obj) {
+    /* 填充列表 */
+    var goods_id = obj.value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_goods_style&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+  }
+    
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+	  var sel = document.getElementById('style_id');
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var opt0 = document.createElement('OPTION');
+      opt0.value = 0;
+      opt0.text = "全部";
+      sel.options.add(opt0);
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+      }
+      
+    }
+  }
+  
+</script>
+{/literal}
+{if $smarty.request.supplierId }
+<script type="text/javascript">
+changeSupplier();
+</script>
+{/if}
+</html>

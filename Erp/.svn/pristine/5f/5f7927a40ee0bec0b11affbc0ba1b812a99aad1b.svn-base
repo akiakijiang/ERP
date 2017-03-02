@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<!--
+ * Created on 2011-5-25
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+-->
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>供应商退货</title>
+  <link href="../styles/default.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <script type="text/javascript" >
+  {literal}
+     //载入执行
+     $(document).ready(function(){
+    	 /**
+          * 供应商检索
+          */
+         $('#ret_provider').autocomplete('supplier_return_goods_request.php?request=ajax&act=search_providers', {
+             dataType : 'json',
+             minChars: 0,
+             mustMatch: true,
+             formatItem : function(row, i, max, value, term) {
+                 return(row.provider_name);
+             },
+             formatResult : function(row) {
+                 return(row.provider_name);
+             }
+         }).result(function(event, row, formatted) {
+             $('#ret_provider_id').val(row.provider_id);
+         });  
+
+         /**
+          * radio 事件
+          */
+          $(".radioItem").change(
+               function() {
+        		  var selectedvalue = $("input[name='purchase_paid_type']:checked").val();
+        		  // 选择支票支付 需要填写支票号
+        		  if (selectedvalue == 4) {
+        		      $('#cheque').val($('#hidCheckNo').val()) ;
+        		  } else {
+        			  $('#cheque').val('');
+                  }
+          });
+         
+          var is_oversea_sales=$("#is_oversea_sales").val();
+          var status_id=$("#ret_status_id").val();
+          var order_type_id=$("#ret_order_type_id").val();
+          if('INV_STTS_USED' == status_id && !is_oversea_sales && ('SUPPLIER_RETURN'==order_type_id)){
+         	 $("#order_type_id").empty();
+         	 $("#order_type_id").append("<option value='SUPPLIER_RETURN' selected='selected'>退给供应商（扣原采购发票）</option>");
+         	 $("#order_type_id").append("<option value='SUPPLIER_SALE'>二手商品销售（不扣原采购发票）</option>");
+          }else if('INV_STTS_USED' == status_id && !is_oversea_sales){
+         	 $("#order_type_id").empty();
+         	 $("#order_type_id").append("<option value='SUPPLIER_RETURN' >退给供应商（扣原采购发票）</option>");
+         	 $("#order_type_id").append("<option value='SUPPLIER_SALE' selected='selected'>二手商品销售（不扣原采购发票）</option>");
+          }else if(!is_oversea_sales){
+         	 $("#order_type_id").empty();
+         	 $("#order_type_id").append("<option value='SUPPLIER_RETURN' >退给供应商（扣原采购发票）</option>");
+          }
+          
+     }); 
+
+     function cancellatonFunc(){
+         // 直接返回到一览画面
+    	 location.href = 'supplier_return_goods_request_list.php?view=purchase&act=search' ;
+     }
+
+     /**
+     * ckeckbox 选中事件
+     */
+     function selectallchk(obj){
+         var items = $("#serialize_goods_items tbody").find("input[name='chkbox']") ;  
+         if (obj.checked){
+             $.each(items, function(i,item){          
+        	      item.checked = true ;
+       	      });  
+         } else {
+        	 $.each(items, function(i,item){          
+                 item.checked = false;
+              });  
+         }
+     }
+
+     /**
+     * Form提交数据检查
+     */
+     function check(obj) {
+    	    var goodsPrice = $('#goods_price') ;
+    	    var retUnitPrice = $('#ret_unit_price');
+    	    var retStatusId = $('#ret_status_id');
+    	    var isOverseaSales = $('#is_oversea_sales').val();
+            if(goodsPrice.val() == ''){
+                alert('请填写退货价格');
+                goodsPrice.focus();
+                return false;
+            }
+            if(eval(goodsPrice.val()) != eval(retUnitPrice.val()) && retStatusId.val() != 'INV_STTS_USED' && !isOverseaSales){
+            	alert('在商品为新品的情况下，单价必须与采购单价相同');
+            	goodsPrice.focus();
+            	return false;
+            }
+            
+            var taxRate = $('#goods_rate') ;
+            if(taxRate.val() == ''){
+                alert('请填写退货税率');
+                taxRate.focus();
+                return false;
+            }
+            var orderTypeId = $('#order_type_id') ;
+            if(orderTypeId.val() == ''){
+                alert("请选择订单的类型");
+                orderTypeId.focus();
+                return false;
+            }
+            var toVendorId = $('#ret_provider_id') ;
+            if(toVendorId.val() == ''){
+                alert('请选择供应商');
+                toVendorId.focus();
+                return false;
+            }
+            var originalProviderId = $('#ret_original_id') ;
+            if (orderTypeId.val() == 'SUPPLIER_RETURN' && (originalProviderId.val()!='432' && originalProviderId.val()!='78' && originalProviderId.val()!='0') && originalProviderId.val() != toVendorId.val() ) {
+                alert("不退发票且原采购供应商非'自己库存'的订单，退回的供应商必须和采购进来的供应商一致");
+                toVendorId.focus();
+                return false;
+            }
+            /*
+            if (orderTypeId.val() == 'SUPPLIER_RETURN' && originalProviderId.val() != toVendorId.val() && isOverseaSales) {
+                alert("不退发票的订单，退回的供应商必须和采购进来的供应商一致");
+                toVendorId.focus();
+                return false;
+            }
+            */
+            var party_id=$('#party_id').val();
+            var ret_remark=$('#ret_remark').val();
+            var remark = $('#remark').val() ;
+            if(party_id == '65574' && remark.toLowerCase()!=ret_remark.toLowerCase()){
+            	alert("金宝贝中的备注记录着仓库信息，请勿修改！刷新后可修改其他内容。若有需要，请联系erp");
+            	return false;
+            }
+            if(remark == ''){
+                alert("要填写备注的");
+                return false;
+            }
+            
+         var itemType = $('#goods_item_type').val();
+    	 if (itemType == 'NON-SERIALIZED'){
+        	 // 非串号商品
+             var ret_amount = parseInt($('#ret_amount').val()) ;
+             var storage_amount = parseInt($('#hid_amount').val()) ;
+             
+             if(ret_amount == '' || ret_amount > storage_amount || ret_amount < 0){
+                 alert("需要退货数量填写不正确，请重新检查。");
+                 $('#ret_amount').focus();
+                 return false;
+             }
+    	 } else {
+        	 // 串号商品
+        	 
+        	 var chkboxs = document.getElementsByName('chkbox');    	 
+             var index = 0 ;
+        	 var json = '[';
+        	 for(var i=0;i<chkboxs.length;i++){
+            	 if(chkboxs[i].checked){
+                     if(index == 0){
+                         json += '{"erp_goods_sn":"'+ chkboxs[i].id + '", "in_sn":"' + chkboxs[i].value + '"}';
+                     }else{
+                    	 json += ', {"erp_goods_sn":"'+ chkboxs[i].id + '", "in_sn":"' + chkboxs[i].value + '"} ';
+                     }
+                     index++ ;
+            	 }
+        	 }
+        	 json += ']' ;
+        	 if(index == 0){
+                 // 退货入库必须选商品串号
+                 alert('你还没有选择要退商品对应的串号  ');
+                 return false ;
+             }
+
+        	 document.getElementById('serial_number').value = json ;
+
+    	 }
+    	 
+     }
+
+ 
+
+     function return_type(obj){
+         var chkVal = obj.value();
+         alert(chkVal);
+     }
+
+ 
+  {/literal}
+  </script>
+ </head>
+ <body>
+ <fieldset style="-moz-border-radius:6px;padding:10px;">
+ <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;供应商退货编辑&nbsp;</span></legend>
+ <br/>
+ 
+   <div style="clear:both; width: 80%">
+   <table width="600px;" cellpadding="5" cellspacing="1"  style="margin-left: 30px;">
+	
+   <form method="post" action="supplier_return_goods_request.php" id="returnForm" name="returnForm" onsubmit="return check(this);"> 
+   <input type="hidden" id="supplierReturnRequestId" name="supplierReturnRequestId" value="{$supRetReq.supplierReturnRequestId}"/>
+   <input type="hidden" id="ret_goods_id" name="ret_goods_id" value="{$productMapping.goods_id}"/>
+   <input type="hidden" id="ret_style_id" name="ret_style_id" value="{$productMapping.style_id}"/>
+   <input type="hidden" id="ret_original_id" name="ret_original_id" value="{$supRetReq.originalSupplierId}"/>
+   <input type="hidden" id="ret_facility_id" name="ret_facility_id" value="{$supRetReq.facilityId}"/>
+   <input type="hidden" id="ret_status_id" name="ret_status_id" value="{$supRetReq.statusId}"/>
+   <input type="hidden" id="ret_unit_price" name="ret_unit_price" value="{$supRetReq.unitPrice}"/>
+   <input type="hidden" id="ret_order_type_id" name="ret_order_type_id" value="{$supRetReq.orderTypeId}"/>
+   <input type="hidden" id="goods_item_type" name="goods_item_type" value="{$supRetReq.inventoryItemTypeId}"/>
+   <input type="hidden" id="hidCheckNo" value="{$supRetReq.checkNo}" />
+   <input type="hidden" id="serial_number" name="serial_number" />
+   <input type="hidden" id="party_id" name="party_id" value="{$smarty.session.party_id}"/>
+   <input type="hidden" id="ret_remark" name="ret_remark" value="{$supRetReq.note}"/>
+   <input type="hidden" id="is_oversea_sales" name="is_oversea_sales" value='{$is_oversea_sales}'/>
+   <table id="ret_excute" cellpadding="5" cellspacing="1"  style="margin-left: 30px;"  width="70%">
+      <tr>
+        <td style="width: 120px;">商品名：</td> <td>{$productMapping.goods_name}</td>        
+      </tr>
+      <tr>
+        <td>供应商：</td> <td>{$origialProviderName}</td>        
+      </tr>
+      <tr>
+        <td>退货仓库：</td> <td>{$facilityName}</td>        
+      </tr>
+      
+      <tr>
+         <td>退还给供应商：</td>
+         <td>
+            <input type="text" id="ret_provider" size="70" value="{$returnProviderName}"/>
+            <input type="hidden" id="ret_provider_id" name="ret_provider_id" value="{$supRetReq.returnSupplierId}"/> 
+        </td> 
+      </tr>
+      <tr>
+         <td>退还订单类型：</td>
+         <td>
+           <select name="order_type_id" id="order_type_id">
+            <option value="SUPPLIER_RETURN" {if $supRetReq.orderTypeId == "SUPPLIER_RETURN"}selected{/if}>退给供应商（扣原采购发票）</option>
+            <option value="SUPPLIER_SALE" {if $supRetReq.orderTypeId == "SUPPLIER_SALE"}selected{/if}>二手商品销售（不扣原采购发票）</option>
+           </select>
+        </td>
+      </tr>
+      <tr>
+         <td>退还商品单价：</td>
+         <td><input style="width: 80px" name="goods_price" id="goods_price" value="{$supRetReq.unitPrice}"/></td>
+      </tr>
+      <tr>
+         <td>税率：</td>
+
+         <td> 
+            {if $smarty.session.party_id == 65638 }  <!-- 乐其跨境 采购和 -gt税率都默认为1 -->
+            	 <input style="width: 80px" name="goods_rate" id="goods_rate" value="1" value="{$supRetReq.taxRate}"/>
+            {else}
+            	 <input style="width: 80px" name="goods_rate" id="goods_rate" value="1.17" value="{$supRetReq.taxRate}"/>
+            {/if}
+         </td>
+
+
+      </tr>
+     
+      <tr>
+         <td>退款方式 ：</td>
+         <td>
+           {foreach from=$purchasePaidTypes item=type key=key} 
+             <input type="radio" class="radioItem" name="purchase_paid_type" value="{$key}" {if $supRetReq.paymentTypeId == $key}checked{/if}/>{$type} 
+           {/foreach} 
+         </td>
+      </tr>
+      <tr>
+         <td>支票号 ：</td>
+         <td><input type="text" id="cheque" name="cheque" style="width: 180px" value="{$supRetReq.checkNo}" /></td>
+      </tr>
+      <tr>
+        <td>备注 ：</td>
+        <td><input type="text" name="remark" id="remark" style="width: 400px;" value="{$supRetReq.note}"/></td>
+    </tr>
+    {if $supRetReq.inventoryItemTypeId == 'NON-SERIALIZED'}
+    <tr>
+        <td>退货数量 ：</td>
+        <td>
+          <input type="text" name="ret_amount" id="ret_amount" value="{$supRetReq.returnOrderAmount}" size="8" /> 
+          <input type="hidden" id="hid_amount" value="{$storageAmount}" />
+          &nbsp; &nbsp; &nbsp;最大可退货数量 ：&nbsp;{$storageAmount}
+        </td>
+    </tr>
+    {else}
+    <tr>
+        <td style="margin-top: 10px;">可退货明细 ：</td>
+        <td>
+        <table id="serialize_goods_items" class="bWindow" width="500">
+          <thead>
+            <tr>
+                <td width="10" align="center"><input type="checkbox" name="chk_all" id="chk_all" onchange="javascript:selectallchk(this);"/></td> 
+                <td width='120'>串号</td>
+            </tr>
+          </thead>
+          <tbody>  
+            {foreach from=$storage_erps item=erp}
+            <tr>
+                <td align="center"><input type="checkbox" name="chkbox" id='{$erp.erp_goods_sn}' value='{$erp.in_sn}' {if $erp.checked == true}checked="checked"{/if}/></td>
+                <td>{$erp.erp_goods_sn}</td>
+            </tr>
+            {/foreach}
+          </tbody>
+        </table>
+        </td>
+    </tr>
+
+    {/if}
+      
+    <tr style="height: 80px;">
+       <td>&nbsp;</td>
+       <td >
+          <input type="submit" value=" 编 &nbsp; 辑 "/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+          <input type="reset" value=" 信息重填 "/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+          <input type="button" value=" 取 &nbsp; 消 " onclick="javascript:cancellatonFunc()"/>&nbsp; &nbsp; &nbsp; 
+          <input type="hidden" id="act" name="act" value="create_item"/> 
+       </td>
+    </tr>
+   </table>
+   </form>
+
+</fieldset>
+</body>
+</html>

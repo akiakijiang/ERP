@@ -1,0 +1,91 @@
+{if $act == 'getmodulePageURL'}
+<script type="text/javascript">
+{literal}
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "begin",
+        button            : "begin_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end",
+        button            : "end_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      }); 
+{/literal}
+</script>
+<p>
+  开始时间 <input type="text" name="begin" id="begin" value="{$smarty.request.begin}" />  
+  <input type="button" name="begin_btn" id="begin_btn" value="..." />
+</p>
+<p>
+  结束时间 <input type="text" name="end" id="end" value="{$smarty.request.end}" />
+  <input type="button" name="end_btn" id="end_btn" value="..." />
+</p>
+
+{if $queryBy == 'serialNumber'}
+<p>商品串号
+    <input style="width:80px" type="text" id="erp_goods_sn" name="erp_goods_sn" value="" />
+</p>
+{/if}
+{if $queryBy == 'productId'}
+<p>商品型号
+    <input style="width:80px" type="text" id="keyword" value="" />
+    <input type="button" id="search" name="search" value="{$lang.button_search}" onclick="searchGoods();" />
+  	<select name="goods_id" onchange="searchGoodsStyle(this)" id="goods_id"></select>
+  	<select name="style_id" id="style_id"></select>
+</p>
+{/if}
+{if $queryBy == 'purchaseOrderId'}
+<p>采购订单
+<input name="purchaseOrderSn" id="purchaseOrderSn" type="text" />
+</p>
+{/if}
+<input type="hidden" id="queryBy" name="queryBy" value="{$queryBy}" />
+<input type="button" name="query" value="查询" onclick="queryPossibleSupplierRebate();" />
+{/if}
+
+{* 下面这些为预估返利查询结果 *}
+{if $act == "queryPossibleSupplierRebate"}
+{if $queryBy == 'serialNumber'}
+{foreach from=$erp_goods_sns item=erp_goods_sn key=key}
+<input type="checkbox" name="toselect" checked="true" value="{$key}" />
+<input type="hidden" id="productId_{$key}" name="goods_id[]" value="{$erp_goods_sn.productId}" />
+<input type="hidden" id="order_id_{$key}" name="order_id[]" value="{$erp_goods_sn.order_id}" />
+<input type="hidden" id="erp_goods_sn_{$key}" name="erp_goods_sn[]" value="{$erp_goods_sn.erp_goods_sn}" />
+{$erp_goods_sn.erp_goods_sn} {$erp_goods_sn.goods_name} {$erp_goods_sn.order_sn}<br />
+{/foreach}
+共 {$totalnumber} 条记录
+{/if}
+
+{if $queryBy == 'productId'}
+{foreach from=$erp_goods_sns item=erp_goods_sn key=key}
+<input type="checkbox" name="toselect" checked="true" value="{$key}" />
+<input type="hidden" id="productId_{$key}" name="goods_id[]" value="{$erp_goods_sn.productId}" />
+<input type="hidden" id="order_id_{$key}" name="order_id[]" value="{$erp_goods_sn.order_id}" />
+<input type="hidden" id="erp_goods_sn_{$key}" name="erp_goods_sn[]" value="{$erp_goods_sn.erp_goods_sn}" />
+{$erp_goods_sn.erp_goods_sn} {$erp_goods_sn.goods_name} {$erp_goods_sn.order_sn}<br />
+{/foreach}
+共 {$totalnumber} 条记录
+{/if}
+
+{if $queryBy == 'purchaseOrderId'}
+{foreach from=$orders item=order}
+<input type="checkbox" name="toselect" checked="true" value="{$key}" />
+<input type="hidden" id="productId_{$key}" name="goods_id[]" value="{$order.productId}" />
+<input type="hidden" id="order_id_{$key}" name="order_id[]" value="{$order.order_id}" />
+<input type="hidden" id="erp_goods_sn_{$key}" name="erp_goods_sn[]" value="{$order.erp_goods_sn}" />
+{$order.erp_goods_sn} {$order.goods_name} {$order.order_sn}  <br />
+{/foreach}
+共 {$totalnumber} 条记录
+{/if}
+
+{if $queryBy == 'supplierId'}
+采购总金额 ￥ {$total_purchase_paid_amount}
+{/if}
+{/if}

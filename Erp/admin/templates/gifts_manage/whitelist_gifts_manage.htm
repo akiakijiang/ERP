@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<!--
+ * Created on 2014-7-14
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+-->
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title> 回赠白名单管理 </title>
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+  <!-- Calendar -->
+  <link rel="stylesheet" type="text/css" href="../js/style/calendar/GooCalendar.css"/>
+  <script type="text/javascript" src="../js/style/calendar/GooFunc.js"></script>
+  <script type="text/javascript" src="../js/style/calendar/GooCalendar.js"></script>
+  <!-- Calendar /-->
+  
+    <script type="text/javascript"><!--
+    // <![CDATA[
+    var WEB_ROOT = '{$WEB_ROOT}';
+    // {literal}
+    
+    window.onload = function() {
+		var position = E('position').value;
+		var showNum = E('show').value;
+		if(position){
+			window.location.hash=position;
+		}
+		show(showNum);
+	}
+    
+    function E(id) {return document.getElementById(id);}
+    function ES(name) {return document.getElementsByName(name);}
+    
+    var property={
+	    divId:"demo",
+	    needTime:true,
+	    yearRange:[1970,2030],
+	    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+	    month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+	    format:"yyyy-MM-dd hh:mm:ss"
+	};
+	
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+       		$(this).next().slideToggle('normal');
+        }); 
+        
+        canva1=$.createGooCalendar("start",property);
+        canva2=$.createGooCalendar("end",property);
+
+        /**
+         * 赠品搜索
+         */
+        $('#child_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods_and_taocan', {
+    		dataType : 'json',
+    		minChars: 0,
+    		mustMatch: false,
+    		formatItem : function(row, i, max, value, term) {
+    			return(row.goods_name);
+    		},
+    		formatResult : function(row) {
+    			return(row.goods_name);
+    		}
+    	}).result(function(event, row, formatted) {
+    		$('#hid_child_goods_id').val(row.goods_id);
+    		$('#hid_child_style_id').val(row.style_id);
+    		$('#child_goods').val(row.goods_name);
+    		var type = row.type;
+    		if(type == 'taocan') {
+    			$('#hid_child_tc_code').val(row.outer_id);
+        	} else {
+        		$('#hid_child_tc_code').val('');
+            }
+    	});
+   		
+    	changeInput();
+    
+	});
+
+    function formsubmit(){
+    	var active_name=document.getElementById('active_name').value;
+        var child_tc_code = document.getElementById('hid_child_tc_code').value ;
+        var child_goods_id = document.getElementById('hid_child_goods_id').value ;
+        var child_goods_name = document.getElementById('child_goods').value ;
+        var child_goods_amount = document.getElementById('child_goods_amount').value ;
+    	var start_time=document.getElementById('start').value;
+    	var end_time=document.getElementById('end').value;
+
+    	if(''==active_name || null==active_name){
+    		alert('活动名称还未添加。。。');
+    		return false;
+    	}
+    	if(''==start_time || null==start_time || '设置开始时间'==start_time){
+    		alert('活动开始时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(start_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(''==end_time || null==end_time || '设置结束时间'==end_time){
+    		alert('活动结束时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(end_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+        if('' == child_goods_name || null == child_goods_id || '' == child_goods_id){
+            alert('还没有选择绑定的赠品 。。。');
+            return false;
+        }
+        if('' == child_goods_amount || null == child_goods_amount){
+            alert('还没有填写赠品数量。。。');
+            return false;
+        }
+        
+
+    }
+    
+    //修改时,选中原有的值
+    function changeInput() {
+        
+        var start_value = document.getElementById("start_value").value;
+        if (start_value != null && start_value != '') {
+            document.getElementById("start").value=start_value;
+        }
+        var end_value = document.getElementById("end_value").value;
+        if (end_value != null && end_value != '') {
+            document.getElementById("end").value=end_value;
+        }
+        
+    }
+    
+    //时间格式检查
+    function checkDateTime(str){
+    	var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})( )(\d{2})(:)(\d{2})(:)(\d{2})$/);
+    	if(r == null){
+    		return false;
+    	}else{
+    		return true;
+    	}
+    }
+   
+    //显示
+    function show(num){
+    	for(var i=1;i<4;i++){
+    		if(i != num){
+    			E('s'+i).style.display = 'none';
+    		}
+    	}
+    	E('s'+num).style.display = '';
+    }
+    
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+
+	function download_list_template(){
+		   $("#act").val('download_list_template');
+		   $("#myform").submit();
+	}
+
+	//删除确认
+    function delete_confirm(){
+    	return confirm("确认删除么？");
+    }
+
+
+	/**
+	 * 删除用户
+	 *
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function user_remove(doc, type) 
+	{
+		var $tr = $(doc).parent().parent();
+		var detail_id = $tr.attr('ix');
+		//$tr.remove();
+		if(confirm("确认删除么？")) {
+			$.ajax({
+				type: 'POST', //请求类型
+				url: 'whitelist_gifts_manage.php?request=ajax&act=delete_detail',//请求发送地址
+				data: 'detail_id=' + detail_id,//传送数据
+				dataType: 'json',//数据类型
+				async: false, 	//请求同步执行
+				success:function(data){
+					$tr.remove()
+				},
+				error: function() { 
+					alert("fail");
+				}
+			});
+		} 
+		
+	}
+    
+    // {/literal}
+    // ]]>
+    --></script>
+    <link href="Level1_Arial.css" rel="stylesheet" type="text/css" />
+ </head>
+ <body>
+ <!--{if $tip}-->
+   <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#tip').slideUp("slow");
+		}, 3000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="tip" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$tip}
+	</div>
+<!--{/if}-->
+
+ <div style="margin-top:30px; margin-left:40px; width:1200px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;回赠白名单管理&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+      <!--{if $message}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+          window.setTimeout(function(){$('#message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+      </script>
+      <div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$message}
+      </div>
+      <!--{/if}-->
+     <br/>
+     <!-- 赠品编辑 -->
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;{if !$gifts}添加回赠白名单{elseif $view_only == 'N'}回赠白名单编辑{/if}&nbsp;</legend>
+     <div style="display:block;" id="s1">
+       <form method="post" id="myform" enctype="multipart/form-data" onsubmit="return formsubmit()">
+         <table style="margin-left: 60px;width: 100%">
+            <tr>
+               <td style="width:100px;">白名单名称:</td>
+               <td>&nbsp;<input type="text" style="width:270px;" id="active_name" name="active_name" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} value="{$gifts.whitelist_name}"></input></td>
+            </tr>
+		    <tr>
+               <td style="width:100px;">生效时间：</td>
+               <td style="padding:5px;">
+                  <input type="text" value="{$gifts.start_time}" id="start" name="start" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}></input>&nbsp;到&nbsp;
+         	      <input type="text" value="{$gifts.end_time}" id="end" name="end"></input>
+         	      <input type="hidden" id="start_value" value="{$gifts.start_time}"/>
+         	      <input type="hidden" id="end_value" value="{$gifts.end_time}"/>
+               </td>
+           </tr>
+           
+          </table>
+
+         <table style="margin-top: 30px; margin-left: 60px; margin-bottom: 40px; width: 100%">
+           <tr>
+              <td>赠品(单品或套餐)：&nbsp;  </td>
+              <td >
+                 <input type="text" name="child_goods" id="child_goods" size="85" value='{$gifts.child_goods_name}'/>&nbsp;   数量: &nbsp;
+                 <input type="text" name="child_goods_amount" id="child_goods_amount" size="5" value='{$gifts.quantity}'></input>
+                 <input type="hidden" name="hid_child_goods_id" id="hid_child_goods_id" value='{$gifts.goods_id}'/>
+                 <input type="hidden" name="hid_child_style_id" id="hid_child_style_id" value='{$gifts.style_id}'/>
+                 <input type="hidden" name="hid_child_tc_code" id="hid_child_tc_code" value='{$gifts.tc_code}' size="5" readonly="readonly" style="border:none;" />
+              </td>
+           </tr>
+           
+           <tr>
+            <td style="width:100px;">用户列表文件</td>
+           	<td>
+		       <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;		   
+		      	<a href="javascript:void(0)" onclick="download_list_template()"><font size="4px">批量导入模版下载</font></a>
+          	</td>
+          </tr>
+
+         </table>
+         
+         <legend class="expand" id='user_list'>用户列表</legend>
+          <table id="exclude_goods_list" style="margin-left: 60px;  width: 90%">
+	        <tr align="center" bgcolor="#E2F9FA">
+	          <th style="width:15%">淘宝昵称</th>
+	          <th>赠送套数</th>
+	          <th>操作</th>
+	        </tr>
+	        {foreach from=$users item=user}
+	        <tr align='center' ix="{$user.detail_id}">
+	        	<td>{$user.nick}</td>
+	        	<td>{$user.num}
+	        	<input type='hidden' name="exclude_goods[{$exclude_goods.outer_id}]" value="{$exclude_goods.outer_id}" />
+	        	</td>
+	        	<td>
+	        	<a href='javascript:void(0);' onclick='user_remove(this)'>删除</a>
+	        	</td>
+	        </tr>
+	        {/foreach}
+	      </table>
+         
+         <input type="hidden" name="hidden_group_goods_id" id="hidden_group_goods_id" value='{$gifts.whitelist_id}'/>
+         <input type="hidden" name="act" id="act" value="insert"/>
+         <table style="margin-left: 400px;"><tr><td>
+             {if !$gifts}
+             <input type="submit" value=" 添加白名单 " /> &nbsp; &nbsp; &nbsp; 
+             {elseif $view_only == 'N'}
+             <input type="submit" value="编辑白名单">&nbsp; &nbsp; &nbsp; 
+             {/if}
+         </td></tr></table><br/>
+         
+       </form>
+       </div>
+     </fieldset>
+     
+          <!-- 回赠白名单一览表 -->   
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;回赠白名单列表&nbsp;</legend>
+        <table style="width: 100%" id="dataTab">
+          <tr>
+             <td style="width: 10%;"><strong>开始时间</strong></td>
+             <td style="width: 10%;"><strong>结束时间</strong></td>
+             <td style="width: 30%;"><strong>白名单标题</strong></td>
+             <td style="width: 6%"><strong>操作人</strong></td>
+             <td style="width: 10%"><strong>操作时间</strong></td>
+             <td style="width: 13%"><strong>操作</strong></td>
+          </tr> 
+          
+          {foreach from=$gifts_list_V2 item=gifts}
+	          <tr class="{cycle values='odd,even'}">
+	             <td>{$gifts.start_time}</td>
+	             <td>{$gifts.end_time}</td>
+	             <td>{$gifts.whitelist_name}</td>
+	             <td>{$gifts.created_by}</td>
+	             <td>{$gifts.update_time}</td>
+	             <td>
+	               <a href="?act=update&whitelist_id={$gifts.whitelist_id}&view_only=Y&show=1" >查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+	               <a href="?act=update&whitelist_id={$gifts.whitelist_id}&view_only=N&show=1" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+	               <a href="?act=delete&whitelist_id={$gifts.whitelist_id}" onclick="return delete_confirm()">删除</a>
+	             </td>
+	          </tr>
+          {/foreach}       
+        </table>
+      
+     </fieldset>
+     
+     <br/>
+   </div>
+  </fieldset>
+   
+ </div>
+ 
+ </body>
+</html>

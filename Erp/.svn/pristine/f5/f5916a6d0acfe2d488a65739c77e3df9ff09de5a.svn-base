@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>采购商品信息一览</title>
+
+    <link href="styles/default.css" rel="stylesheet" type="text/css">
+    <link href="misc/tablesorter.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/tablesorter.js"></script>
+    
+    <!-- Calendar -->
+    <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+    <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+    <!-- Calendar /-->
+</head>
+
+<fieldset>
+    <legend>检索/导出</legend>
+<form method="POST">
+<ul class="sType">
+<li>大类：
+<select name="cat_id_0" id="cat_id_0" onchange="select_cate('cat_id_0');" >
+    <option value="all"> ALL </option>
+    <option value="dvd" {if $smarty.request.cat_id_0 eq 'dvd'}selected{/if} >DVD组</option>
+    <option value="education" {if $smarty.request.cat_id_0 eq 'education'}selected{/if} >电教组</option>
+    <option value="gift" {if $smarty.request.cat_id_0 eq 'gift'}selected{/if} >礼品</option>
+    <option value="ec" {if $smarty.request.cat_id_0 eq 'ec'}selected{/if} >电子商务</option>
+</select>
+&nbsp;&nbsp;中类：
+<select name="cat_id_1" id="cat_id_1" onchange="select_cate('cat_id_1');" >
+{if $smarty.request.hidden_cat_id_1}
+    {$smarty.request.hidden_cat_id_1}
+{else}
+    <option value="all"> ALL </option>
+{/if}
+</select>
+&nbsp;&nbsp;小类：
+<select name="cat_id_2" id="cat_id_2" onchange="select_cate('cat_id_2');" >
+{if $smarty.request.hidden_cat_id_2}
+    {$smarty.request.hidden_cat_id_2}
+{else}
+    <option value="all"> ALL </option>
+{/if}
+</select>
+&nbsp;&nbsp;品牌：
+<select name="brand_id" >
+    <option value="all"> ALL </option>
+    {html_options options=$brand_list selected=$smarty.request.brand_id}
+</select>
+</li>
+<li>
+商品搜索：
+<input name="goods_name" value="{$smarty.request.goods_name}" size="80" >
+</li>
+<li>
+实物库存：
+<select name="storage_real" style="width:90px" >
+    <option value="all"> ALL </option>
+    <option value="gt" {if $smarty.request.storage_real eq 'gt'}selected{/if} > >0 </option>
+<!--    <option value="ge" {if $smarty.request.storage_real eq 'ge'}selected{/if} > >=0 </option>-->
+    <option value="e" {if $smarty.request.storage_real eq 'e'}selected{/if} > =0 </option>
+<!--    <option value="le" {if $smarty.request.storage_real eq 'le'}selected{/if} > <=0 </option>-->
+<!--    <option value="lt" {if $smarty.request.storage_real eq 'lt'}selected{/if} > <0 </option>-->
+</select>
+&nbsp;&nbsp;虚拟库存：
+<select name="storage_virture" style="width:90px" disabled >
+    <option value="all" {if $smarty.request.storage_virture eq 'all'}selected{/if} > ALL </option>
+    <option value="gt" {if $smarty.request.storage_virture eq 'gt'}selected{/if} > >0 </option>
+    <option value="ge" {if $smarty.request.storage_virture eq 'ge'}selected{/if} > >=0 </option>
+    <option value="e" {if $smarty.request.storage_virture eq 'e'}selected{/if} > =0 </option>
+</select>
+<!--&nbsp;&nbsp;线上库存：
+<select name="storage_online" style="width:90px" >
+    <option value="all" {if $smarty.request.storage_online eq 'all'}selected{/if} > ALL </option>
+    <option value="gt" {if $smarty.request.storage_online eq 'gt'}selected{/if} > >0 </option>
+    <option value="ge" {if $smarty.request.storage_online eq 'ge'}selected{/if} > >=0 </option>
+    <option value="e" {if $smarty.request.storage_online eq 'e'}selected{/if} > =0 </option>
+</select>-->
+&nbsp;&nbsp;订购数量：
+<select name="sale_num" style="width:90px" >
+    <option value="all" {if $smarty.request.sale_num eq 'all'}selected{/if} > ALL </option>
+    <option value="gt" {if $smarty.request.sale_num eq 'gt'}selected{/if} > >0 </option>
+    <option value="e" {if $smarty.request.sale_num eq 'e'}selected{/if} > =0 </option>
+</select>
+</li>
+<li>
+商品状态：
+<select name="goods_storage_status" style="width:90px" >
+    <option value="all" {if $smarty.request.goods_storage_status eq 'all'}selected{/if} > ALL </option>
+    <option value="NEW" {if $smarty.request.goods_storage_status eq 'NEW'}selected{/if} >新品</option>
+    <option value="SECOND_HAND" {if $smarty.request.goods_storage_status eq 'SECOND_HAND'}selected{/if} >二手</option>
+    <option value="DISCARD" {if $smarty.request.goods_storage_status eq 'DISCARD'}selected{/if} >报废</option>
+</select>
+&nbsp;&nbsp;销售状态：
+<select name="sale_status" style="width:90px" >
+    <option value="all"> ALL </option>
+    <option value="normal" {if $smarty.request.sale_status eq 'normal'}selected{/if} >在售</option>
+    <option value="shortage" {if $smarty.request.sale_status eq 'shortage'}selected{/if} >缺货</option>
+    <option value="tosale" {if $smarty.request.sale_status eq 'tosale'}selected{/if} >即将上市</option>
+    <option value="withdrawn" {if $smarty.request.sale_status eq 'withdrawn'}selected{/if} >下市</option>
+</select>
+&nbsp;&nbsp;采购数量：
+<select name="purchase_num" style="width:90px" >
+    <option value="all"> ALL </option>
+    <option value="gt" {if $smarty.request.purchase_num eq 'gt'}selected{/if} > >0 </option>
+    <option value="e" {if $smarty.request.purchase_num eq 'e'}selected{/if} > =0 </option>
+    <option value="lt" {if $smarty.request.purchase_num eq 'lt'}selected{/if} > <0 </option>
+</select>
+</li>
+<li>
+平均成本：
+从<input name="cost_1" value="{$smarty.request.cost_1}" size="10">到<input name="cost_2" value="{$smarty.request.cost_2}" size="10">
+&nbsp;&nbsp;目前售价：
+从<input name="price_1" value="{$smarty.request.price_1}" size="10">到<input name="price_2" value="{$smarty.request.price_2}" size="10">
+&nbsp;&nbsp;PM：
+<select name="pm" style="width:90px" >
+    <option value="all"> ALL </option>
+    {foreach from=$pms item=pm}
+    <option value="{$pm}" {if $smarty.request.pm eq $pm}selected{/if} >{$pm}</option>
+    {/foreach}
+</select>
+</li>
+<!--<li>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+</li>-->
+<li>
+<input type="submit" value="     搜索     ">
+<input type="submit" value="  导出CSV  " name="csv">
+<input type="hidden" name="act" value="search">
+<input type="hidden" name="hidden_cat_id_1" id="hidden_cat_id_1" value="{$smarty.request.hidden_cat_id_1}">
+<input type="hidden" name="hidden_cat_id_2" id="hidden_cat_id_2" value="{$smarty.request.hidden_cat_id_2}">
+</li>
+</ul>
+</form>
+</fieldset>
+
+<p style="text-align:center;">采购商品信息一览&nbsp;&nbsp;{$pager}</p>
+{if $goods_list_count gt 200}
+<font color="Red">结果超过200条，请通过csv导出查看所有结果，谢谢</font>
+{/if}
+<!--<table id="sorttable" border="1" cellpadding="1" cellspacing="1" class="bWindow" style="width:100%;border:1px solid #B7B7B7;border-collapse:collapse;font-size:14px;line-height:28px;">-->
+<table id="sorttable" class="tablesorter" cellspacing="1" cellpadding="0" border="0">
+<thead> 
+<tr>
+    <th class="header">商品代码</th>
+    <th class="header">商品名称</th>
+    <th class="header">商品颜色</th>
+    <th>商品状态</th>
+    <th>销售状态</th>
+    <th>实物库存</th>
+    {*<th>虚拟库存</th>
+    <th>线上库存</th>*}
+    <th>订购数量</th>
+    <th>采购数量</th>
+    <th>当天出库数量</th>
+    <th>PM</td>
+    {foreach from=$dates item=date name=date}
+    <th title="{$date}" width="30">D{$smarty.foreach.date.iteration}</th>
+    {/foreach}
+    {foreach from=$weeks item=week name=week}
+    <th title="{$week}" width="30">W{$smarty.foreach.week.iteration}</th>
+    {/foreach}
+    {foreach from=$months item=month name=month}
+    <th title="{$month}" width="30">M{$smarty.foreach.month.iteration}</th>
+    {/foreach}
+    <th>最后采购价格</th>
+    <th>平均成本</th>
+    <th>毛利率</th>
+    <th>当前售价</th>
+</tr>
+</thead>
+
+<tbody>
+<!--{foreach from=$goods_list item=goods name='goods_list'}-->
+<!--{if $smarty.foreach.goods_list.last}--></tbody><!--{/if}-->
+<tr class="{cycle values='even,odd'}">
+    <td>{$goods.gs_id}</td>
+    <td>{$goods.goods_name}</td>
+    <td>{$goods.color}</td>
+    <td>{$goods.goods_storage_status}</td>
+    <td>{$goods.sale_status}</td>
+    <td>{$goods.storage_real}</td>
+    {*<td>{$goods.storage_virture}</td>
+    <td>{$goods.storage_online}</td>*}
+    <td>{$goods.sale_num}</td>
+    <td>{$goods.purchase_num}</td>
+    <td>{if $goods.sales.today}{$goods.sales.today}{else}0{/if}</td>
+    <td>{$goods.pm}</td>
+<!--    按日计算销量数据-->
+    {foreach from=$dates item=date name="date"}
+    <td {if $smarty.foreach.date.first}bgcolor="#33FFFF"{/if}>
+        {foreach from=$goods.sales key=key item=sale}
+        {if $key eq $date}
+        {$sale}
+        {/if}
+        {/foreach}
+    </td>
+    {/foreach}
+<!--    按周计算销量数据-->
+    {foreach from=$weeks item=week name="week"}
+    <td {if $smarty.foreach.week.first}bgcolor="#33FFFF"{/if}>
+        {foreach from=$goods.sales key=key item=sale}
+        {if $key eq $week}
+        {$sale}
+        {/if}
+        {/foreach}
+    </td>
+    {/foreach}
+<!--    按月计算销量数据-->
+    {foreach from=$months item=month name="month"}
+    <td {if $smarty.foreach.month.first}bgcolor="#33FFFF"{/if}>
+        {foreach from=$goods.sales key=key item=sale}
+        {if $key eq $month}
+        {$sale}
+        {/if}
+        {/foreach}
+    </td>
+    {/foreach}
+    <td>
+    	{if view_provide_price($goods.category)}
+    	{$goods.purchase_paid_amount}
+      {else}
+      N/A
+      {/if}
+    </td>
+    <td>{$goods.cost}</td>
+    <td>{$goods.gross_profit_ratio}</td>
+    <td>{$goods.price}</td>
+</tr>
+<!--{/foreach}-->
+
+
+</table>
+
+<p style="text-align:center;">采购商品信息一览</font>&nbsp;&nbsp;{$pager}</p>
+
+<script type="text/javascript">
+var cat_id = new Array('{$smarty.request.cat_id_1}', '{$smarty.request.cat_id_2}');
+{literal}
+//<![CDATA[
+    for(var i = 1;i < 3; ++i) {
+        var count=$("#cat_id_"+i).get(0).options.length;
+        for(var j = 0;j < count;j++) {
+            if($("#cat_id_"+i).get(0).options[j].value == cat_id[i-1]) {
+                $("#cat_id_"+i).get(0).options[j].selected = true;
+                break;
+            }
+        }
+    }
+
+    /*Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+    });
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+    });*/
+      
+    /**
+	 * 表单提交检查
+	 */
+	function select_cate(cat_name)
+	{
+	    var cat_id = $(":select[name='"+cat_name+"'] option[selected]").val();
+	    var options = $("#"+cat_name).html();
+        $.ajax({
+            url : 'ajax.php', 
+            data: 'act=get_goods_cate&class='+cat_name+'&cat_id='+cat_id,
+            success: select_cate_response,
+            type: 'POST',
+            dataType: 'JSON'
+        });
+	}
+	
+	function select_cate_response(result) {
+	    var res = eval('('+result+')');
+	    if (res.cat_name != '' && res.options != '') {
+	        $("#"+res.cat_name).empty();
+	        $("#"+res.cat_name).append(res.options);
+	        $("#hidden_"+res.cat_name).val(res.options);
+	    }
+	}
+	
+	$(document).ready(function(){ 
+			$("#sorttable").tablesorter(); 
+	}); 
+
+// ]]>
+</script>
+{/literal}
+</body>
+</html>

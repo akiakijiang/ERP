@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>外购入库详情</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<script type="text/javascript">
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+
+{/literal}
+</script>
+
+</head>
+<body>
+<form>
+商品类别：
+<select name="goods_cagetory">
+<option value="-1">所有</option>
+<option value="1" {if $smarty.request.goods_cagetory == 1}selected{/if}>手机</option>
+<option value="2" {if $smarty.request.goods_cagetory == 2}selected{/if}>手机配件</option>
+<option value="3" {if $smarty.request.goods_cagetory == 3}selected{/if}>健康电子</option>
+<option value="4" {if $smarty.request.goods_cagetory == 4}selected{/if}>DVD</option>
+<option value="5" {if $smarty.request.goods_cagetory == 5}selected{/if}>电教产品</option>
+</select>
+订单类型：
+<select name="order_type">
+	<option value="-1">所有</option>
+	<option value="NONE" {if $smarty.request.order_type == 'NONE'}selected{/if}>未填</option>
+	<option value="B2C" {if $smarty.request.order_type == 'B2C'}selected{/if}>B2C</option>
+	<option value="C2C" {if $smarty.request.order_type == 'C2C'}selected{/if}>C2C</option>
+	<option value="DX" {if $smarty.request.order_type == 'DX'}selected{/if}>DX</option>
+</select>
+入库开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+入库结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="        搜索        ">
+<input type="submit" value="导出CSV" name="csv">
+<input type="hidden" name="act" value="search">
+</form>
+<br>
+
+<table class="bWindow">
+<caption><h1>外购入库详情</h1></caption>
+<tr>
+<th>入库时间</th>
+<th>商品</th>
+{if "finance_order"|check_admin_priv or "purchase_order"|check_admin_priv}
+<th>类型</th>
+<th>分类</th>
+<th>新旧</th>
+<th>供应商</th>
+<th>供价</th>
+<th>支付方式</th>
+<th>支票号</th>
+<th>采购发票号码</th>
+{/if}
+<th>订单号</th>
+<th>商品串号</th>
+</tr>
+<!--{foreach from=$goods_list item=goods}-->
+<tr align="center">
+<td>{$goods.in_time}</td>
+<td>{$goods.goods_name}</td>
+{if "finance_order"|check_admin_priv or "purchase_order"|check_admin_priv}
+<td>{$goods.order_type}</td>
+<td>{$goods.cat_name}</td>
+<td>{$goods.is_new}</td>
+<td>{if check_admin_priv('check_provider')}{$goods.provider_name}{else}××××××{/if}</td>
+<td>
+	{if view_provide_price($goods.category)}
+	{$goods.purchase_paid_amount}
+  {else}
+  N/A
+  {/if}
+</td>
+<td>{$purchasePaidTypes[$goods.purchase_paid_type]}</td>
+<td>{$goods.cheque}</td>
+<td>{$goods.purchase_invoice}</td>
+{/if}
+<td><a href="order_edit.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a></td>
+<td>{$goods.goods_sn}</td>
+</tr>
+<!--{/foreach}-->
+<tr align="right">
+<td colspan="10">{$pager}</Td>
+</tr>
+</table>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

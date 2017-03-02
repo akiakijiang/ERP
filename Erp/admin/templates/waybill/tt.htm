@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>天天</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:16pt;top:70px;left:90px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:16pt;top:370px;left:80px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:16pt;top:360px;left:250px;">曾宁一</div>
+<div style="position:absolute;font-size:14pt;top:140px;left:50px;">{$order.company_address}</br></div>
+<div style="position:absolute;font-size:14pt;top:210px;left:240px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:15pt;top:70px;left:455px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:14pt;top:140px;left:465px;width:300px;line-height:200%;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:14pt;top:210px;left:475px;">{$order.mobile}<br /></div>
+<div style="position:absolute;font-size:14pt;top:210px;left:650px;">{$order.tel}</div>
+<div style="position:absolute;font-size:12pt;top:170px;left:45px;">请亲自检查包裹完好后再签收，
+如有破损请拒收，<br/>
+并联系我们。否则概不负责。</div>
+<div style="position:absolute;font-size:12pt;top:70px;left:525px;">(订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:12pt;top:50px;left:680px;font-weight:bolder;"></div>
+<div style="position:absolute;font-size:14pt;top:410px;left:60px;">{$order.p_time}</div><!--面单时间 -->
+<div style="position:absolute;font-size:18pt;top:240px;left:500px;">√</div><!--付款方式 -->
+<div style="position:absolute;font-size:12pt;top:410px;left:660px;">
+	本人签收，送货前电话联系<br>
+</div>
+
+</body>
+</html>

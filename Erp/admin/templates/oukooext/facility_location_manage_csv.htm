@@ -1,0 +1,8 @@
+业务组织,仓库名称,库位标识,条码,商品名称,PRODUCT ID,GOODS ID,STYLE ID,MIN Quantity,MOVE Quantity
+{foreach from=$product_faclity_location_lists item=product_faclity_location_list_id name=product_faclity_location_list_id}
+{foreach from=$product_faclity_location_list_id item=product_faclity_location_list_a name=product_faclity_location_list_a}
+{foreach from=$product_faclity_location_list_a item=product_faclity_location_list name=product_faclity_location_list}
+"{$party_name}","{$facility_name}","{$product_faclity_location_list->locationSeqId}",="{$product_faclity_location_list->barcode}","{$product_faclity_location_list->productName}",{$product_faclity_location_list->productId},{$product_faclity_location_list->goodsId},{$product_faclity_location_list->styleId},{$product_faclity_location_list->minQuantity},{$product_faclity_location_list->moveQuantity}
+{/foreach}
+{/foreach}
+{/foreach}

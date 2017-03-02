@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+{literal}
+<style>
+.bWindow{width:750px !important}
+.bWindow td{padding:5px !important;}
+.brand_name a{margin:0 5px;}
+</style>
+{/literal}
+<title>具体订单</title>
+</head>
+<body>
+<div style="margin-top:30px;">
+<legend><span style=" font-weight:bold; font-size:18px;">&nbsp;总销售额:{$num}个&nbsp;</span></legend>
+	<table class="bWindow" style="text-align:center;margin:0 auto">
+    <tr>
+    	<th style="width:200px;">内部订单号</th>
+    	<th style="width:200px;">淘宝订单号</th>
+    	<th style="width:200px;">商品数量</th>
+    </tr>
+    <tr>
+    <!--{foreach from=$order_list item=order}-->
+    <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+    <td>{$order.taobao_order_sn}</td>
+    <td>{$order.goods_number}个</td>
+    </tr>
+    <!-- {/foreach} -->
+</table>
+</div>
+
+</body>
+</html>

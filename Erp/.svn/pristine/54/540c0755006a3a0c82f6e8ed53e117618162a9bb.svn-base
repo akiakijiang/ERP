@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－财务组运营状况</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索">
+</form>
+
+<!--{foreach from=$info item=one_info}-->
+<table class="bWindow">
+<caption><h2>{$one_info.name}</h2></caption>
+<tr>
+<th>日期</th>
+<th>财务确认到款的订单数</th>
+<th>确认时间</th>
+<th>操作</th>
+</tr>
+<tr align="center">
+<th>汇总</th>
+<th>{$sum[$one_info.type].pay_order_count}</th>
+<th>
+	{if $sum[$one_info.type].pay_order_count == 0}N/A 
+	{else}{$sum[$one_info.type].sum_second}/{$sum[$one_info.type].pay_order_count}秒={$sum[$one_info.type].sum_hour}/{$sum[$one_info.type].pay_order_count}小时={$sum[$one_info.type].avg_hour}小时
+	{/if}
+</th>
+<th></th>
+</tr>
+<!--{foreach from=$dates item=date}-->
+<tr align="center">
+<td style="width:80px">{$date}</td>
+<td>{$values[$one_info.type][$date].pay_order_count}</td>
+<td>
+	{if $values[$one_info.type][$date].pay_order_count == 0}N/A 
+	{else}{$sum[$one_info.type][$date].sum_second}/{$values[$one_info.type][$date].pay_order_count}秒={$sum[$one_info.type][$date].sum_hour}/{$values[$one_info.type][$date].pay_order_count}小时={$sum[$one_info.type][$date].avg_hour}小时
+	{/if}
+</td>
+<td><a href='analyze_finance_op_detail.php?date={$date}&type={$one_info.type}'>查看详细</td>
+</tr>
+<!--{/foreach}-->
+</table>
+<!--{/foreach}-->
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

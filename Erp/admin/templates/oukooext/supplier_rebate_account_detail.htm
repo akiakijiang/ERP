@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>供应商返利帐户 {$supplierName} 详细记录</title>
+
+<script type="text/javascript">
+{literal}
+var process_request = '..';
+{/literal}
+</script>
+</head>
+
+<body>
+<form>
+  供应商<select name="supplierId" id="supplierId">
+  <option value="">全部</option>
+  {foreach from=$providers item=provider}
+  <option value="{$provider.provider_id}" {if $provider.provider_id == $smarty.request.supplierId}selected="true"{/if}>{$provider.provider_name}</option>
+  {/foreach}
+  </select>
+  <p>
+开始时间 <input type="text" name="createdStampMin" id="createdStampMin" value="{$smarty.request.createdStampMin}" />  
+
+  <input type="button" name="createdStampMin_btn" id="createdStampMin_btn" value="..." />
+  </p>
+  <p>
+  结束时间 <input type="text" name="createdStampMax" id="createdStampMax" value="{$smarty.request.createdStampMax}" />
+  <input type="button" name="createdStampMax_btn" id="createdStampMax_btn" value="..." />
+  <input name="type" type="hidden" value="{$smarty.request.type}" /><br />
+  <input type="submit" name="s" value="查询" />
+</form>
+</p>
+<h3>供应商返利帐户 {if $type == 'cash'}{$supplierName} 现金返利{else}{$supplierName} 抵扣货款返利{/if}详细记录</h3>
+
+<br />
+<table class="bWindow">
+{if $type == 'account'}
+<tr><th colspan="6" style="text-align:left;">
+期初返利可用金额：￥ {$initialAmount|string_format:"%.2f"} <br />
+期末返利可用金额：￥ {$endAmount|string_format:"%.2f"} <br />
+返利金额净值：￥ {$netAmount|string_format:"%.2f"} <br />
+</th></tr>
+<tr><td>ID</td><td>时间</td><td>返利可用金额变化</td><td>返利金额变化</td><td>返利项ID</td><td>付款凭证号</td></tr>
+{foreach from=$SupplierRebateAccountDetails item=SupplierRebateAccountDetail name=SupplierRebateAccountDetails}
+<tr {if $smarty.foreach.SupplierRebateAccountDetails.iteration % 2 eq 0}bgcolor="#EFEFEF"{/if}>
+<td>{$SupplierRebateAccountDetail->supplierRebateAccountDetailId}</td>
+<td>{$SupplierRebateAccountDetail->createdStamp|date_format:"%Y-%m-%d %T"}</td>
+<td style="color:{if $SupplierRebateAccountDetail->valueAtpDiff < 0}red;{else}green;{/if}">￥{$SupplierRebateAccountDetail->valueAtpDiff|string_format:"%.2f"}</td>
+<td style="color:{if $SupplierRebateAccountDetail->valueQohDiff < 0}red;{else}green;{/if}">￥{$SupplierRebateAccountDetail->valueQohDiff|string_format:"%.2f"}</td>
+<td>
+{if $SupplierRebateAccountDetail->supplierRebateId}
+{$SupplierRebateAccountDetail->supplierRebateId}
+<a href="supplier_rebate_detail.php?supplierRebateId={$SupplierRebateAccountDetail->supplierRebateId}">查看</a> 
+{/if}
+</td>
+<td>{$SupplierRebateAccountDetail->purchasePaymentBillId}</td>
+</tr>
+{/foreach}
+
+{else}
+<tr><th colspan="4" style="text-align:left;">
+期初返利可用金额：￥ {$initialAmount|string_format:"%.2f"} <br />
+期末返利可用金额：￥ {$endAmount|string_format:"%.2f"} <br />
+返利金额净值：￥ {$netAmount|string_format:"%.2f"} <br />
+</th></tr>
+<tr><td>ID</td><td>收款时间</td><td>返利收取现金</td><td>返利项ID</td></tr>
+{foreach from=$SupplierRebateCashReceipts item=SupplierRebateCashReceipt name=SupplierRebateCashReceipts}
+<tr {if $smarty.foreach.SupplierRebateCashReceipts.iteration % 2 eq 0}bgcolor="#EFEFEF"{/if}>
+<td>{$SupplierRebateCashReceipt->supplierRebateCashRecepitId}</td>
+<td>{$SupplierRebateCashReceipt->createdStamp}</td>
+<td style="color:{if $SupplierRebateCashReceipt->valueDiff < 0}red;{else}green;{/if}">￥{$SupplierRebateCashReceipt->valueDiff|string_format:"%.2f"}</td>
+<td>
+{if $SupplierRebateCashReceipt->supplierRebateId}
+{$SupplierRebateCashReceipt->supplierRebateId}
+<a href="supplier_rebate_detail.php?supplierRebateId={$SupplierRebateCashReceipt->supplierRebateId}">查看</a> 
+{/if}
+</td>
+</tr>
+{/foreach}
+
+{/if}
+</table>
+{$pager}
+<script type="text/javascript">
+{literal}
+Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "createdStampMin",
+        button            : "createdStampMin_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "createdStampMax",
+        button            : "createdStampMax_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+{/literal}
+</script>
+</body>
+</html>

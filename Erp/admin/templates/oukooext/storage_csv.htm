@@ -1,0 +1,4 @@
+品牌,商品名,{if "5cg_sensitivity_csv"|check_admin_priv}供价,{/if}是否全新,订单号 , {if $smarty.session.party_id|is_jjshouse}工单号,{/if}下单时间,条码,库位,有效期,类型,分类,串号,入库单号,入库时间,经手人
+{foreach from=$goods_list item=goods name=goods}
+"{$goods.brand_name}","{$goods.goods_name}",{if "5cg_sensitivity_csv"|check_admin_priv}{if view_provide_price($goods.category)}{$goods.purchase_paid_amount}{else}N/A{/if},{/if}{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if},{$goods.order_sn}, {if $smarty.session.party_id|is_jjshouse}{$goods.dispatch_sn},{/if}{$goods.order_time},="{$goods.barcode}","{$goods.location_seq_id}",{if $goods.validity !=''}{$goods.validity}{else}未维护有效期{/if},{$goods.order_type},{$goods.in_type},{$goods.erp_goods_sn},{$goods.in_sn},{$goods.in_time},"{$goods.action_user}"
+{/foreach}

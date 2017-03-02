@@ -1,0 +1,701 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="../js/js/jquery.js"></script>
+<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+<title>调整单</title> {literal}
+<style type="text/css">
+body {
+	font-size: 12px;
+	font-family: "宋体"
+}
+
+ul,ul li {
+	list-style: none;
+	font-size: 12px;
+	margin: 0;
+	padding: 0;
+	background: #fff;
+}
+
+.who_get_goods {
+	position: relative;
+	margin: 20px 0;
+}
+
+.who_get_goods ul {
+	position: absolute;
+	top: 20px;
+	left: 54px;
+	border: 1px solid #7f9db9;
+	width: 100px;
+}
+
+.who_get_goods li {
+	padding: 3px;
+}
+
+.goods_list {
+	border-collapse: collapse;
+	border: 1px solid #999;
+}
+
+.goods_list td,.goods_list th {
+	border: 1px solid #999;
+	padding: 5px;
+}
+
+.goods_list input[type="text"] {
+	height: 16px;
+	padding-top: 3px;
+}
+
+.goods_list ul {
+	position: absolute;
+	top: 23px;
+	border: 1px solid #7f9db9;
+	width: 202px;
+	padding: 5px 0;
+}
+
+.goods_list li {
+	padding: 5px;
+}
+</style>
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="../js/Calendar3.js"></script>
+{/literal}
+</head>
+<body>
+
+
+	<p>目前所处组织：{$user_current_party_name}</p>
+	
+
+
+	<fieldset
+		style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;"
+		id="dingdanchaxun">
+		<legend>
+			<span style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;订单查询&nbsp;</span>
+		</legend>
+<!-- 		<form action="physical_inventory_out_inventory_search.php" id="form2"
+				method="POST">
+				<input type="hidden" name="act" value="downcsv"/>
+			<div style="color:blue;">
+                <span>下载区间（订单申请日期）：</span> <span>从
+                    <input name="start_date" type="text" id="start_date" size="10"
+                        maxlength="10" onclick="new Calendar().show(this);" readonly="readonly" />
+                    
+                <span>至
+                    <input name="end_date" type="text" id="end_date" size="10"
+                        maxlength="10" onclick="new Calendar().show(this);" readonly="readonly" />
+                        &nbsp;&nbsp;
+                        按时间正序:<input type="checkbox" name="ordinary"/>&nbsp;&nbsp; 查询所有party<input type="checkbox" name="allparty"/><input type="submit" value="导出excel复查" onclick="return searchorder('start_date','end_date')" />
+        			 <p/>
+        	</div>
+		</form> -->
+
+		<form action="physical_inventory_out_inventory_search.php"
+			id="searchorderform" method="POST">
+			<input type="hidden" name="act" value="searchorder" />
+			<div style="color: green;">
+				<span>展示范围（订单申请日期）：</span> <span>从 <input name="start_display"
+					type="text" id="start_display" size="10" maxlength="10"
+					onclick="new Calendar().show(this);" readonly="readonly" /> <span>至
+						<input name="end_display" type="text" id="end_display" size="10"
+						maxlength="10" onclick="new Calendar().show(this);"
+						readonly="readonly" /> &nbsp;&nbsp; 
+						按时间正序:<input type="checkbox" name="ordinary"/>&nbsp;&nbsp; 查询所有party<input type="checkbox" name="allparty"/>
+						<input type="submit"
+						value="我经手的订单"
+						onclick="return searchorder('start_display','end_display')" />
+						<p />
+			</div>
+
+
+		</form>
+		
+		<form action="physical_inventory_out_inventory_search.php" id="form3"
+				method="POST">
+				<input type="hidden" name="act" value="downcsv"/>
+				<input type="hidden" name="start_date" id="start_date_csv" value="{$start_date}">
+				<input type="hidden" name="end_date" id="end_date_csv" value="{$end_date}">
+				<input type="hidden" name="ordinary" id="ordinary_csv" value="{$ordinary}">
+				<input type="hidden" name="allparty" id="allparty_csv" value="{$allparty}">
+				<input type="submit"  id="end_date_csv" value="下载csv文件" onclick="return checkdowncsv()">
+		</form>
+		<br/>
+		<table cellpadding=0 cellspacing=0 class="goods_list" id="order_list"
+			style="border: solid 2px">
+			<tr style="border: solid 2px">
+				<th width="70">申请时间</th>
+				<th width="160">商品名</th>
+				<th width="40">类型</th>
+				<th width="80">库存状态</th>
+				<th width="70">仓库名称</th>
+				<th width="40">调整数量</th>
+				<th width="40">调整金额</th>
+				<th width="80">序列号</th>
+				<th width="150">申请原因</th>
+				<th width="60">是否删除</th>
+			</tr>
+			{if $search_order} 
+			{foreach from=$search_order key=key1 item=item1}
+				{foreach from=$item1.goods key=key2 item=item2}
+			<tr>
+				<td>{$item1.create_stmp}</td>
+				<td>{$item2.goods_name}</td>
+				{if $item2.v_category == "ADD"}
+				<td>-v盘赢</td>
+				{else}
+				<td>-v盘亏</td>
+				{/if}
+				<td>{$item2.goods_status}</td>
+				<td>{$item1.facility_name}</td>
+				<td>{$item2.goods_number}</td>
+				<td>{$item2.goods_amount}</td>
+				{if $item2.goods_type_id == "NON-SERIALIZED"}
+				<td>非序列号商品</td>
+				{else}
+				<td>{$item2.serial_number}</td>
+				{/if}
+				<td>{$item2.reason}</td>
+				<td>{if $item2.is_delete == 0}否{else}<font style="color: red">是</font>{/if}
+				</td>
+
+			</tr>
+			{/foreach}
+			<tr>
+				<td colspan=10 align="center">
+					{if $admin_id == $item1.admin_id && $item1.vorder_status == "APPLY"}
+					<input type="button" value="删除订单" onclick="cancelorder('{$item1.vorder_request_id}','{$priv}')" id="cancelorder{$item1.vorder_request_id}"/>
+					{/if}
+					<p style="color: blue">订单号：{$item1.vorder_request_id}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 流程状态 ：
+						{if $item1.vorder_status == "APPLY"}<font style="color: blue">申请中</font>{elseif $item1.vorder_status == "COMPLETE"}<font
+							style="color: green">已完成</font>
+							{elseif $item1.vorder_status == "CANCEL"}<font style="color: blue">已取消</font>
+							{elseif $item1.vorder_status == "PARTCOMPLETE"}<font style="color: blue">已完成，部分商品被删除</font>
+							{elseif $item1.vorder_status == "REFUSE"}<font style="color: red">被否决</font>
+							{else}<font style="color: red">{$item1.vorder_status}</font>
+							{/if}
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 出库记录 ：{if $item1.out_flag == 0}<font style="color: blue">出库中</font>
+					{else}<font style="color: blue">已出库</font>{/if}
+					</p> <font style="color: green">运营发起申请</font>-> 
+					
+					{if $item1.check_status	<= 1 }
+						<font style="color: red">运营主管未审核</font>->
+					{else}
+						<font style="color: green">运营主管已审核</font>->
+					{/if}
+					{if $item1.check_status <= 2 }
+						<font style="color: red">财务未审核</font>->
+					{else}
+						<font style="color: green">财务审核</font>->
+					{/if}
+					{if $item1.check_status	<= 3 }
+						<font style="color: red">BD未审核</font>->
+					{else}
+						<font style="color: green">BD已审核</font>->
+					{/if}
+					{if $item1.check_status	<= 4 }
+						<font style="color: red">执行CEO未审核</font>->
+					{else}
+						<font style="color: green">执行CEO已审核</font>->
+					{/if}
+					{if $item1.check_status	<= 5 }
+						<font style="color: red">CEO未审核</font>
+					{else}
+						<font style="color: red">CEO已审核</font>
+					{/if}
+					
+				</td>
+			</tr>
+			<tr style="border-bottom: solid 2px">
+				<td colspan=10>
+					<p>申请备注:</p>
+					<p>Comments: {$item1.comments}
+					<p>
+					<p>Notes: <br/>{$item1.notes}
+					<p>
+				</td>
+			</tr>
+			{/foreach} 
+			{/if}
+		</table>
+<br />
+	<br />
+	<br />
+	</fieldset>
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<hr />
+	<hr />
+	<hr />
+	<p style="text-align:center">
+		<a href="#liuchengzhong" style=""><font size="5" face="Verdana">已审批，正在审批流程中订单</font></a>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+		&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+		<a	href="#beijujue"><font size="5" face="Verdana">最近已审批完结，但有问题的订单</font></a>&nbsp;&nbsp;&nbsp;
+	</p>
+
+	<fieldset
+		style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;"
+		id="liuchengzhong">
+		<legend>
+			<span style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;已审批，正在流程中订单列表&nbsp;</span>
+		</legend>
+		<!--{if $already_check_order }-->
+
+		<table cellpadding=0 cellspacing=0 class="goods_list"
+			style="border: solid 2px">
+			<tr style="border: solid 2px">
+				<th width="50">申请时间</th>
+				<th width="160">商品名</th>
+				<th width="40">类型</th>
+				<th width="80">库存状态</th>
+				<th width="70">仓库名称</th>
+				<th width="40">调整数量</th>
+				<th width="40">调整金额</th>
+				<th width="150">申请原因</th>
+				<th width="50">商品状态</th>
+				<th width="50">取消审核</th>
+			</tr>
+			{foreach from=$already_check_order key=key1 item=item1} {foreach
+			from=$item1.goods key=key2 item=item2}
+			<tr>
+				<td>{$item1.create_stmp}</td>
+				<td>{$item2.goods_name}</td>
+				<td>{$item2.v_categoty}</td>
+				<td>{$item2.goods_status}</td>
+				<td>{$item1.facility_id}</td>
+				<td>{$item2.goods_number}</td>
+				<td>{$item2.goods_amount}</td>
+				<td>{$item2.reason}</td>
+				<td>{if $item2.is_delete == 0}否{else}<font style="color: red">是</font>{/if}</td>
+				<td><input type="hidden" value="{$item1.vorder_request_id}">
+					<input type="hidden" value="{$item2.product_id}"> <input
+					type="button" value="取消" onclick="cancelcheck('{$item1.vorder_request_id}','{$priv}')"></td>
+			</tr>
+			{/foreach}
+
+
+			<tr id="workflow">
+				<td><font style="color: green">订单号：{$item1.vorder_request_id}</font></td>
+				<td colspan=9>
+					<p style="color: blue">流程状态 ：</p> <font style="color: green">运营发起申请</font>->
+					{if $item1.check_status	<= 1 }
+						<font style="color: red">运营主管未审核</font>->
+					{else}
+						<font style="color: green">运营主管已审核</font>->
+					{/if}
+					{if $item1.check_status <= 2 }
+						<font style="color: red">财务未审核</font>->
+					{else}
+						<font style="color: green">财务审核</font>->
+					{/if}
+					{if $item1.check_status	<= 3 }
+						<font style="color: red">BD未审核</font>->
+					{else}
+						<font style="color: green">BD已审核</font>->
+					{/if}
+					{if $item1.check_status	<= 4 }
+						<font style="color: red">执行CEO未审核</font>->
+					{else}
+						<font style="color: green">执行CEO已审核</font>->
+					{/if}
+					{if $item1.check_status	<= 5 }
+						<font style="color: red">CEO未审核</font>
+					{else}
+						<font style="color: red">CEO已审核</font>
+					{/if}
+
+				</td>
+			</tr>
+			<tr style="border-bottom: solid 2px">
+				<td colspan=10>
+					<p>申请备注:</p>
+					<p>Comments: {$item1.comments}
+					<p>
+					<p>Notes: <br/>{$item1.notes}
+					<p>
+				</td>
+			</tr>
+			{/foreach}
+		</table>
+		<!--{/if}-->
+	</fieldset>
+	<br>
+	<br>
+	<hr style="color: red" />
+	<hr style="color: red" />
+	<fieldset
+		style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;"
+		id="beijujue">
+		<legend>
+			<span style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;审批流程走完，但是审核有问题的近期订单列表&nbsp;</span>
+		</legend>
+		<!--{if $refuse_order }-->
+
+		<table cellpadding=0 cellspacing=0 class="goods_list"
+			style="border: solid 2px">
+			<tr>
+				<th width="50">申请时间</th>
+				<th width="160">商品名</th>
+				<th width="40">类型</th>
+				<th width="80">库存状态</th>
+				<th width="70">仓库名称</th>
+				<th width="40">调整数量</th>
+				<th width="40">调整金额</th>
+				<th width="150">申请原因</th>
+				<th width="50">商品状态</th>
+			</tr>
+			{foreach from=$refuse_order key=key1 item=item1} {foreach
+			from=$item1.goods key=key2 item=item2}
+			<tr>
+				<td>{$item1.create_stmp}</td>
+				<td>{$item2.goods_name}</td>
+				<td>{$item2.v_categoty}</td>
+				<td>{$item2.goods_status}</td>
+				<td>{$item1.facility_id}</td>
+				<td>{$item2.goods_number}</td>
+				<td>{$item2.goods_amount}</td>
+				<td>{$item2.reason}</td>
+				<td>{if $item2.is_delete == 0}否{else}<font style="color: red">是</font>{/if}</td>
+
+			</tr>
+			{/foreach}
+
+
+			<tr id="workflow">
+			<td><font style="color: green">订单号：{$item1.vorder_request_id}</font></td>
+				<td colspan=8>
+					<p style="color: blue">流程状态 ：</p> <font style="color: green">运营发起申请</font>->
+					{if $item1.check_status	<= 1 }
+						<font style="color: red">运营主管未审核</font>->
+					{else}
+						<font style="color: green">运营主管已审核</font>->
+					{/if}
+					{if $item1.check_status <= 2 }
+						<font style="color: red">财务未审核</font>->
+					{else}
+						<font style="color: green">财务审核</font>->
+					{/if}
+					{if $item1.check_status	<= 3 }
+						<font style="color: red">BD未审核</font>->
+					{else}
+						<font style="color: green">BD已审核</font>->
+					{/if}
+					{if $item1.check_status	<= 4 }
+						<font style="color: red">执行CEO未审核</font>->
+					{else}
+						<font style="color: green">执行CEO已审核</font>->
+					{/if}
+					{if $item1.check_status	<= 5 }
+						<font style="color: red">CEO未审核</font>
+					{else}
+						<font style="color: red">CEO已审核</font>
+					{/if}
+					<p style="color: red">订单状态：&nbsp;&nbsp; {$item1.vorder_status}</p>
+
+				</td>
+			</tr>
+			<tr style="border-bottom: solid 2px">
+				<td colspan=9>
+					<p>申请备注:</p>
+					<p>Comments: {$item1.comments}
+					<p>
+					<p>Notes: <br/>{$item1.notes}
+					<p>
+
+				</td>
+			</tr>
+			{/foreach}
+		</table>
+		<!--{/if}-->
+
+	</fieldset>
+
+
+
+
+
+
+
+
+
+
+	<script type="text/javascript">
+{literal}
+
+function E(tagid){
+	return document.getElementById(tagid);
+}
+
+function chooseall(id){
+	var tap = document.getElementById(id).checked;
+	var elements = document.getElementsByClassName("batch_checkbox");
+	if(tap == true){
+		for(var i=0; i < elements.length; i++){
+			var element = elements[i];
+			element.checked = true;
+		}
+	}else{
+		for(var i=0; i < elements.length; i++){
+			var element = elements[i];
+			element.checked = false;
+		}
+	}
+}
+
+
+
+function deletegoods(key,role,id){
+	var deletebtn = "#goods_"+id+"_delete";
+	var deletelab = "#goods_"+id+"_label";
+
+	if($(deletebtn).attr("value") == "删除"){
+		$.ajax({
+			type:'post',
+			dataType:'json',
+			url:'physical_inventory_out_inventory_v2.php',
+			data:{act:"deletegoods",recid:id,role:role,key:key},
+			success: function(data){
+				if(data.msg == "ok"){
+					var deletebtn = "#goods_"+data.id+"_delete";
+					var deletelab = "#goods_"+data.id+"_label";
+					if ($(deletelab)[0].style.display == "none"){
+						$(deletelab)[0].style.display = "block";
+					}
+					if ($(deletebtn).attr("value") == "删除"){
+						$(deletebtn).attr("value","取消删除");
+					}
+				}
+				else{
+					alert(data.msg);
+				}
+			},
+			error: function(data){
+				alert("删除错误，请联系ERP组");
+			}
+		}); 
+	}else if($(deletebtn).attr("value") == "取消删除"){
+		$.ajax({
+			type:'post',
+			dataType:'json',
+			url:'physical_inventory_out_inventory_v2.php',
+			data:{act:"undodelete",recid:id,role:role,key:key},
+			success: function(data){
+				if(data.msg == "ok"){
+					var deletebtn = "#goods_"+data.id+"_delete";
+					var deletelab = "#goods_"+data.id+"_label";
+					if ($(deletelab)[0].style.display == "block"){
+						$(deletelab)[0].style.display = "none";
+					}
+					if ($(deletebtn).attr("value") == "取消删除"){
+						$(deletebtn).attr("value","删除") ;
+					}
+				}
+				else{
+					alert(data.msg);
+				}
+			},
+			error: function(data){
+				alert("删除错误，请联系ERP组");
+			}
+		}); 
+	}
+}
+
+
+
+function showNoteTag(id){
+	if ($(id)[0].style.display == "none"){
+		$(id)[0].style.display = "block";
+	}else{
+		$(id)[0].style.display = "none";
+	}
+}
+
+
+function batch_check_order(role,noteid){
+	var note = document.getElementById(noteid).value.toString();
+	
+	var eles = document.getElementsByClassName("batch_checkbox");
+	var checked = new Array();
+	var keys = "";
+	for(var i = 0; i < eles.length-1; ++i){
+		if(eles[i].checked == true){
+			checked.push(eles[i].id)
+			keys += eles[i].id + ",";
+		}
+	}
+	if(eles.length>0){
+		keys += eles[eles.length-1].id;
+	}
+	
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'physical_inventory_out_inventory_v2.php',
+		data:{act:"batchcheck",keys:keys,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.error);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	});
+	return true;
+
+}
+function batch_refuse_order(role,keys,noteid){
+	var note = document.getElementById(noteid).value.toString();
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'physical_inventory_out_inventory_v2.php',
+		data:{act:"batchrefuse",keys:keys,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.msg);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	});
+	return true;
+}
+
+function refuse_order(role,key,noteid){
+	var note = document.getElementById(noteid).value.toString();
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'physical_inventory_out_inventory_v2.php',
+		data:{act:"singalrefuse",key:key,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.msg);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	}); 
+}
+
+function check_order(role, key, noteid){
+	/*
+	* 这里对该订单进行确认操作。
+	*/
+	var note = document.getElementById(noteid).value.toString();
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'physical_inventory_out_inventory_v2.php',
+		data:{act:"singalcheck",key:key,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.msg);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	}); 
+}
+function searchorder(start_date,end_date){
+	var start_str = E(start_date).value.toString();
+	var end_str = E(end_date).value.toString();
+	if (start_str == "" || end_str == ""){
+		alert("请填写时间");
+		return false;
+	}
+	return true;	
+}
+
+function cancelorder(key,role){
+	$.ajax({
+			type:'post',
+			dataType:'json',
+			url:'physical_inventory_out_inventory_search.php',
+			data:{act:"cancelorder",key:key,role:role},
+			success: function (data){
+				if (data.flag == 0){
+					alert("取消成功");
+					var id = "#cancelorder"+key;
+					$(id).val("已经取消");
+				}else{
+					alert("取消失败"+data.msg);
+				}
+			},
+			error: function (data){
+				alert("方法调用错误");
+			}
+			});
+}
+
+function cancelcheck(vorder_id,role){
+	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'physical_inventory_out_inventory_search.php',
+		data:{act:"cancelcheck",key:vorder_id,role:role},
+		success: function (data){
+			if (data.flag == 0){
+				var formtag = document.getElementById("cancelcheck");
+				formtag.submit();
+			}else{
+				alert("取消失败"+data.msg);
+			}
+		},
+		error: function (data){
+			alert("方法调用错误");
+		}
+		});
+}
+function checkdowncsv(){
+	var start = E("start_date_csv").value.toString();
+	var end = E("end_date_csv").value.toString();
+	if(start == "" || end == ""){
+		alert("请查询后导出");
+		return false;
+	}else{
+		return true;
+	}
+	
+}
+
+
+{/literal}
+</script>
+	<form id="cancelcheck" action="physical_inventory_out_inventory_search.php"
+		method="post" style="display: none"></form>
+</body>
+</html>

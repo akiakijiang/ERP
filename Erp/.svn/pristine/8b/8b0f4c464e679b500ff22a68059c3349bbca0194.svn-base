@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>发票管理</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+														 
+		// 提交禁用按钮
+		$(':button, :submit').attr('disabled', false);
+		$('form').bind('submit', function(){
+				$(':button, :submit').attr('disabled', true);
+		});
+			
+	});
+	function print_sales_invoice(sales_invoice_id, action) {
+	    var url = 
+	    'sales_invoice_print.php?sales_invoice_id=' + sales_invoice_id + '&act='+ action +'&print=1&begin_no=' + $('#begin_no').get(0).value;
+	    url = url + "&print_date=" + $('#print_date').get(0).value;
+	    window.open(url);	    
+	}
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;编辑销售发票&nbsp;</span></legend>
+
+
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">发票头</h3>
+  	<form method="post" id="form1" action="sales_invoice_edit.php?{foreach from=$referer key=k item=v name=f1}{if $v}{$k}={$v}{if !$smarty.foreach.f1.last}&{/if}{/if}{/foreach}" >
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">发票号 ： </td>
+        <td><input type="text" name="invoice_no" value="{$sales_invoice.invoice_no}" {if $sales_invoice.status != 'INIT'}readonly="readonly"{/if} /></td>
+		</tr>
+      
+    	<tr>
+      	<td>开票日期 ： </td>
+        <td><input type="text" id="invoiceDate" name="invoice_date" value="{$sales_invoice.invoice_date}" size="10" />
+        <input type="button" id="invoiceDateTrigger" value="日历" style="border:#960 1px solid;" /></td>
+		</tr>
+
+      <!--
+    	<tr>
+      	<td>配送方式 : </td>
+        <td><input type="text" name="shipping_name" value="{$sales_invoice.shipping_name}" size="30" /></td>
+		</tr>
+      
+    	<tr>
+      	<td>支付方式 ： </td>
+        <td><input type="text" name="pay_name" value="{$sales_invoice.pay_name}" size="30" /></td>
+		</tr>
+      -->
+      
+    	<tr>
+      	<td>发票状态 ： </td>
+        <td>
+        	<strong>{$invoice_status_list[$sales_invoice.status]}</strong> &nbsp;&nbsp;&nbsp;&nbsp;
+        	{if $sales_invoice.status == 'INIT'}（该发票还未确认，你要现在确认<input type="checkbox" name="status" value="CONFIRMED" />吗？ ）{/if}
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>税率 ： </td>
+        <td>{$sales_invoice.tax_rate}</td>
+		</tr>
+      
+    	<tr>
+      	<td>发票金额： </td>
+        <td>
+        	<strong>&yen; {$sales_invoice.total_amount|erp_price_format} [总金额]</strong>  
+          &nbsp;&nbsp; = &nbsp;&nbsp;
+          <strong>&yen; {$sales_invoice.total_net_amount|erp_price_format} [不含税]</strong>
+          &nbsp;&nbsp; + &nbsp;&nbsp;
+          <strong>&yen; {$sales_invoice.total_tax|erp_price_format} [税额]</strong>
+		</td>
+		</tr>
+            
+    	<tr>
+      	<td>创建人 ： </td>
+        <td>{$sales_invoice.created_user}</td>
+		</tr>
+      
+    	<tr>
+      	<td>创建日期 ： </td>
+        <td>{$sales_invoice.created_stamp}</td>
+		</tr>
+      
+    	<tr>
+      	<td>开票区间 ： </td>
+        <td><strong>{$sales_invoice.transaction_begin_date|date_format:"%Y-%m-%d"} 到 {$sales_invoice.transaction_end_date|date_format:"%Y-%m-%d"}</strong></td>
+		</tr>
+        
+    	<tr>
+      	<td>备注 ： </td>
+        <td><textarea name="remark" rows="3" cols="80" >{$sales_invoice.remark}</textarea></td>
+		</tr>
+      
+      
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="sales_invoice_id" value="{$sales_invoice.sales_invoice_id}" />
+        	<input type="submit" value="保存" />
+		</td>
+		</tr>
+		</table>
+    </form>
+  </div>
+  
+  
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">发票明细 &nbsp;&nbsp; (
+      	<a href="sales_invoice_edit.php?sales_invoice_id={$sales_invoice.sales_invoice_id}&view=collect">汇总</a> &nbsp;
+        <a href="sales_invoice_edit.php?sales_invoice_id={$sales_invoice.sales_invoice_id}&view=disperse">明细</a> ) &nbsp;&nbsp;
+        <input type="button" value="导出" style="border:#999 1px outset;" onclick="location.href='sales_invoice_edit.php?sales_invoice_id={$sales_invoice.sales_invoice_id}&view={$view}&act=export'" />        
+			</h3>
+	  {* 打印发票 *}
+      <div>
+      起始单号：<input type="text" name="begin_no" value="{$begin_no}" id="begin_no" size="8" /> 
+      打印时间：<input type="text" name="print_date" value="" id="print_date" size="16" /> 
+       <input type="button" id="print_date_trigger" value="日历" style="border:#960 1px solid;" />
+      <input onclick="print_sales_invoice({$sales_invoice.sales_invoice_id}, 'print');" type="button" value="打印" />
+      <input onclick="print_sales_invoice({$sales_invoice.sales_invoice_id}, 'export');" type="button" value="导出" />
+      </div>
+      
+    
+	<!--{if $view == 'collect'}--> {* 汇总 *}
+  
+  
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th>发票项</th>
+          <th>数量</th>
+          <!--{if $smarty.session.party_id == 65558}-->
+          <th>含税预存款平均单价</th>
+          <!--{/if}-->
+          <th>去税平均单价</th>
+          <th>含税平均单价</th>
+        </tr>
+        
+        <!--{foreach from=$sales_invoice_item item=item name="salesInvoiceItem"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.salesInvoiceItem.iteration}</td>
+          <td>{$item.item_name}</td>
+          <td>{$item.quantity}</td>
+          <!--{if $smarty.session.party_id == 65558}-->
+          <td>{$item.prepayment_amount|erp_price_format}</td>
+          <!--{/if}-->
+          <td>&yen; {$item.unit_net_price|erp_price_format}</td>
+          <td>&yen; {$item.unit_price|erp_price_format}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+        
+        <tr><td colspan="5" align="center">没有数据</td></tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+      
+      
+	<!--{else}--> {* 明细 *}
+  
+  
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th>发票项</th>
+          <th>所属订单</th>
+          <th>串号</th>
+          <th>数量</th>
+          <th>去税单价</th>
+          <th>含税单价</th>
+        </tr>
+        
+        <!--{foreach from=$sales_invoice_item item=item name="salesInvoiceItem"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.salesInvoiceItem.iteration}</td>
+          <td>{$item.item_name}</td>
+          <td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a></td>
+          <td>{$item.serial_number}</td>
+          <td>{$item.quantity}</td>
+          <td>&yen; {$item.unit_net_price|erp_price_format}</td>
+          <td>&yen; {$item.unit_price|erp_price_format}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+        
+        <tr><td colspan="7" align="center">没有数据</td></tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+      
+	<!--{/if}-->
+  </div>
+  
+  
+  <br /><br />
+	<div style="text-align:center"><input type="button" value="返回发票管理列表" onclick="location.href='sales_invoice_list.php?{foreach from=$referer key=k item=v name=f2}{if $v}{$k}={$v}{if !$smarty.foreach.f2.last}&{/if}{/if}{/foreach}'" /></div>
+  <br />
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "invoiceDate",
+	button            : "invoiceDateTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "print_date",
+	button            : "print_date_trigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

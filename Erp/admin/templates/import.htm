@@ -1,0 +1,39 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!--{if $message}-->
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+	<br />
+	<!--{/if}-->
+<fieldset style="border: #FF7FFF 1px dashed;">
+	<legend style="background-color: #008000; color:#FFFFFF; padding:3px">&nbsp;批量导入&nbsp;</legend>
+	<br/>
+	<div>
+	    <form id="upload" method="post" enctype="multipart/form-data">
+	      &nbsp;&nbsp;
+	      
+	      	<div style="float:left; width: 350px;">
+		       <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+		       <input type="submit" value="导入" onclick="nani()"/>
+		       <input type="hidden" name="act" id="act" value="upload_ratio" />
+		    </div>
+		   
+		   	<div style="float: left; margin-left:100px;">
+		   		<input type="button" value="批量导入模版下载" onclick="download_ratio_template()"/>
+		    </div>
+	    </form>
+	</div>
+	<br/>
+</fieldset> 
+<script type="text/javascript">
+{literal}
+function download_ratio_template(){
+	   $("#act").val('download_ratio_template');
+	   $("#upload").submit();
+}
+
+function nani() {
+	$("#act").val('upload_ratio');
+}
+{/literal}
+</script>

@@ -1,0 +1,1001 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/css_2007.9.8.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}js/region.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}js/common.js"></script>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+var info = "{$smarty.request.info}";
+var process_request = "{$lang.process_request}";
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+if(info != ""){alert(info);}
+{/literal}
+</script>
+<style type="text/css">
+
+{literal}
+input[type='submit'],input[type='button']{cursor:pointer;}
+.page{float:right;padding-right:15px;color:#75318e;margin:5px 0;}
+.page input.text2{width:20px;height:14px;border:1px solid #cfd0d0;margin:0 3px;float:none;}
+.page a{float:left;text-align:center;color:#75318e;margin:0 5px;padding:1px 5px;border:1px solid #e2e2e2;}
+.page a:hover,.page a.currentPage{background:#75318e;color:#fff;text-decoration:none;}
+.page span{float:left;}
+.page input{float:left;}
+{/literal}
+</style>
+<title>{$order.order_sn} 订单的详细信息</title>
+{literal}
+<style type="text/css">
+
+body#font_14 div,body#font_14 input,body#font_14 select{color:#000;}
+.tooltips{
+	position: relative; 
+	z-index: 9999;
+	text-decoration: none;
+	color: blue;
+	cursor: pointer;
+}
+.tooltips:hover{
+	z-index: 9999;
+	background: none; /* 没有这个在 IE 中不可用 */
+}
+.tooltips div{
+	display: none; /* span 不可见 */
+}
+.tooltips:hover div{ /* span 标签仅在 :hover 状态时显示 */
+	display: block;
+	position: absolute; 
+	top: -32px;
+	left: 80px;
+	width: 300px; /* ToolTips 的宽度 */
+	/* 以下是样式 */
+	border: 1px solid #D5C88B;
+	background: #C8D3F2;
+	padding: 4px;
+	color: #333;
+}
+.ddan_item h2{padding:0 10px;font-weight:normal;background-image:url(images/image/bg_1.jpg);border:1px solid #c1dad7;}
+.ddan_item h3{margin:10px 0 5px 0;}
+.ddan_item{text-align:left;padding:0;background:#f1fff0;border:0;width:850px;}
+.ddan_item p{padding-left:10px;padding-right:10px;}
+.ddan_item h2 a{color:blue;margin:0 5px;}
+.ddan_item table{margin:0;width:99.9%;margin-left:1px;}
+.ddan_item table td{width:auto;border:0;border:1px solid #c1dad7;padding:7px 5px;background:#f1fff0;}
+.ddan_item table th{border:1px solid #c1dad7;background:url(images/image/bg_header.jpg) repeat-x;color:#4f6b72;padding:0;}
+input[value='删除']{color:red;}
+input[value='增加套餐商品']{margin-top:5px;}
+.service{border:1px solid #c1dad7;}
+.service p{line-height:160%;border-bottom:1px dashed #c1dad7;}
+table.statusTable{border-collapse:collapse;margin-top:1px;}
+table.statusTable td{border:1px solid #c1dad7;}
+table.statusTable th{border:1px solid #c1dad7;font-weight:normal;color:#333;}
+table.statusTable tr.even{background:#f5fafa;}
+
+.ddan_item table.none{margin:-10px;padding:0;float:right;width:350px;text-align:left;background:#fff;border:1px solid #c1dad7;}
+.ddan_item table.none td{border:0;background:#fff;}
+optgroup{color:#333;font-style:normal;}
+optgroup option{color:#000;}
+b{font-weight:normal;}
+
+#order_status_action,#changeId{position:absolute;top:30px;right:100px;background:#fff;z-index:1;}
+#changeId{border:1px solid #c1dad7;padding:10px;}
+#infoTable td{background:#f1fff0;}
+input[type='text'],select{background:#f1fff0;}
+#searchId{margin-top:10px;}
+</style>
+{/literal}
+</head>
+
+<body id="font_14">
+
+<div class="ddan">
+    <ul class="order_liTab fix" id="order_li" style="margin:0 0 -1px 0;padding:0 0 0 1px;">
+		<li {if !$smarty.request.more}class="on"{/if} id="a0" onclick="show(0)">打开所有栏目</li>
+        <li id="a1" onclick="show(1)">订单详细</li>
+        <li id="a2" onclick="show(2)">统计信息</li>
+		<li id="a3" onclick="show(3)">客服操作</li>
+        <li id="a4" onclick="show(4)" style="overflow:hidden;width:0;">{*商品操作*}</li>
+		{*<li id="a5" onclick="show(5)" {if $smarty.request.more == 'more'}class="on"{/if}>售前咨询<span style="font-size:12px;font-weight:normal;">({$usercommentNum})</span></li>*}               		
+        <li id="a5" onclick="show(5)">订单咨询<span style="font-size:12px;font-weight:normal;">({$commentsNum})</span></li>
+        <li id="a6" onclick="show(6)">售后服务<span style="font-size:12px;font-weight:normal;">({$servicesNum})</span></li> 
+    </ul>
+<div id="s1" style="position:relative;margin-top:30px;">
+
+    <div class="ddan_item">
+
+        <h2><span style="float:right;">订单状态：{$order.order_status_name} {$order.pay_status_name} {$order.shipping_status_name} &nbsp;&nbsp;|
+        	{if $order.order_status == 0}
+        	<a href="#" onclick="{if $user.order_status.4>=2} if(!confirm('该用户曾经拒收过{$user.order_status.4}次，要确认订单吗？'))return false; {/if}orderStatusFn(1,'edit_order_status');return false;">确认订单</a>
+        	{/if}
+        	{if $order.shipping_status == 0 && ($order.order_status == 1 || $order.order_status == 0)}
+        	<a href="#" onclick="orderStatusFn(2,'edit_order_status');return false;">取消订单</a>
+        	{/if}
+        	{if $order.shipping_status == 1}
+        	<a href="#" onclick="orderStatusFn(4,'edit_order_status');document.getElementById('shippingStatus').value=3;return false;">拒收</a>
+        	{/if}			
+        	{if $order.order_status == 2}
+        	<a href="#" onclick="orderStatusFn(0,'edit_order_status');return false;">恢复订单</a>
+        	{/if}            
+			<a href="#" onclick="orderStatusFn({$order.order_status},'edit_order_action');return false;">添加备注</a>
+        	<a href="#" onclick="document.getElementById('changeId').style.display = document.getElementById('changeId').style.display == 'none' ? '':'none';">转移订单</a>
+            </span>
+        	订单号：{$order.order_sn}
+        </h2>
+  
+	<form action="order_edit_action.php" method="POST" style="display:none;margin-top:5px;" id="order_status_action"> 
+        <table class="none" style="height:200px;">
+		<tr valign="top">
+			<td style="width:60px;">
+				添加备注：
+			</td>	
+        	<td>
+				<textarea style="font-size:12px;width:97%;height:45px;height:50px;"  name="actionNote" id="action_note_id"></textarea>
+			</td>
+         </tr>
+		<tr>
+				<td>处理时间：</td>
+				<td><input name="handle_time" id="handle_time_calendar" value="{if $order.handle_time > 0}{$order.handle_time|date_format:"%Y-%m-%d"}{/if}" style="width: 80px"><input type="button" value="..." id="handle_time_trigger"></td>
+			</tr>
+			<tr>
+			<td></td>
+			<td align="center" style="padding:0;">
+				<input type="submit" value="提交" style="margin-right:15px;"/>	
+				<input type="button" onclick="document.getElementById('order_status_action').style.display='none';document.getElementById('shippingStatus').value={$order.shipping_status};document.getElementById('orderStatus').value={$order.order_status}" value="取消" />			
+				<input type="hidden" name="order_id" value="{$order.order_id}" />
+				<input type="hidden" name="order_status" value="{$order.order_status}" id="orderStatus"/>
+				<input type="hidden" name="shipping_status" value="{$order.shipping_status}" id="shippingStatus">
+				<input type="hidden" name="action" value="edit_order_action" id="order_action"/>
+				<input type="hidden" name="back" value="{$back}" />
+			</td>
+		</tr>
+		</table>
+	</form>
+     <div id="changeId" style="display:none;">
+    	<input type="text" id="userId" /><input type="button" value="搜索用户名" onclick="searchUserId('{$order.order_id}');"/>
+        <div id="searchId">
+       	请输入用户名进行搜索
+        </div>
+    </div>      		
+	<table style="text-align:left;">
+		<tr>
+			<td style="width:300px;">用户下单时间：{$order.order_time}</td>
+			<td style="width:33%;">{if $order.confirm_time}客服确认时间：{$order.confirm_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</td>	
+			<td>{if $order.pay_time > 0}{if $order.pay_name == '货到付款'}到帐时间：{$order.pay_time|date_format:"%Y-%m-%d %H:%M:%S"}{else}付款时间：{$order.pay_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}{/if}</td>
+		</tr>
+		{if $order.shipping_time > 0 || $user_confirm_time}		
+		<tr>
+			<td>{if $order.shipping_time > 0}物流发货时间：{$order.shipping_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</td>		
+			<td>{if $user_confirm_time}用户确认收货时间：{$user_confirm_time}{/if}</td>
+			<td></td>
+		</tr>
+		{/if}
+		<tr>
+
+			{foreach from=""|getShippingTypes item=shipping key=shipping_id name=shipping_list}
+				{if $order.shipping_id == $shipping_id}
+					<td>送货方式：<a href="{$order.web_site}" target="_blank">{$shipping.shipping_name}</a></td>
+				{/if}
+			{/foreach}
+					<td>
+                    {foreach from=""|getPayments item=payment key=pay_id}
+						{if $order.pay_id == $pay_id}
+		
+						支付方式：{$payment.pay_name}
+						{/if}
+					{/foreach}
+                	</td>
+                    <td>{if $order.bill_no}运单号：{$order.bill_no} <a href="catch_carrier_info.php?bill_no={$order.bill_no}&carrier_id={$order.carrier_id}">查看邮件状态</a>{/if}</td>
+		 </tr>
+	</table>	
+	
+ </div>
+<div class="ddan_item"  style="border-top:1px solid #C1CAD7;">
+	<table style="text-align:left;">
+		<tr>
+			<td>
+				{$today_time}<br/>今日订单：
+			</td>
+			<td>
+				{foreach from=$today_order_sn item=today}
+					<a href="{$WEB_ROOT}admin/order_edit.php?order_id={$today.order_id}" target="_blank" {if $today.is_same_goods}style="color:red;"{/if}>{$today.order_sn}{if $today.is_same_goods}(有相同商品){/if}</a>
+				{foreachelse}
+					今天还没有下过其他订单
+				{/foreach}	
+			</td>
+		</tr>
+		<tr>
+			<td>
+				之前订单：
+			</td>
+			<td>
+				{foreach from=$other_order_sn item=other}
+					<a href="{$WEB_ROOT}admin/order_edit.php?order_id={$other.order_id}" target="_blank">{$other.order_sn}</a>
+				{foreachelse}
+					之前还没有下过订单
+				{/foreach}	
+			</td>
+		</tr>
+	</table>	
+</div>	 
+<div class="ddan_item">
+    <h2 style="clear:both">客户信息</h2>
+    <form action="order_edit_action.php" method="POST" id="form1">
+    <table cellpadding="0" cellspacing="0" style="margin-top:0;margin-bottom:0;text-align:left;" id="infoTable">
+        <tr>
+            <td style="width:300px;">
+                用户名：{$user.user_name}
+            </td>
+            <td>
+                客户姓名：<input type="text" style="width:60px" name="consignee" value="{$order.consignee}" />
+            </td>
+            <td>
+            	手机：<input type="text" style="width:100px" name="mobile" value="{$order.mobile}" />
+
+            </td>
+        <tr>
+            <td>
+                电子邮件：<input type="text" style="width:200px" name="email" value="{$order.email}" />
+            </td>
+            <td>
+                邮编：<input type="text" style="width:60px" name="zipcode" value="{$order.zipcode}" />
+            </td> 
+            <td>
+                电话：<input type="text" style="width:100px" name="tel" value="{$order.tel}" />
+        	</td>
+    </tr>
+    <tr>      
+        <td colspan="3">客户地址：<select name="province" id="province" onchange="region.changed(this, 2, 'city')" >
+        <option value="0"></option>
+        <!-- {foreach from=$province_list item=province} -->
+        <option value="{$province.region_id}" {if $order.province eq $province.region_id}selected{/if}>{$province.region_name}</option>
+        <!-- {/foreach} -->
+        </select>
+        
+        <select name="city" id="city"  onchange="region.changed(this, 3, 'district')">
+        <option value="0"></option>
+        <!-- {foreach from=$city_list item=city} -->
+        <option value="{$city.region_id}" {if $order.city eq $city.region_id}selected{/if}>{$city.region_name}</option>
+        <!-- {/foreach} -->
+        </select>
+        
+        <select name="district" id="district" class="input" {if $order.district == 0} style="display:none"{/if}>
+        <option value="0"></option>
+        <!-- {foreach from=$district_list item=district} -->
+        <option value="{$district.region_id}" {if $order.district eq $district.region_id}selected{/if}>{$district.region_name}</option>
+        <!-- {/foreach} -->
+        </select>
+        <input type="text" style="width:488px" name="address" value="{$order.address}" />
+        </td>
+    </tr>    
+	{if $order.midway_address}
+    <tr>
+        <td colspan="3">中转地址：{$order.midway_address}</td>
+    </tr>
+	{/if}
+    <tr>
+        <td style="line-height:170%;" colspan="3">
+        发票抬头：<input type="text" style="width:250px" name="inv_payee" value="{$order.inv_payee}" />&nbsp;&nbsp;
+        
+        {if $order.inv_phone}发票电话：<input type="text" style="width:80px" name="inv_phone" value="{$order.inv_phone}" />{/if}&nbsp;&nbsp;
+        
+        {if $order.inv_zipcode}发票邮编：<input  type="text" style="width:80px" name="inv_zipcode" value="{$order.inv_zipcode}" />{/if}&nbsp;&nbsp;
+        
+        {if $order.inv_address}发票地址：<input  type="text" style="width:200px" name="inv_address" value="{$order.inv_address}" />{/if}
+
+		{foreach from=$goods_list item=goodsList name=goodsListName}
+        	{if $smarty.foreach.goodsListName.first}
+                {if $goodsList.shipping_invoice_carrier_id !=0}
+                        <p>
+                    <!--{foreach from=$carriers item=carrier}-->
+                        {if $carrier.carrier_id == $goodsList.shipping_invoice_carrier_id}补寄快递方式：{$carrier.name}{/if}
+                    <!--{/foreach} -->	
+                        补寄运单号：{$goodsList.shipping_invoice_bill_no}
+                         </p>       
+                {/if}
+             {/if}   
+        {/foreach}
+
+        </td>
+    </tr>
+    {if $$order.postscript}
+    <tr>
+        <td colspan="3" style='color:red;'>客户留言：{$order.postscript}</td>
+    </tr>
+    {/if}
+    <tr>
+        <td colspan="3">
+        <input type="button" id="infoEdit" actions='yes' {if !$can_edit_order}disabled="true"{/if}  value="修改客户信息" onclick="changeForm('infoTable',1);this.style.display='none';E('infoUp').style.display = '';return false;" style="float:right;"/>
+        <span style="float:right;display:none;" id="infoUp">
+        <input type="submit" actions='yes' value="提交修改信息" onclick="return confirm('确定修改吗？');" />
+        <input type="button" actions='yes' value="取消修改信息" onclick="changeForm('infoTable',0);E('infoEdit').style.display = '';E('infoUp').style.display = 'none';E('form1').reset();return false;"/>
+		</span>
+        </td>
+    </tr>
+	</table>
+    <input type="hidden" name="order_id" value="{$order.order_id}" />
+    <input type="hidden" name="action" value="edit_order" />
+    <input type="hidden" name="back" value="{$back}" />
+</form>
+
+
+        <form action="order_edit_action.php" method="POST" id="form2" onsubmit="return check_shipping_time_interval()">
+        <p id="payShippingInfo" style="border:1px solid #c1dad7;padding:10px;">
+		<input type="button" {if !$can_edit_order}disabled="true"{/if}  value="修改支付配送" onclick="changeForm('payShippingInfo',1);this.style.display='none';E('paychangeId').style.display = '';return false;" actions='yes'  style="float:right;" id="editshipping"/>
+        <span id="paychangeId" style="display:none;float:right;">
+        	<input type="submit" value="提交修改信息" onclick="return confirm('确定修改支付配送方式吗？');" actions='yes' />
+            <input type="button" value="取消修改" onclick="changeForm('payShippingInfo',0);E('paychangeId').style.display='none';E('editshipping').style.display = '';E('form2').reset();return false;" actions='yes'/>
+        </span>
+        支付方式：{if $order.order_sn|strpos:"h" == false}
+            <select name="pay_id">
+						<optgroup label="在线支付">
+                        {foreach from=""|getPayments item=payment key=pay_id}
+						{if $payment.pay_order >=100 && $payment.pay_order < 200}
+                        <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+						{/if}
+						{/foreach}
+						</optgroup>
+						<optgroup label="货到付款">
+						{foreach from=""|getPayments item=payment key=pay_id}
+						{if $payment.pay_order >=200 && $payment.pay_order < 300}
+                        <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+						{/if}
+						{/foreach}						
+						</optgroup>
+						<optgroup label="转账/汇款">
+						{foreach from=""|getPayments item=payment key=pay_id}
+						{if $payment.pay_order >=300 && $payment.pay_order < 400}
+                        <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+						{/if}
+						{/foreach}						
+						</optgroup>
+
+                        </select>
+                    {/if}
+        配送方式：<select name="shipping_id" onchange="change_shipping(this)">
+					<optgroup label="款到发货">
+                    {foreach from=""|getShippingTypes item=shipping key=shipping_id}
+					{if $shipping.shipping_code == 'common' && $shipping.support_cod == 0}
+                    	<option value="{$shipping_id}" {if $order.shipping_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+					{/if}
+                    {/foreach}
+					</optgroup>
+					<optgroup label="货到付款">
+                    {foreach from=""|getShippingTypes item=shipping key=shipping_id}
+					{if $shipping.shipping_code == 'ems_cod'}
+                    	<option value="{$shipping_id}" {if $order.shipping_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+					{/if}
+                    {/foreach}
+					</optgroup>	
+					<optgroup label="上门自提">
+                    {foreach from=""|getShippingTypes item=shipping key=shipping_id}
+					{if $shipping.shipping_code == 'common' && $shipping.support_cod == 1}
+                    	<option value="{$shipping_id}" {if $order.shipping_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+					{/if}
+                    {/foreach}
+					</optgroup>												
+     			</select>
+			{literal}		
+			<script type="text/javascript">
+          						
+			</script>
+			{/literal}		
+			&nbsp;&nbsp;&nbsp;
+			配送费用：<input  type="text" name="shipping_fee" value="{$order.shipping_fee}" style="width:45px;text-align:right" />     	
+            <input type="hidden" name="order_id" value="{$order.order_id}" />
+			<input type="hidden" name="action" value="edit_shipping" />
+			<input type="hidden" name="back" value="{$back}" />
+			<br />
+            <br />
+			处理订单时间：<input type="text" name="handle_time" id="handle_time_calendar" value="{if $order.handle_time > 0}{$order.handle_time|date_format:"%Y-%m-%d"}{/if}" style="width: 80px;"><input type="button" value="..." id="handle_time_trigger">
+			<span id="shipping_time_interval" {if $order.shipping_id != '49' && $order.shipping_id != '44'}style="display:none"{/if}>
+				
+				配送时间：
+				<select name="start_shipping_time">
+					<option value="0">无限制</option>
+					{section name="start_shipping_time" start=9 loop=21}
+						<option value="{$smarty.section.start_shipping_time.index}" {if $order.start_shipping_time == $smarty.section.start_shipping_time.index}selected{/if}>{$smarty.section.start_shipping_time.index}</option>
+					{/section}
+				</select>
+				至
+				<select name="end_shipping_time">
+					<option value="0">无限制</option>
+					{section name="end_shipping_time" start=9 loop=21}
+						<option value="{$smarty.section.end_shipping_time.index}" {if $order.end_shipping_time == $smarty.section.end_shipping_time.index}selected{/if}>{$smarty.section.end_shipping_time.index}</option>
+					{/section}
+				</select>
+			</span>
+            </p>                 
+        </form>            
+</div>
+<div class="ddan_item">
+    <form action="order_edit_action.php" method="POST" id="form3">
+    <!--{foreach from=$order.goods_list item=goods name=goodsName}-->
+    {if $smarty.foreach.goodsName.first}
+    <table cellpadding="0" cellspacing="0" id="goodsTable" class="statusTable">
+	<thead>
+	<tr>
+    <th>商品名称</th>
+	<th style="width:5%;">移动</th>
+	<th style="width:5%;">非移动</th>
+	<th style="width:5%;">总库存</th>
+    <th style="width:7%;">商品状态</th>
+    <th width="5%">类型</th>
+    <th width="15%">商品串号</th>
+    <th width="7%">发票号</th>
+	<th style="width:1%;">单价</th>
+	<th style="width:5%;">数量</th>
+	<th style="width:7%;">小计</th>
+	<th style="width:15%;">操作</th>
+	</tr>
+	</thead>
+	<tbody>
+{/if}
+
+	<tr id="goods_{$goods.rec_id}" {if $smarty.foreach.goodsName.iteration%2 == 0}class="even"{/if}>
+        <td style="text-align:left;padding-left:10px;{if $goods.parent_id != 0}padding-left:20px;{/if}">
+            {if $goods.parent_id != 0}<span style="color:#999;">|__</span>{/if}<a href="http://www.ouku.com/goods{$goods.goods_id}/" target="_blank">{$goods.goods_name}</a>
+			<p style="padding-left:0;">
+            {if $goods.parent_id == 0 && $goods.top_cat_id !=597}
+            	<input type="hidden" id="goods_id-{$goods.rec_id}" value="{$goods.goods_id}" />
+            	<input type="button" value="搜索套餐" actions='yes' onclick="searchFitting('{$goods.rec_id}')" />
+            {/if}
+			</p>
+			    <div id="fitting-{$goods.rec_id}" style="text-align:left;">
+				   
+                </div>
+				<p id="add-{$goods.rec_id}" style="display:none;margin:0;padding:0;">
+				<input type="submit" actions="yes" {if !$can_edit_order}disabled="true"{/if}  value="增加套餐商品" onclick="E('action-{$order.order_id}').value='edit_order_goods';E('id-{$order.order_id}').value='{$goods.rec_id}';" />
+	            <input type="button" style="margin-left:20px;" actions="yes" value="取消选择套餐" onclick="E('fitting-{$goods.rec_id}').style.display = 'none';E('add-{$goods.rec_id}').style.display='none';E('form3').reset();" />
+				</p>
+                <p style="margin-top:10px;padding-left:0;">
+                
+                <input type="button" actions='yes' {if !$can_edit_order}disabled="true"{/if} value="修改颜色" onclick="searchGoodsStyle({$goods.rec_id});changeForm('goods_{$goods.rec_id}',1);E('goods_edit_{$goods.rec_id}').style.display='none';E('goods_up_{$goods.rec_id}').style.display = '';E('del_{$goods.rec_id}').style.display = 'none';E('style_list-{$goods.rec_id}').style.display = '';return false;"/>
+                <select name="goods_list-{$goods.rec_id}" id="goods_list-{$goods.rec_id}" style=" visibility:hidden;width:0;"><option value="{$goods.goods_id}" selected="selected"></option></select>
+                <select name="style_list-{$goods.rec_id}" style="display:none;" id="style_list-{$goods.rec_id}" onchange="getGoodsStylePrice({$goods.rec_id})"><option value="{$goods.style_id}"></option></select>
+                
+    			</p>
+        </td>
+        <td>{$goods.mobile_cnt}</td>
+        <td>{$goods.no_mobile_cnt}</td>
+        <td>{$goods.product_cnt}</td>
+        <td>{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{elseif $goods.is_new == 'NONE'}未知{/if}</td>
+        <td>{$goods.order_type}</td>
+        <td>{"<br/>"|join:$goods.erp_goods_sns}</td>
+        <td>{"<br/>"|join:$goods.shipping_invoices}</td>
+        <td><input type="text" style="width:60px;text-align:right;" id="goods_price-{$goods.rec_id}" name="goods_price-{$goods.rec_id}" value="{$goods.goods_price}" /></td>
+        <td><input type="text" style="width:40px;text-align:right;"  name="goods_number-{$goods.rec_id}" value="{$goods.goods_number}" /></td>
+        <td style="text-align:right;">{$goods.total_price|price_format}</td>
+        <td style="text-align:left;padding-left:20px;">
+             <span><input type="submit" {if !$can_edit_order}disabled="true"{/if}  value="删除" id="del_{$goods.rec_id}" actions='yes' style="float:right;" onclick="E('action-{$order.order_id}').value='delete_order_goods';E('id-{$order.order_id}').value='{$goods.rec_id}';return confirm('确定删除？')" /></span>
+        	<input type="button"  {if !$can_edit_order}disabled="true"{/if}  value="修改" actions='yes' onclick="changeForm('goods_{$goods.rec_id}',1);this.style.display='none';E('goods_up_{$goods.rec_id}').style.display = '';E('del_{$goods.rec_id}').style.display = 'none';return false;" id="goods_edit_{$goods.rec_id}" />
+        <span id="goods_up_{$goods.rec_id}" style="display:none;">    
+  	
+            <input type="button" style="float:right;" value="取消" actions='yes' onclick="changeForm('goods_{$goods.rec_id}',0);E('goods_edit_{$goods.rec_id}').style.display='';E('goods_up_{$goods.rec_id}').style.display = 'none';E('fitting-{$goods.rec_id}').style.display = 'none';E('del_{$goods.rec_id}').style.display = '';if(E('style_list-{$goods.rec_id}')) E('style_list-{$goods.rec_id}').style.display = 'none';E('form3').reset();return false;"> 
+	           <input type="submit" value="提交" actions='yes'  onclick="E('action-{$order.order_id}').value='edit_order_goods';E('id-{$order.order_id}').value='{$goods.rec_id}';" />      		
+        </span>
+
+        </td>
+	</tr>
+
+
+
+{if $smarty.foreach.goodsName.last}
+    <tr>
+        <td colspan="10" style="text-align:right;">
+        商品总金额：{if $order.order_sn|strpos:"h" == false}{$order.goods_amount|price_format}{/if}
+        </td>
+        <td></td>
+    </tr>
+	</tbody>
+</table>
+{/if}
+<!--{/foreach}-->
+<input type="hidden" name="order_goods_id" id="id-{$order.order_id}" />    
+<input type="hidden" name="action" id="action-{$order.order_id}"/>
+<input type="hidden" name="order_id" value="{$order.order_id}" />
+<input type="hidden" name="back" value="{$back}">
+</form>
+
+<form action="order_edit_action.php" method="POST" id="form4">
+<table cellpadding="0" cellspacing="0" style="margin-top:0;">		
+    <tr id="feeEdit">
+    	<td style="text-align:right;">
+        配送费用：{$order.shipping_fee}&nbsp;&nbsp;
+	   	{*订单总金额：{if $order.order_sn|strpos:"h" == false}{$order.total_fee|price_format}{/if}*}
+    	抵用券抵用：<input name="bonus" value="{$order.bonus}" style="width:45px;text-align:right" />&nbsp;&nbsp;
+        </td>
+    	<td style="text-align:right;width:13%;">应付金额：{if $order.order_sn|strpos:"h" == false}{$order.order_amount|price_format}{/if}</td>
+        <td style="padding-left:10px;width:15%;">
+        <input type="button" {if !$can_edit_order}disabled="true"{/if}  style="float:right;margin-right:15px;" value="修改费用" onclick="changeForm('feeEdit',1);this.style.display='none';E('feeUp').style.display = '';return false;" id="feeE" actions='yes' />
+        <span id="feeUp" style="display:none;">
+
+        	<input type="submit" value="提交" onclick="E('action-{$order.order_id}-1').value='edit_fee'" actions='yes' />
+            <input type="button" value="取消" onclick="changeForm('feeEdit',0);E('feeUp').style.display='none';E('feeE').style.display = '';E('form4').reset();return false;" actions='yes' />
+
+        </span>
+			<input type="hidden" name="integral_money" value="{$order.integral_money}" />
+        </td>
+    </tr>
+</table>
+	<input type="hidden" name="action" id="action-{$order.order_id}-1" value="edit_fee"/>
+	<input type="hidden" name="order_id" value="{$order.order_id}" />
+	<input type="hidden" name="back" value="{$back}">
+</form>
+
+       <form action="order_edit_action.php" method="POST">
+        <table cellpadding="0" cellspacing="0" style="background:#fff;border:0;">
+        <tr>    
+                <td style="text-align:left;">增加商品：<input style="width:100px"  name="goods_name-0" id="goods_name-0" />
+                <input type="button" value="搜索" onclick="searchGoods(0)" />
+                <p style="margin-left:50px;">
+                <select name="goods_list-0" id="goods_list-0" onchange="searchGoodsStyle(0)"></select>
+                <select name="style_list-0" id="style_list-0" onchange="getGoodsStylePrice(0)"></select>
+                </p>
+                </td>
+
+                <td style="width:10%"><input style="width:80px;text-align:right;" id="goods_price-0"  name="goods_price-0" value="0" /></td>
+                <td style="width:6%"><input style="width:20px;text-align:right;" name="goods_number-0" value="1" /></td>
+                <td style="width:7%;"></td>
+                <td  style="text-align:left;padding-left:20px;width:15%;"><input type="submit" {if !$can_edit_order}disabled="true"{/if}  value="增加商品" onclick="E('action-0').value='edit_order_goods'" /></td>
+        </tr>
+
+        </table>
+			<input type="hidden" name="order_goods_id" value="0" />
+			<input type="hidden" name="action" id="action-0" value="edit_order_goods"/>
+			<input type="hidden" name="order_id" value="{$order.order_id}" />
+			<input type="hidden" name="back" value="{$back}">
+		</form>
+		</div>		    
+    </div>
+<!-- -->
+
+<div class="ddan_item" id="s2" >
+	<h2>用户统计信息</h2>
+	<table cellpadding="0" cellspacing="0">
+		<tr>
+			<td>注册时间：{$user.reg_time_str}</td>
+			<td>成功购买：{$user.buy_succes_times}次</td>
+			<td>取消订单：{$user.order_status.2}次</td>
+			<td>拒收：{$user.order_status.4}次</td>
+			<td>电话呼入数：{$user.call_in_times}次</td>
+			<td>电话呼出数：{$user.call_out_times}次</td>
+			<td>换货次数：{$change_goods_times}次</td>
+            <td>退货次数：{$back_goods_times}次</td>
+		</tr>
+	</table>
+</div>
+	<div class="ddan_item" id="s3" style="position:fixed;top:0;right:0;background:#fff;">	
+	<h3><a href="#" style="float:right" onclick="document.getElementById('s3').style.display = 'none';return false;">关闭</a>订单操作信息</h3>
+    <table cellpadding="0" cellspacing="0" class="statusTable">
+    	<tr>
+        	<th>订单状态</th>
+            <th>操作人</th>
+            <th width="21%">操作时间</th>
+            <th>备注</th>
+        </tr>
+    	<tr>
+        	<td align="left" style="padding-left:20px;width:25%;">订单生成，待确认</td>
+            <td>{$order.consignee}</td>
+            <td>{$order.order_time}</td>
+            <td align="left" style="padding-left:20px;">新订单</td>
+        </tr>
+		  {foreach from=$order.actions item=action}         	
+            {foreach from=$action item=actions name=actionName}
+            <tr>
+            	{if $smarty.foreach.actionName.first}    
+                <td align="left" style="padding-left:20px;" rowspan="{$smarty.foreach.actionName.total}">
+                
+                
+                {if $order.pay_name == '货到付款' && $actions.pay_status == 2 }与快递公司已结账
+                {else}
+               	{if $actions.order_status_name}{$actions.order_status_name}，{/if}{if $actions.pay_status_name}{$actions.pay_status_name}，{/if}{$actions.shipping_status_name}
+                {/if}   
+                </td>
+                {/if}
+                <td>{$actions.action_user}</td>
+                <td>{$actions.action_time}</td>
+                <td align="left" style="padding-left:20px;line-height:150%;">{$actions.action_note}</td>
+            </tr>
+            {/foreach}
+          {/foreach}
+        
+        {foreach from=$service_actions item=sAction}
+        	{foreach from=$sAction item=goodsAction name=action_name}
+       	<tr>
+  
+            <td align="left" style="padding-left:20px;width:25%;">
+            	{$goodsAction.status_desc}	
+            </td>
+            <td>
+            	{$goodsAction.action_user}	
+            </td>
+            <td>
+            	{$goodsAction.action_time}	
+            </td> 
+            <td align="left" style="padding-left:20px;">
+            {$goodsAction.goods_name}<br />
+            {$goodsAction.action_note}	
+            </td>                                     
+        </tr>
+        	{/foreach}
+
+        {/foreach}
+        
+    </table> 
+</div>
+<div class="ddan_item" id="s4" >
+{*
+<h3>商品操作信息</h3>
+<table cellpadding="0" cellspacing="0" class="statusTable">
+	<thead>
+	<tr>
+		<th>操作者</th>
+		<th>操作时间</th>
+		<th>操作商品</th>
+		<th>商品状态</th>
+		<th width="35%">备注</th>
+	</tr>
+	</thead>
+	<tbody>
+	<!--{foreach from=$order.goods_list item=goods}-->
+		<!--{foreach from=$goods.actions item=action}-->
+	<tr>
+		<td>{$action.action_user}</td>
+		<td>{$action.action_time}</td>
+		<td>{$goods.goods_name}</td>
+		<td>{$action.goods_status_name}</td>
+		<td>{$action.action_note}</td>
+	</tr>
+		<!--{/foreach}-->
+	<!--{/foreach}-->	
+	</tbody>
+</table>
+*}
+</div>
+<!-- -->
+{*
+<div class="ddan_item" id="s5" >
+	<h2>售前咨询({$usercommentNum}条)</h2>
+    <div class="order_comment">
+    	{foreach from=$usercomment item=comment}
+        	<p>类型：<span style="color:red;">{$comment.comment_cat_desc}</span></p>
+			<p style="line-height:150%;">{$comment.nick}：{$comment.comment}<span style="color:#999;margin-left:10px;">{$comment.postDatetime}</span></p>
+            <p style="border-bottom:1px dashed #b2b2b2;padding-bottom:5px;">{if $comment.reply}{$comment.repliedNick}：{$comment.reply}<span style="color:#999;margin-left:10px;">{$comment.repliedDatetime}</span>{else}<span style="color:red;">未回复</span>{/if}</span></p>
+        {/foreach}
+         {if $usercommentNum >3 && !$smarty.request.more}<p style="text-align:right;padding-right:20px;"><a href="?order_id={$order.order_id}&more=more">更多&gt;</a></p>{/if}{if $smarty.request.more == 'more'}{$pagination->get_simple_output()}{/if}
+    </div>
+</div>
+*}
+
+<!-- -->
+
+<div class="ddan_item" id="s5" style="display:none;">
+	<h2>订单咨询({$commentsNum}条)</h2>
+    <div class="order_comment" style="border:1px solid #c1dad7;">
+    	{foreach from=$order_comments item=comment}
+        	<p>类型：<span style="color:red;">{$comment.comment_cat_desc}</span></p>
+			<p  style="line-height:150%;">客户留言：{$comment.comment}<span style="color:#999;margin-left:10px;">{$comment.post_datetime}</span></p>
+            <p style="border-bottom:1px dashed #b2b2b2;padding-bottom:5px;">{if $comment.reply}{$comment.replied_by}：{$comment.reply}<span style="color:#999;margin-left:10px;">{$comment.reply_datetime}</span>{else}<span style="color:red;">未回复</span>{/if}</span></p>
+        {/foreach}
+    </div>
+</div>
+<!-- -->
+<!-- -->
+<div class="ddan_item" id="s6" style="display:none;">
+	<h2>售后服务({$servicesNum}条)</h2>
+    {foreach from=$services item=service}
+    <div class="service">
+    	<p><a href="{$WEB_ROOT}goods{$service.goods_id}/" target="_blank">{$service.goods_name}</a>--状态：<span style="color:red;">{$service.status_name}</span></p>
+    	<p>类型：<span style="color:red;">{$service.type_desc}</span></p>
+        
+         	{if $service.return_info.account_number}
+            <p>
+                银行帐号：{$service.return_info.account_number}&nbsp;&nbsp;&nbsp;&nbsp;
+                开户行：{$service.return_info.open_bank}&nbsp;&nbsp;&nbsp;&nbsp;
+                帐户名：{$service.return_info.account_name}&nbsp;&nbsp;&nbsp;&nbsp;
+                开户行所在省：{$service.return_info.account_province}&nbsp;&nbsp;&nbsp;&nbsp;
+                开户行所在市：{$service.return_info.account_city}&nbsp;&nbsp;&nbsp;&nbsp;
+            </p>
+            {/if}
+
+            {if $service.return_info.alipay_account}
+            	<p>支付宝：{$service.return_info.alipay_account}</p>
+            {/if}
+
+            {if $service.return_info.deliver_company}
+       	<p>
+            	快递公司：{$service.return_info.deliver_company}&nbsp;&nbsp;&nbsp;&nbsp;
+  		    	快递单号：{$service.return_info.deliver_number}&nbsp;&nbsp;&nbsp;&nbsp;
+            	附加信息：{$service.return_info.comment}
+        </p>        
+            {/if}
+        <p>{$service.remark}<span style="color:#999;margin-left:10px;white-space:nowrap;">{$service.apply_time}</span></p>
+        <p>{$service.reviewer_name}：{$service.review_remark}<span style="color:#999;margin-left:10px;white-space:nowrap;">{$service.apply_time}</span></p>
+     </div>   
+    {/foreach}
+</div>
+<!-- -->
+
+</div>
+<script type="text/javascript">
+
+// 这里把JS用到的所有语言都赋值到这里
+{foreach from=$lang.js_languages key=key item=item}
+var {$key} = "{$item}";
+{/foreach}
+{literal}
+
+function change_shipping(obj) {
+	if (obj.value == 44 || obj.value == 49) {
+		E("shipping_time_interval").style.display = "";
+	} else {
+		E("shipping_time_interval").style.display = "none";
+	}
+}
+
+function check_shipping_time_interval() {
+	var start_shipping_time = parseInt(ES("start_shipping_time")[0].value);
+	var end_shipping_time = parseInt(ES("end_shipping_time")[0].value);
+	
+	if (start_shipping_time > end_shipping_time) {
+		alert("配送时间非法");
+		return false;
+	} else {
+		return true;
+	}
+}
+function orderStatusFn(status,action){
+	document.getElementById('order_status_action').style.display = document.getElementById('order_status_action').style.display == '' ? 'none':'';
+	document.getElementById('orderStatus').value = status;
+	document.getElementById('order_action').value = action;
+	document.getElementById('action_note_id').focus();
+}
+function disableForm(id,name,num){
+	if (E(id) == null)
+		return;
+	var oTag = E(id).getElementsByTagName(name);
+	if(num==0){
+		for(var i=0;i<oTag.length;i++){
+			if(oTag[i].getAttribute('actions') != 'yes' && oTag[i].type != 'hidden'){
+				oTag[i].style.border = '1px solid #fff';
+				oTag[i].readOnly = 'disabled';
+			}
+
+		}
+	}else{
+		for(var i=0;i<oTag.length;i++){
+			if(oTag[i].getAttribute('actions') != 'yes' && oTag[i].type != 'hidden'){
+				oTag[i].style.border = '1px solid #999';
+				oTag[i].readOnly = false;
+			}	
+		}
+				
+	}
+}
+disableForm('infoTable','input',0);
+disableForm('infoTable','select',0);
+disableForm('infoTable','textarea',0);
+disableForm('payShippingInfo','select',0);
+disableForm('payShippingInfo','input',0);
+disableForm('goodsTable','input',0);
+disableForm('feeEdit','input',0);
+
+function changeForm(id,num){
+	disableForm(id,'input',num);
+	disableForm(id,'select',num);
+	disableForm(id,'textarea',num);	
+}
+  /**
+   * 按商品编号或商品名称或商品货号搜索商品
+   */
+  order_goods_id = 0;
+  function searchGoods(id)
+  {
+  	order_goods_id = id;
+    /* 填充列表 */
+    var keyword = E("goods_name-"+order_goods_id).value;
+    
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+	  var sel = E('goods_list-'+order_goods_id);
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+		var opt = document.createElement('OPTION');
+		opt.value = '';
+		opt.text = '';
+		sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+        }
+      }
+    }
+  }
+  
+  function searchGoodsStyle(id) {
+  	order_goods_id = id;
+    var goods_id = E("goods_list-" + order_goods_id).value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_goods_style&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }  	
+  }
+
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }  
+    if (result.error == 0)
+    {     
+	  var sel = E('style_list-' + order_goods_id);
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+        E('goods_price-'+order_goods_id).value = arr[0].style_price;
+      } else {
+        E('goods_price-'+order_goods_id).value = result.price;
+      }
+    }    
+  }
+  
+  function getGoodsStylePrice(id) {
+    order_goods_id_price = id;
+    var style_id = E("style_list-" + order_goods_id_price).value;
+    var goods_id = E("goods_list-" + order_goods_id_price).value;
+    if(style_id != '') {
+      Ajax.call('order.php?act=getGoodsStylePrice&goods_id=' + goods_id+'&style_id='+style_id, '', setStylePrice, 'GET', 'JSON');
+    }
+  }
+  
+  function setStylePrice(result) {
+    var price = result.price;
+    E('goods_price-'+order_goods_id_price).value=price;
+  }
+  function searchFitting(id) {
+    order_goods_id_fitt = id;
+	E('add-'+id).style.display = '';
+	E('fitting-'+id).style.display = '';
+    if(id == 0) {
+      goods_id = E("goods_list-" + id).value;
+    } else {
+      goods_id = E("goods_id-" + id).value;
+    }
+    if(goods_id != '') {
+      Ajax.call('order.php?act=search_goods_fitting&goods_id=' + goods_id, '', searchFittingResponse, 'GET', 'JSON');
+    }
+  }
+  function searchFittingResponse(result)  {
+    E('fitting-'+order_goods_id_fitt).innerHTML = '';
+    var i = 0;
+    for(i=0; i<result.length; i++) {
+      E('fitting-'+order_goods_id_fitt).innerHTML += '<input actions="yes" type="checkbox" name="group_goods_id[]" value="'+result[i].group_goods_id+'" />' +result[i].goods_name + ' ' + result[i].formatted_goods_price + '<br />';
+    }
+
+  }
+  var tt='';
+  function show(num){
+  	var orderLi = E('order_li').getElementsByTagName('li');
+
+	if(num !=0 ){
+			E('a0').className = '';
+		for(var i=1;i<orderLi.length;i++){
+			E('a'+i).className = '';
+			E('s'+i).style.display = 'none';
+		}
+			E('a'+num).className = 'on';
+			E('s'+num).style.display = '';
+	}else{
+		for(var i=1;i<orderLi.length;i++){
+			E('a'+i).className = '';
+			E('s'+i).style.display = '';
+		}
+			E('s5').style.display = 'none';
+			E('s6').style.display = 'none';
+			E('a'+num).className = 'on';
+	}	
+	if(num == 0){
+		E('s3').style.position = 'fixed';
+		E('s3').style.width = document.documentElement.clientWidth - 865 + "px";
+		tt= setInterval('dd()',100);   	
+	}
+	if(num == 3){
+		E('s3').style.position = 'static';
+		E('s3').style.width = '850px';
+		clearInterval(tt);
+	}	
+  }
+  
+	var dd = function(){E('s3').style.width = document.documentElement.clientWidth - 865 + "px"};
+	tt= setInterval('dd()',100);  
+  
+  function searchUserId(id){
+  	order_id = id;
+	var user_name = E('userId').value;
+	Ajax.call('order.php?act=search_users&id_name=' + user_name, '', searchUserResponse, 'GET', 'JSON');
+  }
+  
+  function searchUserResponse(result){
+  	//alert(result.message);
+	if(result.error == 1 || result.error == 2){
+
+		E('searchId').innerHTML = result.message;
+
+	}else if(result.error == 0){
+		var html = '<table><tr><th>#</th><th>用户名</th></tr>';
+		for(var i=0;i<result.userlist.length;i++){
+			html += '<tr><td>'+(i+1)+'</td><td style=\'cursor:pointer\'><a href=\'order.php?act=order_transfer&order_id=' + order_id +'&user_id=' + result.userlist[i].user_id +'&user_name='+result.userlist[i].user_name+'\' onclick=\'return confirm("确定把订单转移到--'+result.userlist[i].user_name+'--名下吗？")\'>'+result.userlist[i].user_name+'</a></td></tr>';
+		}	
+		html += '</table>';
+		E('searchId').innerHTML = html;	
+	}
+
+  }
+
+</script>  
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "handle_time_calendar",
+        button            : "handle_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}  
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+C2C返现明细如下
+时间,返还金额,类型,采购结款人,银行账号,操作人
+汇总,{$sum},,,,
+{foreach from=$bills item=bill}
+"{$bill.date}","{$bill.return_amount}","{if $bill.is_dif_returned == 'YES'}已返{else}未返{/if}","{$bill.purchaser}","{$bill.bank_no}","{$bill.user}"
+{/foreach}

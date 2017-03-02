@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>发票管理</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+														 
+			// 提交禁用按钮
+			$(':button, :submit').find(':enabled').attr('disabled', false);
+			
+			// 提交表单事件
+			$('#form1').find(':button.smt').bind('click', function(){
+					var $i = $(this);
+					var act = $i.attr('act');
+					$('#form1').find(':hidden[name="act"]').val(act);
+					if ( act == 'search') {
+							var d = $('#form1').find(':select[name="main_distributor_id"]').val();
+							if (d == '' || d == '0') {
+								return alert('请选择分销商或者直销商');	
+							}
+					}
+					if (act == 'rebate') {
+						if (!confirm('折扣结算将生成退款,要确认吗')) { return ;}
+					}
+					$('#form1').find(':hidden[name="act"]').val(act);
+					if (act != 'export') {
+						$(':button, :submit').attr('disabled', true);	 // 如果不是导出就禁用按钮
+					}
+					$('#form1').submit();
+			});
+			
+			$('#sales_invoice_table').find(':checkbox').bind('click', function(){
+				select_price('#sales_invoice_table', '#sales_invoice_total_discount');
+			});
+	});
+
+	/**
+	 * 全选
+	 */
+	function select_all(node, target)
+	{
+	    node = node ? node : document ;
+	    $(node).find(':checkbox:enabled').each(function(i){
+	        this.checked = true;
+			});    
+			select_price(node, target);
+	}
+
+	/**
+	 * 反选
+	 */
+	function select_reverse(node, target)
+	{
+			node = node ? node : document ;
+			$(node).find(':checkbox:enabled').each(function(i){
+					this.checked = !this.checked;
+			});	
+			select_price(node, target);
+	}
+
+	/**
+	 * 选中后计算金额
+	 */
+	function select_price(node, target)
+	{
+			node = node ? node : document ;
+			amount = 0;
+			$(node).find(':checkbox').each(function(i){
+					var i = $(this);
+					if (i.attr('checked')) { 
+						a = $(this).attr('amount');
+						if (a && a != undefined) amount += parseFloat(a);
+					}
+			});
+
+			$(target).val(amount.toFixed(2));
+	}
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;销售发票管理&nbsp;</span></legend>
+  
+  <form method="post" id="form1" action="sales_invoice_list.php" >
+	<div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      <table cellpadding="5" cellspacing="1">
+        <tr>
+          <td width="120">发票号</td>
+          <td><input type="text" name="invoice_no" value="{$filter.invoice_no}" /></td>
+        </tr>
+        
+        <tr>
+          <td width="120">订单号</td>
+          <td><input type="text" name="ordersn" value="{$filter.ordersn}" /></td>
+        </tr>
+              
+         <tr>
+          <td>订单日期</td>
+          <td>
+          	<input type="text" id="orderstart" name="orderstart" value="{$filter.orderstart}" size="10" /><input type="button" id="orderstartTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+            <input type="text" id="orderend" name="orderend" value="{$filter.orderend}" size="11" /><input type="button" id="orderendTrigger" value="日历" style="border:#960 1px solid;" />
+           </td></tr>
+        <tr>
+          <td>发票生成日期</td>
+          <td>
+          	<input type="text" id="start" name="start" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+            <input type="text" id="end" name="end" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" act="search" class="smt" value="查询" />
+            {if $act == 'search'}<input type="button" act="csv" class="smt" value="导出"></input>{/if}
+          </td>
+        </tr>
+        
+        <tr>
+          <td>分销商</td>
+          <td><select name="main_distributor_id"><option value="-1"> - ALL</option><option value="0">-分销商</option>{html_options options=$main_distributor_list selected=$filter.main_distributor_id}</select></td>
+        </tr>
+        
+        <tr>
+          <td>发票状态</td>
+          <td><select name="invoice_status"><option value="">- ALL</option>{html_options options=$invoice_status_list selected=$filter.invoice_status}</select>
+          &nbsp;&nbsp; 每页记录数： <select name="size">{html_options options=$page_size_list selected=$filter.size}</select>
+          </td>
+        </tr>
+              
+      </table>  
+  </div>
+  
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">销售发票列表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th width="50">选择</th>
+          <th>发票号</th>
+          <th>订单号</th>
+          <th>发票抬头</th>
+          <th>开票时间</th>
+          <th>开票区间</th>
+          <th>分销商</th>
+          <th>含税金额</th>
+          <th>去税金额</th>
+          <th>状态</th>
+          <th>创建时间</th>
+          <th>创建人</th>
+          <th width="120">操作</th>
+        </tr>
+        
+        <!--{foreach from=$sales_invoice_list item=invoice name="salesInvoiceList"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.salesInvoiceList.iteration}</td>
+          <td><input type="checkbox" name="sales_invoice_id[]" value="{$invoice.sales_invoice_id}" amount="{$invoice.discount}" {if $invoice.status != 'CONFIRMED'}disabled="disabled"{/if} /></td>
+          <td>{$invoice.invoice_no}</td>
+          <td>{$invoice.order_sn}</td>
+          <td>{$invoice.inv_payee}</td>
+          <td>{$invoice.invoice_date}</td>
+          <td>{$invoice.transaction_begin_date|date_format:"%Y-%m-%d"} 到 {$invoice.transaction_end_date|date_format:"%Y-%m-%d"}</td>
+          <td>{$invoice.partner_name}</td>
+          <td>&yen; {$invoice.total_amount|erp_price_format}</td>
+          <td>&yen; {$invoice.total_net_amount|erp_price_format}</td>
+          <td>{$invoice_status_list[$invoice.status]}</td>
+          <td>{$invoice.created_stamp}</td>
+          <td>{$invoice.created_user}</td>
+          <td>
+          	<input type="button" onclick="location.href='sales_invoice_edit.php?sales_invoice_id={$invoice.sales_invoice_id}{foreach from=$filter key=k item=v}{if $v}&{$k}={$v}{/if}{/foreach}';" value="编辑" /> &nbsp;
+            <input type="button" onclick="if (confirm('确认要删除吗?')) {ldelim} location.href='sales_invoice_list.php?act=delete&sales_invoice_id={$invoice.sales_invoice_id}'; {rdelim};" value="删除" {if $invoice.status != 'INIT'}disabled="disabled"{/if} />
+          </td>
+        </tr>
+        
+        <!--{foreachelse}-->
+        
+        <tr><td colspan="11" align="center">没有数据</td></tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+			{$pagination}
+      
+      <div style="margin-top:10px;">
+        <input type="button" value="全选" onclick="select_all('#sales_invoice_table', '#sales_invoice_total_discount');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#sales_invoice_table', '#sales_invoice_total_discount');" /> &nbsp;&nbsp;
+        折扣金额： <input type="text" id="sales_invoice_total_discount" size="10" readonly="readonly" />
+      </div>
+  
+  </div>
+  
+
+  
+  
+  <br /><br />
+  <div style="text-align:center"><input type="button" act="rebate" class="smt" value="折扣结算" /></div>
+  <br />
+  
+  <input type="hidden" name="act" value="search" />
+  </form>
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "orderstart",
+	button            : "orderstartTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "orderend",
+	button            : "orderendTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

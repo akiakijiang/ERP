@@ -1,0 +1,585 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>售后沟通</title>
+	<link href="../styles/default.css" rel="stylesheet" type="text/css"></link>
+	<link rel="stylesheet" href="../misc/autocomplete.css" />
+	<script type="text/javascript" src="../misc/jquery.js"></script>
+	
+	<script type="text/javascript" src="../misc/jquery.js"></script>
+    <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script> 
+	<script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+	<!-- Calendar -->
+	<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+	<!-- Calendar /-->
+
+	<script type="text/javascript">
+	// <![CDATA[
+	//记录搜索条件用
+	var select_support_type = "";
+	var select_check_type = "";
+	var select_facility_id = "";
+	var select_pay_id = "";
+	var select_start_time = "";
+	var select_end_time = "";
+	var keyword = "";
+	            
+	//	{literal}
+	
+	window.onload = function() {
+		var showOrderSn = E('show_order_sn').value;
+		if(showOrderSn){
+			//进行一次根据订单的模糊搜索
+			$('#keyword').val(showOrderSn);
+			indistinct_search();
+		}
+	}
+	
+	
+	$(document).ready(function(){
+		$('#sal_detail').hide();
+		$('#sal_finish').hide();
+		/**
+		 * 仓库搜索
+		 */
+		$('#facility_select').autocomplete('sale_support_list.php?request=ajax&act=search_facility', {
+			dataType : 'json',
+			minChars: 0,
+			delay: 1000,
+			mustMatch: true,
+			formatItem : function(row, i, max, value, term) {
+				return(row.facility_name);
+			},
+			formatResult : function(row) {
+				return(row.facility_name);
+			}
+		}).result(function(event, row, formatted) {
+			clearList('list3');
+			select_facility_id = row.facility_id;
+			//开始搜索
+			search_support_detail();
+		});
+		
+		/**
+		 * 支付方式搜索
+		 */
+		$('#payment_select').autocomplete('sale_support_list.php?request=ajax&act=search_payment', {
+			dataType : 'json',
+			minChars: 0,
+			delay: 1000,
+			mustMatch: true,
+			formatItem : function(row, i, max, value, term) {
+				return(row.pay_name);
+			},
+			formatResult : function(row) {
+				return(row.pay_name);
+			}
+		}).result(function(event, row, formatted) {
+			clearList('list4');
+			select_pay_id = row.pay_id;
+			//开始搜索
+			search_support_detail();
+		});
+	
+    });
+	
+	function E(id) {return document.getElementById(id);}
+	function ES(name) {return document.getElementsByName(name);}
+	
+	function changeSelect(taget){
+		var className = taget.className;
+		var listName = className.split("_")[0];
+		var list = E(listName).getElementsByTagName("li");
+		for (var i=0;i<list.length;i++){
+			list[i].className = listName+'_unselected';
+		}
+		
+		//记录搜索条件
+		switch(listName)
+		{
+		case 'list1':
+			select_support_type = taget.value;
+			break;
+		case 'list2':
+			select_check_type = taget.value;
+			break;
+		case 'list3':
+			select_facility_id = taget.value;
+			$('#facility_select').val(''); 
+			break;
+		case 'list4':
+			select_pay_id = taget.value;
+			$('#payment_select').val('');
+			break;
+		case 'list5':
+			select_start_time = E('start_time').value;
+			select_end_time = E('end_time').value;
+		default:
+			break;
+		}
+		
+		taget.className = listName+'_selected';
+		
+		//开始搜索
+		search_support_detail();
+	}
+	
+	//将li还原到未选中状态
+	function clearList(listName){
+		var list = E(listName).getElementsByTagName("li");
+		for (var i=0;i<list.length;i++){
+			list[i].className = listName+'_unselected';
+		}
+	}
+	
+	//清空时间搜索条件
+	function initList5(){
+		clearList('list5');
+		select_start_time = "";
+		select_end_time = "";
+		$('#start_time').val('');
+		$('#end_time').val('');
+	}
+	
+	//根据条件搜索
+	function search_support_detail(){
+		//先将条件初始化,为空就设置为全部
+		if(select_support_type == ""){
+			select_suppoer_type = 0;
+		}
+		if(select_check_type == ""){
+			select_check_type = 0;
+		}
+		if(select_facility_id == ""){
+			select_facility_id = 0;
+		}
+		if(select_pay_id == ""){
+			select_pay_id = 0;
+		}
+		
+		//判断时间，如果输入格式不正确则设置成空,如果开始大于结束时间也设置成空
+		var startArray = new Array();
+		var endArray = new Array();
+		var start = select_start_time;
+		var end = select_end_time;
+		var r = "";
+		
+		//格式判断
+		if(select_start_time != ""){
+			//时间格式判断
+			r = select_start_time.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/);
+			if(r == null){
+				select_start_time = "";
+			}
+		}
+		if(select_end_time != ""){
+			r = select_end_time.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/);
+			if(r == null){
+				select_end_time = "";
+			}
+		}
+		//开始时间与结束时间的比较
+		if(select_start_time != "" && select_end_time != ""){
+			startArray = start.split("-");
+			start = new Date(startArray[0], startArray[1]-1, startArray[2]);
+			endArray = end.split("-");
+			end = new Date(endArray[0], endArray[1]-1, endArray[2]);
+			if((start - end) > 0){
+				select_start_time = "";
+				select_end_time = "";
+			}
+		}
+		
+		$.ajax( {
+       	 url : "sale_support_list.php",
+       	 data : "support_type="+select_support_type+"&check_type="+select_check_type+"&facility_id="+select_facility_id+
+       	        "&pay_id="+select_pay_id+"&start_time="+select_start_time+"&end_time="+select_end_time+
+       	        "&request=ajax&act=search_support_list",
+       	 type : "POST",
+       	 cache: false,
+       	 dataType :"json",
+       	 error : function(XMLHttpRequest, textStatus, errorThrown) {
+       	     // alert("检索失败：" + XMLHttpRequest.responseText);
+       	     alert(XMLHttpRequest.status) ;
+       	 },
+       	 success : function(json) {
+       		$('#sal_finish').hide();
+                if (json == null || json.length == 0){
+               	 $('#sal_detail').hide();
+                } else {
+                    var html = "" ; 
+       	         for(var i=0; i<json.length; i++){
+       	        	 var conf = "";
+       	        	 if(json[i].status == 'OK'){
+       	        		 conf = "<td><input type=\"checkbox\" onclick=\"finish('"+json[i].order_sn+"')\"/><span>未完结</span></td>";
+       	        	 }else{
+       	        		 conf = "<td><span>已完结</span></td>";
+       	        	 }
+           	         html += "<tr>"+
+           	                    "<td>"+json[i].order_sn+"</td>" +
+           	                    "<td>"+json[i].created_stamp+"</td>" +
+           	                    "<td>"+json[i].send_by+"</td>" +
+           	                    "<td>"+json[i].support_type_name+"</td>" + 
+           	                    "<td>"+json[i].message+"</td>" + 
+           	                    "<td>"+json[i].pay_name+"</td>" + 
+           	                    "<td>"+json[i].facility_name+"</td>" +
+           	                    "<td><a href=\"sale_support.php?order_id="+json[i].order_id+"\">查看</a></td>" +
+           	                    conf +
+           	                  "</tr>" ;
+       	         }
+       	         // 几个字段赋值
+       	         $('#sal_detail tbody').html(html);
+       	         $('#sal_detail').show();
+       	         
+                }
+       	 }
+       	 });
+	}
+	
+	//完结界面显示
+	function finish(order_sn){
+		$('#sal_detail').hide();
+		var hthead = "";
+		hthead += "<tr>"+
+		            "<td ><span class=\"ti\">订单号：</span></td>"+
+		            "<td align=\"left\">"+order_sn+"</td>"+
+		          "</tr>";
+		$('#sal_finish thead').html(hthead);
+		$('#order_sn').val(order_sn.toString());
+		$('#res_person').val("");
+		$('#message').val("");
+		$('#sal_finish').show();
+	}
+	
+	//去除首尾空格
+	function  Trim(str){
+	  	return  str.replace(/^\s*(.*?)[\s\n]*$/g,  '$1');
+	}
+	
+	function apply_submit(){
+		var res_person = Trim(E('res_person').value);
+		var message = Trim(E('message').value);
+		do {
+			//检测责任人
+			if(res_person == ''){
+				alert('责任人未填写');
+				return false;
+			}
+			
+			//检测实际原因
+			if(message == ''){
+				alert('实际原因未填写');
+				return false;
+			}
+			
+			var tip = '确认完结吗';
+			if(confirm(tip)){
+				$('#form').submit();
+			}
+		}while(false);
+		
+		return;
+	}
+	
+	function indistinct_search(){
+		var keyword = Trim(E('keyword').value);
+		//检测关键字
+		if(keyword == ''){
+			alert('关键字未填写');
+			return false;
+		}
+			
+		$.ajax( {
+	       	 url : "sale_support_list.php",
+	       	 data : "keyword="+keyword+"&request=ajax&act=indistinct_search",
+	       	 type : "POST",
+	       	 cache: false,
+	       	 dataType :"json",
+	       	 error : function(XMLHttpRequest, textStatus, errorThrown) {
+	       	     // alert("检索失败：" + XMLHttpRequest.responseText);
+	       	     alert(XMLHttpRequest.status) ;
+	       	 },
+	       	 success : function(json) {
+	       		$('#sal_finish').hide();
+	                if (json.length == 0){
+	               	 $('#sal_detail').hide();
+	                } else {
+	                    var html = "" ; 
+	       	         for(var i=0; i<json.length; i++){
+	       	        	 var conf = "";
+	       	        	 if(json[i].status == 'OK'){
+	       	        		 conf = "<td><input type=\"checkbox\" onclick=\"finish("+json[i].order_sn+")\"/><span>未完结</span></td>";
+	       	        	 }else{
+	       	        		 conf = "<td><span>已完结</span></td>";
+	       	        	 }
+	           	         html += "<tr>"+
+	           	                    "<td>"+json[i].order_sn+"</td>" +
+	           	                    "<td>"+json[i].created_stamp+"</td>" +
+	           	                    "<td>"+json[i].send_by+"</td>" +
+	           	                    "<td>"+json[i].support_type_name+"</td>" + 
+	           	                    "<td>"+json[i].message+"</td>" + 
+	           	                    "<td>"+json[i].pay_name+"</td>" + 
+	           	                    "<td>"+json[i].facility_name+"</td>" +
+	           	                    "<td><a href=\"sale_support.php?order_id="+json[i].order_id+"\">查看</a></td>" +
+	           	                    conf +
+	           	                  "</tr>" ;
+	       	         }
+	       	         // 几个字段赋值
+	       	         $('#sal_detail tbody').html(html);
+	       	         $('#sal_detail').show();
+	       	         
+	                }
+	       	 }
+	       	 });
+	}
+	
+	
+	//	{/literal}
+		
+  	{if $smarty.request.info}alert('{$smarty.request.info}');{/if}
+	// ]]>
+  </script>
+  
+  <style type="text/css">
+  {literal}
+  .bWindow{width:100%;border-collapse:collapse;margin:10px 0;text-align:center;}
+  .bWindow table{border:0;width:100%;border-collapse:collapse;}
+  #main .bWindow td{padding:10px;border:0;border-bottom:1px solid #ccc;}
+  #main .bWindow td{}
+  .classification div{
+	margin: 0;
+    padding: 0;
+  }
+  .hd {
+      background-color: #F6F6F6;
+      background-repeat: repeat-x;
+      border: 1px solid #E7E7E7;
+      font-size: 14px;
+      height: 28px;
+      line-height: 28px;
+      padding-left: 10px;
+  }
+.bd {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: -moz-use-text-color #E7E7E7 #E7E7E7;
+    border-right: 1px solid #E7E7E7;
+    border-style: none solid solid;
+    border-width: 0 1px 1px;
+    padding: 1px 10px;
+}
+.classification dd {
+    padding-bottom: 8px;
+}
+.classification dt {
+    border-top: 1px dashed #CCCCCC;
+    color: #666666;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: -1px;
+    padding-top: 5px;
+}
+.ti {
+    color: #666666;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: -1px;
+    padding-top: 5px;
+}
+.list1,.list2,.list3{
+    margin-left: 5px;
+    overflow: hidden;
+}
+
+ol, li, ul {
+    list-style: none outside none;
+}
+.list1_selected span{
+	background: silver;
+}
+.list2_selected span{
+	background: silver;
+}
+.list3_selected span{
+	background: silver;
+}
+.list4_selected span{
+	background: silver;
+}
+.list5_selected span{
+	background: silver;
+}
+  {/literal}
+  </style>
+  
+</head>
+<body>
+
+<!--{if $tip}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#tip').slideUp("slow");
+		}, 3000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="tip" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$tip}
+	</div>
+  <!--{/if}-->
+
+<fieldset style="-moz-border-radius:6px;padding:10px;width:1200px;">
+<div class = "classification">
+<div class = "hd" style="height:60px;">
+<dd style="text-align:center;"><h2>售后搜索</h2></dd>
+</div>
+<div class = "bd" style="width:238px;float:left;">
+<dt>咨询类型</dt>
+
+<ul id = "list1" class="list1" style="line-height:20px;height:180px;">
+<li class = "list1_unselected" value = "0" onclick="changeSelect(this);"><span>全部</span></li>   
+<!-- {foreach from=$support_type_list item=item key=key} -->
+<li class = "list1_unselected" value = "{$key}" onclick="changeSelect(this);"><span>{$item}</span></li>   
+<!-- {/foreach} -->  
+</ul> 
+
+</div>
+
+<div class = "bd" style="width:238px;float:left;">
+<dt>查看类型</dt>
+
+<ul id ="list2" class="list2" style="line-height:20px;height:180px;">
+<!-- {foreach from=$check_type item=item key=key} -->
+<li class = "list2_unselected" value = "{$key}" onclick="changeSelect(this);"><span>{$item}</span></li>    
+<!-- {/foreach} -->  
+</ul> 
+
+</div>
+
+<div class = "bd" style="width:238px;float:left;">
+
+<dt>对应仓库</dt>
+
+<ul id ="list3" class="list3" style="line-height:20px;height:180px;">
+<li class = "list3_unselected" value = "0" onclick="changeSelect(this);"><span>全部</span></li>   
+<!-- {foreach from=$facilitys item=item } -->
+<li class = "list3_unselected" value = "{$item.facility_id}" onclick="changeSelect(this);"><span>{$item.facility_name}</span></li>    
+<!-- {/foreach} -->  
+<li><input type="text" name="facility_select" id="facility_select" style="width:150px;"/></li>
+</ul> 
+
+</div>
+
+
+<div class = "bd" style="width:238px;float:left;">
+<dt>支付方式</dt>
+
+<ul id ="list4" class="list4" style="line-height:20px;height:180px;">
+<li class = "list4_unselected" value = "0" onclick="changeSelect(this);"><span>全部</span></li>
+<!-- {foreach from=$pay_type item=item } -->
+<li class = "list4_unselected" value = "{$item.pay_id}" onclick="changeSelect(this);"><span>{$item.pay_name}</span></li>      
+<!-- {/foreach} -->  
+<li><input type="text" name="payment_select" id="payment_select" style="width:150px;"/></li>
+</ul> 
+
+</div>
+
+<div class = "bd" style="width:238px;float:left;height:227px;">
+<dt>杂项搜索</dt>
+<ul id ="list5" class="list5" style="line-height:20px;height:180px;">
+<li class = "list5_unselected" onclick="changeSelect(this);"><span>时间搜索</span><font color="red">(点这个也可搜索)</font></li>
+<li>从&nbsp;&nbsp;<input type="text" name="start_time" id="start_time" style="width:100px;"/><input type="button" value="..." id="start_time_trigger" /></li>
+<li>到&nbsp;&nbsp;<input type="text" name="end_time" id="end_time" style="width:100px;"/><input type="button" value="..." id="end_time_trigger" /></li>
+<br/>
+<li onclick="initList5();">模糊搜索</li>
+<li><input type="text" name="keyword" id="keyword" style="width:150px;"/></li>
+<li><input type="button" value="模糊搜索" onclick="indistinct_search();"/></li>
+<li><font color="red">只对模糊搜索有用</font></li>
+<li><input type="hidden" name="show_order_sn" id = "show_order_sn" value="{$showOrderSn}" /></li>
+</ul> 
+</div>
+
+</div>
+
+</fieldset>
+
+<br/>
+
+<div style="-moz-border-radius:6px;padding:10px;width:600px;">
+<form id="form" method="post">
+<table id="sal_finish" cellpadding="5" cellspacing="1"  style="width: 100%;"  class="bWindow"> 
+     <thead style="font-size: 12; ">
+     </thead>
+     <tbody>
+        <tr style="font-weigth: bold;">
+          <td style="width:100px;"><span class = "ti">责任人</span></td>
+          <td align="left"><input type="text" style="width:250px;" name="res_person" id="res_person"></input></td>
+        </tr>
+        <tr style="font-weigth: bold;">
+          <td style="width:100px;"><span class = "ti">实际原因</span></td>
+          <td><textarea rows="6" cols="75" id="message" name="message"></textarea></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td><input type="button" value="完结" onclick="apply_submit(this);"/></td>
+          <input type="hidden" name="act" value="finish"/>
+          <input type="hidden" name="order_sn" id="order_sn"/>
+        </tr>
+     </tbody>
+   </table>
+</form>
+</div>
+
+<div style="-moz-border-radius:6px;padding:10px;width:1200px;">
+<table id="sal_detail" cellpadding="5" cellspacing="1"  style="width: 100%;"  class="bWindow"> 
+     <thead style="font-size: 12; ">
+         <tr style="font-weight: bold;">
+            <td width="8%">订单号</td>
+            <td width="12%">发送时间</td>
+            <td width="6%">发送人</td>
+            <td width="14%">咨询类型</td>
+            <td width="30%">咨询详情</td>
+            <td width="10%">支付方式</td>
+            <td width="8%">所在仓库</td>
+            <td width="6%">操作</td>
+            <td width="8%">状态</td>
+         </tr>
+     </thead>
+     <tbody></tbody>
+   </table>
+</div>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_time",
+        button            : "start_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "end_time",
+          button            : "end_time_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+    //]]>
+</script>
+{/literal}
+
+</body>
+</html>

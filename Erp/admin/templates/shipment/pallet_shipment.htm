@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>码托交接发货</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+<script type="text/javascript">
+	//          
+	// {literal}
+
+	$(document).ready(function() {
+		// 绑定滑动效果
+		$('legend.expand').bind('click', function(event) {
+			$(this).next().slideToggle('normal');
+		});
+
+		// 绑定加载码托编码
+		$('#load_pallet_no').bind('click', load_pallet_no);
+		$('#pallet_no').bind('keyup', listen_pallet_no).focus();
+
+		$('#pallet_no').focus();
+
+	});
+
+	var KEY = {
+		RETURN : 13, // 回车
+		CTRL : 17, // CTRL
+		TAB : 9
+	};
+
+	/**
+	 * 码托编号监听
+	 */
+	function listen_pallet_no(event) {
+		switch (event.keyCode) {
+		case KEY.RETURN:
+		case KEY.CTRL:
+			load_pallet_no();
+			event.preventDefault();
+			break;
+		}
+	}
+	/**
+	 * 载入码托对应运单信息
+	 */
+	function load_pallet_no() {
+		var pallet_no = $.trim($('#pallet_no').val());
+		if (pallet_no == '') {
+			alert('请先扫描码托编号');
+			return;
+		}
+
+		location.href = "pallet_shipment.php?pallet_no=" + pallet_no;
+	}
+
+	// 检测输入的数字
+	function check_number_format(number) {
+		var reg = /(^\d+$)/;
+		if (!number.match(reg)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	// {/literal}
+</script>
+
+</head>
+<body>
+
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;码托交接发货&nbsp;</span>
+		</legend>
+		<form method="post" id="form">
+			<h3>运单状态信息</h3>
+			<div style="clear: both;">
+				<table cellpadding="5" cellspacing="1">
+					<tr>
+						<td width="120">扫描码托条码</td>
+						<td><input type="text" id="pallet_no" value="{$pallet_no}"
+							size="39" /> &nbsp;&nbsp;&nbsp;&nbsp; <input type="button"
+							id="load_pallet_no" value="加载" /></td>
+						<td>
+						{if $shipped}<span>交接成功，已发货</span>
+						{elseif $can_ship}
+						<input type="submit" name="submit" value="确认发货" /><input type="hidden" name="act" value="submit"></input>
+						{/if}
+						</td>
+						
+					</tr>
+
+					<!--{if $pallet_no}-->
+					<tr>
+						<td>码托快递</td>
+						<td>{$pallet_shipping_name}</td>
+					</tr>
+					<tr>
+						<td>可发货运单数</td>
+						<td>{$ok_num}</td>
+					</tr>
+					<!-- {/if} -->
+					
+				</table>
+				{if $has_shipped}
+					<div> <span style="color: red;">该码托已发货！</span> </div>
+				{elseif $pallet_no}
+				<table class="bWindow" style="width: 600px;">
+					{if !$can_ship}<tr><td colspan="2"><h3 style="color: red;">以下运单请先操作解绑</h3></td></tr>{/if}
+					{if $other_pallet_list}
+					<tr>
+						<td colspan="2"><h3>运单存在于多个码托</h3></td>
+					</tr>
+					<tr>
+						<td>运单号</td>
+						<td>码托编号</td>
+					</tr>
+					{foreach from=$other_pallet_list item=item}
+					<tr>
+						<td>{$item.tn}</td>
+						<td>{$item.pallet_nos}</td>
+					</tr>
+					{/foreach} 
+					{/if} 
+					{if $prepayment_consume_fail}
+					<tr>
+						<td colspan="2"><h3 style="color: red;">订单对应分销预存款抵扣失败订单。请联系运营、或财务</h3></td>
+					</tr>
+					<tr>
+						<td>运单号</td>
+						<td>分销预存款抵扣失败订单 订单号</td>
+					</tr>
+					{foreach from=$prepayment_consume_fail item=item}
+					<tr>
+						<td>{$item.bill_no}</td>
+						<td><a href="order_edit.php?order_id={$item.order_id}"
+							target="_blank">{$item.order_sn}</a>&nbsp;({$item.msg})</td>
+					</tr>
+					{/foreach} 
+					{/if} 
+					{if $cancel_order_list}
+					<tr>
+						<td colspan="2"><h3>运单对应订单状态异常</h3></td>
+					</tr>
+					<tr>
+						<td colspan="2">{$cancel_order_list}</td>
+					</tr>
+					{/if} 
+					{if $other_shipping_list}
+					<tr>
+						<td colspan="2"><h3>运单快递方式与码托不符</h3></td>
+					</tr>
+					<tr>
+						<td>运单号</td>
+						<td>快递方式</td>
+					</tr>
+					{foreach from=$other_shipping_list item=item}
+					<tr>
+						<td>{$item.tn}</td>
+						<td>{$item.ship_name}</td>
+					</tr>
+					{/foreach} 
+					{/if}
+					{if $noinvoice_orders}
+					<tr>
+						<td colspan="2"><h3>订单没有填写发票号</h3></td>
+					</tr>
+					<tr>
+						<td>运单号</td>
+						<td>订单号</td>
+					</tr>
+					{foreach from=$noinvoice_orders item=item}
+					<tr>
+						<td>{$item.bill_no}</td>
+						<td><a href="order_edit.php?order_id={$item.order_id}"
+							target="_blank">{$item.order_sn}</a></td>
+					</tr>
+					{/foreach} 
+					{/if} 
+					{if $noorder_bill_nos}
+					<tr>
+						<td colspan="2"><h3>以下运单号没有订单对应</h3></td>
+					</tr>
+					<tr>
+						<td colspan="2">{$noorder_bill_nos}</td>
+					</tr>
+					{/if} 
+					{if $ok_tracking_numbers}
+					<tr>
+						<td colspan="2"><h3>可以操作发货{$ok_num}个,快递方式: {$pallet_shipping_name}</h3></td>
+					</tr>
+					{foreach from=$ok_tracking_numbers item=item}
+					<tr>
+						<td colspan="2">{$item}</td> 
+					</tr>
+					{/foreach} 
+					{/if}
+					{if $shipped_tracking_numbers }
+					<tr>
+						<td colspan="2"><h3>已经发货运单</h3></td>
+					</tr>
+					<tr>
+						<td colspan="2">{$shipped_tracking_numbers}</td> 
+					</tr>
+					{/if}
+					
+				</table>
+				{/if}
+			</div>
+
+			<input type="hidden" name="pallet_no" value="{$pallet_no}" />
+
+		</form>
+
+		<br />
+		<br />
+
+	</fieldset>
+</body>
+</html>

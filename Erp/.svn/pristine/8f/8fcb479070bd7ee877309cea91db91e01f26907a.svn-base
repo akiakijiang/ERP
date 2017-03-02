@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>供应返利帐户查询</title>
+
+<script type="text/javascript">
+{literal}
+var process_request = '..';
+{/literal}
+</script>
+</head>
+
+<body>
+<h3>供应商返利帐户查询</h3>
+<form>
+<p>供应商
+  <select name="supplierId" id="supplierId">
+  <option value="">全部</option>
+  {foreach from=$providers item=provider}
+  <option value="{$provider.provider_id}" {if $provider.provider_id == $smarty.request.supplierId}selected="true"{/if}>{$provider.provider_name}</option>
+  {/foreach}
+  </select>
+<!--按 <select name="sort">
+    <option value="">默认</option>
+    {html_options options=$sort_enum selected=$smarty.request.sort}
+  </select> 排序 -->
+<input type="submit" name="s" value="查询" />
+</p>
+
+
+</form>
+<h3 style="text-align:right;"><a href="supplier_rebate_detail.php?act=create">新建返利</a> <a href="supplier_rebate_list.php">返利管理</a></h3>
+<h3>抵扣货款返利帐户</h3>
+<table class="bWindow">
+<tr><td>供应商返利帐户</td><td>已经创建但是未确认返利金额</td><td>已收到供应商返利金额</td><td>可用返利金额</td><td>查询详细</td></tr>
+{foreach from=$SupplierRebateAccounts item=SupplierRebateAccount name=SupplierRebateAccounts}
+<tr {if $smarty.foreach.SupplierRebateAccounts.iteration % 2 eq 0}bgcolor="#EFEFEF"{/if}>
+<td>{$SupplierRebateAccount->supplierName}</td>
+<td>￥{$SupplierRebateAccount->expectedAmounttotal}{assign var=sum_expectedAmount value=$sum_expectedAmount+$SupplierRebateAccount->expectedAmounttotal}</td>
+<td>￥{$SupplierRebateAccount->balanceQoh}{assign var=sum value=$sum+$SupplierRebateAccount->balanceQoh}</td>
+<td>￥{$SupplierRebateAccount->balanceAtp}{assign var=sum_atp value=$sum_atp+$SupplierRebateAccount->balanceAtp}</td>
+<td>
+<a href="supplier_rebate_account_detail.php?supplierRebateAccountId={$SupplierRebateAccount->supplierRebateAccountId}">抵扣货款返利明细</a> 
+</td>
+</tr>
+{/foreach}
+<tr><td>总计</td><td>￥ {$sum_expectedAmount}</td><td>￥ {$sum}</td><td>￥ {$sum_atp}</td><td></td></tr>
+</table>
+{if $smarty.request.supplierId}
+<h3>现金返利已收总额</h3>
+<div>￥ {$cashtotal} <a href="supplier_rebate_account_detail.php?type=cash&supplierId={$SupplierRebateAccount->supplierId}">现金返利明细</a> </div>
+{/if}
+
+
+</body>
+</html>

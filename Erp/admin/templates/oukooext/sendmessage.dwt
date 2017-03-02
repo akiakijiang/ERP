@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<style type="text/css">
+{literal}
+    .navigation span.options {
+        padding: 1px;
+    }
+    .navigation span.options a:hover {
+        background-color:#FF6600;
+        color:#FFFFFF;
+        padding:1px;
+    }
+    .navigation span.actived {
+        background-color:#FF6600;
+        color: #FFFFFF;
+        padding:1px;
+    }
+    .navigation span.actived a{
+        color: #FFFFFF;
+    }
+    .remind{
+        float:left;
+        border:#D4FF55 1px solid;
+        padding:0 5px;
+        color:#FFFFFF;
+        background-color:#008000;
+        position: absolute;
+        left:20px;
+    }
+{/literal}
+</style>
+<script language = "javascript" type = "text/javascript">
+{literal}
+      function previewcheck(){
+      	  $("#server_name").val($("#server_name_list").val());
+          document.getElementById("form1").target = "_blank";
+      }
+      function send(){
+      	  $("#server_name").val($("#server_name_list").val());
+          document.getElementById("form1").target = "";
+      }
+      function check() {
+          var len = document.getElementsByName("content")[0].value.length;
+          if (len > 67 && !confirm("短信内容长度为" + len + "，将收取2倍的费用，确认发送吗？")) {
+             return false;
+          }
+          return true;
+      }
+      function change_server() {
+      	$("#server_name").val($("#server_name_list").val());
+      	$("#form1").submit();
+      }
+{/literal}
+</script>
+
+
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+
+</style>
+{/literal}
+<title>短信</title>
+</head>
+
+<body>
+
+<!-- 发送短信的页面 -->
+{if ! $show_status_report}
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;发送短信&nbsp;</span></legend>
+    <div class="menu-tab">
+          <div class="right-edge">&nbsp;</div>
+        <div class="item"><a href="sendmessage.php?statusReport=1&page=1">查看状态报告</a></div>
+          <div class="active"><a href="sendmessage.php">发送短信</a></div>
+          <div class="left-edge">&nbsp;</div>
+    </div>
+<p style="color:red;">各位店长请在发送的短信内容最后不要忘了添加后缀，例如：多美滋官方旗舰店后缀可以写为【多美滋】</p>
+<p style="color:red;">移动、联通、电信每条短信 70 个字! 短信内容的总字数等于短信内容的字数加上签名的字数!</p>
+
+{if $server_name=='emay'} 
+<p style="color:red;">为了保证顺利地发送亲们的短信内容，请亲们在发送前务必确认短信内容中没有黑字典内容。是否含有黑字典内容请联系亿美客服，TEL:<font size="20">4007797255。</font></p>
+{else}
+<p style="color:red;">为了保证顺利地发送亲们的短信内容，请亲们在发送前务必确认短信内容中没有黑字典内容。是否含有黑字典内容请联系北京亿度动力客服，TEL:<font size="20">4006990903。</font></p>
+{/if}
+
+<h3>短信剩余: {$balance}条</h3>
+<form method="POST" enctype="multipart/form-data" id="form1" onsubmit="return check()">
+发送内容<br /> <input type="text" name="content" maxlength="300" size="200"/><br />
+手机号 （多个注意以半角';'分开）<input type="radio" name="source_type" value="csv" checked="true" /> 直接填写 <input type="radio" name="source_type" value="file" /> csv文件 <br />
+<textarea name="csv_str" cols="100" rows="10"></textarea><br />
+csv文件 <input type="file" name="csvfile" /><br />
+服务商
+<select id="server_name_list" onchange=change_server()>
+    {html_options options=$server_name_list selected=$smarty.request.server_name}
+</select>
+<input type="submit" name="preview" value="预览" onclick="previewcheck();" />
+<input type="submit" name="sendmessage" value="发送短信" onclick="send();" /><br />
+<input type="hidden" name="server_name" id="server_name" />
+</form><br /><br /><br /><br /><br />
+{/if}
+
+
+<!-- 查看状态报告的页面 -->
+{if $show_status_report}
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;查看状态报告&nbsp;</span></legend>
+    <div class="menu-tab">
+          <div class="right-edge">&nbsp;</div>
+          <div class="active"><a href="sendmessage.php?statusReport=1&page=1">查看状态报告</a></div>
+        <div class="item"><a href="sendmessage.php">发送短信</a></div>
+          <div class="left-edge">&nbsp;</div>
+      </div>
+      
+    <div style="clear:both;"> 
+        <h3 style="color:#09F;">查询</h3>
+          <form method="get" action="sendmessage.php">
+               内容: <input type="text" id="content" name="content" maxlength="70" size="120" value="{$content}"/><br>
+               手机号:<input type="text" id="dest_mobile" name="dest_mobile" maxlength="11" style="width: 100px;" value="{$dest_mobile}">&nbsp;&nbsp;&nbsp;
+               开始时间:<input style="width:90px" id="startCalendar" name="begin_time" value="{$begin_time}"><input type="button" value="..." id="startTrigger"></td>&nbsp;&nbsp;&nbsp;
+              结束时间：<input style="width:90px" id="endCalendar" name="end_time" value="{$end_time}"><input type="button" value="..." id="endTrigger">&nbsp;&nbsp;&nbsp;
+              服务商
+					<select name="server_name">
+					    {html_options options=$server_name_list selected=$smarty.request.server_name}
+					</select>
+              状态: <select name="is_succeed" id="is_succeed">
+                  <option value="all" {if $is_succeed=="all"}selected="selecetd"{/if}>全部</option>
+                  <option value="y" {if $is_succeed=="y"}selected="selecetd"{/if}>成功</option>
+                  <option value="n" {if $is_succeed=="n"}selected="selecetd"{/if}>未成功</option>
+              </select>&nbsp;&nbsp;&nbsp;
+              每页显示：
+                      <select name="page_size" id="page_size">
+                          <option value="30" {if $page_size == 30}selected="selected"{/if}>30</option>
+                          <option value="50" {if $page_size == 50}selected="selected"{/if}>50</option>
+                          <option value="100" {if $page_size == 100}selected="selected"{/if}>100</option>
+                          <option value="500" {if $page_size == 500}selected="selected"{/if}>500</option>
+                    </select> 条记录&nbsp;&nbsp;&nbsp;
+        <input type="hidden" name="statusReport" value="1">
+        <input type="hidden" name="page" value="1">
+        <input type="submit" value="查询" />
+          </form>
+     </div>  
+     
+     <br><br>
+     <h3 style="color:#09F;">查询结果</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>发送短息ID</td>
+              <td>接收报告ID</td>
+              <td>手机号</td>
+              <td>发送时间</td>
+              <td>接收时间</td>
+              <td>状态报告值</td>
+              <td>状态报告code</td>
+              <td>短信内容</td>
+              <td>服务商</td>
+          </tr>
+          {foreach from=$list item=report}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$report.history_id}</td>
+              <td>{$report.report_id}</td>
+              <td>{$report.dest_mobile}</td>
+              <td>{$report.send_time}</td>
+              <td>{$report.receive_time}</td>
+              <td>{$report.report_status}</td>
+              <td>{$report.status_code}</td>
+              <td>{$report.content}</td>
+              <td>{$report.server_name}</td>
+          </tr>
+          {foreachelse}
+              暂无数据
+          {/foreach}
+      </table>
+  <br>
+  {$Pager}
+    {literal}
+    <script type="text/javascript">//<![CDATA[
+          Zapatec.Calendar.setup({
+            weekNumbers       : false,
+            electric          : false,
+            inputField        : "startCalendar",
+            button            : "startTrigger",
+            ifFormat          : "%Y-%m-%d",
+            daFormat          : "%Y-%m-%d"
+          });
+          Zapatec.Calendar.setup({
+            weekNumbers       : false,
+            electric          : false,
+            inputField        : "endCalendar",
+            button            : "endTrigger",
+            ifFormat          : "%Y-%m-%d",
+            daFormat          : "%Y-%m-%d"
+          });
+        //]]>
+    </script>
+    {/literal}
+{/if}
+
+</body>
+</html>

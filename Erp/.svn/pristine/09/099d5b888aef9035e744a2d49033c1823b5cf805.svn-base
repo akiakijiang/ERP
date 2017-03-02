@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>调整单</title>
+<script type="text/javascript" src="../misc/jquery.js"></script>
+{literal}
+<style type="text/css">
+	
+	body{font-size:12px;font-family:"宋体"}
+	ul,ul li{list-style:none;font-size:12px;margin:0;padding:0;background:#fff;}
+	.who_get_goods{position:relative;margin:20px 0;}
+	.who_get_goods ul{position:absolute;top:20px;left:54px;border:1px solid #7f9db9;width:100px;}
+	.who_get_goods li{padding:3px;}
+	.goods_list{ border-collapse:collapse;border:1px solid #999;}
+	.goods_list td,.goods_list th{border:1px solid #999;padding:5px;}
+	.goods_list input[type="text"]{height:16px;padding-top:3px;}
+	.goods_list ul{position:absolute;top:23px;border:1px solid #7f9db9;width:202px;padding:5px 0;}
+	.goods_list li{padding:5px;}
+</style>
+
+<script>
+function submit_post(){
+	$("#modify").attr('disabled',true);
+	$("#modify_form").submit();
+}
+</script>
+{/literal}
+<link href="../styles/default.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!--{if $message}-->
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+	<br />
+	<!--{/if}-->
+<p>
+目前所处组织：{$user_current_party_name} 
+</p>
+
+<form id="upload" method="post" enctype="multipart/form-data">
+	      &nbsp;&nbsp;
+	      
+	      	<div style="float:left; width: 350px;">
+		       <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+		       <input type="submit" value="导入" name='import'/>
+		    </div>
+		   	<div style="float: left;">
+		   		<input type="submit" value="批量导入模版下载" name="download_template"/>
+		   		<input id="modify" type="button" value="批量修改" onclick="submit_post()" />
+		    </div>
+	    </form>
+
+<!--{if $not_out_goods}-->
+<h3 style="margin-top:30px;">待出库的商品列表：</h3>
+<form id="modify_form" name="form1" method="post">
+<table cellpadding=0 cellspacing=0 class="goods_list">
+	<tr>
+		<th width="250">商品名</th>
+		<th width="80">商家编码</th>
+		<th width="100">库存状态</th>
+		<th width="100">仓库名称</th>
+		<th width="50">申请调整数量</th>
+		<th width="50">订单</th>
+		<th width="50">申请时间</th>
+		<th width="50">类型</th>
+		<th width="50">已出库</th>
+		<th width="100">串号</th>
+	</tr>
+<!--{foreach from=$not_out_goods item=item}-->
+	<tr>
+		
+		<td>{$item.goods_name}</td>
+		<td>{$item.barcode}</td>
+		<td>{$item.status_id}</td>
+		<td>{$item.facility_name}</td>
+		<td>{$item.goods_number}</td>
+		<td>{$item.order_sn}</td>
+		<td>{$item.order_time}</td>
+		<td>{$item.order_type_id}</td>
+	    <td>{$item.out_num}</td>
+	  	<td>
+	  	
+<!--{if $item.is_serial}-->
+		
+	<!--{foreach from=$item.serial_numbers item=serial_number}-->
+		{$serial_number}<br/>
+	<!--{/foreach}-->
+		<input type="text" id = "{$item.order_goods_id}" name="serialNumber"/>
+<!--{/if}--> 
+		<input type="hidden" name="orderGoodsId[]" value="{$item.order_goods_id}" />
+		</td>
+	</tr>
+<!--{/foreach}-->
+</table>
+<input type="hidden" name = "act" value="out"/>
+</form>
+<!--{/if}-->
+<!--{if $already_out_goods}-->
+<h3 style="margin-top:30px;">已经出库商品列表：</h3>
+<table cellpadding=0 cellspacing=0 class="goods_list">
+	<tr>
+		<th width="250">商品名</th>
+		<th width="80">商家编码</th>
+		<th width="100">库存状态</th>
+		<th width="100">仓库名称</th>
+		<th width="50">申请调整数量</th>
+		<th width="50">订单</th>
+		<th width="50">申请时间</th>
+		<th width="50">类型</th>
+		<th width="50">出库数量</th>
+		<th width="100">串号</th>
+	</tr>
+<!--{foreach from=$already_out_goods item=item}-->
+	<tr>
+		<td>{$item.goods_name}</td>
+		<td>{$item.barcode}</td>
+		<td>{$item.status_id}</td>
+		<td>{$item.facility_name}</td>
+		<td>{$item.goods_number}</td>
+		<td>{$item.order_sn}</td>
+		<td>{$item.order_time}</td>
+		<td>{$item.order_type_id}</td>
+	    <td>{$item.out_num}</td>
+<!--{if $item.is_serial}-->
+		<td>
+	<!--{foreach from=$item.serial_numbers item=serial_number}-->
+		{$serial_number}<br />
+	<!--{/foreach}-->	
+		</td>
+<!--{/if}--> 
+	</tr>
+<!--{/foreach}-->
+</table>
+<!--{/if}-->
+
+<script type="text/javascript">
+{literal}
+{/literal}
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>申报系统订单比例监控</title>
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+	{literal}
+	body {
+		padding: 0px;
+		border: 0px;
+		font-family:arial, "Microsoft YaHei",sans-serif;
+	}
+	.modal-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background-color: rgba(0,0,0,.5);
+ 	 }
+   	.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -16px;
+    margin-top: -16px;
+    color: #fff;
+    display: block;
+    font-size: 32px;
+ 	}
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -350px;
+    margin-top: -200px;
+    width: 700px;
+    height: 400px;
+    background-color: #fff;
+    box-shadow: 0 0 10px #ccc;
+    overflow: scroll;
+    display: none;
+  }
+   table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+  .table-purchase-detail {
+    width: 100%;
+  }
+  .table-purchase-detail td,.table-purchase-detail th {
+    text-align: center;
+    border:1px solid #ccc;
+  }
+  .table-purchase-detail th {
+    padding:8px;
+    background-color: #3295dd;
+    color:#fff;
+    font-weight: normal;
+  }
+  .table-purchase-detail td {
+    padding:5px
+  }
+	.action {
+		font-weight: bold;
+		font-size: 12pt;
+		color: red;
+	}
+	.search-box {
+		padding: 10px 0;
+		/*border-top:100px;*/
+		font-size:11pt;
+	}
+	h2 {
+		color:#3295DD;
+	}
+	.order_list {
+		/*border-top: 200px;*/
+		padding: 20px 0 10px 0;
+		width: 100%;
+	}
+	table.order_ratio {
+		width:100%;
+		/*font-family: arial, "Microsoft YaHei",sans-serif;*/
+		font-size:11pt;
+		border-collapse: collapse;
+    	border: 1px solid #b7b7b7;	
+	}
+	table.order_ratio th {
+		background-color: #3295DD;
+		border:1px solid #b7b7b7 ;
+		color:white;
+		height: 40px;
+	}
+	table.order_ratio tr td {
+		text-align: center;
+		height:25px;
+		border:1px solid #b7b7b7 ;
+	}
+	table.order_ratio tr:nth-child(odd) {
+		background: #ECECEC;
+	}
+	{/literal}
+	</style>
+	<script type="text/javascript">
+	
+	{literal}
+	//<![CDATA[
+
+	$(document).ready(function(){
+
+		$(".btn-order-list").bind("click",function(event){
+			// event.preventDefault();
+			// alert("111");
+			var data = {
+				distributor_id: $(this).attr("distributorId"),
+				city_id: $(this).attr("cityId"),
+				district_id: $(this).attr("districtId")
+			};
+
+			$.ajax({
+				mode:"abort",
+				type:"post",
+				dataType:"json",
+				url:"declaration_order_check.php?act=get_appoint_order",
+				data:data,
+				beforeSend:function(){
+					$(".modal-content").hide();
+					$(".modal-wrap").fadeIn(500);
+					$(".loading").fadeIn(500);
+				},
+				success:function(data){
+					$(".loading").fadeOut(500);
+					var tableHtml = "";
+					if (data.is == 1) {
+                  	for (var key in data.content) {
+                   		 tableHtml += "<tr><td><a href='order_edit.php?order_id="
+                     			+data.content[key].order_id+"' target='_blank'>"
+                            	+data.content[key].order_sn+"</a></td><td>"
+                            	+data.content[key].order_time+"</td></tr>";
+                  	}
+                  $(".table-purchase-detail tbody").html(tableHtml);
+                  $(".modal-content").fadeIn(500);
+                }
+				},
+				error:function(error){
+					$(".loading").fadeOut(500);
+             		console.log("ajax error");
+					// console.log(error);
+				}
+			});
+		});
+
+      	$(".modal-wrap").bind("click",function(event){
+          	if($(event.target).attr("class") == "modal-wrap"){
+           		$(this).fadeOut(500);
+         	}	
+        });
+
+	});
+
+	function check_submit(node) {
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		console.log(item);
+		if (!item || item==undefined || item.length<1) {
+			alert('没有选中项');
+			return false;
+		}
+		$('#form').submit();
+		// $('input[name="checked[]"]:checked').parent().parent().remove();
+
+	}
+	//]]>
+	{/literal}
+	
+	</script>
+</head>
+<body>
+ <div class="modal-wrap">
+    <i class="fa fa-spinner fa-spin loading"></i>
+    <div class="modal-content">
+      <table class="table-purchase-detail">
+        <thead>
+          <tr>
+            <th>订单号</th>
+            <th>订单时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend>
+		<span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;申报系统订单比例监控&nbsp;</span>
+	</legend> 
+<div>
+	<p class="action">只显示当天，已确认已付款，且是嘉里保达仓发货的订单比例</p>
+	<form action="declaration_order_check.php" id="form" method="post">
+	<div class="search-box">
+		<label ><B>店铺：</B></label>
+		<br />
+		{foreach from = $distribution_list item=distributor}
+		<input type="checkbox" name="distributor[]" value="{$distributor.distributor_id}"> {$distributor.name}
+		{/foreach}
+	</div>	
+	<br />
+	<div>
+		<input type="button"  value="搜索" id="search" class="btn" onclick="check_submit(document.getElementById('form'))"/>
+		<input type="hidden" name="act" value="search" />			
+	</div>
+		
+	</form>
+</div>
+<div class="order_list">
+<h2>查询结果</h2>
+	<table class="order_ratio">
+		<tr>
+		<th width="30%">店铺</th>
+		<th width="30%">省市区</th>
+		<th width="20%">订单数量</th>
+		<th width="20%">订单占比</th>
+		</tr>
+		{foreach from = $order_ratio item=order}
+		<tr>
+			<td>{$order.name}</td>
+			<td>{$order.province} {$order.city} {$order.district}</td>
+			<td><a href="javascript:;" cityId="{$order.city_id}" districtId="{$order.district_id}" distributorId="{$order.distributor_id}" class="btn-order-list">{$order.count}</a></td>
+			<td>{$order.ratio}</td>
+		</tr>
+		{/foreach}
+	</table>
+</div>
+</fieldset>
+</body>
+</html>

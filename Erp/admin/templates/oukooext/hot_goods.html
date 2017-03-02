@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/odiv.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+{literal}
+<style>
+.bWindow{width:750px !important}
+.bWindow td{padding:5px !important;}
+.brand_name a{margin:0 5px;}
+</style>
+{/literal}
+<title>查看商品</title>
+</head>
+
+<body>
+<div  style=" height:100px;width:700px;">
+<form id="test_form" method="get" action="#">
+<select name="sort_type" style="margin-top:40px;">
+<option value="all">所有</option>
+<option value="amount" {if $smarty.request.sort_type == 'amount'}selected{/if}>按照销售额排序</option>
+<option value="average" {if $smarty.request.sort_type == 'average'}selected{/if}>分摊销售额</option>
+<option value="number" {if $smarty.request.sort_type == 'number'}selected{/if}>按照销售量排序</option>
+</select>
+<span >日期</span>
+<span style="margin-top:40px"><input type="text" style="height:14px;width:100px" id="startCalendar" name="startCalendar" value="{$smarty.request.startCalendar}"></span>
+<span style="margin-top:40px"><button id="startTrigger" style="border:0"><img src="images/image/date.gif" align="middle"></button></span>
+<span>到</span>
+<span style="margin-top:40px"><input type="text" style="height:14px;width:100px" id="endCalendar" name="endCalendar"  value="{$smarty.request.endCalendar}"></span>
+<span style="margin-top:40px"><button id="endTrigger" style="border:0"><img src="images/image/date.gif" align="middle"></button></span>
+<input style="margin-top:40px" type="submit" value="  搜索  " name="search">
+</form>
+</div>
+<div >
+<legend><span style=" font-weight:bold; font-size:18px; margin-buttom:10px; ">&nbsp;总销售额:{$sum}元&nbsp;</span></legend>
+	<table class="bWindow">
+    <tr>
+    	<th style="width:200px;">商品名称</th>
+		<th>销售量</th>
+		<th>销售额</th>
+		<th>详细订单信息</th>
+    </tr>
+    <tr>
+    <!--{foreach from=$goods_list item=goods}-->
+    <td>{if $goods.url != ""}<a href="{$goods.url}" target="_blank" >{/if}{$goods.goods_name}</a></td>
+    <td>{$goods.number}个</td>
+    <td>{if $smarty.request.sort_type == 'average'}{$goods.realamount}{else}{$goods.amount}{/if}</td>
+    <td><a href="conorders.php?goods_id={$goods.goods_id}&&starttime={$startCalendar}&&endtime={$endCalendar}" target="_blank">相关订单</a></td>
+    </tr>
+    <!-- {/foreach} -->
+</table>
+</div>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－产品/信息流</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索">
+</form>
+
+<table class="bWindow">
+<caption><h2>产品/信息流统计</h2></caption>
+<tr>
+<th>时间</th>
+<th>网站流量</th>
+<th>订单数</th>
+<th>确认订单数</th>
+<th>主页点击数</th>
+</tr>
+<tr align="center">
+<th>总计</th>
+<td></td>
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal" target="_blank">
+		{$sum.order_count}
+	</a>
+</td>
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&order_status=1" target="_blank">
+		{$sum.confirm_order_count}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.confirm_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}			
+	</a>
+</td>
+</tr>
+<!--{foreach from=$dates item=date}-->
+{assign var=day value=$date|substr:8:2}
+{assign var=month value=$date|substr:5:2}
+{assign var=year value=$date|substr:0:4}
+<tr align="center">
+<td style="width:80px">{$date}</td>
+<td><a href="redirect.php?url=http%3A%2F%2Fawstats.coolman.com.cn:81%2Fawstats%2Fawstats.pl%3Fday%3D{$date|substr:8:2}%26month%3D{$date|substr:5:2}%26year%3D{$date|substr:0:4}%26output%3Dmain%26config%3Dwww.ouku.com%26framename%3Dindex" target="_blank">点击查看</a></td>
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal" target="_blank">
+		{$values[$date].order_count}
+	</a>
+</td>
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=1" target="_blank">
+		{$values[$date].confirm_order_count}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].confirm_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}		
+	</a>
+</td>
+<td>{assign var=click_url value="http://122.224.141.188/shop/click_"|cat:$month|cat:$year|cat:$day|cat:".html"}<a href="redirect.php?url={$click_url|escape:url}" target="_blank">点击查看</a></td>
+</tr>
+<!--{/foreach}-->
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

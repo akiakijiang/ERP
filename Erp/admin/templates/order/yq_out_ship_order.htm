@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>亨氏云擎外包订单打标</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+
+<!-- Calendar -->
+<link rel="stylesheet" type="text/css" href="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.js"></script>
+<!-- Calendar /-->
+
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+var property={
+    divId:"demo",
+    needTime:true,
+    yearRange:[1970,2030],
+    week:['日','一','二','三','四','五','六'],
+    month:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+    format:"yyyy-MM-dd hh:mm:ss",
+};
+$(document).ready(function(){
+    canva1=$.createGooCalendar("start",property);
+    canva2=$.createGooCalendar("end",property);
+    
+	var timeType = $("#timeType").val();
+	$("select[name='timeType'] option[value='" + timeType + "']").attr("selected", true);
+	
+	$("#start").val($("#hidStart").val());
+	$("#end").val($("#hidEnd").val());
+	
+	
+	$('#search_form').submit(function () {
+		$start = $('#start').val();
+		$end = $('#end').val();
+		if ($start == null || $start == "") {
+			alert("请选择订单开始时间");
+			return false;
+		}
+		if ($end == null || $end == "") {
+			alert("请选择订单结束时间");
+			return false;
+		}
+		
+		if ($start > $end) {
+			alert("开始时间不能大于结束时间");
+			return false;
+		} 
+		return true;
+	});
+});
+
+
+
+//{/literal}
+//]]>
+</script>
+
+</head>
+
+<body>
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+
+<!-- 指示 -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;亨氏云擎外包订单打标&nbsp;</span></legend>
+     {if $search_message}
+         <b>{$search_message}</b>
+     {/if}
+     
+
+
+	<div class="menu-tab">
+	<div class="right-edge">&nbsp;</div>
+	<div class="item"><a href="yq_out_ship_order.php?act=showTask">结果查询</a></div>
+	<div class="active"><a href="yq_out_ship_order.php">打标操作</a></div>
+	<div class="left-edge">&nbsp;</div>
+	</div>
+	<br/><br/>
+     
+<form id="search_form" method="post">
+<p>
+订单时间：
+	从&nbsp;<input type="text" value="" id="start" name="start" size="18" value="{$start}"></input>&nbsp;
+	到&nbsp;<input type="text" value="" id="end" name="end" size="18" value="{$end}"></input>&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="hidden" id="hidStart" value="{$start}"></input>
+	<input type="hidden" id="hidEnd" value="{$end}"></input>
+
+
+快递方式：	
+	<select name="shipping_id" id="shipping_id">
+		<option value=-1 {if $shipping_id eq -1}selected="selected"{/if}>--全部--</option>
+		{foreach from=$shipping_list key=key item=shipping}
+			<option value="{$shipping.shipping_id}" {if $shipping.shipping_id eq $shipping_id}selected="selected"{/if}>{$shipping.shipping_name}</option>
+		{/foreach}
+	</select>&nbsp;&nbsp;&nbsp;&nbsp;
+	
+	
+	<input type="hidden" name="act" value="list" />
+	<input type="submit" value="筛选"></input>
+</p>
+</form>
+<br/><br/>
+<!--{if $checkTask}-->
+<b><font color="red" size="2">当前业务组还有未完成的打标任务，请耐心等待！</font></b>
+<!-- {else} -->
+<form action="yq_out_ship_order.php" method="post" onsubmit="return check_form()" style="background-color:white;">
+      <fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;待打标订单&nbsp;</span>
+		</legend>
+		
+		<div style="clear: both;">
+          {foreach from=$list item=result}
+          <input type="checkbox" name="chk[]" value="{$result.order_id}" /> 
+          <span class="first-cell" ><a href="order_edit.php?order_id={$result.order_id}">{$result.order_sn}</a></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          {/foreach}
+      </div>
+      <span>全选：<input type="checkbox" name="all" id="all"  value="" onclick="checkAll()" /> &nbsp;&nbsp;&nbsp;&nbsp;
+                         反选：<input type="checkbox" name="Inverse" id="Inverse"  value="" onclick="checkInverse()" />
+       </span>
+       <input type="hidden" name="hidStart" value="{$start}"></input>
+		<input type="hidden" name="hidEnd" value="{$end}"></input>
+       <input type="hidden" name="act" value="addTask"></input>
+        <input type="submit" name="submit" value="打标" ></input>
+      {$pagination}
+      <!-- {if ! $list} -->
+      <br />
+      <center>无结果!</center>
+      <!-- {/if} -->
+</fieldset>
+</form>
+<!-- {/if}  -->
+<script language="JavaScript">
+{literal}
+//全选按钮
+function checkAll(){
+    $("input[name='chk[]'][type='checkbox']").each(function(){
+    	$('#Inverse').removeAttr("checked"); 
+        if(!$(this).attr("checked")){ 
+             $(this).attr("checked","true"); 
+        } 
+    }); 
+}
+/*反选按钮*/
+function checkInverse() {
+    $("input[name='chk[]'][type='checkbox']").each(function(){
+    	$('#all').removeAttr("checked");
+        if($(this).attr("checked")){ 
+            $(this).removeAttr("checked"); 
+        } else { 
+           $(this).attr("checked","true"); 
+        } 
+    }); 
+}
+
+function check_form(){
+	var length = "";
+    $("input[name='chk[]'][type='checkbox']").each(function(){ 
+        if($(this).attr("checked")){
+            length+=this.value+',';
+        }
+    }); 
+    if ("" == length) {
+        alert("请选择打标订单");
+        return false;
+    }
+	
+}
+{/literal}
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>订单状态追踪</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　            <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script type="text/javascript" src="misc/jquery.js"></script>
+        <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+        <link href="styles/default.css" rel="stylesheet" type="text/css" />
+		<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+		<link href="misc/thickbox.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript" src="misc/thickbox.js"></script>
+        <!-- <link rel="stylesheet" href="styles/rf_scan.css" /> -->
+        <script src="js/jquery-1.3.2.js"></script>
+        <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+        <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+        <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+    </head>
+    <body>
+    <h3>共费时{$cost_time}秒 ！(*^__^*)</h3>
+    <form action="order_tracking_for_11111.php" method="GET" name="time_submit" id="time_submit">
+        <span>开始日期:</span>
+        <span>
+        <input type="text" style="height:20px;width:100px" id="startCalendar" name="startCalendar" value="{$startDate}">
+        </span>
+        <span>
+        <input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" />
+        </span>
+        <span>结束日期:</span>
+        <span>
+        <input type="text" style="height:20px;width:100px" id="endCalendar" name="endCalendar" value="{$endDate}">
+        </span>
+        <span>
+        <input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" />
+        </span>
+        <span>仓库:</span>
+        <span>
+        <select name="facility">{html_options options=$facility_list selected=$facility}</select>
+        </span>
+        <input type="submit" value="确认提交"/>
+    </form>
+        <hr>
+    	<table border="1">
+    		<tr>
+    			<th>组织名</th>
+    			<th>仓库</th>
+                <th>昨日遗留订单</th>
+                <th>昨日遗留今日发货订单</th>
+    			<th>今日新增订单</th>
+    			<th>待确认</th>
+    			<th>已确认待预定</th>
+    			<th>待配货</th>
+    			<th>批拣中</th>
+    			<th>已出库待复核</th>
+    			<th>已复核待发货</th>
+    			<!-- <th>已配货待出库[老流程]</th> -->
+    			<th>今日已发货</th>
+    			<th>昨日16点之后发货订单</th>
+    		</tr>
+    	{foreach from=$order_info key=k item=value}
+    	<tr>
+    		<td>{$value.party_name}</td>
+    		<td>{$value.facility_name}</td>
+            <td>
+	            <a href="../admin/overstock_orders_list.php?facility={$value.facility_id}&party_id={$value.party_id}&startDay={$startDate}&yesterday={$yesterday}&keepThis=true&TB_iframe=true&height=500&width=900" class="thickbox" title="昨日遗留订单">
+					{$value.overstock_num}
+	          	</a>
+            </td>
+            <td>{$value.overShipping_num}</td>
+    		<td>{$value.new_num}</td>
+    		<td>{$value.unconfirmed_order}</td>
+    		<td>{$value.confirmed_order}</td>
+    		<td>{$value.shipmentlist_order}</td>
+    		<td>{$value.new_batched_order}</td>
+    		<td>{$value.new_delivered_order}</td>
+    		<td>{$value.to_ship_order}</td>
+    		<!-- <td>{$value.to_ship_order_old}</td> -->
+    		<td>{$value.shipped_order}</td>
+    		<td>{$value.yesterShipping_num}</td>
+    	</tr>
+    	{/foreach}
+    	</table>
+    </body>
+{literal}
+<script type="text/javascript">
+	//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "endCalendar",
+          button            : "endTrigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+    //]]>
+</script>
+{/literal}
+</html>

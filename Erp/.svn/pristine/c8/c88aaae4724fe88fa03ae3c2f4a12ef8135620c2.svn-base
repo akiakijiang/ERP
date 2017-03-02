@@ -1,0 +1,310 @@
+<html>
+
+<head>
+<meta name=Title content="">
+<meta name=Keywords content="">
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 14">
+<link rel=File-List href="Print_Area_files/filelist.xml">
+<style>
+{literal}
+body {font-family:arial;border:font-size:12px;}
+.xl86 {
+	color:white;
+	font-size:24.0pt;
+	font-weight:700;
+	text-align:center;
+	background:black;
+}
+table td {border:1px solid #000;padding:5px;}
+b{font-weight:bold;}
+{/literal}
+</style>
+</head>
+
+<body link="#0000D4" vlink="#6711FF"  {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+<table cellpadding=0 cellspacing=0 style='border-collapse:
+ collapse;table-layout:fixed;width:700pt;border:1px solid #000;'>
+ <col style='mso-width-source:userset;mso-width-alt:3754;width:108pt'>
+ <col style='mso-width-source:userset;mso-width-alt:2858;width:40pt'>
+ <col style='mso-width-source:userset;mso-width-alt:3541;width:66pt'>
+ <col style='mso-width-source:userset;mso-width-alt:3882;width:40pt'>
+ <col style='width:53pt'>
+ <col style='mso-width-source:userset;mso-width-alt:4864;width:88pt'>
+ <col style='width:53pt'>
+ <col style='mso-width-source:userset;mso-width-alt:5290;width:88pt'>
+ <col style='mso-width-source:userset;mso-width-alt:2133;width:50pt'>
+ <col style='mso-width-source:userset;mso-width-alt:2346;width:55pt'>
+ <col style='mso-width-source:userset;mso-width-alt:4949;width:40pt'>
+ <col style='mso-width-source:userset;mso-width-alt:3242;width:76pt'>
+ <tr>
+  <td colspan=12  class=xl86 style='background:#000;width:700pt'><a name="Print_Area"><span
+  style="mso-spacerun:yes"> </span>Invoice</a></td>
+ </tr>
+ <tr  style=''>
+  <td colspan=4  class=xl69 style=''>Date<span
+  style="mso-spacerun:yes">  </span>{$smarty.now|date_format:"%Y/%m/%d"}</td>
+  <td colspan=8 class=xl69 style=''>Invoice #</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=4  class=xl69 style=''>Shipper Name</td>
+  <td colspan=8 class=xl69 style=''>Consignee Name</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=4  class=xl75 style=''>Candy Chen</td>
+  <td colspan=8 class=xl75 style=''>{$order_info.consignee}</td>
+ </tr>
+ <tr class=xl66  style=''>
+  <td colspan=4  class=xl69 style=''>Contact Person</td>
+  <td colspan=8 class=xl69 style=''>Contact Person</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=4  class=xl75 style=''>Candy Chen</td>
+  <td colspan=8 class=xl75 style=''>{$order_info.consignee}</td>
+ </tr>
+ <tr class=xl66  style=''>
+  <td colspan=4  class=xl69 style=''>Street Address</td>
+  <td colspan=8 class=xl69 style=''>Street Address</td>
+ </tr>
+ <tr style='mso-height-source:userset;'>
+  <td colspan=4 class=xl83 width=329 style='width:329pt'>
+  Unit152B, No. 1355, Jinji Lake Avenue, Suzhou Industrial Park</td>
+  <td colspan=8 class=xl75 style=''>{$order_info.address} {$order_info.sign_building}</td>
+ </tr>
+ <tr class=xl66  style=''>
+  <td colspan=1  class=xl69 style=''>City</td>
+  <td colspan=3 class=xl69 style=''>Postal Code</td>
+  <td colspan=2 class=xl69 style=''>City</td>
+  <td colspan=2 class=xl69 style=''>Postal Code</td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=1  class=xl112 style=''>SuZhou</td>
+  <td colspan=3 class=xl79 style=''>215021</td>
+  <td colspan=2 class=xl84 style=''>{$order_info.city_name|default:$order_info.order_attributes.city_text[0].attr_value}</td>
+  <td colspan=2 class=xl84 style=''>{$order_info.zipcode}</td>
+  <td colspan=2 class=xl84 style=''>&nbsp;</td>
+  <td colspan=2 class=xl84 style=''>&nbsp;</td>
+ </tr>
+ <tr class=xl66  style=''>
+  <td colspan=1  class=xl69 style=''>Country</td>
+  <td colspan=3 class=xl69 style=''>Email Address</td>
+  <td colspan=2 class=xl69 style=''>Country</td>
+  <td colspan=2 class=xl69 style=''>Email Address</td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=1  class=xl81 style=''>CHINA</td>
+  <td colspan=3 class=xl89 style=''><span style='color:black;text-decoration:none'>service@jennyjoseph.com</span></td>
+  <td colspan=2 class=xl84 style=''>{$order_info.country_name}</td>
+  <td colspan=2 class=xl91 style=''>{$order_info.email}</td>
+  <td colspan=2 class=xl81 style=''>&nbsp;</td>
+  <td colspan=2 class=xl84 style=''>&nbsp;</td>
+ </tr>
+ <tr class=xl67  style=''>
+  <td colspan=1  class=xl69 style=''>Tel</td>
+  <td colspan=3 class=xl69 style=''>Fax</td>
+  <td colspan=2 class=xl69 style=''>Tel</td>
+  <td colspan=2 class=xl69 style=''><span
+  style="mso-spacerun:yes"> </span></td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=1  class=xl85 width=155 style='width:155pt'>+85281972796</td>
+  <td colspan=3 class=xl84 style=''>&nbsp;</td>
+  <td colspan=8 class=xl92 style=''>{$order_info.tel}</td>
+ </tr>
+ <tr class=xl66  style=''>
+  <td colspan="4" class=xl70 style=''>Exporting Carrier: {$carrier_code}</td>
+  <td class=xl70 colspan=3 style=''>Incoterms</td>
+  <td colspan=3 class=xl76 style=''>&nbsp;</td>
+  <td colspan=2 class=xl69 style=''>&nbsp;</td>
+ </tr>
+ <tr class=xl67  style='mso-height-source:userset;'>
+  <td colspan=4  class=xl87 width=155 style='width:155pt'>Other
+  Information(i.e. ITN#):</td>
+  <td colspan=4 class=xl87 width=344 style='width:344pt'>Total
+  # of Pieces:</td>
+  <td colspan=4 class=xl87 width=297 style='width:297pt'>Total
+  Gross Weight in Kilos:</td>
+ </tr>
+ <tr class=xl67  style='mso-height-source:userset;'>
+  <td colspan=4  class=xl87 width=155 style='width:155pt'></td>
+  <td colspan=4 class=xl87 width=344 style='width:344pt'>{$order_info.qty}</td>
+  <td colspan=4 class=xl87 width=297 style='width:297pt'>0.00kg</td>
+ </tr>
+ <tr class=xl67  style='mso-height-source:userset;height:30.0pt'>
+  <td colspan=4  class=xl88 width=238 style='width:238pt'>Full Description of Goods</td>
+  <td class=xl71 width=32 style='width:91pt'>HTS</td>
+  <td colspan=2 class=xl88 width=167 style='width:167pt'>Country of Manufacture</td>
+  <td colspan=1 class=xl88 width=177 style='width:177pt'>QTY</td>
+  <td colspan=2 class=xl71 width=105 style='width:105pt'>Unit Price USD $</td>
+  <td colspan=2 class=xl71 width=192 style='width:192pt'>Total Price USD $</td>
+ </tr>
+{* <tr class=xl65  style='mso-height-source:userset;'>
+  <td colspan=4  class=xl105 width=238 style='width:238pt'>{$pinming.name}<br/>(HS CODE:{$pinming.hscode})</td>
+  <td class=xl73 width=32 style='width:91pt'>&nbsp;</td>
+  <td colspan=2 class=xl94 width=167 style='width:167pt'>CN</td>
+  <td colspan=1 class=xl104 width=177 style='width:177pt'>{$Quantity}</td>
+  <td colspan=2 class=xl93 width=105 style='width:105pt'>{$UnitPrice}</td>
+  <td colspan=2 class=xl93 width=192 style='width:192pt'>{$UnitPrice*$Quantity}</td>
+ </tr>*}
+{foreach from=$goods_list item=goods_item name=goods_item}
+ <tr class=xl65  style='mso-height-source:userset;'>
+  <td colspan=4  class=xl105 width=238 style='width:238pt'>{$goods_item.goods_name_x}</td>
+  <td class=xl73 width=32 style='width:91pt'>&nbsp;</td>
+  <td colspan=2 class=xl94 width=167 style='width:167pt'>CN</td>
+  <td colspan=1 class=xl104 width=177 style='width:177pt'>{$goods_item.goods_number}</td>
+  <td colspan=2 class=xl93 width=105 style='width:105pt'>{$order_info.order_attribute.order_currency_symbol}{$goods_item.shop_price_compress}</td>
+  <td colspan=2 class=xl93 width=192 style='width:192pt'>{$order_info.order_attribute.order_currency_symbol}{$goods_item.goods_total_compress}</td>
+ </tr>
+{/foreach}
+
+		<tr>
+			<td align="LEFT" colspan="6" style="border-right-style: solid; border-right-color: rgb(60, 60, 60); " valign="MIDDLE" width="81">
+				&nbsp;</td>
+			<td align="LEFT" colspan="4" style="border-bottom-style: solid; border-bottom-color: rgb(60, 60, 60); border-left-style: solid; border-left-color: rgb(60, 60, 60); border-right-style: solid; border-right-color: rgb(60, 60, 60); " valign="MIDDLE" width="325">
+				<b>Total Declared Value:</b></td>
+			<td align="CENTER" colspan="2" style="border-bottom-style: solid; border-bottom-color: rgb(60, 60, 60); border-left-style: solid; border-left-color: rgb(60, 60, 60); border-right-style: solid; border-right-color: rgb(60, 60, 60); " valign="MIDDLE" width="163">
+				US$：{$order_info.goods_amount_usd_compress}</td>
+		</tr>
+		<tr>
+			<td align="LEFT" colspan="6" style="border-bottom-style: solid; border-bottom-color: rgb(60, 60, 60); border-right-style: solid; border-right-color: rgb(60, 60, 60); " valign="MIDDLE">
+				&nbsp;</td>
+			<td align="LEFT" colspan="4" style="border-top-style: solid; border-top-color: rgb(60, 60, 60); border-bottom-style: solid; border-bottom-color: rgb(60, 60, 60); border-left-style: solid; border-left-color: rgb(60, 60, 60); border-right-style: solid; border-right-color: rgb(60, 60, 60); " valign="MIDDLE">
+				<b>Freight Charges:</b></td>
+			<td align="CENTER" colspan="2" style="border-top-style: solid; border-top-color: rgb(60, 60, 60); border-bottom-style: solid; border-bottom-color: rgb(60, 60, 60); border-left-style: solid; border-left-color: rgb(60, 60, 60); border-right-style: solid; border-right-color: rgb(60, 60, 60); " valign="MIDDLE">
+				US$：{$order_info.shipping_fee_x}</td>
+		</tr>
+
+ <tr class=xl65 height=12 style='mso-height-source:userset;'>
+  <td colspan=12 height=12 class=xl101 width=238 style='width:238pt'></td>
+ </tr>
+		<tr>
+			<td colspan="3" align="LEFT" height="18" valign="MIDDLE" width="81" style="border-width: 0px;">
+				<b>Payer of GST/VAT:</b></td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" width="81" style="border-width: 0px;">
+				&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="LEFT" height="18" valign="MIDDLE" style="border-width: 0px;">
+				<b>HS.Code:</b> {$pinming.hscode}</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td colspan="2" align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				<b>Currency Code:</b> USD</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="LEFT" height="18" valign="MIDDLE" style="border-width: 0px;">
+				<b>Type of Export:</b> Permanent</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td colspan="4" align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				<b>Terms of Trade:</b> Deliver Duty Unpaid</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="LEFT" height="18" valign="MIDDLE" style="border-width: 0px;">
+				<b>Terms of Export:</b> DDU</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="LEFT" height="18" valign="MIDDLE" style="border-width: 0px;">
+				<b>Reason For Export:</b> Sale</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+			<td align="LEFT" valign="MIDDLE" style="border-width: 0px;">
+				&nbsp;</td>
+		</tr>
+
+ <tr class=xl65 height=12 style='mso-height-source:userset;'>
+  <td colspan=12 height=12 class=xl101 width=238 style=width:238pt'></td>
+ </tr>
+ 
+ <tr height=23 style='mso-height-source:userset;height:23.25pt'>
+  <td colspan=12 height=24 class=xl114 width=496 style='height:24.25pt;
+  width:496pt;'>I/we hereby certify that the information on this invice is true
+  and correct and that the contents of this shipment are as stated above.</td>
+ </tr>
+ <tr  style=''>
+  <td colspan=6 rowspan=2 class=xl69 style=''>Signature and Title of Authorized Person</td>
+  <td colspan=6 rowspan=2 class=xl87 width=474 style='width:474pt;'>Date</td>
+ </tr>
+ <tr  style=''>
+ </tr>
+</table>
+
+</body>
+
+</html>

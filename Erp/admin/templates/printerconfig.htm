@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>条码打印机配置</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+
+<!--{literal}-->
+<style type="text/css">
+.tip{ color: #888; }
+.require{ color: #F00; }
+.odd {background:#efefef;}
+.even {background:#E5F3F6;}
+.main {background:#ccc;}
+.main td, .main th{background:#fff;}
+</style>
+<script type="text/javascript">
+  function setprinter(party_id, printer_id) {
+    $('#party_id').val(party_id);
+    $('#printer_id').val(printer_id);
+    //alert($('#printer_id').value);
+  }
+</script>
+<!--{/literal}-->
+  
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;条码打印机配置&nbsp;</span></legend>
+
+	<div style="clear:both;"> 
+	<h3>各组织下的条码打印机</h3>
+    <form method="post">
+    <input type="hidden" name="act" value="delete" />
+    <input type="hidden" name="printer_id" id="printer_id" value="" />
+    <input type="hidden" name="party_id" id="party_id" value="" />
+  	<table cellpadding="5" cellspacing="1" cellpadding="1" width="50%" class="main">
+        <thead>
+        <tr>
+        <th>组织</th><th>打印机(代码)</th><th>操作</th>
+        </tr>
+        </thead>
+    	
+        <tbody>
+        {foreach from=$printer_configs key=party_id item=printers name=printer_configs}
+            {foreach from=$printers item=printer_name key=printer_id name=printer}
+            <tr >
+            {if $smarty.foreach.printer.first}
+            <td rowspan="{$printers|@count}">{$party_options_list.$party_id}</td>
+            {/if}
+            <td>{$printer_name}({$printer_id})</td>
+            <td><input onclick="setprinter('{$party_id}', '{$printer_id}');" type="submit" value="删除" /></td>
+            </tr>
+            {/foreach}
+        {/foreach}
+        </tbody>
+    </table>
+    </form>
+    </div>
+    
+    <div style="clear:both;"> 
+	<h3>添加新的打印机 </h3>
+    <form method="post">
+    <p>
+    打印机组织：
+  	<select name="party_id">
+    {html_options options=$party_options_list selected=$smarty.session.party_id}
+    </select>
+    <br /> * 请选择具体的组织，父组织的配置不会作用到子组织上; 对该组织配置打印机时，需要确保客户端支持printer_id设置，否则无需在此设置
+    </p>
+    <p>
+    打印机代码：<input type="text" name="printer_id" />
+    <br />    * 每个party下唯一标识打印机的代码，请输入字母或数字，客户端配置 printer_id时输入此代码
+    </p>
+    <p>
+    打印机名称：<input type="text" name="printer_name" /> 
+    <br />    * 方便操作人员查看的名称
+    </p>
+    <input type="submit" value="增加" />
+    <input type="hidden" name="act" value="add" />
+    </form>
+    </div>
+  
+</fieldset>
+
+
+</body>
+</html>

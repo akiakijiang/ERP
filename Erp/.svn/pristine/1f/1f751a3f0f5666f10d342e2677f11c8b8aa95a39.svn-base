@@ -1,0 +1,6 @@
+"汇总","{$sh_sum_purchase_paid_amount}"
+"订单号","商品名","条码","数量","供价","供应商","新旧","人名","还机时间","操作人|还机时间|操作时间","是否归还","类型","串号","备注"
+{foreach from=$sh_goods_list item=goods}
+"{$goods.order_sn}","{$goods.goods_name}","{$goods.barcode}","{$goods.goods_number}","{if view_provide_price($goods.category)}{$goods.purchase_paid_amount}{else}N/A{/if}","{$goods.provider_name}","{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新{else}二手{/if}","{$goods.consignee}","{$goods.predict_return_time}","{foreach from=$goods.return_time_history item=history}{$history.operator_and_time}
+{/foreach}","{if $goods.is_return == '1'}是{else}否{/if}","{$goods.order_type}","{$goods.serial_number}","{$goods.postscript}",""
+{/foreach}

@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>库存销量对比</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+<body>
+
+<table class="bWindow">
+<caption><h2>库存销量对比</h2><br><br></caption>
+<tr>
+<th><a href="storage.php">商品名</a></th>
+<th>库存量</th>
+<th>上周销量</th>
+<th>上月销量</th>
+</tr>
+{foreach from=$storage_res item=storage}
+<tr align="center">
+<td>{$storage.goods_name}</td>
+<td>{$storage.storage_count|default:0}</td>
+<td>{$storage.sale_count_week|default:0}</td>
+<td>{$storage.sale_count_month|default:0}</td>
+</tr>
+{/foreach}
+</table>
+</body>
+</html>

@@ -1,0 +1,1153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/odiv.css" rel="stylesheet" type="text/css">
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+
+<style type="text/css">
+{literal}
+*{
+	padding:0;
+	margin:0;
+}
+.Table3_Bo table{
+	width:100%;
+	text-align:center;
+	border-bottom:1px solid #b2b2b2;
+	border-collapse:collapse;
+}
+.Table3_Bo th{
+	height:30px;
+	line-height:30px;
+	border:1px solid #b2b2b2;
+}
+.Table3_Bo td{
+	height:50px;
+	line-height:50px;
+	border:1px solid #b2b2b2;
+}
+.Table3_Bo table table{
+	border:0;
+	width:100%;
+}
+#user{
+	padding-bottom:15px;
+	_height:1%;
+}
+#user table{
+	float:right;
+	width:90.5%;
+	margin-top:-30px;
+	margin-right:10px;
+	margin-bottom:10px;
+}
+p{
+	padding:0;
+	margin:5px 0;
+}
+#user table td{
+	border:1px solid #b2b2b2;
+}
+.Table3_Bo table table td{
+	border:0;
+	border-bottom:1px solid #b2b2b2;
+	width:16.6%;
+}
+.b5{
+	margin-left:25px;
+}
+.b6{
+	margin-left:15px;
+}
+.w1{
+	width:10%;
+}
+.w2{
+	width:15%;
+}
+.w3{
+	width:20%;
+}
+
+.Button4{
+	background-repeat:no-repeat;
+	height:25px;
+	line-height:25px;
+	padding:0;
+	cursor:pointer;
+}
+.Button3{
+	background-repeat:no-repeat;
+	height:22px;
+	line-height:22px;
+	padding:0;
+	margin:5px;
+	cursor:pointer;
+}
+.Table3_Bo{
+	float:none;
+	clear:both;
+}
+
+{/literal}
+</style>
+
+<script type="text/javascript">
+{literal}
+var debug_mod = false;
+function debug(msg) {
+	if (debug_mod) {
+		alert(msg);
+	}
+}
+{/literal}
+</script>
+
+{include file="oukooext/menu.htm"}
+
+<script src="js/js/jquery.min.js" type="text/javascript" ></script>
+<script src="js/js/div.jquery.js" type="text/javascript" ></script>
+
+<script type="text/javascript">
+{literal}
+$(function(){
+	var yScroll = document.documentElement.scrollHeight;
+	var windowHeight = document.documentElement.clientHeight;
+	if(yScroll < windowHeight){
+		pageHeight = windowHeight;
+	} else {
+		pageHeight = yScroll;
+	}
+
+	$("#oDiv").height(pageHeight);
+
+	$("#oDiv").css("visibility","hidden");
+	$("#itemDiv1").cDiv("#Close1","#itemDiv1",".print");
+	$("#itemDiv2").cDiv("#Close2","#itemDiv2",".none");
+	$("#itemDiv3").cDiv("#Close3","#itemDiv3",".bufahuo");
+	$("#itemDiv4").cDiv("#Close4","#itemDiv4",".printf");
+	$("#itemDiv5").cDiv("#Close5","#itemDiv5",".printy");
+	$("#itemDiv6").cDiv("#Close6","#itemDiv6",".buhuo");
+	$("#itemDiv7").cDiv("#Close7","#itemDiv7",".ok");
+	$("#itemDiv8").cDiv("#Close8","#itemDiv8",".daohuo");
+	$("#itemDiv9").cDiv("#Close9","#itemDiv9",".duanhuo");
+	$("#itemDiv10").cDiv("#Close10","#itemDiv10",".ziti");
+	$("#itemDiv11").cDiv("#Close11","#itemDiv11",".cancel");
+	$("#itemDiv12").cDiv("#Close12","#itemDiv12",".daiziti");
+	$("#itemDiv13").cDiv("#Close13","#itemDiv13",".wuhuow");
+	$("#itemDiv14").cDiv("#Close14","#itemDiv14",".fahuo");
+
+	$(".none").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv2 span:eq(0)").text(num);
+		getOrderGoods2(2);
+	});
+	$(".fahuo").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv14 span:eq(0)").text(num);
+		getOrderGoods(14);
+	});
+	$(".ziti").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv10 span:eq(0)").text(num);
+		//getOrderGoods2(2);
+	});
+	$(".cancel").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv11 span:eq(0)").text(num);
+	});
+	$(".daiziti").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv12 span:eq(0)").text(num);
+	});
+	$(".buhuo").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv6 span:eq(0)").text(num);
+		getOrderGoods3(6);
+	});
+	$(".bufahuo").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv3 span:eq(0)").text(num);
+	});
+	$(".ok").click(function(){ // 拒收退回已收货
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv7 span:eq(0)").text(num);
+	});
+	$(".wuhuow").click(function(){ // 无货等待到无货
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv13 span:eq(0)").text(num);
+		getOrderGoods4(13, 22);
+	});
+	$(".daohuo").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv8 span:eq(0)").text(num);
+		getOrderGoods4(8, 22);
+	});
+	$(".duanhuo").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv9 span:eq(0)").text(num);
+		//getOrderGoods2(9);
+		getOrderGoods4(9, 22);
+	});
+});
+
+var hideDiv = function(){
+	$("#oDiv").css("visibility","hidden");
+	$(".itemDiv").css("visibility","hidden");
+	$(":input").css("visibility","visible");
+	$(".itemDiv :input").css("visibility","hidden");
+}
+function onloadss(){
+	ss(".itemDiv");
+}
+function ss(divclass){
+	$(divclass).css("top",(document.documentElement.scrollTop + (document.documentElement.clientHeight/4)+"px"));
+	$(divclass).css("left", (document.documentElement.clientWidth/3+"px"));
+}
+window.onscroll=onloadss;
+window.onresize=onloadss;
+window.onload=onloadss;
+
+// ---
+var doWuhuoReset = function (n){
+	$("#itemDiv"+n+" span input").each(function(i){
+		if (this.checked){
+			this.checked = false;
+		}
+	});
+	$("#itemDiv"+n+" li:eq(2) input").val('');
+}
+
+// {{{ 取消订单
+var doCancel = function (){
+	var a = $("#itemDiv11 span:eq(0)").text();
+	var b = $("#itemDiv11 textarea:eq(0)").val();
+	if (b == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=cancel",
+		data: "order_sn="+a+"&note="+b,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 正常发货
+var doFahuo = function (){
+	var order_sn = $("#itemDiv14 span:eq(0)").text();
+	var bill_no = $("#itemDiv14 input:eq(0)").val();
+	var weight = $("#itemDiv14 input:eq(1)").val();
+	var note = $("#itemDiv14 textarea:eq(0)").val();
+	var carrier_id = '';
+	carrier_ids = document.getElementsByName('carrier_id');
+	
+	for (i = 0; i < carrier_ids.length; i++) {
+		if (carrier_ids[i].checked != "" ) {
+			carrier_id = carrier_ids[i].value;
+		}
+	}
+	if (note == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+
+	if (bill_no == '') {
+		alert('请输入运单号！');
+		return false;
+	}
+
+	if (carrier_id == '') {
+		alert('请选择承运商！');
+		return false;
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=fahuo",
+		data: "order_sn="+order_sn+"&bill_no="+bill_no+"&note="+note+"&weight="+weight+"&carrier_id="+carrier_id,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				$("#itemDiv14 input:eq(0)").val("");
+				window.location.href = '?act=print_invoice&order_sn='+order_sn;
+				//window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数:' + msg);
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 补货发货
+var doBufahuo = function (){
+	var a = $("#itemDiv3 span:eq(0)").text();
+	var b = $("#itemDiv3 input:eq(0)").val();
+	var c = $("#itemDiv3 textarea:eq(0)").val();
+	if (c == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=bufahuo",
+		data: "order_sn="+a+"&carrier_bill_id="+b+"&note="+c,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.href = '?act=print_invoice&t=bu&order_sn='+a;
+				//window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert(msg);
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 无货等待到无货
+var doWuhuoW = function (){
+	var a = $("#itemDiv13 span:eq(0)").text();
+	var b = $("#itemDiv13 li:eq(2) textarea").val();
+	if (b == '') {
+		alert('请输入备注！');
+		return false;
+	}
+	var c = new Array();
+	$("#itemDiv13 span input").each(function(i){
+		if (this.checked){
+			c[c.length] = $(this).val();
+		}
+	});
+	if (c.length < 1) {
+		alert('没有需要设为无货的商品！');
+		return false;
+	}
+	var goods_ids = c.join(",");
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=wuhuow",
+		data: "order_sn="+a+"&note="+b+"&goods_ids="+goods_ids,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 无货等待到到货
+var doDaohuo = function (){
+	var a = $("#itemDiv8 span:eq(0)").text();
+	var b = $("#itemDiv8 li:eq(2) textarea").val();
+	if (b == '') {
+		alert('请输入备注！');
+		return false;
+	}
+	var c = new Array();
+	$("#itemDiv8 span input").each(function(i){
+		if (this.checked){
+			c[c.length] = $(this).val();
+		}
+	});
+	if (c.length < 1) {
+		alert('没有需要设为到货的商品！');
+		return false;
+	}
+	var goods_ids = c.join(",");
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=daohuo",
+		data: "order_sn="+a+"&note="+b+"&goods_ids="+goods_ids,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert(msg);
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 无货等待到断货
+var doDuanhuo = function (){
+	var a = $("#itemDiv9 span:eq(0)").text();
+	var b = $("#itemDiv9 li:eq(2) textarea").val();
+	if (b == '') {
+		alert('请输入备注！');
+		return false;
+	}
+	var c = new Array();
+	$("#itemDiv9 span input").each(function(i){
+		if (this.checked){
+			c[c.length] = $(this).val();
+		}
+	});
+	if (c.length < 1) {
+		alert('没有需要设为断货的商品！');
+		return false;
+	}
+	var goods_ids = c.join(",");
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=duanhuo",
+		data: "order_sn="+a+"&note="+b+"&goods_ids="+goods_ids,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+
+// {{{ 无货通知
+var doWuhuo = function (){
+	var a = $("#itemDiv2 span:eq(0)").text();
+	var b = $("#itemDiv2 li:eq(2) textarea").val();
+	if (b == '') {
+		alert('请输入申请原因！');
+		return false;
+	}
+	//alert(b);return false;
+	var c = new Array();
+	$("#itemDiv2 span input").each(function(i){
+		if (this.checked){
+			c[c.length] = $(this).val();
+		}
+	});
+	if (c.length < 1) {
+		alert('请选择一个商品！');
+		return false;
+	}
+	var goods_ids = c.join(",");
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=wuhuo",
+		data: "order_sn="+a+"&note="+b+"&goods_ids="+goods_ids,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 待自提
+var doDaiziti = function (){
+	var a = $("#itemDiv12 span:eq(0)").text();
+	var b = $("#itemDiv12 textarea:eq(0)").val();
+	if (b == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=daiziti",
+		data: "order_sn="+a+"&note="+b,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				hideDiv();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 已自提
+var doZiti = function (){
+	var a = $("#itemDiv10 span:eq(0)").text();
+	var b = $("#itemDiv10 textarea:eq(0)").val();
+	if (b == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=ziti",
+		data: "order_sn="+a+"&note="+b,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				//window.location.reload();
+				hideDiv();
+				location.href = '?act=print_invoice&order_sn=' + a;
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+
+// {{{ 拒收
+var doRejection = function (){
+	var a = $("#itemDiv2 span:eq(0)").text();
+	var b = $("#itemDiv2 textarea:eq(0)").val();
+	if (b == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=rejection",
+		data: "order_sn="+a+"&note="+b,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+// {{{ 拒收商品收货确认
+var doRejectionReturn = function (){
+	var a = $("#itemDiv7 span:eq(0)").text();
+	var b = $("#itemDiv7 textarea:eq(0)").val();
+	if (b == '') {
+		alert('请输入备注信息！');
+		return false;
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=rejectionReturn",
+		data: "order_sn="+a+"&note="+b,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert(msg);
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+
+// {{{ 补货审核
+var doBuhuoConfirm = function (){
+	var a = $("#itemDiv6 span:eq(0)").text();
+	var b = $("#itemDiv6 li:eq(2) textarea").val();
+	if (b == '') {
+		alert('请输入备注！');
+		return false;
+	}
+	var c = new Array();
+	$("#itemDiv6 span input").each(function(i){
+		if (this.checked){
+			c[c.length] = $(this).val();
+		}
+	});
+	if (c.length < 1) {
+		alert('没有要补货的商品！');
+		return false;
+	}
+	var goods_ids = c.join(",");
+
+	$.ajax({
+		type: "POST",
+		url: "?act=ajax&do=buhuoConfirm",
+		data: "order_sn="+a+"&note="+b+"&goods_ids="+goods_ids,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+
+// ---------------------------
+
+var getWaitGoods = function (){
+	var a = $("#itemDiv6 span:eq(0)").text();
+	var rUrl = "?act=ajax&do=getWaitGoods"+"&random="+Math.random()+"_"+new Date().getTime();
+
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_sn="+a,
+		success: function(s){
+			//alert(rUrl);
+			$("#itemDiv6 span:eq(1)").text(s);
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+	//alert(url);
+};
+
+var getOrderGoods = function (n){
+	var a = $("#itemDiv"+n+" span:eq(0)").text();
+	var rUrl = "?act=ajax&do=getOrderGoods"+"&random="+Math.random()+"_"+new Date().getTime();
+
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_sn="+a,
+		success: function(s){
+			$("#itemDiv"+n+" span:eq(1)").text(s);
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+	//alert(url);
+};
+
+// 确认补货用
+var getOrderGoods2 = function (n){
+	var a = $("#itemDiv"+n+" span:eq(0)").text();
+	var rUrl = "?act=ajax&do=getOrderGoods2"+"&random="+Math.random()+"_"+new Date().getTime();
+
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_sn="+a,
+		success: function(s){
+			var arr = s.split("\t\t");
+			var str = '';
+			for (var i = 0; i < arr.length; i++) {
+				var xs = arr[i].split("\t");
+				str += '<input type="checkbox" value="'+xs[0]+'" name="buhuo_goods_id[]">'+xs[1]+'<br>';
+			}
+			$("#itemDiv"+n+" span:eq(1)").html(str);
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+	//alert(url);
+};
+
+// 批准补货用
+var getOrderGoods3 = function (n){
+	var a = $("#itemDiv"+n+" span:eq(0)").text();
+	var rUrl = "?act=ajax&do=getOrderGoods3"+"&random="+Math.random()+"_"+new Date().getTime();
+
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_sn="+a,
+		success: function(s){
+			var arr = s.split("\t\t");
+			var str = '';
+			for (var i = 0; i < arr.length; i++) {
+				var xs = arr[i].split("\t");
+				str += '<input type="checkbox" value="'+xs[0]+'" name="buhuo_goods_id[]" style="display: none;" checked />'+xs[1]+'<br>';
+			}
+			$("#itemDiv"+n+" span:eq(1)").html(str);
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+	//alert(url);
+};
+
+// 取得某个订单xx状态的商品名字
+var getOrderGoods4 = function (n, st){
+	var a = $("#itemDiv"+n+" span:eq(0)").text();
+	var rUrl = "?act=ajax&do=getOrderGoods4"+"&random="+Math.random()+"_"+new Date().getTime();
+
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_sn="+a+"&goods_status="+st,
+		success: function(s){//alert(s);
+			var arr = s.split("\t\t");
+			var str = '';
+			for (var i = 0; i < arr.length; i++) {
+				var xs = arr[i].split("\t");
+				str += '<input type="checkbox" value="'+xs[0]+'" name="buhuo_goods_id[]" style="display: none;" checked />'+xs[1]+'<br>';
+			}
+			$("#itemDiv"+n+" span:eq(1)").html(str);
+			//$("#itemDiv"+n+" span:eq(1)").html(s);
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+
+{/literal}
+</script>
+
+<title> 物流管理模块 — 订单管理</title>
+</head>
+
+<body>
+<div class="Caption">
+	物流管理模块 — 订单管理
+</div>
+<div style="float:left;width:950px;text-align:left">
+  <div class="Hr1"><img src="images/image/hr1.gif" width=948 height=2></div>
+  
+  {include file="oukooext/search_order.htm"}
+    
+  <div>
+  <UL id="admin_nav">
+	<li class="{if !$type}selected{/if}"><a href="?">待处理订单</a></LI>
+	
+	<li><a href="#">待发货 &raquo;</a>
+    <UL>
+	  <li class="{if $type == 'h,s_0'}selected{/if}"><a href="?type=h,s_0">待发货订单</a>
+	  <li class="{if $type == 'h,s_0_g'}selected{/if}"><a href="?type=h,s_0_g">待发货商品</a>
+	</UL>
+	</li>
+	
+	<li class="{if $type == 'h,s_1'}selected{/if}"><a href="?type=h,s_1">已发货</a></li>
+
+	<LI><A href="#">自提 &raquo;</A>
+    <UL>
+	  <li class="{if $type == 't,s_4'}selected{/if}"><a href="?type=t,s_4">自提待确认</a></li>
+	  <li class="{if $type == 't,s_5'}selected{/if}"><a href="?type=t,s_5">待自提</a></li>
+	  <li class="{if $type == 't,s_6'}selected{/if}"><a href="?type=t,s_6">已自提</a></li>
+	  <li class="{if $type == 't,s_7'}selected{/if}"><a href="?type=t,s_7">自提取消</a></li>
+	</UL>
+	</LI>
+
+	<LI><A href="#">拒收 &raquo;</A>
+    <UL>
+	  <li class="{if $type == 'j,s_1'}selected{/if}"><a href="?type=j,s_1">已拒收</a></li>
+	  <li class="{if $type == 'j,s_3'}selected{/if}"><a href="?type=j,s_3">拒收退回</a></li>
+	</UL>
+	</LI>
+
+	<LI><A href="#">补货 &raquo;</A>
+    <UL>
+	  <li class="{if $type == 'b,g_15'}selected{/if}"><a href="?type=b,g_15">补货待审核</a></li>
+	  <li class="{if $type == 'b,g_16'}selected{/if}"><a href="?type=b,g_16">补货已审核</a></li>
+	  <li class="{if $type == 'b,g_17'}selected{/if}"><a href="?type=b,g_17">补货已批准</a></li>
+	  <li class="{if $type == 'b,g_18'}selected{/if}"><a href="?type=b,g_18">补货已发出</a></li>
+	</UL>
+	</LI>
+
+	<LI><A href="#">无货 &raquo;</A>
+    <UL>
+	  <li class="{if $type == 'w,g_21'}selected{/if}"><a href="?type=w,g_21">无货</a></li>
+	  <li class="{if $type == 'w,g_22'}selected{/if}"><a href="?type=w,g_22">无货等待</a></li>
+	  <li class="{if $type == 'w,g_23'}selected{/if}"><a href="?type=w,g_23">无货到货</a></li>
+	  <li class="{if $type == 'w,g_24'}selected{/if}"><a href="?type=w,g_24">无货断货</a></li>
+
+	  <LI><A href="#" onClick="alert('别乱点哦！嘿嘿');">Sub Menu 3 &raquo;</A>
+		<UL>
+			<LI><A href="#" onClick="alert('你还乱点？');alert('叫你别乱点嘛！');alert('后悔了吧？！');alert('哈哈');alert('没了。');">Sub Menu 3-1</A> </LI>
+		</UL>
+	  </LI>
+	</UL>
+	</LI>
+
+  </UL>
+  </div>
+
+  <div style="float:left"><img src="images/image/Menu_bot.gif" width=950 height=3></div>
+{if !$type}
+<div class="Table3_Bo" id="Table2" style="border:none;margin-top: 260px; text-align: center;">
+	{foreach from=$tasks item=list}
+	<div class="newTask">
+		<a href="?type={$list.type}">{$list.item}(<span style="color: red; font-weight:bold; ">{$list.total}</span>)</a>
+	</div>
+	{/foreach}
+</div>
+{else}
+<div class="Table3_Bo" id="Table2" style="border:none;">
+
+{if $listGoodsForDistribution}
+
+<table cellpadding="0" cellspacing="0">
+<thead>
+<tr bgcolor="#d4d0c8">
+	<th>商品名称</th>
+	<th>商品数量</th>
+	<th>供应商</th>
+</tr>
+</thead>
+<tbody>
+{foreach from=$order_list item=list}
+<tr>
+	<td>{$list.goods_name}</td>
+	<td>{$list.goods_number}</td>
+	<td>{$list.provider_name}</td>
+</tr>
+{/foreach}
+</tbody>
+</table>
+&nbsp;<p>
+
+{else}
+
+<table cellpadding="0" cellspacing="0">
+<thead>
+<tr bgcolor="#d4d0c8">
+	<th>订单号</th>
+	<th>下单时间</th>
+	<th>收货人</th>
+	<th>联系电话</th>
+	<th>供应商</th>
+	<th>支付方式</th>
+	<th>订单状态</th>
+	<th>操作</th>
+</tr>
+</thead>
+<tbody>
+{foreach from=$order_list item=list}
+<tr>
+	<td><a href="detail_info.php?order_id={$list.order_id}" target="_blank" title=" 点击查看订单详情 {$list.order_id} ">{$list.order_sn}</a></td>
+	<td>{$list.order_time}</td>
+	<td>{$list.consignee}</td>
+	<td>{$list.tel}</td>
+	<td>{$list.provider}</td>
+	<td>{$list.pay_name}</td>
+	<td>{$adminvars.order_status[$list.order_status]},{$adminvars.pay_status[$list.pay_status]},{$adminvars.shipping_status[$list.shipping_status]}</td>
+	<td class="w1">
+	
+	{if $dc_type == 'search'}{assign var=type value=$list.type}{/if}
+
+	{if !$type || $list.order_type != 'b2c'}
+	{elseif $type == 'h,s_0'}
+		<a href="#" class="Button4 none">无货</a>
+		<!--<a href="#" class="Button3 print">打印发票</a><a href="#" class="Button3 printy">打印运单</a>-->
+		<a href="?act=print_invoice&order_sn={$list.order_sn}" class="Button3" target="_blank">打印发货单</a>
+		<a href="#" class="Button4 fahuo">发货</a>
+	{elseif $type == 'h,s_1'}
+
+	{elseif $type == 't,s_4'}<a href="#" class="Button4 none">无货</a><a href="#" class="Button4 daiziti">待自提</a>
+	{elseif $type == 't,s_5'}
+		<!--<a href="#" class="Button3 print">打印发票</a><a href="?act=print_invoice&order_sn={$list.order_sn}" class="Button3" target="_blank">打印发货单</a>-->
+		<a href="?act=print_invoice&order_sn={$list.order_sn}" class="Button3" target="_blank">打印发货单</a>
+		<a href="#" class="Button4 ziti">已自提</a><a href="#" class="Button4 cancel">取消</a>
+	{elseif $type == 't,s_6'}
+		<a href="?act=print_invoice&order_sn={$list.order_sn}" class="Button3" target="_blank">打印发货单</a>
+	{elseif $type == 't,s_7'}
+
+	{elseif $type == 'j,s_1'}<a href="#" class="Button4 ok">已收货</a>
+	{elseif $type == 'j,s_3'}
+
+	{elseif $type == 'b,g_15'}<a href="#" class="Button3 buhuo">补货审核</a>
+	{elseif $type == 'b,g_16'}
+	{elseif $type == 'b,g_17'}<a href="?act=print_invoice&t=bu&order_sn={$list.order_sn}" class="Button3" target="_blank">打印发货单</a><a href="#" class="Button3 printy">打印运单</a><a href="#" class="Button4 bufahuo">补发货</a>
+	{elseif $type == 'b,g_18'}
+
+	{elseif $type == 'w,g_21'}
+	{elseif $type == 'w,g_22'}<!--<a href="#" class="Button4 wuhuow">无货</a>--><a href="#" class="Button4 daohuo">到货</a><a href="#" class="Button4 duanhuo">断货</a>
+	{elseif $type == 'w,g_23'}
+	{elseif $type == 'w,g_24'}
+	{/if}
+	{if $list.shipping_status eq 1}<a href="?act=print_invoice&order_sn={$list.order_sn}" class="Button3" target="_blank">打印发货单</a>{/if}
+	</td>
+</tr>
+{/foreach}
+<tr>
+	<td colspan="9" style="text-align:right;padding-right:20px;">{$Pager}</td>
+</tr>
+</tbody>
+</table>
+
+{/if}
+	</div>
+{/if}
+
+<a href='http://www.zapatec.com/products/prod1'> Javascript Calendar</a>
+
+</div>
+<div id="oDiv" onDblClick="hideDiv()"></div>
+<!-- -->
+<!-- -->
+<div class="itemDiv" id="itemDiv1">
+<h2>打印发票</h2>
+<table cellpadding="0" cellspacing="0">
+<caption>上海发票</caption>
+<tr>
+<th>品名</th>
+
+<th>数量</th>
+<th>小计</th>
+<th>总金额</th>
+</tr>
+<tr>
+<td>诺基亚</td>
+<td>10</td>
+<td>10</td>
+<td>100</td>
+</tr>
+
+</table>
+<p><a href="#" class="Button4">确定</a><a href="#" class="Button4" id="Close1">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv2" >
+<h2>无货通知</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00003</span></li>
+<li><strong>商品名称：</strong><span class="aleft"></span></li>
+<li><strong>无货原因：</strong><textarea>这里写无货原因</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doWuhuo();">确定</a><a href="#" class="Button4" id="Close2">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv3">
+<h2>补货发货</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00000</span></li>
+<li><strong>请输入运单号：</strong><input type="text" style="width:70px;"></li>
+<li><strong>备注：</strong><textarea>这里写补货发货备注</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doBufahuo();">确定</a><a href="#" class="Button4" id="Close3">取消</a></p>
+</div>
+<!-- -->
+
+<div class="itemDiv" id="itemDiv4" >
+<h2>打印发货单</h2>
+<h3>欧酷发货单</h3>
+<ul>
+<li><strong>购物人姓名：</strong><span class="aleft">超人</span></li>
+<li><strong>下单时间：</strong><span class="aleft">2007-09-08</span></li>
+<li><strong>支付方式：</strong><span class="aleft">支付宝</span></li>
+<li><strong>订单号：</strong><span class="aleft">000111</span></li>
+
+<li><strong>付款时间：</strong><span class="aleft">2008-02-09</span></li>
+<li><strong>发货时间：</strong><span class="aleft">2010-09-08</span></li>
+<li><strong>配送方式：</strong><span class="aleft">快递</span></li>
+</ul>
+<p><a href="#" class="Button4">确定</a><a href="#" class="Button4" id="Close4">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv5" >
+<h2>打印运单</h2>
+
+<h3>xx公司运单</h3>
+<ul>
+<li><strong style="width:160px">请输入运单物品总重量：</strong><input type="text" style="width:60px;"/><strong style="text-align:left;padding-left:5px;">公斤</strong></li>
+</ul>
+<p><a href="#" class="Button4">确定</a><a href="#" class="Button4" id="Close5">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv6" >
+<h2>补货审核</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00000</span></li>
+<li><strong>补货商品：</strong><span class="aleft"></span></li>
+<li><strong>备注：</strong><textarea>补货已审核</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doBuhuoConfirm();">确定</a><a href="#" class="Button4" id="Close6">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv7" >
+<h2>拒收商品收货确认</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00000</span></li>
+<li><strong>备注：</strong><textarea>拒收商品已收货</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doRejectionReturn()">确定</a><a href="#" class="Button4" id="Close7">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv8" >
+<h2>到货信息</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00000</span></li>
+<li><strong>到货商品：</strong><span class="aleft"></span></li>
+<li><strong>备注：</strong><textarea>该商品已到货</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doDaohuo();">确定</a><a href="#" class="Button4" id="Close8">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv9" >
+<h2>断货信息</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00000</span></li>
+<li><strong>断货信息：</strong><span class="aleft"></span></li>
+<li><strong>备注：</strong><textarea>该商品断货</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doDuanhuo();">确定</a><a href="#" class="Button4" id="Close9">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv10">
+<h2>已自提</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00001</span></li>
+<li><strong>备注：</strong><textarea>用户已自提</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doZiti()">确定</a><a href="#" class="Button4" id="Close10">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv11">
+<h2>取消订单</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00001</span></li>
+<li><strong>备注：</strong><textarea>取消订单</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doCancel()">确定</a><a href="#" class="Button4" id="Close11">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv12">
+<h2>待自提</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00001</span></li>
+<li><strong>备注：</strong><textarea>待用户自提</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doDaiziti()">确定</a><a href="#" class="Button4" id="Close12">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv13" >
+<h2>无货通知</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00003</span></li>
+<li><strong>商品名称：</strong><span class="aleft"></span></li>
+<li><strong>备注：</strong><textarea>以上商品无货</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doWuhuoW();">确定</a><a href="#" class="Button4" id="Close13">取消</a></p>
+</div>
+<!-- -->
+<div class="itemDiv" id="itemDiv14">
+<h2>发货</h2>
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00000</span></li>
+<li><strong>发货商品：</strong><span class="aleft">00000</span></li>
+<li><strong>请输入运单号：</strong><input type="text" name="bill_no" style="width:70px;"></li>
+<li><strong>重量：</strong><input type="text" name="weight" style="width:70px;"></li>
+<li><strong>承运商名称：</strong>
+<span class="aleft">
+{foreach from=$carriers item=carrier key=key}
+<input name="carrier_id" type="radio" value="{$carrier.carrier_id}" style="width:14px;float:none;"> {$carrier.name}
+{/foreach}
+</span>
+</li>
+<li><strong>备注：</strong><textarea name="note">已发货</textarea></li>
+</ul>
+<p><a href="#" class="Button4" onClick="doFahuo();">确定</a><a href="#" class="Button4" id="Close14">取消</a></p>
+</div>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+
+</body>
+</html>

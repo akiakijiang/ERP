@@ -1,0 +1,648 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<title>申报系统分销导单监控页</title>
+	<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="styles/font-awesome.min.css">
+	<style type="text/css">
+	{literal}
+	body{
+		    font-size: 12px;
+	    }
+	html ,body{
+			font-size: 100%;
+		    height: 100%;
+			margin-bottom: 1px;
+			/* Always show a scrollbar to avoid jumping when the scrollbar appears :D*/ 
+	    }
+	select{
+		font-size: 13px;
+	} 
+    h1{
+    	    color:#434343;
+    	    letter-spacing: .1em;
+        }
+	table{
+		    font-size: 13px;
+		    width: 100%;
+	    }
+	table th,table td{
+		    font-weight: normal;
+		    text-align: center;
+		    border:1px solid #62B4E8;
+		}
+	table td{
+	    	padding:2px 0;
+		}
+    table td p,table td a{
+    		display: block;
+    		margin:0 auto 5px auto;
+    		text-align: left;
+    	}
+    table td a.erp_order_sn{
+    	float: left;
+    }
+    table td a{
+    		color:#00a0e9;
+    	}
+    table td a:hover{
+    		color:#0075a9;
+    	}
+	table th{
+		    padding:2px 0; 
+		    background: #62B4E8;
+		    color:#fff;
+		}
+	label{
+			display: inline-block;
+			text-align: right;
+		}
+	textarea{
+			resize:none;
+			width: 200px;
+			height: 100px;
+			vertical-align: top;
+			outline: none;
+			border:1px solid #b1b1b1;
+			border-radius: 2px;
+		}
+	.act{
+		width: 200px;
+		}
+
+	.nos{
+		min-width: 100px;
+	}
+	h1{
+			font-size: 18px;
+			color:#434343;
+			text-align: center;
+			margin:10px 0;
+	    }
+	input[type="text"]{
+            display: inline-block;
+            height: 24px;
+            line-height: 24px;
+            width: 100px;
+            padding:2px 5px;
+            color: #333;
+            border-radius: 2px;
+            border:1px solid #b1b1b1;
+            outline: none; /* for chorme & safari's default effect */
+        }
+    .clear{
+    	clear:both;
+    }
+    #mark-note{
+    	width: 300px;
+    	font-size: 13px;
+    }
+    #search_content p{
+    		margin:10px 0;
+    	}
+    #search_content label,.back_modal label{
+	    	font-size: 13px;
+	    	width: 80px;
+	    }
+	#search_content label,.back_shippingfee_modal label{
+	    	font-size: 13px;
+	    	width: 80px;
+	    }
+	#search_erp label{
+		margin-bottom: 10px;
+	}
+    #search_content input[type='text']{
+	    	width: 175px;
+	    	font-size: 12px;
+	    }
+	#search_content input[type='text'].time_input{
+	    	width: 80px;
+	    }
+    .back_shippingfee_modal input[type='text'],.back_modal input[type='text'],#closePO-modal input[type='text'],#reopenPO-modal input[type='text']{
+	    	margin:10px 0;
+	    }
+    .msg{
+	        width: 50%;
+	    	padding:5px 0 5px 40px;
+	    	margin:10px auto;
+	    	display: none;
+	    	
+	    }
+    .msg-success{
+	    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+	    	background-position: 10px center;
+	        border-color: #9adf8f;
+	        color: #556652;
+	        
+	    }
+    .msg-error{
+	    	background: url('img/cross_circle.png') #ffcece no-repeat;
+	    	background-position: 10px center;
+	        border-color: #df8f8f;
+	        color: #665252;
+	    }
+    .btn-flat {
+    	    font-size: 13px;
+		    cursor: pointer;
+		    display: inline-block;
+		    zoom: 1;
+		    *display: inline;
+		    /* ie7 hack for inline-block :C */
+		    overflow: visible;
+		    /* padding won't effect without this attr :C */
+		    vertical-align: bottom;
+		    margin: 0 10px;
+		    padding:10px;
+		    transition: background-color .4s linear;
+		    background-color: #62B4E8; 
+		    color:#fff;
+		    opacity: .7;
+		    border: none;
+		    outline: none;
+		    -webkit-border-radius: 0.2em;
+		    -moz-border-radius: 0.2em;
+		    -o-border-radius: 0.2em;
+		    -ms-border-radius: 0.2em;
+		    border-radius: 0.2em; 
+	    }
+	.btn-flat:hover {
+	        opacity: 1;
+	    }
+	.btn-flat:active {
+		    position: relative;
+		    top: 1px;
+		    box-shadow: 0.1em 0.1em 0.6em #a0a0a0 inset;
+	    }
+	.btn-small {
+		    font-size: 12px;
+		    padding: .2em .6em;  
+		}
+    .btn-normal {
+			font-size: 14px;
+			padding: .3em 1.5em;
+		}
+	#sub_back_info,#sub_back_shippingfee_info{
+			margin:10px 0 0 85px;
+		}
+    #show_content .btn-small{
+	    	width: 60px;
+	    	padding:.1em .4em;	
+	    	margin:5px 10px;
+	    	height: 26px;
+			line-height: 26px;
+	    }
+	i.icon-spinner{
+			display: none;
+		}
+	.back_btn{
+			background-color: #E8543F;
+		}
+
+	.act_modal{
+		    z-index: 1000;
+            width:100%;
+            height: 100%;
+            position: fixed;
+            top:0;
+            left: 0;
+            font-size: 14px;
+            overflow: auto;
+            background-color: rgba(0,0,0,.4);
+            display: none;
+	    }
+	.act_modal_content{
+			z-index: 101;
+			background-color: #fff;
+			box-shadow: 0 0 8px #a0a0a0;
+			border-radius: 5px;
+			width: 80%;
+			position: relative;
+			top:100px;
+			padding: 20px 10px 40px 10px;
+			margin: 0 auto;
+	    }
+	.act_modal_content h2{
+			text-align: center;
+			font-size: 16px;
+			margin: 10px 0;
+			color:#333;
+	    }
+	.edit_PO_info{
+		    display: none;
+	}
+	.back_modal,#closePO-modal,#reopenPO-modal,.back_shippingfee_modal{
+		    width:330px;
+            padding:10px;
+            border-radius: 5px;
+            background-color:#EAEDEF;
+            position: absolute;
+            top:-1000px;
+            left: 800px;
+            opacity: 0;
+            z-index: 999; 
+            box-shadow: 0 0 8px #a0a0a0;
+            font-size: 13px;
+		}
+	.act_modal div{
+			margin-bottom: 10px;
+		}
+	.act_modal p{
+			margin:5px 0;
+		}
+	.add_edit_info{
+			cursor: pointer;
+		}
+	.delete_btn{
+			cursor: pointer;
+		}
+	.radiospan{
+		font-size: 12px;
+	}
+	.edit-po-modal{
+		width:100%;
+		height: 100%;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 999;
+		background: rgba(0,0,0,.5);
+        display: none;
+	}
+	.edit-po-content{
+		background-color: #fff;
+		width: 1200px;
+		min-height: 300px;
+		position: relative;
+		margin:20px auto;
+		padding:10px 5px;
+
+	}
+	.edit-po-content label{
+		display: inline-block;
+		margin:10px;
+	}
+	#edit-po-table{
+		margin-top: 20px;
+	}
+	.edit-po-content h2{
+		font-size: 18px;
+		width: 200px;
+		margin:0 auto;
+	}
+	.btn-submit-editdata{
+		padding:5px 8px;
+		font-size: 13px;
+	}
+	#edit-mark-modal{
+		position: absolute;
+		height: 150px;
+		width: 400px;
+		left: -500px;
+		top: -500px;
+		background-color:#EAEDEF;
+		border-radius: 5px;
+		padding:10px 5px;
+		z-index:999;
+	}
+	#edit-mark-submit{
+		margin-left:52px;
+		margin-top:10px;
+	}
+	#sub_closePO,#sub_reopenPO{
+		margin-left: 43px;
+		margin-top: 10px;
+	}
+	.remark-wrap{
+		text-align: left;
+		margin-bottom: 5px;
+		margin-left: 27px;
+	}
+    {/literal}
+	</style>
+</head>
+<body>
+	<h1>申报系统分销导单监控</h1>
+	
+    <!-- 编辑PO -->
+    <div class="edit-po-modal">
+    	<div class="edit-po-content">
+    		<h2>编辑分销订单信息</h2>
+    		<form action="haiguan_fenxiao_order_check.php" method="post" id="EditOrderForm">
+    			<label for="edit_order_data[tid]">外部订单号：</label>
+    			<input type="text" value="" name="edit_order_data[tid]" id="editOrderTid" style="width:200px;" readonly = true>    	
+    			<input type="hidden" value="" name="edit_order_data[haiguan_order_id]" id="editHaiguanOrderId" />		
+    		</br>
+    			<label for="edit_order_data[account]">昵称：</label>
+    			<input type="text" value="" name="edit_order_data[account]" id="editOrderAccount" style="width:200px;" >    			
+    		</br>
+    			<label for="edit_order_data[amount]">商品总价：</label>
+    			<input type="text" value="" name="edit_order_data[amount]" id="editAmount">
+    			<label for="edit_order_data[post_fee]">邮费：</label>
+    			<input type="text" value="" name="edit_order_data[post_fee]" id="editPostFee">
+    		    <label for="edit_order_data[goods_amount]"  style="width:100px;">订单总金额：</label>
+    		    <input type="text" name="edit_order_data[goods_amount]" id="editGoodsAmount" >
+    		    <label for="edit_order_data[payment]"  style="width:92px;">实付金额：</label>
+    		    <input type="text" name="edit_order_data[payment]" id="editPayment" >
+    		</br>
+    			<label for="edit_order_data[payment_code]">支付方式：</label>
+    			<input type="text" value="" name="edit_order_data[payment_code]" id="editPaymentCode" >
+    			<label for="edit_order_data[trade_trans_no]">支付单号：</label>
+    			<input type="text" value="" name="edit_order_data[trade_trans_no]" id="editTradeTransNo" style="width:200px;">
+    		<table id="edit-po-table">
+    			
+    		</table>
+    		<p id="message" style="color:red;"></p>
+    		<br />
+    			<button class="btn-flat btn-submit-editdata">
+    				<i class="icon-spinner icon-spin"></i>
+    				确认修改
+    			</button>
+    		</form>
+    	</div>
+    </div>
+    
+    	<!-- 新建PO弹出层 -->
+	<div class="act_modal">
+		<div class="act_modal_content">
+			<h2>当前分销订单信息</h2>
+			<p>外部订单号：<span id="show_tid"></span>，application_key：<span id="show_application_key"></span>，昵称：<span id="show_account"></span>，
+			</p>
+			商品总价：<span id="show_amount"></span>，邮费：<span id="show_post_fee"></span>，订单总价：<span id="show_goods_amount"></span>， 实付金额：<span id="show_payment"></span>
+			</p>
+			<p>
+			支付方式：<span id="show_payment_code"></span>， 支付单号：<span id="show_trade_trans_no"></span>
+		    </p>
+			<table class="current_PO_info">
+
+			</table>
+			<p id="message"></p>
+		</div>
+	</div>
+
+
+	<!-- 搜索功能 -->
+	<form id="search_content" action="haiguan_fenxiao_order_check.php" method="post">
+    	<input type="hidden" name="search_type" value="SEARCH_ONLY">
+		<p id="search_erp">
+			<label for="search_order_sn">ERP订单号：</label>
+			<input type="text" name="search_order_sn" id="search_order_sn">
+
+			<label for="search_taobao_order_sn">淘宝订单号：</label>
+			<input type="text" name="search_taobao_order_sn" id="search_taobao_order_sn">
+			
+			<label for="search_order_time">订单时间：</label>
+			<input type="text" class="time_input" name="search_order_time_start" id="search_order_time_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="search_order_time_end" id="search_order_time_end" onclick="new Calendar().show(this);" readonly="readonly">
+
+			<label for="search_transfer_status">转换状态：</label>
+			<select name="search_transfer_status" id="search_transfer_status">
+				{foreach from=$sync_status_list item=status}
+				    <option value="{$status.transfer_status}">{$status.name}（{$status.count}）</option>
+				{/foreach}
+			</select>
+			
+		</p>
+		<p> 
+			<button class="btn-flat"><i class="icon-search"></i>搜索订单</button>
+		</p>
+	</form>
+    <form action="haiguan_fenxiao_order_check.php" method="post">
+    	<input type="hidden" name="search_type" value="NEED_SYNC_BUT_NOT">
+    	<input type="submit" class="btn-flat" value="搜索待转化订单">
+    </form>
+	<!-- 展示订单表格 -->
+	<form action="haiguan_fenxiao_order_check.php" method="post" id="show_content">
+		<table>
+			<thead>
+				<tr>
+					<th >外部订单号</th>
+					<th>erp订单号</th>
+					<th>时间</th>
+					<th>订单转换状态</th>
+					<th class="act">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach from=$data_list item=order key=order_id}
+				<tr>
+					<td>
+					<a href="javascript:;" class="getPOInfo"><i class="icon-spinner icon-spin"></i>{$order.tid}<i class="icon-external-link"></i></a>
+							<input type="hidden" class="tid" value="{$order.tid}">
+					
+						<a href="SinriTest/haiguan_order_monitor.php?taobao_order_sn={$order.tid}" title="链接到申报系统导单监控页" target="blank">
+						分销导单号：{$order.haiguan_order_id}<i class="icon-external-link"></i>
+					    </a>
+					
+					</td>
+					<td rowspan="{$order.PO_count}" class="nos-td">
+						<a href="order_edit.php?order_id={$order.order_id}" title="链接到订单详情页" target="blank" class="erp_order_sn">{$order.order_sn}<i class="icon-external-link"></i></a>						
+					</td>
+					<td rowspan="{$order.PO_count}">
+						<p>订单时间：{$order.order_time}</p>
+						<p>下单时间：{$order.pay_time}</p>
+					</td>
+					<td>
+					<p>转换状态：{$order.transfer_status}</p>
+					<p>错误信息：{$order.transfer_note}</p>
+					</td>
+					<td>
+						<span class="btn-flat btn-small EditOrder" style="margin-right:0;margin-left:0"><i class="icon-spinner icon-spin"></i>修改订单信息</span>
+					<!-- {if $order.transfer_status == 'ERROR'} -->
+						<span class="btn-flat btn-small InitTransferStatus" style="margin-right:0;margin-left:0"><i class="icon-spinner icon-spin"></i>初始化订单状态</span>
+					<!-- {/if} -->
+					</br>
+					</td></tr>
+                    
+				{/foreach}
+			</tbody>
+		</table>
+	</form>
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="js/Calendar3.js"></script>
+<script src="js/jquery.js"></script>
+<script>
+// <![CDATA[
+//{literal}
+$(document).ready(function(){
+
+    //查看PO信息
+    $(document).delegate(".getPOInfo","click",function(event){
+    	event.stopPropagation();
+    	var _this = $(this);
+    	var data = "act=ajax&action=GetData&tid=" + _this.parents("tr").find(".tid").val();
+    	$.ajax({
+    		type:"post",
+    		dataType:"json",
+    		url:"haiguan_fenxiao_order_check.php",
+    		data:data,
+    		beforeSend:function(){
+    			_this.find(".icon-spinner").fadeIn("fast");
+    		},
+    		success:function(data){    			
+    			_this.find(".icon-spinner").fadeOut("fast");
+        		var current_PO_info_html = "";
+        		for(var key in data.goods){
+        			current_PO_info_html = current_PO_info_html+"<tr><td>"+data.goods[key].goods_name+"</td><td>"+data.goods[key].product_id+"</td><td>"+data.goods[key].outer_id+"</td><td>"+data.goods[key].quantity+"</td><td>"+data.goods[key].amount+"</td><td>"+data.goods[key].added_value_tax_amount+"</td><td>"+data.goods[key].consumption_duty_amount+"</td></tr>";
+        		}
+        		$(".act_modal h2").eq(0).find("span").text(data.tid);
+        		$(".current_PO_info").html("<tr><th>商品名称</th><th>ERP_Goods_ID</th><th>ERP_Goods_Style_ID</th><th>quantity</th><th>商品总计金额</th><th>增值税</th><th>消费税</th></tr>").append(current_PO_info_html);
+        		$("#show_tid").text(data.tid);
+        		$("#show_application_key").text(data.application_key);
+        		$("#show_account").text(data.account);
+        		$("#show_amount").text(data.amount);
+        		$("#show_post_fee").text(data.post_fee);
+        		$("#show_goods_amount").text(data.goods_amount);
+        		$("#show_payment").text(data.payment);
+        		$("#show_payment_code").text(data.payment_code);
+        		$("#show_trade_trans_no").text(data.trade_trans_no);
+	        	$(".act_modal").fadeIn("fast");
+    		},
+    		error:function(){
+    			_this.find(".icon-spinner").fadeOut("fast");
+    			alert("ajax error");
+    		}
+    	});
+    });
+
+
+    //初始化同步
+    $(document).delegate(".InitTransferStatus","click",function(){
+    	var _this = $(this);
+    	var data = "act=ajax&action=InitTransferStatus&tid=" + _this.parents("tr").find(".tid").val();
+    	$.ajax({
+    		type:"post",
+    		dataType:"json",
+    		url:"haiguan_fenxiao_order_check.php",
+    		data:data,
+    		beforeSend:function(){
+    			_this.find(".icon-spinner").fadeIn("fast");
+    		},
+    		success:function(data){
+    			_this.find(".icon-spinner").fadeOut("fast");
+    			if(data.error == 0){
+    				_this.hide();
+    				
+    			}
+        		alert(data.message);
+    		},
+    		error:function(){
+    			_this.find(".icon-spinner").fadeOut("fast");
+    			alert("ajax error");
+    		}
+    	});
+    });
+    
+
+	//编辑功能
+	$(document).delegate(".EditOrder","click",function(event){
+		var _this = $(this);
+		event.stopPropagation();
+		var data = "act=ajax&action=GetData&tid="+_this.parents("tr").find(".tid").val();
+		$.ajax({
+			type:"post",
+			dataType:"json",
+			data:data,
+			url:"haiguan_fenxiao_order_check.php",
+			beforeSend:function(){
+				_this.find("i").fadeIn("fast");
+			},
+			success:function(data){
+				_this.find("i").fadeOut("fast");
+				$("#editOrderTid").val(data.tid);
+				$("#editHaiguanOrderId").val(data.haiguan_order_id);
+				$("#editOrderAccount").val(data.account);
+        		$("#editAmount").val(data.amount);
+        		$("#editPostFee").val(data.post_fee);
+        		$("#editGoodsAmount").val(data.goods_amount);
+        		$("#editPayment").val(data.payment);
+        		$("#editPaymentCode").val(data.payment_code);
+        		$("#editTradeTransNo").val(data.trade_trans_no);
+        		if(data.is_prepay) {
+        			$("#message").html("该订单还未扣预存款");
+        		}else{
+        			$("#message").html("该订单已扣预存款，无法修改税费");
+        		}
+				$(".edit-po-modal").fadeIn("fast");
+				var h = "";
+				if(data.is_prepay) {
+	        		for(var key in data.goods){
+	        			//h = h + "<p style='font-size:11px;'><input type='hidden' name='edit_order_data[goods]["+key+"][order_goods_id]' value='"+data.goods[key].order_goods_id+"'><label>商品名称:</label><input type='text' name='edit_order_data[goods]["+key+"][goods_name]' value='"+data.goods[key].goods_name+"'><label>ERP_Goods_ID:</label><input type='text'  name='edit_order_data[goods]["+key+"][product_id]' value='"+data.goods[key].product_id+"'><label>ERP_Goods_Style_ID:</label><input type='text' name='edit_order_data[goods]["+key+"]['outer_id']' value='"+data.goods[key].outer_id+"'><label>quantity:</label><input type='text'  name='edit_order_data[goods]["+key+"][quantity]' value='"+data.goods[key].quantity+"'><label>商品总价:</label><input type='text'  name='edit_order_data[goods]["+key+"][amount]' value='"+data.goods[key].amount+"'><label>增值税:</label><input type='text'  name='edit_order_data[goods]["+key+"][added_value_tax_amount]' value='"+data.goods[key].added_value_tax_amount+"'><label>消费税：</label><input type='text' name='edit_order_data['goods']["+key+"][consumption_duty_amount]' value='"+data.goods[key].consumption_duty_amount+"'></p>";
+	        			h = h + "<tr><td><input type='hidden' name='edit_order_data[goods]["+key+"][order_goods_id]' value='"+data.goods[key].order_goods_id+"'><input type='text' name='edit_order_data[goods]["+key+"][goods_name]' value='"+data.goods[key].goods_name+"'  style='width:260px;'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][product_id]' value='"+data.goods[key].product_id+"'></td><td><input type='text' name='edit_order_data[goods]["+key+"][outer_id]' value='"+data.goods[key].outer_id+"'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][quantity]' value='"+data.goods[key].quantity+"'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][amount]' value='"+data.goods[key].amount+"'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][added_value_tax_amount]' value='"+data.goods[key].added_value_tax_amount+"'></td><td><input type='text' name='edit_order_data[goods]["+key+"][consumption_duty_amount]' value='"+data.goods[key].consumption_duty_amount+"'></td></tr>";
+	
+	        		}
+				}else{
+	        		for(var key in data.goods){
+	        			//h = h + "<p style='font-size:11px;'><input type='hidden' name='edit_order_data[goods]["+key+"][order_goods_id]' value='"+data.goods[key].order_goods_id+"'><label>商品名称:</label><input type='text' name='edit_order_data[goods]["+key+"][goods_name]' value='"+data.goods[key].goods_name+"'><label>ERP_Goods_ID:</label><input type='text'  name='edit_order_data[goods]["+key+"][product_id]' value='"+data.goods[key].product_id+"'><label>ERP_Goods_Style_ID:</label><input type='text' name='edit_order_data[goods]["+key+"]['outer_id']' value='"+data.goods[key].outer_id+"'><label>quantity:</label><input type='text'  name='edit_order_data[goods]["+key+"][quantity]' value='"+data.goods[key].quantity+"'><label>商品总价:</label><input type='text'  name='edit_order_data[goods]["+key+"][amount]' value='"+data.goods[key].amount+"'><label>增值税:</label><input type='text'  name='edit_order_data[goods]["+key+"][added_value_tax_amount]' value='"+data.goods[key].added_value_tax_amount+"'><label>消费税：</label><input type='text' name='edit_order_data['goods']["+key+"][consumption_duty_amount]' value='"+data.goods[key].consumption_duty_amount+"'></p>";
+	        			h = h + "<tr><td><input type='hidden' name='edit_order_data[goods]["+key+"][order_goods_id]' value='"+data.goods[key].order_goods_id+"'><input type='text' name='edit_order_data[goods]["+key+"][goods_name]' value='"+data.goods[key].goods_name+"'  style='width:260px;'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][product_id]' value='"+data.goods[key].product_id+"'></td><td><input type='text' name='edit_order_data[goods]["+key+"][outer_id]' value='"+data.goods[key].outer_id+"'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][quantity]' value='"+data.goods[key].quantity+"'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][amount]' value='"+data.goods[key].amount+"'></td><td><input type='text'  name='edit_order_data[goods]["+key+"][added_value_tax_amount]' value='"+data.goods[key].added_value_tax_amount+"' readonly=true></td><td><input type='text' name='edit_order_data[goods]["+key+"][consumption_duty_amount]' value='"+data.goods[key].consumption_duty_amount+"' readonly=true></td></tr>";
+
+	        		}
+				}
+				$("#edit-po-table").html(h);
+				
+				$("#edit-po-table").html("<tr><th>商品名称</th><th>ERP_Goods_ID</th><th>ERP_Goods_Style_ID</th><th>quantity</th><th>商品总计金额</th><th>增值税</th><th>消费税</th></tr>").append(h);
+			},
+			error:function(){
+				_this.find("i").fadeOut("fast");
+				alert("ajax error");
+			}
+		});
+	});
+	
+
+
+	// 提交编辑信息
+	$(document).delegate(".btn-submit-editdata","click",function(e){
+		e.preventDefault();
+		var _this = $(this);
+		var data = $("#EditOrderForm").serialize()+"&act=ajax&action=EditOrder";
+		$.ajax({
+			type:"post",
+			dataType:"json",
+			data:data,
+			url:"haiguan_fenxiao_order_check.php",
+			beforeSend:function(){
+				_this.find("i").fadeIn("fast");
+			},
+			success:function(data){
+				_this.find("i").fadeOut("fast");
+				alert(data.message);
+				$(".edit-po-modal").fadeOut("fast");
+			},
+			error:function(data){
+				_this.find("i").fadeOut("fast");
+				alert("修改失败，原因：ajax请求失败");
+			}
+		});
+		
+		
+	});
+
+    //点击任意位置关闭弹出层
+	$(document).bind("click",function(e){
+		var target  = $(e.target);
+		//表示当前对象，切记，如果没有e这个参数，即表示整个BODY对象 :)
+		
+	});
+
+	$(".act_modal").click(function(event){
+		if($(event.target).attr("class") == "act_modal"){
+			$(this).fadeOut("fast");
+		}
+		
+	});
+
+	$(".edit-po-modal").click(function(event){
+		if($(event.target).attr("class") == "edit-po-modal"){
+			$(this).fadeOut("fast");
+		}
+		
+	});
+
+});
+//{/literal}
+// ]]>
+</script>
+	
+</body>
+</html>

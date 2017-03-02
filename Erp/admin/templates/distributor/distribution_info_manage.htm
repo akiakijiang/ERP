@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>分销店铺详情维护页</title>
+	<link href="{$WEB_ROOT}admin/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" /> 
+	<script type="text/javascript" src="{$WEB_ROOT}admin/styles/bootstrap/js/jquery.min.js"></script>
+	<script type="text/javascript" src="{$WEB_ROOT}admin/styles/bootstrap/js/bootstrap.js"></script>
+	<style type="text/css">
+	<!--{literal}-->
+		body {
+			font-size: 14px;
+		}
+		.row h3 {
+			text-align: center;
+		}
+		.row ul {
+			margin-left: 30px;
+			margin-bottom: 30px;
+		}
+		.table, #edit_distributor {
+			width: 80%;
+			margin: 0 auto;
+		}
+		.fixItem{
+			width: 8%;
+		}
+		input[type=text] {
+			border: 1px solid #ccc;
+			border-radius: 3px;
+		}
+		input[type=submit] {
+			margin-left: 20px;
+			background-color: #3385ff;
+			color: #fff;
+		}
+		.control-label {
+			width: 100px;
+			text-align: right;
+		}
+		.controls {
+			display: inline-block;
+			margin-top: 10px;
+			margin-left: 20px;
+		}
+		#edit_distributor_name {
+			font-weight: bold;
+			margin-left: 120px;
+		}
+		.control-group:nth-child(1) {
+			margin-bottom: 10px;
+		}
+		.message, .inItem {
+			margin-left: 30px;
+			margin-bottom: 30px;
+		}
+		input[type="file"] {
+			display: inline;
+		}
+		.update_message {
+			border: 1px solid #ccc;
+			text-align: center;
+		}
+		.success {
+			color: green;
+		}
+		.fail {
+			color: red;
+		}
+		.upload_temp {
+			float:right;
+			margin-right: 80px;
+		}
+	<!--{/literal}-->
+	</style>
+	<script type="text/javascript">
+	<!--{literal}-->
+		$(document).ready(function(){
+			$('.edit').each(function(index){
+				$(this).click(function(){
+					$('#myTab a').eq(1).tab('show');
+					var distributor_name = $('.distributor_name').eq(index).html();
+					var distributor_id = $('.distributor_id').eq(index).val();
+					var platform = $('.platform').eq(index).html();
+					var business_line = $('.business_line').eq(index).html();
+					var brand_name = $('.brand_name').eq(index).html();
+					var cooperation_model = $('.cooperation_model').eq(index).html();
+					var category_name = $('.category_name').eq(index).html();
+					$('#edit_distributor_name').html(distributor_name);
+					$('#edit_distributor_id').val(distributor_id);
+					$('#edit_business_line').val(business_line);
+					$('#edit_brand_name').val(brand_name);
+					$('#edit_cooperation_model').val(cooperation_model);
+					$('#edit_category_name').val(category_name);
+					$('#edit_platform').val(platform);
+				});
+			});
+		});
+	<!--{/literal}-->
+	</script>
+</head>
+<body>
+	<div class="update_message" {if $show_message == ''}style="display:none;"{/if}>
+		{if $fail_distributors == ''}
+		<p class="success">导入成功！</p>
+		{else}
+		<p class="fail">有部分分销商更新失败，分销商ID如下：{$fail_distributors}</p>
+		{/if}
+	</div>
+	<div class="row">
+		<h3>分销店铺详情维护</h3>
+	</div>
+	<div class="row">
+		<ul class="nav nav-tabs" id="myTab">
+			<li class="active"><a href="#distributor_list" data-toggle="tab">分销商列表</a></li>
+			<li><a href="#edit_distributor" data-toggle="tab">修改分销商详情</a></li>
+			<li><a href="#batch_edit_distributor" data-toggle="tab">批量修改分销商详情</a></li>
+		</ul>
+	</div>
+	<div class="tab-content">
+		<div class="tab-pane active" id="distributor_list">
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>ERP分销商ID</th>
+						<th>直/分销名称</th>
+						<th>店铺名称</th>
+						<th>平台</th>
+						<th>业务线</th>
+						<th>品牌</th>
+						<th>合作模式</th>
+						<th>类目</th>
+						<th class="fixItem">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					{foreach from=$distributor_list item=list}
+					<tr>
+						<td>
+							<span>{$list.distributor_id}</span>
+						</td>
+						<td>
+							<span class="distributor_name">{$list.name}</span>
+							<input type="hidden" class="distributor_id" value="{$list.distributor_id}" />
+						</td>
+						<td>
+							<span>{$list.nick}</span>
+						</td>
+						<td>
+							<span class="platform">{$list.platform}</span>
+						</td>
+						<td>
+							<span class="business_line">{$list.business_line}</span>
+						</td>
+						<td>
+							<span class="brand_name">{$list.brand_name}</span>
+						</td>
+						<td>
+							<span class="cooperation_model">{$list.cooperation_model}</span>
+						</td>
+						<td>
+							<span class="category_name">{$list.category_name}</span>
+						</td>
+						<td>
+							<input type="button" class="btn btn-sm edit" value="编辑" />
+						</td>
+					</tr>
+					{/foreach}
+				</tbody>
+			</table>
+		</div>
+		<div class="tab-pane" id="edit_distributor">
+			<form class="form-horizontal" action="distribution_info_manage.php?act=add" method="post">
+				<div class="control-group">
+					<span id="edit_distributor_name" name="distributor_name">暂未选定分销商，请点击分销商列表的编辑按钮修改！</span>
+					<input type="hidden" id="edit_distributor_id" name="distributor_id" />
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="edit_platform">平台</label>
+				    <div class="controls">
+				      <input type="text" class="input-sm" id="edit_platform" name="platform" placeholder="平台">
+				    </div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="edit_business_line">业务线</label>
+				    <div class="controls">
+				      <input type="text" class="input-sm" id="edit_business_line" name="business_line" placeholder="业务线">
+				    </div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="edit_brand_name">品牌</label>
+				    <div class="controls">
+				      <input type="text" class="input-sm" id="edit_brand_name" name="brand_name" placeholder="品牌">
+				    </div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="edit_cooperation_model">合作模式</label>
+				    <div class="controls">
+				      <input type="text" class="input-sm" id="edit_cooperation_model" name="cooperation_model" placeholder="合作模式">
+				    </div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="edit_category_name">类目</label>
+				    <div class="controls">
+				      <input type="text" class="input-sm" id="edit_category_name" name="category_name" placeholder="类目">
+				    </div>
+				    <input type="submit" class="btn btn-sm" onclick="" value="确认" />
+				</div>
+			</form>
+		</div>
+		<div class="tab-pane" id="batch_edit_distributor">
+			<form method="post" enctype="multipart/form-data">
+				<div class="inItem">
+					<label>分销商详情导入：</label> <input type="file" name="excel" size="30">
+					<input type="submit" class="btn btn-sm" onclick="" value="确认" />
+					<span class="upload_temp"><a href="{$WEB_ROOT}admin/templates/distributor/分销商详情导入模板.xlsx">导入模板下载</a></span>
+					<input type="hidden" name="act" value="batch_edit_distributor">
+				</div>
+			</form>
+			<div class="message">
+				<p>1、请导入03版的Excel文件，即xls文件；</p>
+				<p>2、sheet名称为”分销商详情修改“；</p>
+				<p>3、第一列为ERP分销商ID，第二列为平台，第三列为业务线，第四列为品牌，第五列为合作模式，第六列为类目；</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

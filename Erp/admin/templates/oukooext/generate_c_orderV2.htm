@@ -1,0 +1,2187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>下采购订单</title>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+{insert_scripts files="../js/utils.js,../js/transport.js"}
+{literal}
+<style type="text/css">
+	body{font-size:12px;font-family:"宋体"}
+	ul,ul li{list-style:none;font-size:12px;margin:0;padding:0;background:#fff;}
+	.who_get_goods{position:relative;margin:20px 0;}
+	.who_get_goods ul{position:absolute;top:20px;left:54px;border:1px solid #7f9db9;width:100px;}
+	.who_get_goods li{padding:3px;}
+	.goods_list{ border-collapse:collapse;border:1px solid #999;}
+	.goods_list td,.goods_list th{border:1px solid #999;padding:5px;}
+	.goods_list input[type="text"]{height:16px;padding-top:3px;}
+	.goods_list ul{position:absolute;top:23px;border:1px solid #7f9db9;width:202px;padding:5px 0;}
+	.goods_list li{padding:5px;}
+	span#care{
+	  font-size: small;
+	  color: red;
+	}
+</style>
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+{/literal}
+</head>
+<body>
+<div id="hide" style="width:100%;height:100%;z-index:1;background:#ddd;position:fixed;display:none;opacity:0.5;" ></div>
+<fieldset>
+<h1>下采购订单</h1>
+<h2>生成采购订单 <span id="care">(务必填写到货日期)</span></h2>
+<div class="who_get_goods">
+	<label for="provider">供应商：</label>
+	<input type="text" id="provider" onkeyup="select_ele('provider',event)" onblur="leave_ele('provider')"/>
+	<!-- 供应商列表 -->
+	<ul id="provider_list" style="display:none;z-index:10;left:54px;width:260px;">
+	{foreach from=$providers item=provider}
+		<li gid='{$provider.provider_id}' code="{$provider.provider_code}">{$provider.provider_name}</li>
+	{/foreach}
+	</ul>
+	
+	
+	
+	<span id="order_type_text"></span>
+	&nbsp;<label>供应商采购订单号</label>
+	<input type="text" id="provider_order"/>
+	
+	&nbsp;<label>供应商出库订单号</label>
+	<input type="text" id="provider_out_order"/>
+	<input type="button" value="修改供应商采购" style="display:none;" id="modifyPurchaser" onclick="alert('请注意，修改的采购和供应商将影响到下面所有的待生成采购订单！');E('provider').readOnly=false;E('provider').focus();" />
+	<span>导入采购订单文件：</span>
+	<input type="file" id="fileToUpload" name="fileToUpload"/>
+	<input type="button" value="导入EXCEL" onclick="bacth_c()"/>	
+	<input type="button" value="批量模板下载" onclick="window.location ='?act=template'"/>
+	
+	<br/>
+	<label><span id="care">预计到货日期:</span></label>
+	<input style="width:120px" name="arrive_time" id="arrive_time" value="{$arrive_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d %H:%M:%S"}'">
+	<input type="button" id="arrive_time_trigger" value="..." >
+	
+	{if $smarty.session.party_id == 65574}
+	</br>	
+	<font>金宝贝组织</font>
+		<select name="c_select" id="c_select" style="width:200px; overflow: hidden; ">
+			<option value="-1">请选择</option>
+			<!-- {foreach from=$gymboree_array item=gymboree_item} -->
+				<option value="{$gymboree_item.item_value}">{$gymboree_item.item}</option>
+			<!-- {/foreach}  -->
+		</select>		
+		<input type="button" value="导入采购订单" id="generate_c" name="generate_c" onclick="gymboree()"/>
+		<input type ="button" value="导出采购订单项" id="generate_detail" name="generate_detail" onclick="showDetail()" />
+		商品入库完后通知品牌商
+		<select name="gymboree_inoutvouchID" id="gymboree_inoutvouchID" onchange="check_in_stock()">
+			<option value="-1">请选择</option>
+			<!-- {foreach from=$gymboree_inoutvouchID item=gymboree_inoutvouchID_item} -->
+				<option value="{$gymboree_inoutvouchID_item.fchrInOutVouchID}">{$gymboree_inoutvouchID_item.filename}</option>
+			<!-- {/foreach}  -->
+		</select>
+		<input type = "button" value="返回采购订单" id="gymboree_C_back" name="gymboree_C_back" onclick="back_c()" />
+	<br />	
+		手工录单请选择金宝贝仓库
+		<select name="gymboree_warehouse_list" id="gymboree_warehouse_list" onchange="get_gymboree_warehouse()" >
+			<option value="-1">请选择</option>
+		<!--{foreach from=$gymboree_warehouse item=gymboree_warehouse_item} -->
+				<option value="{$gymboree_warehouse_item.fchrWarehouseID}">{$gymboree_warehouse_item.fchrWhName}</option>
+		<!-- {/foreach} -->	
+		</select>
+	{/if}
+
+		
+</div>
+<table cellpadding=0 cellspacing=0 class="goods_list" width="1000">
+	<tr>
+		<th width="230">添加商品</th>
+		<th>条码</th>
+		<th>箱规</th>
+		<th width="100">{if $smarty.session.party_id == $smarty.const.PARTY_OUKU_SHOES}尺寸{else}颜色{/if}</th>
+		<th width="50">数量</th>
+		<th width="100">单价</th>
+		{if $smarty.session.party_id == 65586}
+		<th width="150">生产日期</th>
+		<th width="50">批次</th>
+		{/if}
+        <th width="50">税率</th>
+		<th width="200">操作</th>
+	</tr>
+	<tr>
+		<td>
+			<div style="position:relative; z-index: 2;">
+				<input type="text" value="" id="goods" style="width:200px;" onkeyup="select_ele('goods',event)" onblur="leave_ele('goods');fill_style_list();"/>
+				<input type="hidden" value="" id="goods_hidden" />
+				<input type="hidden" value="" id="goods_barcode_hidden" />
+				<input type="hidden" name="dispatchListId" id="dispatchListId" />
+				<input type="hidden" name="cat_name" id="cat_name" value=""></input>
+				<!-- ajax调出的商品列表 -->
+				<ul id="goods_list" style="display:none;">
+					<li gid="-">请选择</li>
+				</ul>
+			</div>
+		</td>
+		<td>
+			<span id="barcode"></span>
+		</td>
+		<td>
+			<span id="spec"></span>
+		</td>
+		<td>
+			<div style="position:relative">
+				<input type="text" value="" id="style" style="width:80px" onkeyup="select_ele('style',event)" onblur="leave_ele('style')"/>
+				<input type="hidden" value="" id="style_hidden" />
+				<!-- ajax调出的颜色列表 -->
+				<ul id="style_list" style="display:none;width:62px;z-index:9;">
+					<li gid="0">请选择商品</li>
+				</ul>
+			</div>
+			<input type="hidden" id="hidden_style_list_upd" />
+		</td>
+		<td>
+			<input type="text" value="1" style="width:30px;" id="goods_number" onblur="goods_number_spec(this)" />
+			<br/>
+			<span id='goods_number_spec'></span>
+		</td>
+		<td>
+			<input type="text" value="" style="width:60px;" id="purchase_paid_amount" />
+			<span id="lastPrice" style="color:#f00;"></span>
+		</td>
+		
+		{if $smarty.session.party_id == 65586}
+		<td>
+			<input name="combi_production_date" id="combi_production_date" style="width:80px" value=""/><input type="button" value="..." id="startTrigger2"/>
+		</td>
+		<td>
+			<input name="combi_batch_sn" id="combi_batch_sn" style="width:80px" value=""/>
+		</td>
+		{/if}
+        
+        <td>
+        	{if $smarty.session.party_id == 65536}
+        		<!-- JJsHouse 业务不需要交增值税的  -->
+            	<input type="text" value="1" style="width:40px;margin-right:0;" id="purchase_added_fee" disabled="true" />
+            {elseif $smarty.session.party_id == 65638 }  <!-- 乐其跨境 采购和 -gt税率都默认为1 -->
+            	<input type="text" value="1" style="width:40px;margin-right:0;" id="purchase_added_fee" disabled="true" />
+            {elseif $smarty.session.party_id == 65552 }
+            	<input type="text" value="1.13" style="width:40px;margin-right:0;" id="purchase_added_fee" disabled="true" />
+            {else}
+            	<input type="text" value="1.17" style="width:40px;margin-right:0;" id="purchase_added_fee" disabled="true" />
+            {/if}
+       	</td>
+       	
+		<td>
+			<input type="hidden" id="party_id2" value="{$smarty.session.party_id}"/>
+			<input type="button" value="添加" id="add_goods" onclick="add_goods()" />
+			<input type="button" value="更改税率"  id='text_rate_button' onclick="modify_tax_rate()" />
+		</td>
+	</tr>
+	<tr id='upd_tr' style='background-color: #DDFFDD;border: 1px solid red;'>
+		
+	</tr>
+	</table>
+		
+<form action="generate_order_actionV2.php" id="form1" method="post">
+	<h2>待生成采购订单</h2>
+	<table cellpadding=0 cellspacing=0 class="goods_list" width="1000" style="margin-top:10px;">
+	<thead>
+	<tr>
+  	    <th width="270">商品</th>
+  	    <th>条码</th>
+		<th width="55">箱规</th>
+		<th width="110">{if $smarty.session.party_id == $smarty.const.PARTY_OUKU_SHOES}尺寸{else}颜色{/if}</th>
+		<th width="60">数量</th>
+		<th width="80">单价</th>
+        <th width="50">税率</th>
+		<th width="50">采购金额</th>
+		{if $smarty.session.party_id == 65586}
+		<th width="100">生产日期</th>
+		<th width="100">批次号</th>
+		{/if}
+		<th width="50">使用返利</th>
+		<th width="150">操作</th>
+	</tr>
+	</thead>
+	<tbody id="added_goods">
+	</tbody>
+	</table>
+<input type="hidden" value="" name="order_type" id="order_type" />
+<input type="hidden" value="{$smarty.session.admin_name}" name="purchaser" id="purchaser_hidden" />
+<input type="hidden" value="" name="provider_id" id="provider_hidden" />
+<input type="hidden" name="arrive_time_" id="arrive_time_" />
+<input type="hidden" value="c" name="generate_type" />
+<input type="hidden" name="order_id" id="order_id" value="0" />
+<input type="hidden" name="gymboree_warehouse" id="gymboree_warehouse" value=""/>
+<input type="hidden" name="gymboree_vouchID" id="gymboree_vouchID" value=""/>
+<input type="hidden" name="gymboree_file_name" id="gymboree_file_name" value=""/>
+<input type="hidden" name="party_id" id="party_id" value="{$smarty.session.party_id}"/>
+<label for="facility_id">收货仓库：</label>
+<select name="facility_id" id="facility_id">{html_options options=$available_facility }</select>
+
+<label type="hidden" for="benefit">使用返利金额：</label>
+<input type="hidden" name="benefit" type="text" id="benefit" style="width:40px;" value="0" onblur="rebulid_amount();" /> 
+<input type="hidden" type="button" value="分配到采购订单" onclick="return rebate_strategy();" /> 
+<label for="currency">币种：</label>
+<select name="currency" id="currency">{html_options options=$currencies}</select>
+<label for="goods_amount">采购数量：</label>
+<input type="text" readonly="true" style="width:40px;" id="goods_amount" value="" /> 
+<label for="order_amount">应付金额：</label>
+<input type="text" readonly="true" style="width:60px;" id="order_amount" value="" /> 
+<label for="amount">实付金额：</label>
+<input type="text" style="width:60px;" id="amount" value="0" readonly="readonly" /> 
+<input type="hidden" name = "provider_order_sn" id = "provider_order_sn"/>
+<input type="hidden" name = "provider_out_order_sn" id = "provider_out_order_sn"/>
+<br/>
+ 
+ <p> 
+	<label>物流留言</label>
+	<textarea name='remark' rows="2" cols="60" placeholder='请填写物流留言' ></textarea>
+	<input type="button" id="create_c" value="生成采购订单" onclick="return check_added_goods_list();" />
+</p> 
+{if $can_in_used}
+</br>
+<label for="status_id">商品状态</label>
+<select id='status_id' name='status_id'>
+{html_options options=$status_ids}
+</select>
+{/if}
+
+</p>
+</p>
+</form>
+</fieldset>
+<div id="keycode"></div>
+
+<div id="oldkeyword"></div>
+
+<fieldset>
+<h2>搜索采购订单</h2>
+<div>
+<form id="search_c_order_form">
+<div class="who_get_goods">
+<label for="order_sn">ERP订单号：</label><input name="order_sn" id="order_sn" value="{$smarty.request.order_sn}">
+<label for="goods_name">商品名：</label><input name="goods_name" id="goods_name" value="{$smarty.request.goods_name}" >
+供应商：
+	<input type="text" value="" name="provider_name" autocomplete='off' id="provider2" onkeyup="select_ele('provider2',event);" onblur="leave_ele('provider2');"/>
+	<!-- 供应商列表 -->
+	<ul id="provider2_list" style='display:none;margin-left:365px;width:260px;'>
+	{foreach from=$providers item=provider}
+		<li gid='{$provider.provider_id}' code="{$provider.provider_code}">{$provider.provider_name}</li>
+	{/foreach}
+	</ul>
+
+{if $smarty.session.party_id == 65574}
+	<font>金宝贝组织入库通知单ID:</font>
+		<select name="inoutVouchIdName_select" id="inoutVouchIdName_select" style="width:200px; overflow: hidden; ">
+			<option value="-1">请选择</option>
+			<!-- {foreach from=$inoutVouchIdNames item=inoutVouchIdName} -->
+				<option value="{$inoutVouchIdName.fchrInOutVouchID}">{$inoutVouchIdName.file_wh_name}</option>
+			<!-- {/foreach}  -->
+		</select>
+{/if}
+<label>供应商采购订单号：</label><input type="text" name="provider_order_sn" value="{$smarty.request.provider_order_sn}"/>
+<input type="hidden" value="" name="provider_id" id="provider2_hidden" />
+</div>
+下采购订单开始时间：
+<input style="width:80px" name="order_time" id="search_order_time" value="{$order_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+<input type="button" id="search_order_time_trigger" value="..." >
+
+下采购订单结束时间：
+<input style="width:80px" name="order_time_end" id="search_order_time_end" value="{$order_time_end}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+<input type="button" id="search_order_time_end_trigger" value="..." >
+仓库: <select name="facility_id">
+<option value="-1">-选择</option>
+{html_options options=$available_facility selected=$smarty.request.facility_id}
+</select>
+
+采购单状态: <select name="order_status_c">
+<option value="-1">-选择</option>
+{html_options options=$order_status_list selected=$smarty.request.order_status_c}
+</select>
+
+
+<input type="submit" value="搜索" onclick="this.style.display='none';">
+<input type="hidden" name="act" value="search">
+</form>
+</div>
+
+<table class="bWindow" style="margin-top:20px">
+<caption><h2>{if $smarty.request.act != 'search'}今日的采购订单{else}搜索的采购订单<span><a href='generate_c_orderV2.php'>今日的采购订单</a></span>{/if} <input type="button" name="csv" onclick="location.href='{$smarty.server.REQUEST_URI|add_param_in_url:"csv":"1"}'" value="导出CSV" /></h2></caption>
+<tr>
+<th>批次</th>
+<th>ERP采购订单号</th>
+<th>订单时间</th>
+<th>商品名称</th>
+<th>商品条码</th>
+<th>箱规</th>
+<th>批次号</th>
+<th>供应商名称/采购订单号/出库订单号</th>
+<th>收货仓库</th>
+<th>物流留言</th>
+<th>原订单(供价*个数)</th>
+<th>入库数</th>
+<th>入库时间</th>
+<th>税费</th>
+<th>返利金额</th>
+<th>采购人</th>
+<th>是否完结</th>
+<th>操作</th>
+</tr>
+{assign var=total_goods_number value=0}
+{assign var=total_purchase_paid_amount value=0}
+{foreach from=$search_orders item=search_order name = "searchOrder"}
+
+<tr align="center">
+{if $search_order.count_order_find > 0}
+	{assign var=count value=$search_order.count_order_find}
+{else}
+	{assign var=count value=1}
+{/if}
+
+{if $search_order.batch_order_id}
+<!--{if $search_order.batch_order_id != $pre_batch_order_id}-->
+ <td rowspan="{$count}">
+ 	{$search_order.batch_order_id}
+	</br>
+   <a href="batch_order_statistics.php?batch_order_sn={$search_order.batch_order_sn}">{$search_order.batch_order_sn}</a> 
+   </br>
+	订单数：{$search_order.count_order}
+   </br>
+   <input type='button' id='batch_over_c_{$search_order.batch_order_sn}' name='batch_overc' value='批量完结' {if $search_order.is_over_c =='Y'} disabled=true{/if} onclick="batch_over_c('{$search_order.batch_order_sn}');" ></input>
+   {if $search_order.is_purchase_paid_total != 'YES' }
+   <br/>
+   		<input type="button" value="批改价格" onclick="batch_update_price('{$search_order.batch_order_sn}','{$search_order.percentage}')" />
+    	<input type="button" value="批改供应商" onclick="batch_update_provider('{$search_order.batch_order_sn}','{$search_order.batch_provider_id}')" />
+   {/if}
+ </td>
+<!--{/if}-->
+{else}
+<td>无批次号</td>
+{/if}
+
+<td>{$search_order.order_sn}</td>
+<td>
+	{$search_order.order_time}<br>
+</td>
+<td>{$search_order.goods_name} × {$search_order.goods_number}<!--累加商品数{assign var=total_goods_number value=$total_goods_number+$search_order.goods_number}{assign var=total_purchase_paid_amount value=$total_purchase_paid_amount+$search_order.purchase_paid_amount*$search_order.goods_number}-->
+</td>
+<td>
+	{$search_order.barcode}
+</td>
+<td>
+	{$search_order.spec}
+	{if $search_order.spec > 0}
+		( 箱数：{$search_order.spec_lang}) 
+	{/if}
+</td>
+<td>
+	{$search_order.batch_sn} 
+</td>
+<td>
+	{if check_admin_priv('check_provider')}
+	<!--{foreach from=""|getProviders item=provider}-->
+	{if $provider.provider_id == $search_order.provider_id}{$provider.provider_name}{/if}
+	<!--{/foreach}-->
+  {else}
+  ××××××
+  {/if}
+  <br/>{$search_order.provider_order_sn}
+  <br/>{$search_order.provider_out_order_sn}
+</td>
+<td>{$search_order.facility_name}</td>
+<td>{$search_order.remark}</td>
+<td>
+  {if view_provide_price($search_order.category)}
+	{$search_order.purchase_paid_amount}
+  {else}
+  N/A
+  {/if}
+	× {$search_order.goods_number}
+</td>
+<td>
+	{$search_order.new_in_count}
+</td>
+<td>
+	{$search_order.iid_created_stamp} 
+</td>
+<td>{$search_order.added_fee}</td>
+<td>{$search_order.applied_rebate}</td>
+<td>{$search_order.purchaser}</td>
+<td>{$search_order.order_is_order_c}</td>
+<td>
+	{if $search_order.is_purchase_paid != 'YES' && $search_order.new_in_count == 0}
+		{if $search_order.canceled}已废除{else}<input type="button" value="废除订单" onclick="destroy_order({$search_order.order_id})">{/if}
+    {/if}
+    {if $search_order.is_purchase_paid != 'YES' && $search_order.new_in_count > 0}
+    	<input type="button" value="修改价格" onclick="update_price({$search_order.rec_id},{$search_order.purchase_paid_amount})" />
+    	<input type="button" value="修改供应商" onclick="update_provider({$search_order.order_id},{$search_order.provider_id})" />
+    {/if}
+    {if $search_order.order_status != 5}
+    <p>
+    <input type="button" value="结束采购订单" onclick="over_c_order({$search_order.order_id})" />
+    </p>
+    {/if}
+    <input type="checkbox" name="orders[{$search_order.order_id}][selected]" value="{$search_order.order_id}" checked="checked" />
+    <input type="hidden" name="orders[{$search_order.order_id}][product_code]" value="{$search_order.product_code}" />
+    <input type="hidden" name="orders[{$search_order.order_id}][goods_number]" value="{$search_order.goods_number}" />
+</td>
+</tr>
+{assign var=pre_batch_order_id value=$search_order.batch_order_id}
+
+{/foreach}
+
+<tr align="center">
+<td>汇总</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>{$total_purchase_paid_amount}（{$total_goods_number}）</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><input type="submit" value="生成外部ASN文件" /><input type="hidden" name="act" value="xml" /><br>
+<input type="button" value="打印批量入仓单" onclick="print_product_recei	ving_list();" /></td>
+</tr>
+</table>
+</form>
+
+</fieldset>
+{* 弹出框 批量修改采购价格折扣 *}
+<div id="batch_pencentage_dialog" style="display:none;position:fixed;width:360px;height:140px;top:50%;left:50%;margin-left:-180px;margin-top:-70px;background:#ddd;z-index:2;" title="批量修改价格折扣">
+<form id="batch_change_pencentage_form" name="batch_change_pencentage_form">
+<table cellpadding="5" align="center">
+<tr> 
+  <td>上次折扣:</td>
+  <td><input type="text" name="pre_pencentage" value="" size="30" /></td>
+</tr>
+<tr> 
+  <td>调整折扣：</td>
+  <td><input type="text" name="update_pencentage" value="" size="30" />（以0.XXXX表示,1为100%,即原采购单价）</td>
+</tr>
+<tr>
+	<td><input type="button" value="修改折扣" onclick="dialog_pencentage_ajax_submit();" /></td>
+	<td><input type="button" value="取消" onclick="dialog_pencentage_disabled();" /></td>
+</tr>	
+</table>
+
+<input type="hidden" name="batch_order_sn" value="" />
+</form>
+</div>
+{* 弹出框 批量修改供应商 *}
+<div id="batch_provider_dialog" style="display:none;position:fixed;width:360px;height:140px;top:50%;left:50%;margin-left:-180px;margin-top:-70px;background:#ddd;z-index:2;" title="批量修改供应商">
+<form id="batch_change_provider_form" name="batch_change_provider_form">
+<table cellpadding="5" align="center">
+<tr> 
+  <td>上次供应商:</td>
+  <td><input type="text" name="pre_batch_provider_name" value="" size="30" /></td>
+</tr>
+<tr> 
+  <td>调整供应商：</td>
+  <td>
+  	<input type="text" value="" size="30" id="provider4" onkeyup="select_ele('provider4',event);" onblur="leave_ele('provider4');"/>
+	<!-- 供应商列表 -->
+	<ul id="provider4_list" style='display:none;width:260px;'>
+	{foreach from=$providers item=provider}
+		<li gid='{$provider.provider_id}' code="{$provider.provider_code}">{$provider.provider_name}</li>
+	{/foreach}
+	</ul>
+  </td>
+</tr>
+<tr>
+	<td><input type="button" value="修改供应商" onclick="dialog_batch_provider_ajax_submit();" /></td>
+	<td><input type="button" value="取消" onclick="dialog_batch_provider_disabled();" /></td>
+</tr>	
+</table>
+<input type="hidden" name="pre_batch_provider_id" value="" />
+<input type="hidden" value="" name="update_batch_provider_id" id="provider4_hidden" />
+<input type="hidden" name="batch_order_sn" value="" />
+</form>
+</div>
+{* 弹出框 修改价格 *}
+<div id="dialog" style="display:none;position:fixed;width:360px;height:140px;top:50%;left:50%;margin-left:-180px;margin-top:-70px;background:#ddd;z-index:2;" title="修改价格">
+<div id="dialogTips" style="color:#990; text-align:center; font-weight:bold;"></div>
+<div id="dialogOrderInfo" style="text-align:center;"></div>
+<form id="payment_transaction_create_form" name="payment_transaction_create_form">
+<table cellpadding="5" align="center">
+<tr> 
+  <td>上次价格:</td>
+  <td><input type="text" name="pre_price" value="" size="30" /></td>
+</tr>
+<tr> 
+  <td>调整价格：</td>:</td>
+  <td><input type="text" name="update_price" value="" size="30" /></td>
+</tr>
+<tr>
+	<td><input type="button" value="修改价格" onclick="dialog_ajax_submit();" /></td>
+	<td><input type="button" value="取消" onclick="dialog_disabled();" /></td>
+</tr>	
+</table>
+
+<input type="hidden" name="rec_id" value="" />
+</form>
+</div>
+{* 弹出框 修改供应商*}
+<div id="dialog_provider" style="display:none;position:fixed;width:360px;height:140px;top:50%;left:50%;margin-left:-180px;margin-top:-70px;background:#ddd;z-index:2;" title="修改供应商">
+<form id="change_provider_form" name="change_provider_form">
+<table cellpadding="5" align="center">
+<tr> 
+  <td>原来供应商:</td>
+  <td><input type="text" name="pre_provider_name" value="" size="30" />
+  </td>
+</tr>
+<tr> 
+ 	<td>修改 供应商：</td>
+ 	<td>
+	<input type="text" value="" size="30" id="provider3" onkeyup="select_ele('provider3',event);" onblur="leave_ele('provider3');"/>
+	<!-- 供应商列表 -->
+	<ul id="provider3_list" style='display:none;width:260px;'>
+	{foreach from=$providers item=provider}
+		<li gid='{$provider.provider_id}' code="{$provider.provider_code}">{$provider.provider_name}</li>
+	{/foreach}
+	</ul>
+	</td>
+</tr>
+<tr>
+	<td><input type="button" value="修改供应商" onclick="dialog_provider_ajax_submit();" /></td>
+	<td><input type="button" value="取消" onclick="dialog_provider_disabled();" /></td>
+</tr>	
+</table>
+<input type="hidden" name="pre_provider_id" value="" />
+<input type="hidden" name="order_id" value="" />
+<input type="hidden" value="" name="update_provider_id" id="provider3_hidden" />
+</form>
+</div>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<script type="text/javascript" src="js/js/jquery.js"></script>
+
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+<script type="text/javascript">
+var order_type = new Array();
+var providers = new Array();
+var purchasers = new Array();
+{foreach from=$providers item=provider}
+order_type[{$provider.provider_id}] = '{$provider.provider_order_type}';
+providers.push(new Array('{$provider.provider_id}', '{$provider.provider_code}', '{$provider.provider_name}'));
+{/foreach}
+{foreach from=$purchasers item=purchaser}
+purchasers.push('{$purchaser}');
+{/foreach}
+
+{literal}
+$(document).ready(function(){
+	$("#search_c_order_form").submit(function(){
+		if ($("#search_order_time").val() == '' || $("#search_order_time_end").val() == '') {
+			alert("订单开始时间和结束时间不能为空");
+			return false;
+		}else {
+			return true;
+		}
+	});
+});
+var process_request = '';
+var oldkeyword = '';
+var last_goods;
+var is_calling = false;
+var added_goods_list = new Array();
+var need_check_style = false;
+var last_style;
+
+	var contrl = {
+		tmp : '', //  input里的值默认值
+		num : -1, //  li的所在的列数
+	}
+	function E(id) {
+		return document.getElementById(id);
+	}
+	//返回采购订单数据，即将brand_gymboree_inoutvouch的is_send值修改为True
+	function back_c(){
+		var gymboree_inoutvouchID = E('gymboree_inoutvouchID').value;
+		if(gymboree_inoutvouchID == "-1"){
+			alert("请先选择返回采购订单的文件");
+			return;
+		}
+		$.ajax({     
+		     type:"POST",     
+		     url:'order.php?act=back_c',
+		     data:'gymboree_inoutvouchID=' + gymboree_inoutvouchID,
+		     dataType:"json", 
+		     error: function(){
+		    	 alert("返回采购订单失败");
+		     },
+			 success:function(){
+				 alert("已经成功设置，将于晚上发送文件");
+			 }
+		 }); 
+	}
+	
+	
+	//再返回金宝贝数据之前，检测这一批采购单是否入库完全，并且与采购入库通知单进行校验
+	function check_in_stock(){
+	
+		var gymboree_inoutvouchID = E('gymboree_inoutvouchID').value;
+		$.ajax({     
+		     type:"POST",     
+		     url:'generate_c_orderV2.php?act=in_stock',
+		     data:'gymboree_inoutvouchID=' + gymboree_inoutvouchID,
+		     dataType:"json", 
+		     error: function(){
+			    	 alert("返回采购订单失败");
+		     },
+			 success:check_in_stock_callback
+		 }); 
+	}
+	
+	function check_in_stock_callback(data){
+		var message = "";
+		if(data.in_stock_number == null){
+			message += '该入库通知单还没有入库';
+		}else{
+			message += '该入库通知单入库数量为：'+data.in_stock_number+";\n";
+			if(data.detail != null){
+				for(var i=0; i<data.detail.length; i++){
+					message += data.detail[i].order_sn+"采购单应入库"+data.detail[i]['goods_number']+"个，实际入库"+data.detail[i]['QUANTITY_ON_HAND_DIFF']+"个;\n";
+				}
+			}
+		}
+		alert(message);
+	}
+	
+	//批量导入采购订单
+	function bacth_c(){
+		var provider = E('provider').value;
+		var party_id = E('party_id').value;
+		var order_type = E('order_type').value;
+		if(provider == ""){
+			alert("请先选择供应商");
+			return;
+		}
+		$.ajaxFileUpload({
+			url:'batch_c_order.php?party_id='+party_id+'&order_type='+order_type,
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			success: function (data)
+			{
+				added_goods_list = data.content;
+				if(data.message == "")
+				{
+					redraw_table();
+					init_table();
+				}else{
+					alert(data.message);
+				}
+			},
+			error: function (data, status, e)
+			{
+				alert("方法调用错误，请联系ERP组");
+			}
+		})
+	}
+	
+	
+	//当选择不同的仓库时，将仓库ID值赋给隐藏的仓库域
+	function get_gymboree_warehouse(){
+		var warehouse_id = E('gymboree_warehouse_list').value;
+		if(warehouse_id == "-1"){
+			 if(!confirm("你确信不选择仓库？"))
+		     {
+		         return ;
+		     }
+		}
+		E('gymboree_warehouse').value = warehouse_id;
+	}
+	
+	//导出采购点单项
+	function showDetail(){
+		var filename = E('c_select').value;
+		if(filename == "-1"){
+			alert("请选择正确的入库通知单");
+			return;
+		}
+		location.href='/admin/generate_c_orderV2.php?export=1&filename='+filename;
+	}
+	
+	//金宝贝自动添加采购项
+	function gymboree() {
+		var provider = E('provider').value;
+	    var pid = E('provider_hidden').value;
+	    var filename = E('c_select').value;
+		if(pid == ""){
+			alert("请先选择供应商");
+			return;
+		}else {
+      		E('order_type').value = order_type[pid]; 
+      		E('order_type_text').innerHTML= ' 订单类型：' + order_type[pid];
+      	}
+		if(filename == "-1"){
+			alert("请选择正确的入库通知单");
+			return;
+		}
+		
+		E("gymboree_warehouse_list").disabled = true;
+		
+		$.ajax({     
+		     type:"POST",     
+		     url:'order.php?act=generate_c',
+		     data:'filename=' + filename,
+		     dataType:"json", 
+		     error: function(){
+		    	 alert("查看采购订单失败");
+		     },
+			 success:gymboree_response
+		 }); 
+	}
+	
+	function gymboree_response(data) {
+		E('gymboree_warehouse').value=data.warehouse;
+		E("gymboree_vouchID").value=data.vouchID;
+		added_goods_list = data.content;
+		if(data.error == ""){
+			redraw_table();
+			init_table();
+		}else{
+			alert(data.error);
+		}
+	}
+	
+    function load_by_dispatch_list_sn (event) {
+        eventObj = event == null ? window.event : event;
+        keyCode = eventObj.which==null ? event.keyCode : eventObj.keyCode;
+        if (keyCode == 17) {
+            var dispatchListSn = E('dispatchListSn').value;
+            Ajax.call('ajax.php?act=get_goods_by_dispatch_list_sn', 'dispatchListSn='+dispatchListSn, load_by_dispatch_list_sn_response, 'POST', 'JSON'); 
+        }
+    }
+    
+    function load_by_dispatch_list_sn_response (result) {
+        if (result.error) {
+            alert(result.error);
+            return;
+        }
+        
+        if (!result.can_new_purchase_order) {
+            alert(result.info);
+            return;
+        }
+        
+        if (result.info) {
+            if (!confirm(result.info)) {
+                return;
+            }
+        }
+        
+        last_style = new Array();
+        
+        for (var i = 0; i < result.rows.length;  i++) {
+            row = result.rows[i];
+            E('goods').value = (row.goods_name);
+            E('goods_hidden').value = (row.goods_id);
+            E('cat_name').value = (row.cat_name);
+            E('style').value = (row.style_name);
+            E('style_hidden').value = (row.style_id);
+            E('goods_number').value = (row.goods_number);
+            
+            E('provider').value = (row.provider_name);
+            E('provider_hidden').value = (row.provider_id);
+            E('order_type').value = order_type[row.provider_id]; 
+            
+            E('purchase_paid_amount').value = (row.price);
+            E('dispatchListId').value  = row.dispatchListId;
+            // E('customized').checked = true;
+    
+            last_style.push(row.style_id);
+            
+            // 增加商品
+            add_goods();
+        }
+    }
+	
+	//更改税率,将税率下文本框改变为writable
+	function modify_tax_rate()
+	{
+		var taxRate = E('purchase_added_fee');
+		var enterButton = E('text_rate_button');
+		if(enterButton.value == '更改税率')
+		{
+			taxRate.disabled = false;
+			$("#purchase_added_fee").focus();
+			enterButton.value = "确认";	
+		}
+		else if(enterButton.value == '确认')
+		{
+			if(taxRate.value >= 0 && taxRate.value <= 2)
+			{
+				alert('修改税率成功');	
+			}
+			else{
+				taxRate.value='1.17';
+				alert('修改税率失败');
+			}
+				
+			taxRate.disabled = true;
+			enterButton.value = '更改税率';
+		}
+	}
+	/**
+	 * 表单提交前检查商品列表，检查返利是否合理分配了
+	 */
+	function check_added_goods_list() {
+		
+		// 提交前检测供应商和order_type
+		var pid = E('provider_hidden').value;
+		if(pid == ""){
+			alert("请选择供应商");
+			return false;
+		}
+		var order_type_hidden = E('order_type').value;
+		if(order_type_hidden == ""){
+			alert("请选择供应商");
+			return false;
+		}
+			
+		var time = E('arrive_time').value;
+		if(time == ""){
+			alert("请选择到货日期");
+			return false;
+		}
+			
+		var trs = E('added_goods').getElementsByTagName('tr');
+		
+		if(trs.length == 0) {
+			alert('没有添加货物');
+			return false;
+		}
+		
+		if(E('party_id').value == 65574){
+			if(E('gymboree_warehouse_list') != undefined){
+				if(E('gymboree_warehouse').value == "" || E('gymboree_warehouse').value == "-1"){
+					alert("金宝贝组织的请选选择仓库。若为手动录单，请选择仓库；若为批量导入，请联系ERP");
+					return false;
+				}
+			}
+			
+			//将选择金宝贝入库通知单的文件的文件名赋值给hidden域里面，然后通过POST传给generate_order_actionV2.php插入到数据库中
+			var gymboree_file_name = E('c_select').value;
+			E('gymboree_file_name').value = gymboree_file_name;
+		}
+		
+		
+		// 累加商品对应的返利
+		var rebate_total = 0;
+		for (var i = 0; i<added_goods_list.length; i++) {
+			rebate_total += added_goods_list[i][9];
+		}
+  
+		// 如果有返利      
+		var b = E('benefit').value;
+		if (b) {
+			if (!/^\d+(\.\d+)?$/.test(b)) {
+				alert('返利金为数字');
+				return false;			
+			}
+
+			b = parseFloat(b);
+			if ( b != rebate_total ) {
+				alert('返利总额和分配到各个商品的返利不一致，请分配返利金额或者手动输入每个商品使用的返利金额');
+				return false;
+			}
+			
+			if ( b > parseFloat(E('order_amount').value) ) {
+				alert('返利金额不能大于付款总额');
+				return false;
+			}			
+		}
+		
+		$("#arrive_time_").val($("#arrive_time").val());
+		$("#provider_order_sn").val($("#provider_order").val());
+		$("#provider_out_order_sn").val($("#provider_out_order").val());
+		E('create_c').disabled = true;
+	  E('form1').submit();
+	}
+	
+	/**
+	 * 重新计算总价, 新的总价 = 原来的总价 - 返利
+	 */
+	function rebulid_amount()
+	{
+		var b = E('benefit').value;
+		var a = E('order_amount').value;
+		
+		if (!/^\d+(\.\d+)?$/.test(a)) {
+			a = 0;
+		} else {
+			a = parseFloat(a);
+		}
+		
+		if (b && !/^\d+(\.\d+)?$/.test(b)) {
+			alert('请输入正确的返利金额');
+			E('benefit').blur();
+			return false;
+		}
+		
+		b = parseFloat(b);
+		if ( b > a ) {
+			alert('返利金额不能大于付款总额');
+			return false;
+		}
+		E('amount').value = Math.round( (a - b)*100 ) /100;
+	}
+	
+	/**
+	 * 添加商品
+	 */
+	function add_goods() {
+	  /*if(E('purchaser_hidden').value == '') {
+	    if( purchasers.in_array(E('purchaser').value) ) {
+	      E('purchaser_hidden').value == E('purchaser').value;
+	    } else {
+	      E('purchaser').focus();
+  	    alert('请选择采购');
+  	    return false;
+	    }
+	  }*/
+
+	  if(!/^(\d+)$/.test(E('provider_hidden').value)) {
+	    if( providers.in_array(E('provider').value) ) {
+	      E('provider_hidden').value = E('provider').value;
+	    } else {
+  	    E('provider').focus();
+  	    alert('请选择供应商');
+  	    return false;
+	    }
+	  }
+		
+	  if(!/^(\d+)$/.test(E('goods_hidden').value)) {
+	    E('goods').focus();
+	    alert('请选择商品');
+	    return false;
+	  }
+		
+	  if(!/^(\d+)$/.test(E('goods_number').value)) {
+	    E('goods_number').focus();
+	    alert('请输入正确的商品数量');
+	    return false;
+	  }
+
+		if(!last_style.in_array(E('style_hidden').value)) {
+	      alert('请选择正确的商品颜色');
+	      E('style').focus();
+  	    return false;
+		}
+
+	  if(!/^(\d+)(.\d+)?$/.test(E('purchase_paid_amount').value)) {
+	    E('purchase_paid_amount').focus();
+	    alert('请输入正确的供价');
+	    return false;
+	  }
+	  
+	  if (E('party_id2').value == 65586 && E('combi_production_date').value =="") {
+		  if (! confirm("确认不填生产日期吗？这对给康贝发货单有影响.")) {
+			  return false;
+		  }
+	  }
+	  
+	  if (E('party_id2').value == 65586 && E('combi_batch_sn').value =="") {
+		  if (! confirm("确认不填批次号吗？这对康贝发货单有影响.")) {
+			  return false;
+		  }
+	  }
+	  
+		// 商品属性
+	  var added_goods = new Array();
+	  added_goods[0] = E('goods').value;
+	  added_goods[1] = E('goods_hidden').value;
+	  added_goods[2] = E('style').value;
+	  added_goods[3] = E('style_hidden').value;
+	  added_goods[4] = parseInt(E('goods_number').value);  // 数量
+	  added_goods[5] = parseFloat(E('purchase_paid_amount').value); // 采购单价
+	  // added_goods[6] = radio_result;
+	  // added_goods[7] = E(radio_result+'_span').innerHTML;
+	  added_goods[8] = Math.round(added_goods[5] * 100 * added_goods[4]) / 100;  // 采购价
+	  added_goods[9] = 0;  // 返利
+      added_goods[10] = parseFloat(E('purchase_added_fee').value); // 税率
+      added_goods[11] = E('dispatchListId').value;// 工单号
+      added_goods[12] = '';
+      added_goods[13] = E('cat_name').value;
+      
+      if (E('party_id2').value == 65586) {
+    	  added_goods[14] = E('combi_production_date').value;
+    	  added_goods[15] = E('combi_batch_sn').value;
+      }
+
+      added_goods[16] = E('barcode').innerHTML;
+      added_goods[17] = E('spec').innerHTML; 
+
+      var data_for_upd = {};
+      data_for_upd.style = JSON.parse(E('hidden_style_list_upd').value);
+      data_for_upd.lastPrice = E('lastPrice').innerHTML; 
+      
+      added_goods[18] = data_for_upd;  
+	  
+      // 判断是否已经存在，一个批次同种商品只能采购一次 ljzhou 2013-09-10
+      for(i = 0; i < added_goods_list.length; i++) {
+    	  if(added_goods[1] == added_goods_list[i][1] && added_goods[3] == added_goods_list[i][3] ) {
+    		  //alert('该商品已经存在，一个批次同种商品只能采购一次！');
+    		  //return false;
+    	  }
+      }
+
+      // 判断是否维护了条码
+      var is_maintain_barcode = check_goods_maintain_barcode(added_goods[1],added_goods[3]);
+      if(!is_maintain_barcode) {
+    	  alert('该商品未维护条码，请店长先维护条码！');
+    	  return false;
+      }
+      
+	  added_goods_list.push(added_goods);
+	  redraw_table();
+	  init_table();
+	  E('goods').focus().select();
+	  E('style_hidden').value = '';
+	  
+//	  E('purchaser').readOnly = true;
+	  E('provider').readOnly = true;
+	  
+	  E('modifyPurchaser').style.display = '';
+	}
+	
+	/**
+	 * 删除商品
+	 */
+	function remove_added_goods(i) {
+	  if (added_goods_list[i][9] > 0) {
+	      if(!confirm("该商品准备使用返利：" + added_goods_list[i][9] + "，是否要删除？") ) return false;
+	  }
+	  added_goods_list.remove(i);
+	  redraw_table();
+	  re_calculate_rebate();
+	}
+	
+	/**
+	 * 重新渲染商品列表
+	 */
+	function redraw_table() {
+	  var i = 0;
+	  var html = '';
+	  var total = 0;
+	  var goods_number = 0;
+	  for(i = 0; i < added_goods_list.length; i++) {
+	    added_goods = added_goods_list[i];
+	    html += "<tr><td>" + added_goods[0] + "</td>";
+	      html += "<td>"+added_goods[16]+"</td>";
+	       html += "<td>"+added_goods[17]+"</td>";
+		  html += "<td>" + added_goods[2] + "</td>";
+		  html += "<td>" + added_goods[4];
+		  html += "<br/>"; 
+		  html += goods_number_spec_html(added_goods[4],added_goods[17]);
+		  html +="</td>";
+		  html += "<td>" + added_goods[5] + "</td>";
+          html += "<td>" + added_goods[10] + "</td>";
+		  html += '<td>' + added_goods[8] + '</td>';
+		  if (E('party_id2').value=="65586") {
+			  html += '<td>' + added_goods[14] + '</td>';
+			  html += '<td>' + added_goods[15] + '</td>';
+		  }
+		  html += '<td><input type="text" id="rebate_' + i + '" name="rebate[]" value="' + added_goods[9] + '" onkeyup="change_rebate(' + i +')" style="width:40px;" /></td>';
+		  html += '<input type="hidden" name="goods_id[]" value="'+ added_goods[1] +'" /> ';
+		  html += '<input type="hidden" name="style_id[]" value="'+ added_goods[3] +'" />';
+		  html += '<input type="hidden" name="goods_number[]" value="' + added_goods[4] + '" />';
+		  html += '<input type="hidden" name="purchase_paid_amount[]" value="' + added_goods[5] + '" />';
+          html += '<input type="hidden" name="purchase_added_fee[]" value="' + added_goods[10] + '" />';
+		  // html += '<input type="hidden" name="customized[]" value="' + added_goods[6] + '" />';
+		  html += '<input type="hidden" name="dispatchListId[]" value="' + added_goods[11] + '" />';
+		  html += '<input type="hidden" name="gymboree_vouch_detailID[]" value="' + added_goods[12] + '" />';
+		  if (E('party_id2').value=="65586") {
+			  html += '<input type="hidden" name="combi_production_date[]" value="' + added_goods[14] + '" />';
+			  html += '<input type="hidden" name="combi_batch_sn[]" value="' + added_goods[15] + '" />';
+		  }
+          html += '<td><input type="button" value="删除" onclick="remove_added_goods(' + i + ')" />';
+          html += "&nbsp;&nbsp;"
+          html += "<input type='button' value='修改' onclick='btn_upd_goods("+i+")' />"; 
+          html += '</td>	</tr>';
+		  total += Math.floor(added_goods[5] * 100 * added_goods[4]) / 100;
+		  goods_number += Math.floor(added_goods[4]);
+	  }
+		total = Math.round( total * 100 ) / 100;
+	    E('added_goods').innerHTML = html;
+		E('order_amount').value = total;	
+		E('goods_amount').value = goods_number;
+		
+		var benefit = E('benefit').value;
+		if (benefit) {
+			E('amount').value = Math.round( (total - parseFloat(benefit)) * 100 ) /100;
+		} else {
+			E('amount').value = total;	
+		}
+	}
+
+
+  var upd_goods_id = "";
+  var upd_style_id = "";
+  var upd_style_name = ""; 
+  var upd_i = ""; 
+  // 当通过Excel导入的方式时 修改时需要获取样式 
+  function updSearchGoodsStyle(goods_id,style_id,style_name,i) {
+    if (goods_id != '') {
+    	upd_goods_id = goods_id;
+    	upd_style_id = style_id;
+    	upd_style_name = style_name; 
+    	upd_i = i; 
+      Ajax.call('order.php?act=search_goods_style&no_storage_info=1&goods_id=' + goods_id, '', updSearchGoodsStyleResponse, 'GET', 'JSON');
+    }
+  }
+    
+  function updSearchGoodsStyleResponse(result) {
+    if (result.message.length > 0) {
+      alert(result.message);
+    }
+    if (result.error == 0) {
+    	var otherInfo = result.goods_style_list;
+    	var html = ""; 
+    	if( otherInfo.length <2 ){
+			html += upd_style_name; 
+		}else{
+			style_flag = true; 
+			html += "<select onchange='change_style("+upd_i+");' id='upd_style' >";
+			for(var j=0;j<otherInfo.length;j++){
+				if(upd_style_id == otherInfo[j].style_id){
+					html += "<option  barcode='"+otherInfo[j].barcode+"'  selected='selected' value='"+otherInfo[j].style_id+"'>";
+				}else{
+					html += "<option  barcode='"+otherInfo[j].barcode+"' value='"+otherInfo[j].style_id+"'>";
+				}
+				html += otherInfo[j].color;
+				html += "</option>"; 
+			}
+			html += "</select>";
+		}   
+		$("#upd_goods_id_"+upd_goods_id).html(html);
+		upd_goods_id = "";
+		upd_style_id = "";
+		upd_style_name = ""; 
+		upd_i =""; 
+		// getLastPrice(); 
+    }
+  }
+
+     // 修改时 用来标记是否有样式
+  	var style_flag = false; 
+    // 修改 
+	function btn_upd_goods(i){
+		var html = "";
+		var thisData = added_goods_list[i];
+		html += "<td>"+thisData[0]+"</td>"; 
+		html += "<td>"+"<span id='upd_barcode'>"+thisData[16]+"</span>"+"</td>";
+		html += "<td>"+thisData[17]+"</td>"; 
+		var otherInfo = thisData[18]; 
+		html +="<td id='upd_goods_id_"+thisData[1]+"'>";
+		if(otherInfo != undefined){ 
+			if( otherInfo.style.length <2 ){
+				html += thisData[2]; 
+			}else{
+				html += "<select onchange='change_style("+i+");' id='upd_style' >";
+				style_flag = true; 
+				for(var j=0;j<otherInfo.style.length;j++){
+					if(thisData[3] == otherInfo.style[j].style_id){
+						html += "<option  barcode='"+otherInfo.style[j].barcode+"'  selected='selected' value='"+otherInfo.style[j].style_id+"'>";
+					}else{
+						html += "<option  barcode='"+otherInfo.style[j].barcode+"' value='"+otherInfo.style[j].style_id+"'>";
+					}
+					html += otherInfo.style[j].color;
+					html += "</option>"; 
+				}
+				html += "</select>";
+			}
+		}else{
+			updSearchGoodsStyle(thisData[1],thisData[3],thisData[2],i);
+		}
+		html +="</td>";
+		html += "<td>"; 
+		html += "<input type='text' style='width:33px;'  onblur='upd_goods_number_spec("+thisData[17]+");' id='upd_goods_number' value='"+thisData[4]+"'>";
+		html += "<br/>"; 
+		html += "<span id='upd_goods_number_spec'>"+goods_number_spec_html(thisData[4],thisData[17])+"</span>"; 
+		html += "</td>"; 
+		html += "<td>"; 
+		html += "<input type='text' id='upd_purchase_paid_amount'  style='width:33px;' value='"+thisData[5]+"'>";
+		if(otherInfo != undefined ){
+			html += "<br/>"+otherInfo.lastPrice; 
+		}
+		html += "</td>"; 
+		if (E('party_id2').value == 65586) {
+			html += "<td>";
+			html += '<input name="upd_combi_production_date" id="upd_combi_production_date" style="width:80px" value="'+thisData[14]+
+				'"/><input type="button" value="..." id="upd_startTrigger2"/>'
+			html += "</td>";
+			html += "<td>";
+			html += '<input name="upd_combi_batch_sn" id="upd_combi_batch_sn" style="width:80px" value="'+thisData[15]+'"/>'; 
+			html += "</td>";
+        }
+		html += "<td>";
+		html += "<input type='text' id='upd_purchase_added_fee' disabled='disabled' style='width:33px;' value='"+thisData[10]+"' >";
+		html += "</td>";
+		html += "<td>";
+		html += "<input type='button' value='确定' onclick='upd_ok("+i+");'>";
+		html += "&nbsp;&nbsp;"
+		html += "<input type='button' value='取消' onclick='upd_cancel();' >";
+		html += "&nbsp;&nbsp;";
+		html += "<input type='button' value='修改税率' onclick='upd_change_fax();' >";
+		html += "</td>"; 
+		$("#upd_tr").html(html).focus(); 
+		if(E('party_id2').value == 65586) {
+			Zapatec.Calendar.setup({
+				weekNumbers       : false,
+				electric          : false,
+				inputField        : "upd_combi_production_date",
+				button            : "upd_startTrigger2",
+				ifFormat          : "%Y-%m-%d",
+				daFormat          : "%Y-%m-%d"
+	       });
+		}
+	}
+
+	function change_style(i){
+		var option = $("#upd_style option:selected");
+		var barcode = option.attr("barcode"); 
+		added_goods_list[i][16] = barcode; 
+ 		$("#upd_barcode").html(barcode); 
+	}
+	function upd_goods_number_spec(spec){
+		var number = $("#upd_goods_number").val(); 
+		$("#upd_goods_number_spec").html(goods_number_spec_html(number,spec));
+	}
+
+	function upd_change_fax(){
+		E('upd_purchase_added_fee').disabled = false;
+		$(this).hide(); 
+	}
+
+	function upd_ok(i){
+		if(!/^(\d+)$/.test(E('upd_goods_number').value)) {
+	   		E('upd_goods_number').focus();
+	    	alert('请输入正确的商品数量');
+	        return false;
+	 	}
+
+		if(!/^(\d+)(.\d+)?$/.test(E('upd_purchase_paid_amount').value)) {
+		    E('upd_purchase_paid_amount').focus();
+		    alert('请输入正确的供价');
+		    return false;
+		}
+
+
+		if(!/^(\d+)(.\d+)?$/.test(E('upd_purchase_added_fee').value)) {
+		    E('upd_purchase_added_fee').focus();
+		    alert('请输入正确的税率');
+		    return false;
+		}
+		var taxRate  = E('upd_purchase_added_fee').value;
+
+		if(  taxRate  >= 0 && taxRate  <= 2 ){
+
+		}else{
+			E('upd_purchase_added_fee').focus();
+		    alert('请输入正确的税率');
+		    return false;
+		}
+		if(style_flag == true){
+			var option = $("#upd_style option:selected");
+			added_goods_list[i][2] = option.html();
+	        added_goods_list[i][3] = option.val();
+		}
+	    added_goods_list[i][4] = parseInt(E('upd_goods_number').value);  // 数量
+	    added_goods_list[i][5] = parseFloat(E('upd_purchase_paid_amount').value); // 采购单价
+	    added_goods_list[i][8] = Math.round(added_goods_list[i][5] * 100 * added_goods_list[i][4]) / 100;  // 采购价
+        added_goods_list[i][10] = parseFloat(E('upd_purchase_added_fee').value); // 税率
+      	if (E('party_id2').value == 65586) {
+			added_goods_list[i][14] = $("#upd_combi_production_date").val(); 
+			added_goods_list[i][15] = $("#upd_combi_batch_sn").val(); 
+        }
+        $("#upd_tr").html(""); 
+        redraw_table(); 
+	}
+	function upd_cancel(){
+		$("#upd_tr").html(""); 
+	}
+	
+	function select_radio(radio_name) {
+	  var radio = document.getElementsByName(radio_name);
+    for(var i=0;i<radio.length;i++) {
+      if (radio[i].checked) {
+        return(radio[i].value);
+        break;
+      }
+    }
+    return null;
+  }
+  function unselect_radio(radio_name) {
+      var radio = document.getElementsByName(radio_name);
+      for(var i=0;i<radio.length;i++) {
+          radio[i].checked = false;
+      }
+  }
+	
+	Array.prototype.remove=function(dx)
+  {
+    if(isNaN(dx)||dx>this.length){return false;}
+    for(var i=0,n=0;i<this.length;i++)
+    {
+        if(this[i]!=this[dx])
+        {
+            this[n++]=this[i]
+        }
+    }
+    this.length-=1
+  }
+  Array.prototype.in_array=function(ele)
+  {
+    for(var i=0,n=0;i<this.length;i++) {
+        if(this[i] == ele) {
+            return true;
+            break;
+        }
+    }
+    return false;
+  }
+  
+	function select_ele(id,e){
+		var evt = e || window.event;
+		E(id+'_list').style.display = '';
+		var oli = E(id+'_list').getElementsByTagName('li');
+		if (oli.length > 0) {
+			if (evt.keyCode == 40){
+				if (contrl.num < oli.length){
+					contrl.num++;
+				}
+				if( contrl.num == oli.length){
+					contrl.num = 0;
+					oli[oli.length-1].style.background = '#fff';
+					oli[oli.length-1].style.color = '#000';
+				}
+
+				if (contrl.num >=0 && contrl.num < oli.length){
+					if (contrl.num !=0 ){
+						oli[contrl.num-1].style.background = '#fff';
+						oli[contrl.num-1].style.color = '#000';
+					}
+						
+					oli[contrl.num].style.background = '#36c';
+					oli[contrl.num].style.color = '#fff';
+					contrl.tmp = E(id).value = oli[contrl.num].innerHTML;
+				}
+			}else if(evt.keyCode == 38){
+				if(contrl.num >= 0){
+					contrl.num--;
+				}
+				if(contrl.num == -1){
+					contrl.num = oli.length-1;
+					oli[0].style.background = '#fff';
+					oli[0].style.color = '#000';
+				}
+				if(contrl.num < oli.length-1){
+					oli[contrl.num+1].style.background = '#fff';
+					oli[contrl.num+1].style.color = '#000';
+				}
+				if(contrl.num >= 0){
+					oli[contrl.num].style.background = '#36c';
+					oli[contrl.num].style.color = '#fff';
+					contrl.tmp = E(id).value = oli[contrl.num].innerHTML;
+				}
+
+			}
+			
+			if(contrl.num >= 0 && contrl.num < oli.length){
+				E(id+'_hidden').value = oli[contrl.num].attributes['gid'].value;
+				if (id == 'goods') {
+					E('cat_name').value = oli[contrl.num].attributes['cid'].value;
+					var barcode = oli[contrl.num].attributes['barcode'].value; 
+					E('barcode').innerHTML = barcode;
+					$("#goods_barcode_hidden").val(barcode); 
+					E('spec').innerHTML = oli[contrl.num].attributes['spec'].value;
+
+					var pid = E('provider_hidden').value;
+					if (E('cat_name').value == "耗材商品") {
+						E('purchase_paid_amount').value = '';
+		      			E('purchase_paid_amount').readOnly = false;
+		      			E("lastPrice").innerHTML = "耗材商品";
+					} else {
+						if (order_type[pid] == 'DX') {
+							E('purchase_paid_amount').value = '0';
+			      			E('purchase_paid_amount').readOnly = true;
+			      			E("lastPrice").innerHTML = "DX单价为0";
+						} else {
+							E('purchase_paid_amount').value = '0';
+			      			E('purchase_paid_amount').readOnly = false;
+							E("lastPrice").innerHTML = "";
+						}
+					}
+				}else if( id =="style" ){
+					E("barcode").innerHTML = oli[contrl.num].attributes['barcode'].value;
+				}
+			}
+		}
+	}
+
+	function goods_number_spec(obj){
+		var number = E('goods_number').value;
+		var spec = $("#spec").text();
+		if( parseInt(spec) < 1){
+			E("goods_number_spec").innerHTML = ""; 
+			return false; 
+		}
+		var zheng = parseInt( number / spec); 
+		var yu = number - zheng*spec; 
+		var html = "&nbsp;<span style='color:blue;'>("+zheng+"箱";
+		if( yu > 0){
+			html += "零 "+yu+"件"; 
+		}
+		html += ")</span>";
+		E("goods_number_spec").innerHTML = html; 
+	}
+    
+    function goods_number_spec_html(number,spec){
+		if( parseInt(spec) < 1){
+			return ""; 
+		}
+		var zheng = parseInt( number / spec); 
+		var yu = number - zheng*spec; 
+		var html = ""; 
+		html += "&nbsp;("; 
+		html += zheng+"箱";
+		if( yu > 0){
+			html += "零"+yu+"件"; 
+		}
+		html +=")"; 
+		return html ; 
+	}
+
+	function leave_ele(id) {
+		contrl.num = -1;
+		contrl.tmp = '';
+		E(id+'_list').style.display = 'none';
+		if(id=='style'){
+			var provider_id = $("#provider_hidden").val(); 
+			var barcode = $("#barcode").text();
+			var goods_id = $("#goods_hidden").val(); 
+			var goods_barcode = $("#goods_barcode_hidden").val(); 
+			if(!isNaN(provider_id) && $.trim(barcode) !='' && $.trim(provider_id) !=''){
+				getProviderPurchaseInfo(provider_id,barcode,goods_id,goods_barcode); 
+			}
+		}
+	}
+
+	// 根据 provider_id 和 barcode 获取编辑商品时设置的采购信息 
+	function getProviderPurchaseInfo(provider_id,barcode,goods_id,goods_barcode){
+		if($('#purchase_paid_amount').val() ==0 ||  $('#purchase_paid_amount').val() =='' ){
+			$.getJSON('order.php?act=search_purchase_info&goods_id='+goods_id+'&goods_barcode='+goods_barcode+'&barcode=' + barcode+'&provider_id='+provider_id,function(result){
+				if(result.unit_price == undefined || result.unit_price <0){
+					return ; 
+				}
+				if($('#purchase_paid_amount').val() ==0 ||  $('#purchase_paid_amount').val() =='' ){
+					$('#purchase_paid_amount').val(result.unit_price); 
+				}else{
+					$("#lastPrice").append("设置采购价格："+result.unit_price); 
+				} 	
+			}); 
+		}
+	}
+
+ 
+
+
+	function key_event(e,code,fuc){
+		var evt = e || window.event;
+		//E('keycode').innerHTML = e.keyCode;
+		if(evt.ctrlKey && evt.shiftKey && evt.keyCode == code){
+			fuc();			
+		}
+	}
+	
+	var go_style = function(){
+		E('style').focus();
+	}
+	
+	function fill_goods_list() {
+	  var keyword = E("goods").value;
+	  E('oldkeyword').innerHTML = ("keyword:" + keyword + " oldword: " + oldkeyword +'['+ keyword.indexOf(oldkeyword) +']' );
+	  E('oldkeyword').style.display = 'none';         //这里做了修改,原本是内容要显示出来的,现在是不显示出来了的
+      if (keyword != '') {
+	      if(false && last_goods && keyword.toUpperCase().indexOf(oldkeyword.toUpperCase()) != -1) { // 如果新输入的关键词包含老的关键词，那么不需要ajax call了
+	        var html = '';
+	//        E('oldkeyword').innerHTML += 'inin9i ';
+	        var goodsCnt = last_goods.length;
+	        for (var i = 0; i < goodsCnt; i++)
+	        {
+	          if(last_goods[i].name.toUpperCase().indexOf(keyword.toUpperCase()) != -1) { // 如果商品名中有新的关键词，那么就留下
+	            html += '<li gid="' + last_goods[i].goods_id + '">' + last_goods[i].name + '</li>';
+	          }
+	        }
+	        E('goods_list').innerHTML = html;
+	      } else {
+	        setTimeout(searchGoods, 500);
+	      }
+      }
+	}
+	
+	
+	function searchGoods() {
+	  if(!is_calling) {
+	    is_calling = true;
+  	    var keyword = E("goods").value;
+  	    if (keyword != '' && keyword != oldkeyword) {
+          Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON'); 
+          oldkeyword = keyword;
+        } else {
+          is_calling = false;
+        }
+	  }
+	}
+	
+	function searchGoodsResponse(result)
+  {
+    is_calling = false;
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+      var html = '';
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0) {
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          html += '<li gid="' + arr[i].goods_id + '" spec="'+arr[i].spec+'" barcode="'+arr[i].barcode+'" cid= "'+ arr[i].cat_name +'">' + arr[i].name + '</li>';
+        }
+        last_goods = arr;
+        E('goods_list').innerHTML = html;
+      } else {
+    	E('goods_list').innerHTML = '';
+	  }
+    }
+    else
+    {
+	  E('goods_list').innerHTML = '';
+    }
+  }
+  
+  function fill_style_list() {
+  	$("#goods_number_spec").html(''); 
+    searchGoodsStyle();
+  }
+  function searchGoodsStyle() {
+    var goods_id = E('goods_hidden').value;
+    $("#purchase_added_fee").val(1.17);
+    $("#purchase_paid_amount").val(0); 
+    if (goods_id != '') {
+      Ajax.call('order.php?act=search_goods_style&no_storage_info=1&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+  }
+    
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0) {
+      alert(result.message);
+    }
+    if (result.error == 0) {
+	    var html = '';
+      
+      var added_fee = result.added_fee; 
+      $("#purchase_added_fee").css("color","#000"); 
+      if(added_fee > 0 ){
+      	$("#purchase_added_fee").val(added_fee);
+      	if(added_fee != 1.17){
+      		$("#purchase_added_fee").css("color","red"); 
+      	} 
+      }
+
+      var arr = result.goods_style_list;
+      E("hidden_style_list_upd").value = JSON.stringify(arr); 
+      var style_length = arr.length;
+      if (style_length > 0) {
+        last_style = new Array();
+        for (var i = 0; i < style_length; i++) {
+          last_style.push(arr[i].style_id);
+          html += '<li barcode="'+arr[i].barcode+'" gid="' + arr[i].style_id + '">' + arr[i].color + '</li>';
+        }
+        E('style_list').innerHTML = html;
+//        need_check_style = true;
+      } else {
+        last_style = new Array();
+        last_style.push(0);
+        E('style_list').innerHTML = '<li gid="0">无颜色</li>';
+        E('style').value = '无颜色';
+        E('style_hidden').value = 0;
+//        need_check_style = false;
+      }
+//      getLastPrice();
+    }
+  }
+  
+  function fill_provider_list(id) {
+    var provider = E(id).value;
+    var html = '';
+    var provider_name = '';
+    for(var i = 0; i < providers.length; i++) {
+      provider_name = providers[i][2];
+      if(providers[i][1].toUpperCase().indexOf(provider.toUpperCase()) != -1 || provider_name.toUpperCase().indexOf(provider.toUpperCase()) != -1)
+      html += '<li gid="' + providers[i][0] + '">' + provider_name + '</li>'
+    }
+    E(id+'_list').innerHTML = html;
+  }
+  
+  function changeProvider(id, tips) {
+    var provider = E(id).value;
+    var pid = E(id+'_hidden').value;
+    if (tips) {
+      	if (pid == '') {
+      		E('order_type_text').innerHTML='请选择供应商';
+      	} else {
+      		E('order_type').value = order_type[pid]; 
+      		E('order_type_text').innerHTML= ' 订单类型：' + order_type[pid];
+      		if(order_type[pid] == 'DX'){
+      			E('purchase_paid_amount').value = '0';
+      			E('purchase_paid_amount').readOnly = true;
+      			E("lastPrice").innerHTML = "DX单价为0";
+      		}else{
+      			E('purchase_paid_amount').value = '';
+      			E('purchase_paid_amount').readOnly = false;
+      			E("lastPrice").innerHTML = "";
+      		}
+      	}
+    }
+  }
+  
+  function fill_purchasers() {
+    var purchaser = E('purchaser').value;
+    var html = '';
+    var matched = 0;
+    var matched_i = 0;
+    for(var i = 0; i < purchasers.length; i++) {
+      if(purchasers[i].toUpperCase().indexOf(purchaser.toUpperCase()) != -1 || purchaser == '') {
+        html += '<li gid="' + purchasers[i] + '">' + purchasers[i] + '</li>';
+        matched++;
+        matched_i = i;
+      }
+    }
+    if(matched == 1) { E('purchaser_hidden').value = purchasers[matched_i];  }
+    E('purchaser_list').innerHTML = html;
+  }
+	
+  function getLastPrice() {
+    /* 填充列表 */
+    var goods_id = E('goods_hidden').value;
+    var style_id = E('style_hidden').value;
+    if (goods_id != '') {
+      Ajax.call('order.php?act=search_last_price&goods_id=' + goods_id + '&style_id=' + style_id, '', getLastPriceResponse, 'GET', 'JSON');
+    }
+  }
+  
+  function getLastPriceResponse(result) {
+    if (result.message.length > 0) {
+      alert(result.message);
+    }
+    if (result.price >= 0) {
+      if(/^(\d+)(.\d+)?$/.test(result.price)) {
+        E("lastPrice").innerHTML = "上次 " + result.price;
+      } else {
+        E("lastPrice").innerHTML = "无供价记录 ";
+      }
+    }
+  }
+  
+//	E('purchaser').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) E('provider').focus(); }, false); // 13 enter
+//	E('purchaser').addEventListener('keyup', function(e){var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38) fill_purchasers(); }, false); // 13 enter
+	E('provider').addEventListener('keydown', function(e){  var evt = e || window.event;if(evt.keyCode == 13) E('provider_order').focus(); }, false); // 13 enter
+	E('provider').addEventListener('keyup', function(e){ changeProvider('provider', true); var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38) fill_provider_list('provider'); }, false); // 13 enter
+	E('provider_order').addEventListener('keydown', function(e){  var evt = e || window.event;if(evt.keyCode == 13) E('provider_out_order').focus(); }, false);
+	E('provider_out_order').addEventListener('keydown', function(e){  var evt = e || window.event;if(evt.keyCode == 13) E('goods').focus(); }, false);
+	E('goods').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) { E('style').focus(); fill_style_list(); } else {/* fill_goods_list();*/ } }, false); // 13 enter
+	E('goods').addEventListener('keyup', function(e){var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38)  fill_goods_list();  }, false); // 13 enter
+//	E('goods').addEventListener('onchange', function(e){var evt = e || window.event;if(evt.keyCode != 13) E('goods_list').innerHTML = '<li>asdfas111</li><li>asdfas222</li>'; }, false); 
+	E('style').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) { E('goods_number').focus(); E('goods_number').select(); }  }, false); // 13 enter
+	E('style').addEventListener('keyup', function(e){var evt = e || window.event;getLastPrice(); }, false); // 13 enter
+	E('goods_number').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) { E('purchase_paid_amount').focus(); E('purchase_paid_amount').select(); } }, false); 
+	E('purchase_paid_amount').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) E('purchase_added_fee').focus(); }, false); 
+    E('purchase_added_fee').addEventListener('keydown', function(e){var evt = e || window.event;}, false); 
+  
+	window.addEventListener('keydown', function(e){key_event(e,49,go_style)}, false); // 49 1
+	
+    function destroy_order(order_id) {
+        if (!confirm('重要！在废除订单之前请和仓库确认该订单不会入库！\n\n废弃请确认，不废弃请取消'))
+          return;
+        var form_obj = E('form1');
+        form_obj.order_id.value = order_id;
+        form_obj.generate_type.value = 'destroy_c';
+        form_obj.submit();
+    }
+	
+	function over_c_order(order_id){
+		if(!confirm('重要！请确认是否要完结该采购订单！\n\n完结请确认，不完结请取消'))
+			return;
+		var form_obj = E('form1');
+		form_obj.order_id.value = order_id;
+		form_obj.generate_type.value = 'over_c';
+		form_obj.submit();
+	}
+    
+    function rebate_strategy() {
+        var pay = 0;
+        var rebate = parseFloat(E("benefit").value);
+
+				// 算总价
+        for (var i = 0; i < added_goods_list.length; i++) {            
+            pay += added_goods_list[i][8];
+        }
+				pay = Math.round(pay * 100) / 100;
+
+        if (rebate > pay) {
+					alert("返利金额不能大于商品总额");
+					return false;
+        }
+        
+        if (rebate == 0) {
+					for (var i = 0; i < added_goods_list.length; i++) {
+						 added_goods_list[i][9] = 0;
+					}
+        } else {
+					var added_goods;
+					var rebate_snippet = 0;
+					var rebate_left = rebate;
+					for (var i = 0; i < added_goods_list.length; i++) {
+							added_goods = added_goods_list[i];
+							if (rebate_left <= 0) break;
+							rebate_snippet = Math.floor(rebate * added_goods[8] / pay );
+							added_goods[9] = rebate_snippet;
+							rebate_left -= rebate_snippet;
+					}
+					rebate_left = Math.round(rebate_left * 100) / 100 ;
+					
+					if (rebate_left > 0) {
+							for (var i = 0; i < added_goods_list.length; i++) {
+									if (rebate_left <= 0) break;
+									added_goods = added_goods_list[i];
+									rebate_snippet = Math.min((added_goods[8] - added_goods[9]), rebate_left);
+									added_goods[9] += rebate_snippet;
+									rebate_left -= rebate_snippet;
+							}
+					}
+        }
+        
+        redraw_table();
+    }
+    
+    function change_rebate(i) {
+        var rebate_obj =  E('rebate_' + i);
+        if(!rebate_obj) {
+            alert("请刷新页面");
+            return false;
+        }
+        var rebate = rebate_obj.value;
+        if(!/^\d+(\.\d+)?$/.test(rebate)) {
+            alert("请输入正确的返利金额");
+            return false;
+        }
+        if(Number(added_goods_list[i][8]) < Number(rebate)) {
+            alert("返利金额大于采购金额");
+            rebate_obj.select();
+            rebate_obj.focus();
+            return false;
+        }
+        added_goods_list[i][9] = Number(rebate);
+        re_calculate_rebate();
+    }
+    
+    function re_calculate_rebate() {
+        var rebate_total = 0;
+        for (var i = 0; i<added_goods_list.length; i++) {
+            rebate_total += parseFloat(added_goods_list[i][9]);
+        }
+        E("benefit").value = rebate_total;
+        E('amount').value = Math.round( (parseFloat(E('order_amount').value) - rebate_total) *100 ) / 100;
+    }
+    function init_table() {
+    	var order_type = E('order_type').value;
+        E('goods').value = '';
+        E('goods_hidden').value = '';
+        E('goods_barcode_hidden').value = ''; 
+        E('style').value = '';
+        E('style_hidden').value = '';
+        E('goods_number').value = '1';
+        E('cat_name').value = '';
+        E('barcode').innerHTML ='';
+        E('spec').innerHTML = '';
+        E('goods_number_spec').innerHTML = ''; 
+        E('hidden_style_list_upd').value= ""; 
+  	    if(order_type == 'DX'){
+  		    E('purchase_paid_amount').value = '0';
+  	    }else{
+  	    	E('purchase_paid_amount').value = '';
+  	    }
+        // unselect_radio('customized');
+    }
+{/literal}
+</script>
+<script type="text/javascript">
+{literal}
+//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "search_order_time",
+        button            : "search_order_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "search_order_time_end",
+          button            : "search_order_time_end_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "arrive_time",
+          button            : "arrive_time_trigger",
+          ifFormat          : "%Y-%m-%d %H:%M:%S",
+          daFormat          : "%Y-%m-%d %H:%M:%S"
+        });
+      /* Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_in_time",
+        button            : "start_in_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });    
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_in_time",
+        button            : "end_in_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      }); */     
+      
+      if (E('party_id2').value=="65586") {
+	      Zapatec.Calendar.setup({
+			weekNumbers       : false,
+			electric          : false,
+			inputField        : "combi_production_date",
+			button            : "startTrigger2",
+			ifFormat          : "%Y-%m-%d",
+			daFormat          : "%Y-%m-%d"
+	      });
+      }
+      
+    //]]>
+     function update_price(rec_id,unit_cost){
+         var $form   = $('#payment_transaction_create_form');
+         var $dialog = $("#dialog");
+         $dialog.show();
+         $("#hide").show();
+         $form.find(":input[name='pre_price']").val(unit_cost);
+         $form.find(":hidden[name='rec_id']").val(rec_id); // 设置表单内的订单id
+     }
+     function dialog_ajax_submit()
+     {		
+         var $form   = $('#payment_transaction_create_form');
+         
+         var pre_price = $form.find(":input[name='pre_price']").val();
+         var rec_id = $form.find(":hidden[name='rec_id']").val();
+         var update_price = $form.find(":input[name='update_price']").val();
+         var datastr = 'rec_id=' + rec_id + '&pre_price='+pre_price + '&update_price='+update_price;
+         $.ajax({
+	 		  async:false,
+	          type: 'POST',
+	          url: 'generate_c_orderV2.php?act=update_unit_price',
+	          data: datastr,
+	          dataType: 'json',
+	          error: function() {
+	        	  dialog_disabled();
+	          },
+	          success: function(data) {
+	        	  dialog_disabled();
+	          }
+	      });
+                   
+     }
+	/**
+ 	 * 面板禁用
+ 	 */
+ 	function dialog_disabled() {
+ 		var $dialog = $("#dialog");
+ 		$dialog.hide();
+         $("#hide").hide();
+         location.reload();
+ 	}
+     /**
+      * 批量修改采购单价
+      */
+      function batch_update_price(batch_order_sn,percentage){
+          var $form   = $('#batch_change_pencentage_form');
+          var $dialog = $("#batch_pencentage_dialog");
+          $dialog.show();
+          $("#hide").show();
+          $form.find(":input[name='pre_pencentage']").val(percentage);
+          $form.find(":hidden[name='batch_order_sn']").val(batch_order_sn); // 设置表单内的订单id
+      }
+      function dialog_pencentage_ajax_submit()
+      {		
+          var $form   = $('#batch_change_pencentage_form');
+          var pre_pencentage = $form.find(":input[name='pre_pencentage']").val();
+          var batch_order_sn = $form.find(":hidden[name='batch_order_sn']").val();
+          var update_pencentage = $form.find(":input[name='update_pencentage']").val();
+          var datastr = 'batch_order_sn=' + batch_order_sn + '&pre_pencentage='+pre_pencentage + '&update_pencentage='+update_pencentage;
+          $.ajax({
+ 	 		  async:false,
+ 	          type: 'POST',
+ 	          url: 'generate_c_orderV2.php?act=update_batch_pencentage',
+ 	          data: datastr,
+ 	          dataType: 'json',
+ 	          error: function() {
+ 	        	  dialog_pencentage_disabled();
+ 	          },
+ 	          success: function(data) {
+ 	        	  if(data.status == true && data.detail != ''){
+ 	        		  alert(data.detail);
+ 	        	  }
+ 	        	  dialog_pencentage_disabled();
+ 	          }
+ 	      });
+                    
+      } 
+	function dialog_pencentage_disabled() {
+		var $dialog = $("#batch_pencentage_dialog");
+		$dialog.hide();
+        $("#hide").hide();
+        location.reload();
+	}
+	/**
+     * 批量修改供应商
+     */
+     function batch_update_provider(batch_order_sn,provider_id){
+         var $form   = $('#batch_change_provider_form');
+         var $dialog = $("#batch_provider_dialog");
+         $dialog.show();
+         $("#hide").show();
+         $form.find(":input[name='pre_batch_provider_id']").val(provider_id);
+         for(var i = 0; i<providers.length;i++)
+         {
+         	if(providers[i][0] == provider_id){
+         		$form.find(":input[name='pre_batch_provider_name']").val(providers[i][2]);
+         	}
+         }
+         $form.find(":hidden[name='batch_order_sn']").val(batch_order_sn);
+     }
+     function dialog_batch_provider_ajax_submit()
+     {		
+         var $form   = $('#batch_change_provider_form');
+         var pre_batch_provider_id = $form.find(":input[name='pre_batch_provider_id']").val();
+         var batch_order_sn = $form.find(":hidden[name='batch_order_sn']").val();
+         var update_batch_provider_id = $form.find(":input[name='update_batch_provider_id']").val();
+         if(update_batch_provider_id == pre_batch_provider_id){
+          	alert("和原供应商相同,请检查!");
+          	return;
+          }
+          var datastr = 'batch_order_sn=' + batch_order_sn + '&pre_batch_provider_id='+pre_batch_provider_id + '&update_batch_provider_id='+update_batch_provider_id;
+         $.ajax({
+	 		  async:false,
+	          type: 'POST',
+	          url: 'generate_c_orderV2.php?act=update_batch_provider',
+	          data: datastr,
+	          dataType: 'json',
+	          error: function() {
+	        	  dialog_batch_provider_disabled();
+	          },
+	          success: function(data) {
+	        	  dialog_batch_provider_disabled();
+	          }
+	      });
+                   
+     } 
+	function dialog_batch_provider_disabled() {
+		var $dialog = $("#batch_provider_dialog");
+		$dialog.hide();
+       $("#hide").hide();
+       location.reload();
+	} 
+	
+	function update_provider(order_id,provider_id){
+        var $form   = $('#change_provider_form');
+        var $dialog = $("#dialog_provider");
+        $dialog.show();
+        $("#hide").show();
+        $form.find(":input[name='pre_provider_id']").val(provider_id);
+        for(var i = 0; i<providers.length;i++)
+        {
+        	if(providers[i][0] == provider_id){
+        		$form.find(":input[name='pre_provider_name']").val(providers[i][2]);
+        	}
+        }
+        $form.find(":hidden[name='order_id']").val(order_id); // 设置表单内的订单id
+    }
+    function dialog_provider_ajax_submit()
+    {		
+        var $form   = $('#change_provider_form');
+        
+        var pre_provider_id = $form.find(":input[name='pre_provider_id']").val();
+        var order_id = $form.find(":hidden[name='order_id']").val();
+        var update_provider_id = $form.find(":input[name='update_provider_id']").val();
+        if(update_provider_id == pre_provider_id){
+        	alert("和原供应商相同,请检查!");
+        	return;
+        }
+        var datastr = 'order_id=' + order_id + '&pre_provider_id='+pre_provider_id + '&update_provider_id='+update_provider_id;
+        $.ajax({
+	 		  async:false,
+	          type: 'POST',
+	          url: 'generate_c_orderV2.php?act=update_provider',
+	          data: datastr,
+	          dataType: 'json',
+	          error: function() {
+	        	  dialog_provider_disabled();
+	          },
+	          success: function(data) {
+	        	  dialog_provider_disabled();
+	          }
+	      });
+                  
+    }
+	/**
+	 * 面板禁用
+	 */
+	function dialog_provider_disabled() {
+		var $dialog = $("#dialog_provider");
+		$dialog.hide();
+       $("#hide").hide();
+       location.reload();
+	}
+	
+     function check_gt(val){
+     	$.ajax({
+    		    async:false,
+             type: 'POST',
+             url: 'generate_c_orderV2.php?act=check_gt',
+             data: 'rec_id=' + val,
+             dataType: 'json',
+             error: function() {
+            	 	alert("通过-c查询-gt的时候失败"); 
+             },
+             success: function(data) {
+             	if(data){
+             		alert("该采购订单对应的供退订单为："+data+"如果发生供价调整，对应的-gt在供应商退货一览显示差异,请谨慎操作。");
+             	}
+             
+             }
+         });
+     }
+    E('provider2').addEventListener('keyup', function(e){ changeProvider('provider2', false); var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38) fill_provider_list('provider2'); }, false); // 13 enter
+    function provider_init(id, pid) {
+        for(var i = 0; i < providers.length; i++) {
+            if(providers[i][0] == pid) {
+                E(id).value = providers[i][2];
+                break;
+            }
+        }
+        E(id+'_hidden').value = pid;
+    }
+    E('provider3').addEventListener('keyup', function(e){ changeProvider('provider3', false); var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38) fill_provider_list('provider3'); }, false); // 13 enter
+    E('provider4').addEventListener('keyup', function(e){ changeProvider('provider4', false); var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38) fill_provider_list('provider4'); }, false); // 13 enter
+    // 批量完结采购订单  ljzhou 2013.04.11
+    function batch_over_c(batch_order_sn) {
+    	 document.getElementById('batch_over_c_'+batch_order_sn).disabled = 'true';
+    	 $.ajax({
+    		 async:false,
+             type: 'POST',
+             url: 'ajax.php?act=batch_over_c',
+             data: 'batch_order_sn=' + batch_order_sn,
+             dataType: 'json',
+             error: function() {
+            	 alert('ajax请求错误,批量完结采购订单失败:' + tracking_number); 
+             },
+             success: function(data) {
+            	 if(data) {
+                	 alert('批量完结采购订单成功：'+batch_order_sn);
+            	 } else {
+                	 alert('批量完结采购订单失败，系统找不到该批次订单：'+batch_order_sn);
+            	 }
+            	 window.location.href="generate_c_orderV2.php"; 
+             }
+         });
+    }
+    
+    // 检查商品是否维护条码
+    function check_goods_maintain_barcode(goods_id,style_id) {
+    	 var result = false;
+    	 $.ajax({
+    		 async:false,
+             type: 'POST',
+             url: 'ajax.php?act=check_goods_maintain_barcode',
+             data: 'goods_id=' + goods_id + '&style_id='+style_id,
+             dataType: 'json',
+             error: function() {
+            	 alert('ajax请求错误,检查商品是否维护条码goods_id:' + goods_id+' style_id:'+style_id); 
+             },
+             success: function(data) {
+            	 if(data == true) {
+            		 result = true;
+            	 }
+             }
+         });
+    	 return result;
+    }
+    
+	/**
+	 * 打印
+	 */
+	function pprint(url, mode)
+	{
+		if (mode == 'hidden') {
+			var iframe = document.getElementById('_pprint_');
+			if (!iframe) {
+				var obj = document.createElement("iframe");
+				obj.frameborder = 0;
+				obj.width = 0;
+				obj.height = 0;
+				obj.id = '_pprint_';
+                obj.border = 0;
+				var iframe = document.body.appendChild(obj);
+			}
+			iframe.src = url;
+		} else {
+			window.open(url, "PrintWindow", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=800,height=920,left=10,top=240");			
+		}
+	}
+    function print_product_receiving_list()
+    {
+        var orders = new Array();
+        var form = document.getElementById('form2');
+        var inputs = form.getElementsByTagName('input');
+        for (var i = 0; i< inputs.length; i++) {
+            if (inputs[i].type=='checkbox' && inputs[i].checked) {
+                orders.push(inputs[i].value);
+            }
+        }
+        if (orders.length <= 0) {
+            alert('请选择采购订单');
+            return;
+        }
+        pprint('print_product_receiving_list.php?print=1&order_id='+orders.join(','),'hidden');
+    }
+{/literal}
+    provider_init('provider2','{$smarty.request.provider_id}');
+</script>
+</body>
+</html>

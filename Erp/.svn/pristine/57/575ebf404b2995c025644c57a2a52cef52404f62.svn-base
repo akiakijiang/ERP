@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>最优快递分析</title>
+
+</head>
+<body>
+
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+订单基础信息
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>订单号</th>
+<th>淘宝订单号</th>
+<th>省</th>
+<th>市</th>
+<th>区</th>
+<th>地址</th>
+</tr>
+
+<tr align="center">
+<td>{$order_info.order_sn}</td>
+<td>{$order_info.taobao_order_sn}</td>
+<td>{$order_info.province_name}</td>
+<td>{$order_info.city_name}</td>
+<td>{$order_info.district_name}</td>
+<td>{$order_info.address}</td>
+</tr>
+
+</table>
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+订单最优快递信息
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>组织名</th>
+<th>组织默认仓库(快递)</th>
+<th>组织-最优快递的仓库</th>
+<th>组织-区域转仓</th>
+<th>组织-最优快递的快递</th>
+<th>组织-区域转快递</th>
+<th>店铺名</th>
+<th>店铺默认仓库(快递)</th>
+<th>店铺-最优快递的仓库</th>
+<th>店铺-区域转仓</th>
+<th>店铺-最优快递的快递</th>
+<th>店铺-区域转快递</th>
+</tr>
+
+<tr align="center">
+<td>{$erp_best_shipping_info.party_name}</td>
+<td>{$erp_best_shipping_info.party_facility_name}（{$erp_best_shipping_info.party_facility_id}）
+{$erp_best_shipping_info.party_shipping_name}（{$erp_best_shipping_info.party_shipping_id}）</td>
+
+<td>{$erp_best_shipping_info.pf_facility_name}（{$erp_best_shipping_info.pf_facility_id}）</td>
+<td>{$erp_best_shipping_info.rf_facility_name}（{$erp_best_shipping_info.rf_facility_id}）</td>
+<td>{$erp_best_shipping_info.ps_shipping_name}（{$erp_best_shipping_info.ps_shipping_id}）</td>
+<td>{$erp_best_shipping_info.rs_shipping_name}（{$erp_best_shipping_info.rs_shipping_id}）</td>
+<td>{$erp_best_shipping_info.distributor_name}</td>
+<td>{$erp_best_shipping_info.distributor_facility_name}（{$erp_best_shipping_info.distributor_facility_id}）
+{$erp_best_shipping_info.distributor_shipping_name}（{$erp_best_shipping_info.distributor_shipping_id}）</td>
+
+<td>{$erp_best_shipping_info.df_facility_name}（{$erp_best_shipping_info.df_facility_id}）</td>
+<td>{$erp_best_shipping_info.drf_facility_name}（{$erp_best_shipping_info.drf_facility_id}）</td>
+<td>{$erp_best_shipping_info.ds_shipping_name}（{$erp_best_shipping_info.ds_shipping_id}）</td>
+<td>{$erp_best_shipping_info.drs_shipping_name}（{$erp_best_shipping_info.drs_shipping_id}）</td>
+</tr>
+
+</table>
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+最优快递信息
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>仓库</th>
+<th>物理仓库</th>
+<th>快递</th>
+<th>地区</th>
+<th>首重</th>
+<th>首重费</th>
+<th>续重</th>
+<th>面单费</th>
+<th>操作费</th>
+<th>过磅费</th>
+<th>中转费</th>
+<th>最低中转费</th>
+<th>时效权重</th>
+<th>售后权重</th>
+<th>可达性权重</th>
+<th>错误信息</th>
+<th>商品重量</th>
+<th>临界重量</th>
+<th>是否最优快递</th>
+<th>是否可计算</th>
+<th>最优快递费</th>
+<th>加权值</th>
+</tr>
+
+{foreach from=$best_shippings item=best_shipping}
+<tr align="center">
+<td>{$best_shipping.facility_name}</td>
+<td>{$best_shipping.physicalAddress}</td>
+<td>{$best_shipping.shipping_name}</td>
+<td>{$best_shipping.region_name}</td>
+<td>{$best_shipping.ecsExpressFee.first_weight}</td>
+<td>{$best_shipping.ecsExpressFee.first_fee}</td>
+<td>{$best_shipping.ecsExpressFee.continued_fee}</td>
+<td>{$best_shipping.ecsExpressFee.tracking_fee}</td>
+<td>{$best_shipping.ecsExpressFee.operation_fee}</td>
+<td>{$best_shipping.ecsExpressFee.weighing_fee}</td>
+<td>{$best_shipping.ecsExpressFee.transit_fee}</td>
+<td>{$best_shipping.ecsExpressFee.lowest_transit_fee}</td>
+<td>{$best_shipping.ecsExpressFee.time_arrived_weight}</td>
+<td>{$best_shipping.ecsExpressFee.service_weight}</td>
+<td>{$best_shipping.ecsExpressFee.arrived_weight}</td>
+<td>{$best_shipping.failureMessage}</td>
+<td>{$best_shipping.goodsListWeight}</td>
+<td>{$best_shipping.ecsExpressFee.critical_weight}</td>
+<td>{$best_shipping.isBestShipping}</td>
+<td>{$best_shipping.calculable}</td>
+<td>{$best_shipping.shippingFee}</td>
+
+<td>{$best_shipping.optimalValue}</td>
+</tr>
+{/foreach}
+
+</table>
+
+
+</body>
+</html>

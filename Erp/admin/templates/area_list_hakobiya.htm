@@ -1,0 +1,946 @@
+<!--{if $full_page}-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>{$lang.cp_home}{if $ur_here} - {$ur_here} {/if}</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/general.css" rel="stylesheet" type="text/css" />
+<link href="{$WEB_ROOT}admin/styles/main.css" rel="stylesheet" type="text/css" />
+<script src="{$WEB_ROOT}admin/misc/jquery.js" type="text/javascript"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/ajaxfileupload.js"></script>
+<script language="JavaScript">
+<!--
+// 这里把JS用到的所有语言都赋值到这里
+{foreach from=$lang.js_languages key=key item=item}
+var {$key} = "{$item}";
+{/foreach}
+//-->
+</script>
+<style type="text/css">
+  {literal}
+  #listTable{
+    width:100%;
+  }
+  #listTable, td{
+     border:1px solid #EEF8F9;
+     border-collapse:collapse;
+     line-height:20px;
+  }
+  .first-cell{
+    font-weight:bold;
+  }
+  {/literal}
+</style>
+<script language="JavaScript">
+{literal}
+$(document).ready(function(){
+    Region.init();
+    $("input[name='start'][type='radio'][value='start_facility']").attr("checked", "checked");
+    $("#start_address").css("display","none");
+});
+
+{/literal}
+</script>
+</head>
+<body>
+<h1>
+{if $action_link}
+<span class="action-span"><a href="{$action_link.href}">{$action_link.text}</a></span>
+{/if}
+<span><a href="index.php?act=main">{$lang.cp_home}</a> {if $ur_here} - {$ur_here} {/if}</span>
+</h1>
+<h2>{if $message}
+<span style='color:red;size:50px;font-weight: bolder;'>{$message}</span>
+{/if}</h2>
+<div class="form-div" style="display:none;">
+<form method="post" action="area_manage_hakobiya.php" name="theForm" onsubmit="return add_area();" >
+    {if $region_type eq '0'}{$lang.add_country}:
+    {elseif $region_type eq '1'}{$lang.add_province}:
+    {elseif $region_type eq '2'}{$lang.add_city}:
+    {elseif $region_type eq '3'}{$lang.add_cantonal}: {/if}
+    <input type="text" name="region_name" maxlength="150" size="40" id="region_name"/>
+    <input type="hidden" name="region_type" value="{$region_type}" />
+    <input type="hidden" name="parent_id" value="{$parent_id}" />
+    <input type="submit" value="{$lang.button_submit}" class="button"/>
+</form>
+</div>
+<div class="list-div">
+<table cellspacing='1' cellpadding='3' id='listTableTitle'>
+  <tr>
+    <th>{$area_here}</th>
+  </tr>
+</table>
+</div>
+<div class="list-div" id="listDiv">
+<!--{/if}-->
+
+       
+<form action="area_manage_hakobiya.php" method="post"  style="background-color:white;"  enctype="multipart/form-data">
+
+<table cellspacing='1' cellpadding='3' id='csvTable'>
+<!--{if $parent_id != 0}-->
+     <tr><td>
+             区域费用导入导出维护（只导出和维护当前区域，仓库、快递不选默认全导）：
+     </td></tr>
+     <tr>
+       <td colspan="2">
+           <span> 仓库：
+           <select name="facility_excel" id="facility_excel">
+               <option value="-1">请选择仓库</option>
+               <!--{foreach from=$available_facility item=item key=facility_id}-->
+               <option name="ck_excel" value="{$facility_id}">{$item}</option>
+               <!--{/foreach}-->
+           </select>
+           </span>
+       </td>
+       <td>
+       <span>快递方式：
+       <select name="shipping_excel" id="shipping_excel">
+           <option value="-1">请选择快递方式</option>
+           <!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+           <option value="{$shipping_list.shipping_id}">{$shipping_list.shipping_name}</option>
+           <!--{/foreach}-->
+       </select>
+       </span>
+       </td>
+       
+       <td>
+        <input type="submit" id='export_region_list_e' name='act' value='导出地址列表'></input>
+        
+        <input type="file" id="fileToUpload" name="fileToUpload"/>
+		<input type="submit" name='act' value='导入地址列表'/>	
+		
+		<input type="hidden" name="parent_id" value="{$parent_id}" />
+       </td>
+   </tr>
+<!--{/if}-->
+</table>
+</form>
+        
+<form action="area_manage_hakobiya.php" method="post" onsubmit="return check_form()" style="background-color:white;">
+<table cellspacing='1' cellpadding='3' id='listTable'>
+    <!--{if $parent_id == 0}-->
+    <tr>
+        <!--{foreach from=$region_arr item=list name=area_name}--> 
+        <!--{if $smarty.foreach.area_name.iteration > 1 and ($smarty.foreach.area_name.iteration-1) % 3 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" /> 
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}')" class="first-cell" >{$list.region_name|escape:"html"}</span>
+        <!--{if $region_type < 3}-->
+        <span class="link-span">
+            <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}"> {$lang.manage_area}</a>&nbsp;&nbsp;
+            <!--
+            <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a> 
+            -->
+        </span> 
+        <!--{/if}-->
+        </td>
+        <!--{/foreach}-->
+    </tr>
+    
+    <!--{else}-->
+     <tr><td>
+             区域费用界面直接维护：
+     </td></tr>
+    <tr>
+        <td colspan="2">
+            <input name="start" type="radio" value="start_facility" onclick="check_start();"></input>仓库&nbsp;&nbsp;
+            <!--{if check_admin_priv('office_area_manage')}-->
+            <input name="start" type="radio" value="start_address" onclick="check_start();"></input>起始地址&nbsp;
+            <!--{/if}-->
+            <span id="start_facility"><select name="facility" onchange="check_facility(this.value)" id="facility">
+                <option value="-1">请选择仓库</option>
+                
+                <!--{foreach from=$available_facility item=item key=facility_id}-->
+                <option name="ck" value="{$facility_id}">{$item}</option>
+                <!--{/foreach}-->
+                </select>
+            </span>
+            <!--{if check_admin_priv('office_area_manage')}-->
+            <span id="start_address">
+                <select name="start_address[province]"><option value="-1">-请选择-</option>
+                <!--{foreach from=$start_address.province item=province}-->
+                <option value="{$province.region_id}" label="{$province.region_name}">{$province.region_name}</option>
+                <!--{/foreach}-->
+                </select>省 &nbsp;&nbsp;
+                <select name="start_address[city]" style="display:none"></select>&nbsp;&nbsp;
+                <select name="start_address[district]" style="display:none"></select> &nbsp;&nbsp;
+            </span>
+            <!--{/if}-->
+        </td>
+        <td><span>快递方式：<select name="shipping"  onchange="check_shipping(this.value)" 
+            id="shipping">
+            <option value="-1">请选择快递方式</option>
+            <!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+            <option value="{$shipping_list.shipping_id}">{$shipping_list.shipping_name}</option>
+            <!--{/foreach}-->
+        </select></span></td>
+
+    </tr>
+    <!--{if $north}-->
+    <tr>
+        <td colspan="5" class="first-cell" style="color: red;">华北</td>
+    </tr>
+    
+    <tr>
+        <!--{foreach from=$north item=list name=north_list}-->
+        <!--{if $smarty.foreach.north_list.iteration > 1 && ($smarty.foreach.north_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" /> 
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">
+        {$list.region_name|escape:"html"}
+        </span>
+        <span class="link-span">
+            <!--{if $region_type < 3}-->
+            <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}"> {$lang.manage_area}</a>&nbsp;&nbsp;
+            <!--{/if}-->
+            <!--
+            <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+            -->
+        </span> 
+        <span>
+        <a onclick="fee(this)" title="运费">运费</a>
+        </span>
+        </td>
+        <!--{/foreach}-->
+    </tr>
+    <!--{/if}-->
+    
+    <!--{if $northeast}-->
+    <tr><td colspan="5" class="first-cell" style="color:red;">东北</td></tr>
+    <tr>
+    <!--{foreach from=$northeast item=list name=northeast_list}-->
+        <!--{if $smarty.foreach.northeast_list.iteration > 1 and ($smarty.foreach.northeast_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" />
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">
+        {$list.region_name|escape:"html"}
+        </span>
+        <span class="link-span">
+        <!--{if $region_type < 3}-->
+        <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+        <!--{/if}-->
+        <!--
+        <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+        -->
+        </span>
+        <span><a onclick="fee(this)" title="运费" >运费</a></span>
+        </td>
+    <!--{/foreach}-->
+    </tr>
+    <!--{/if}-->
+    
+    <!--{if $northwest}-->
+    <tr><td colspan="5" class="first-cell" style="color:red;">西北</td></tr>
+    <tr>
+    <!--{foreach from=$northwest item=list name=northwest_list}-->
+        <!--{if $smarty.foreach.northwest_list.iteration > 1 and ($smarty.foreach.northwest_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" />
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">{$list.region_name|escape:"html"}</span>
+        <span class="link-span">
+        <!--{if $region_type < 3}-->
+        <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+        <!--{/if}-->
+        <!--
+        <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+        -->
+        </span>
+        <span> <a onclick="fee(this)" title="运费" >运费</a></span>
+        </td>
+    <!--{/foreach}-->
+    </tr>
+    <!--{/if}--> 
+    <!--{if $east}-->
+    <tr><td colspan="5" class="first-cell" style="color:red;">华东</td></tr>
+    <tr>
+    <!--{foreach from=$east item=list name=east_list}-->
+        <!--{if $smarty.foreach.east_list.iteration > 1 and ($smarty.foreach.east_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" />
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">{$list.region_name|escape:"html"}</span>
+        <span class="link-span">
+        <!--{if $region_type < 3}-->
+        <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+        <!--{/if}-->
+        <!--
+        <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+        -->
+        </span>
+        <span><a onclick="fee(this)" title="运费" >运费</a></span>
+        </td>
+    <!--{/foreach}-->
+    </tr>
+    <!--{/if}--> 
+    
+    <!--{if $centersouth}-->
+    <tr><td colspan="5" class="first-cell" style="color:red;">中南</td></tr>
+    <tr>
+    <!--{foreach from=$centersouth item=list name=center_list}-->
+        <!--{if $smarty.foreach.center_list.iteration > 1 and ($smarty.foreach.center_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" />
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">{$list.region_name|escape:"html"}</span>
+        <span class="link-span">
+        <!--{if $region_type < 3}-->
+        <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+        <!--{/if}-->
+        <!--
+        <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+        -->
+        </span>
+        <span> <a onclick="fee(this)" title="运费" >运费</a></span>
+        </td>
+    <!--{/foreach}-->
+    </tr>
+    <!--{/if}-->
+    
+    <!--{if $southwest}-->
+    <tr><td colspan="5" class="first-cell" style="color:red;">西南</td></tr>
+    <tr>
+    <!--{foreach from=$southwest item=list name=southwest_list}-->
+        <!--{if $smarty.foreach.southwest_list.iteration > 1 and ($smarty.foreach.southwest_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" />
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">{$list.region_name|escape:"html"}</span>
+        <span class="link-span">
+        <!--{if $region_type < 3}-->
+        <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+        <!--{/if}-->
+        <!--
+        <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+        -->
+       </span>
+       <span> <a onclick="fee(this)" title="运费" >运费</a></span>
+      </td>
+    <!--{/foreach}-->
+    </tr>
+    <!--{/if}-->   
+    
+    <!--{if $others}-->
+    <tr><td colspan="5" class="first-cell" style="color:red;">其他</td></tr>
+    <tr>
+    <!--{foreach from=$others item=list name=others_list}-->
+        <!--{if $smarty.foreach.others_list.iteration > 1 and ($smarty.foreach.others_list.iteration-1) % 5 eq 0}-->
+        </tr><tr>
+        <!--{/if}-->
+        <td class="first-cell" align="left">
+        <input type="checkbox" name="chk[]" value="{$list.region_id}" />
+        <span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">{$list.region_name|escape:"html"}</span>
+        <span class="link-span">
+        <!--{if $region_type < 3}-->
+        <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+        <!--{/if}-->
+        <!--
+        <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>
+        -->
+        </span>
+        <span> <a onclick="fee(this)" title="运费" >运费</a></span>
+        </td>
+    <!--{/foreach}-->
+    </tr>
+    <!--{/if}-->
+    
+    <!--{if $smarty.request.type != 1}-->
+    <tr>
+    <!--{foreach from=$region_arr item=list name=area_name}-->
+    <!--{if $smarty.foreach.area_name.iteration > 1 and ($smarty.foreach.area_name.iteration-1) % 4 eq 0}-->
+    </tr><tr>
+    <!--{/if}-->
+      <td class="first-cell" align="left">
+       <input type="checkbox" name="chk[]" value="{$list.region_id}" /><span onclick="edit_region_name(this, 'edit_area_name', '{$list.region_id}'); return false;">{$list.region_name|escape:"html"}</span>
+       <span class="link-span">
+       <!--{if $region_type < 3}-->
+       <a href="area_manage_hakobiya.php?act=list&type={$list.region_type+1}&pid={$list.region_id}" title="{$lang.manage_area}">
+         {$lang.manage_area}</a>&nbsp;&nbsp;
+       <!--{/if}-->
+       <!--
+       <a href="javascript:remove_region({$list.region_id}, '{$lang.drop_confirm}', 'drop_area')" title="{$lang.drop}">{$lang.drop}</a>&nbsp;&nbsp;
+        -->
+       </span>
+       <!--{if $parent_id >0 }-->
+       <span> <a onclick="fee(this)" title="运费" >运费</a></span>
+       <!--{/if}-->   
+      </td>
+    <!--{/foreach}-->
+    </tr>  
+    <!--{/if}-->
+    
+    <tr>
+        <td>
+        <span>首重：<input name="first_weight" id="first_weight" value="" type="text" size="10"></input>kg</span>
+        </td>
+       <td>
+         <span >首重快递费：<input name="first_fee" id="first_fee" value="" type="text" size="10"></input>元</span>
+       </td>
+       <td>
+          <span >续重快递费：<input name="continued_fee" id="continued_fee" value="" type="text" size="10"></input>元</span>
+       </td>
+    </tr>   
+    <tr>
+       <td>
+          <span >时效权重：<input name="time_arrived_weight" id="time_arrived_weight" value="" type="text" size="10"></input>正整数，越小越优</span>
+       </td>
+       <td>
+          <span >售后权重：<input name="service_weight" id="service_weight" value="" type="text" size="10"></input>正整数，越小越优</span>
+       </td>
+           <td>
+          <span >可达性权重：<input name="arrived_weight" id="arrived_weight" value="" type="text" size="10"></input>正整数，越大越优</span>
+       </td>
+       </td>
+       <td>
+          <span >临界重量：<input name="critical_weight" id="critical_weight" value="" type="text" size="10"></input>kg</span>
+       </td>
+     </tr>  
+      <tr> 
+       <td>
+       <span>全选：<input type="checkbox" name="all" id="all"  value="" onclick="checkAll()" /> &nbsp;&nbsp;&nbsp;&nbsp;
+                         反选：<input type="checkbox" name="Inverse " id="Inverse"  value="" onclick="checkInverse()" />
+       </span>
+       </td>
+    </tr>
+    <tr id='addConditions1'></tr>
+    <tr id='addConditions2' align='center'>
+        <td></td>
+        <td style='align:center'>
+        <input type="hidden" name="act_type" value="{$parent_id}"></input>
+        <input type="hidden" name="act" value="update"></input>
+        <input type="submit" name="submit" value="提交" ></input>
+        </td><td style='color:red'>{$message}</td>
+    </tr>
+    <!--{/if}-->
+</table>
+</form>
+<!--{if $full_page}-->
+</div>
+
+<script language="JavaScript">
+{literal}
+/**
+ * 删除列表中一条记录
+ */
+function remove_region (id, cfm, opt) {
+    return false;
+    if (opt == null) {
+        opt = "remove";
+    }
+    if (confirm(cfm)) {
+        $.ajax({
+            type: 'POST',
+            url: 'area_manage_hakobiya.php?is_ajax=1',
+            data: 'act='+ opt + "&id=" +id,
+            dataType: 'json',
+            error: function(data) { 
+                alert("error");
+            },
+            success: function(result, txt){
+                if (result.error > 0) {
+                    alert(result.message);
+                } else {
+                    try {
+                        document.getElementById('listDiv').innerHTML = result.content;
+                        if (typeof result.filter == "object") {
+                            listTable.filter = result.filter;
+                        }
+                        listTable.pageCount = result.page_count;
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                }
+            }
+        }); 
+      }
+}
+/**
+ * 编辑商品名
+ */
+function edit_region_name (obj, act, id) {
+    return false;
+    var tag = obj.firstChild.tagName;
+    //obj.firstChild.data
+    if (typeof(tag) != "undefined" && (tag.toLowerCase() == "input" || tag.toLowerCase() == "textarea"))
+    {
+        return;
+    }
+    /*记录region_name*/
+    var org = $.trim(obj.firstChild.data);
+    var val = $.trim(obj.innerHTML);
+    var txt = document.createElement("INPUT");
+    txt.value = (val == 'N/A') ? '' : val;
+    if (val == '未填') {
+        txt.style.width = 300 + "px";
+    } else{
+        txt.style.width = (obj.offsetWidth + 50) + "px";
+    }
+    
+    /* 隐藏对象中的内容，并将输入框加入到对象中 */
+    obj.innerHTML = "";
+    obj.appendChild(txt);
+    txt.focus();
+    /* 编辑区输入事件处理函数 */
+    txt.onkeypress = function(e) {
+      var evt =(typeof e == "undefined") ? window.event : e;
+      if (typeof e == "undefined") e = window.event;
+      var obj = document.all ? e.srcElement : e.target;
+      if (evt.keyCode == 13) {
+        obj.blur();
+        return false;
+      }
+      if (evt.keyCode == 27) {
+        obj.parentNode.innerHTML = org;
+      }
+    }
+    /* 编辑区失去焦点的处理函数 */
+    txt.onblur = function(e) {
+      if ($.trim(txt.value).length > 0) {
+          //alert("area_manage_hakobiya.php?is_ajax=1&"+'act='+ act + "&name="+$.trim(name)+"&val=" + encodeURIComponent($.trim(txt.value)) + "&id=" +id);
+          //location.href = "area_manage_hakobiya.php?is_ajax=1&"+'act='+ act + "&name="+$.trim(name)+"&val=" + $.trim(txt.value) + "&id=" +id;
+          $.ajax({
+              type: 'POST',
+              url: 'area_manage_hakobiya.php?is_ajax=1',  // 查询地址
+              data: 'act='+ act + "&name="+$.trim(name)+"&val=" + $.trim(txt.value) + "&id=" +id,
+              dataType: 'json',
+              error: function(data) { 
+                  alert("error");
+              },
+              success: function(result){
+                obj.innerHTML = (result.error == 0) ? result.content : org;
+                txt.remove();
+              }
+          }); 
+      } else {
+          obj.innerHTML = org;
+      }
+      //alert($.trim(txt.value).length);
+    }
+}
+
+
+/**
+ * 新建区域
+ */
+function add_area() {
+    var region_name = $.trim($("form[name='theForm']").find("input[name='region_name']").val());
+    var region_type = $("form[name='theForm']").find("input[name='region_type']").val();
+    var parent_id = $("form[name='theForm']").find("input[name='parent_id']").val();
+    if (region_name.length == 0) {
+        alert(region_name_empty);
+    } else {
+        $.ajax({
+            type: 'POST',
+            url: 'area_manage_hakobiya.php?is_ajax=1&act=add_area',  // 查询地址
+            data: 'parent_id=' + parent_id + '&region_name=' + region_name + '&region_type=' + region_type,
+            dataType: 'json',
+            error: function(data) { 
+                alert("error");
+            },
+            success: function(result, txt){
+                if (result.error > 0) {
+                    alert(result.message);
+                } else {
+                    try {
+                        document.getElementById('listDiv').innerHTML = result.content;
+                        if (typeof result.filter == "object") {
+                            listTable.filter = result.filter;
+                        }
+                        listTable.pageCount = result.page_count;
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                }
+            }
+        }); 
+    }
+    return false;
+}
+
+/**
+ * 改变地域的下拉框
+ */
+var Region = {
+    /** 
+     * WEB控件ID
+     */ 
+    regions : [
+            {name: 'start_address[province]', data:{type:2} }, // 省
+            {name: 'start_address[city]',     data:{type:3} }, // 市
+            {name: 'start_address[district]'}                  // 区
+    ],
+    
+    expr : ':select[name="?"]',
+        
+    /**
+     * 初始化，即绑定事件
+     */
+    init : function() {
+        for (var i = 0; i < this.regions.length; i++) {
+            var node = $(this.expr.replace('?', this.regions[i].name));
+            node.bind('change', this.regions[i].data, this.change_region_list);
+            if (i > 0) {
+                var prev = $(this.expr.replace('?', this.regions[i-1].name));
+                var value = parseInt(prev.val());
+                if (isNaN(value) || value < 1) {
+                    node.hide();
+                } else {
+                    node.show();    
+                }
+            }                   
+        }
+    },
+
+    /**
+     * 改变下拉框
+     */
+    change_region_list : function(event) {
+        var $p = $(this);  // 父级元素
+        var pn = $p.attr('name');
+        var ln = Region.regions.length;
+        var last = false;
+        var next = 0;
+        
+        // 如果到了最后一级则返回
+        for (var i=0; i<ln; i++) {
+            if (pn == Region.regions[i].name) {
+                next = i + 1;
+                if (i == ln -1) { last = true; }
+            }
+        }
+        
+        if (!last) {
+            $c = $(Region.expr.replace('?', Region.regions[next].name));     // 子级元素
+            
+            for (var i=next; i<ln; i++) {
+                $(Region.expr.replace('?', Region.regions[i].name)).hide(); 
+            }
+        }
+    
+        $c.unbind();
+        //location.href='area_manage_hakobiya.php?request=ajax&act=get_regions'+'&type=' + event.data.type + '&parent=' + $p.val();
+        $.ajax({
+            type: 'POST',
+            url: 'area_manage_hakobiya.php?request=ajax&act=get_regions',  // 查询地址
+            data: 'type=' + event.data.type + '&parent=' + $p.val(),
+            dataType: 'json',
+            error: function() { alert('查询地域失败'); },
+            success: function(data) {
+                if (data && data != '') {
+                    r = data;
+                    var list = '<option value="-1">-请选择-</option>';
+                    for (var i = 0; i < r.length; i++) {
+                        list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';     
+                    }
+                    $c.html(list).fadeIn();
+                    if (next + 1 < ln) {
+                        $c.bind('change', Region.regions[next].data, Region.change_region_list);
+                    }
+                }
+            }
+        }); 
+    }
+};
+function check_start (){
+    var start = $("#listTable").find("input[name='start'][checked]").val();
+    var start_type = "#"+start;
+    if (start == "start_facility") {
+        $(start_type).css("display", "");
+        $("#start_address").css("display", "none");
+    } else if (start == "start_address") {
+        $(start_type).css("display", "");
+        $("#start_facility").css("display", "none");
+    }
+    
+}
+//改变快递方式检查--中通额外添加费用计算--22143846 乐其上海仓_2（原乐其杭州仓），24196974 贝亲青浦仓，22143847 电商服务上海仓_2（原电商服务杭州仓），19568549 电商服务上海仓
+function check_shipping(v){
+	$("#addConditions1").empty();
+	$('#prepend_td').remove();
+	var type = $("#listTable").find("input[name='start'][checked]").val();
+    var facility_id = -1;
+    if (type == "start_facility") {
+    	facility_id = $("#facility").val() ;
+    	if (facility_id == '22143846' || facility_id == '24196974' || facility_id == '22143847' || facility_id == '19568549' ) {
+    		facility_id ='19568549';
+        }else if(facility_id == '19568548' || facility_id == '3580047' || facility_id == '49858449' || facility_id == '76065524'){
+        	facility_id = '19568548';
+    	}
+    }
+    //TODO 先都展示出来，以后这个都展示出来好了，不要有特殊判断    
+   	var tdc1 = "<td><span>面单费：<input name='tracking_fee' id='tracking_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	tdc1 += "<td><span>操作费：<input name='operation_fee' id='operation_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	tdc1 += "<td><span>过磅费：<input name='weighing_fee' id='weighing_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	tdc1 += "<td><span>中转费：<input name='transit_fee' id='transit_fee' value='0' type='text' size='10'></input>元</span></td>";
+   	$("#addConditions1").append(tdc1);
+   	var tdc2 = "<td id='prepend_td'><span>最低中转费：<input name='lowest_transit_fee' id='lowest_transit_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	$("#addConditions2").prepend(tdc2);
+  
+} 
+//改变仓库检查--中通快递方式新计算规则--+中通快递115
+function check_facility(v){
+	$("#addConditions1").empty();
+	$('#prepend_td').remove();
+	var shipping_id = $("select[name='shipping']").val();
+	if(v=='22143846'||v=='24196974'||v=='22143847'||v=='19568549'){
+		v = '19568549';
+	}else if(v=='19568548'||v=='3580047'||v=='49858449'||v=='76065524'){
+		v = '19568548';
+	}
+	//TODO先都展示出来，以后这个都展示出来好了，不要有特殊判断
+    
+   	var tdc1 = "<td><span>面单费：<input name='tracking_fee' id='tracking_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	tdc1 += "<td><span>操作费：<input name='operation_fee' id='operation_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	tdc1 += "<td><span>过磅费：<input name='weighing_fee' id='weighing_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	tdc1 += "<td><span>中转费：<input name='transit_fee' id='transit_fee' value='0' type='text' size='10'></input>元</span></td>";
+   	$("#addConditions1").append(tdc1);
+   	var tdc2 = "<td id='prepend_td'><span>最低中转费：<input name='lowest_transit_fee' id='lowest_transit_fee' value='0' type='text' size='10'></input>元</span></td> ";
+   	$("#addConditions2").prepend(tdc2);
+
+}
+//查看运费
+function fee(a){
+    var type = $("#listTable").find("input[name='start'][checked]").val();
+    var facility_id = -1;
+    var province_id = -1;
+    var city = -1;
+    var district = -1;
+    if (type == "start_facility") {
+        facility_id = $("#facility").val() ; 
+        if (facility_id == -1) {
+            alert("请选择仓库");
+            return false;
+        }else if (facility_id == '22143846' || facility_id == '24196974' || facility_id == '22143847' || facility_id == '19568549' ) {
+    		facility_id ='19568549';
+        }else if(facility_id == '19568548' || facility_id == '3580047' || facility_id == '49858449' || facility_id == '76065524'){
+        	facility_id = '19568548';
+    	}
+    } else if (type == "start_address") {
+        province_id = $("select[name='start_address[province]']").val();
+        if (province_id == -1) {
+            alert("请选择起始地址省");
+            return false;
+        }
+        city = $("select[name='start_address[city]']").val();
+        if (city == -1) {
+            if(!confirm("请您确认所有市的价格一样")){
+                return false;
+            }
+        }
+        district = $("select[name='start_address[district]']").val();
+    } else {
+        alert("请选择起始类型为仓库或省市区");
+        return false;
+    }
+    var shipping_id = $("select[name='shipping']").val();
+    if (shipping_id == -1) {
+        alert("请选择快递方式");
+        return false;
+    }
+    var region_id = a.parentNode.parentNode.childNodes[1].value;
+    location.href = "area_manage_hakobiya.php?act=fee_check&type="+type+"&facility_id=" +facility_id+"&pid="+region_id+"&shipping="+shipping_id
+            +"&from_province_id=" + province_id +"&from_city_id=" + city +"&from_district_id=" + district;
+    
+}
+function check_form(){
+    var type = $("#listTable").find("input[name='start'][checked]").val();
+    var facility_id = -1;
+    var province_id = -1;
+    var city = -1;
+    var district = -1;
+    if (type == "start_facility") {
+        facility_id = $("#facility").val() ; 
+        if (facility_id == -1) {
+            alert("请选择仓库");
+            return false;
+        }else if (facility_id == '22143846' || facility_id == '24196974' || facility_id == '22143847' || facility_id == '19568549' ) {
+    		facility_id ='19568549';
+        }else if(facility_id == '19568548' || facility_id == '3580047' || facility_id == '49858449' || facility_id == '76065524'){
+        	facility_id = '19568548';
+    	}
+    } else if (type == "start_address") {
+        province_id = $("select[name='start_address[province]']").val();
+        if (province_id == -1) {
+            alert("请选择起始地址省");
+            return false;
+        }
+        city = $("select[name='start_address[city]']").val();
+        if (city == -1) {
+            if(!confirm("请您确认所有市的价格一样")){
+                return false;
+            }
+        }
+        district = $("select[name='start_address[district]']").val();
+    }
+    var shipping_id = $("select[name='shipping']").val();
+    if (shipping_id == -1) {
+        alert("请选择快递方式");
+        return false;
+    }
+    var length = "";
+    $("input[name='chk[]'][type='checkbox']").each(function(){ 
+        if($(this).attr("checked")){
+            length+=this.value+',';
+        }
+    }); 
+    if ("" == length) {
+        alert("请选择城市");
+        return false;
+    }
+    var r = /^\d+(.\d+)?$/;
+    var first_weight = $.trim($("#first_weight").val());
+    if(!r.test(first_weight)){
+       alert('请输入正确首重');
+       return false;
+    }
+    var first_fee = $.trim($("#first_fee").val());
+    if(!r.test(first_fee)){
+        alert('请输入正确首重快递费');
+        return false;
+    }
+    var continued_fee = $.trim($('#continued_fee').val());
+    if(!r.test(continued_fee)){
+        alert('请输入正确续重快递费');
+        return false;
+    }
+    var critical_weight = $.trim($('#critical_weight').val());
+    if(!r.test(critical_weight)){
+        alert('请输入正确临界重量');
+        return false;
+    }
+ 
+    
+    //检查质量其他权重
+    var req_qw = /^(\d+)$/;
+    var time_arrived_weight = $.trim($("#time_arrived_weight").val());
+    if(!req_qw.test(time_arrived_weight)){
+       alert('请输入正确时效权重');
+       return false;
+    }
+    var service_weight = $.trim($("#service_weight").val());
+    if(!req_qw.test(service_weight)){
+       alert('请输入正确售后权重');
+       return false;
+    }    
+    var arrived_weight = $.trim($("#arrived_weight").val());
+    if(!req_qw.test(arrived_weight)){
+        alert('请输入正确可达性权重');
+        return false;
+    }
+   
+    if(shipping_id == 115 &&  facility_id == '19568549'){
+    	var tracking_fee = $("#tracking_fee").val();
+        if(!r.test(tracking_fee)){
+            alert('请输入正确面单费');
+            return false;
+        }
+        var operation_fee = $("#operation_fee").val();
+        if(!r.test(operation_fee)){
+            alert('请输入正确操作费');
+            return false;
+        }
+        var weighing_fee = $("#weighing_fee").val();
+        if(!r.test(weighing_fee)){
+            alert('请输入正确过磅费');
+            return false;
+        }
+        var transit_fee = $("#transit_fee").val();
+        if(!r.test(transit_fee)){
+            alert('请输入正确中转费');
+            return false;
+        }
+        var lowest_transit_fee = $("#lowest_transit_fee").val();
+        if(!r.test(lowest_transit_fee)){
+            alert('请输入正确最低中转费');
+            return false;
+        }
+    }
+    if((shipping_id == 99 && facility_id == '19568549')||(shipping_id == 89 && facility_id == '19568548')){
+    	var tracking_fee = $("#tracking_fee").val();
+        if(!r.test(tracking_fee)){
+            alert('请输入正确面单费');
+            return false;
+        }
+        var operation_fee = $("#operation_fee").val();
+        if(!r.test(operation_fee)){
+            alert('请输入正确操作费');
+            return false;
+        }
+        
+        var transit_fee = $("#transit_fee").val();
+        if(!r.test(transit_fee)){
+            alert('请输入正确中转费');
+            return false;
+        }
+    }
+    return true;   
+}
+//全选按钮
+function checkAll(){
+    $("input[name='chk[]'][type='checkbox']").each(function(){ 
+        if(!$(this).attr("checked")){ 
+             $(this).attr("checked","true"); 
+        } 
+    }); 
+}
+/*反选按钮*/
+function checkInverse() {
+    $("input[name='chk[]'][type='checkbox']").each(function(){ 
+        if($(this).attr("checked")){ 
+            $(this).removeAttr("checked"); 
+        } else { 
+              $(this).attr("checked","true"); 
+        } 
+    }); 
+}
+
+//批量导入地址费用信息
+function bacth_in_region_fees() {
+
+	$.ajaxFileUpload({
+		url:'batch_import_region_fee.php',
+		secureuri:false,
+		fileElementId:'fileToUpload',
+		dataType: 'json',
+		success: function (data)
+		{
+			if(data.message == "")
+			{	
+				alert(data);
+
+			}else{
+				alert(data.message);
+			}
+		},
+		error: function (data, status, e)
+		{
+			alert("方法调用错误，请联系ERP组："+e);
+		}
+	})
+}
+
+{/literal}
+</script>
+</body>
+{include file="pagefooter.htm"}
+</html>
+<!--{/if}-->

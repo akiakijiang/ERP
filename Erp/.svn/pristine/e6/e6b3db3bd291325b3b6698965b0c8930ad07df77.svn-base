@@ -1,0 +1,9 @@
+<div style="border-bottom: #FCF 1px solid; height:28px; line-height:30px; padding-bottom:2px;">
+<div style="float:left; font-weight:bold; font-size:18px; padding-right:30px; line-height:16px;">导航</div>
+<ul class="navigation">
+<li>{$smarty.session.distributor_name} 您好：</li>
+<li><a href="salesOrderEntry.php">订单录入</a></li>  
+<li><a href="salesOrderQuery.php">订单查询</a></li>
+</ul>
+</div>
+<br />

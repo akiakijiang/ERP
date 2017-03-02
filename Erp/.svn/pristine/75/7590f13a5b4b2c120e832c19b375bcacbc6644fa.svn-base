@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>韵达</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+
+<div style="position:absolute;font-size:14pt;top:50px;left:80px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:14pt;top:130px;left:70px;">{$order.company_address}</div>
+<div style="position:absolute;font-size:14pt;top:155px;left:70px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:14pt;top:228px;left:76px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:30pt;top:260px;left:70px;">√</div>
+<div style="position:absolute;font-size:14pt;top:410px;left:185px;width:200px">{$order.goods_type}</div>
+<div style="position:absolute;font-size:14pt;top:425px;left:320px;">乐其</div>
+<div style="position:absolute;font-size:16pt;top:385px;left:410px;">检查后再签收，破损请拒收，否则破损不负责</div>
+<div style="position:absolute;font-size:14pt;top:440px;left:170px">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+<div style="position:absolute;font-size:14pt;top:50px;left:470px;">{$order.city}</div>
+<div style="position:absolute;font-size:14pt;top:50px;left:700px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:14pt;top:130px;left:460px;width:400px;">{if $order.province != ''}{$order.province}{/if} {if $order.city != ''}{$order.city}{/if} {if $order.district != ''}{$order.district}{/if}{$order.address}    (订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:35pt;top:260px;left:185px;width:400px;font-weight:bold;">{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}</div>
+<div style="position:absolute;font-size:14pt;top:225px;left:500px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:14pt;top:230px;left:730px;">{$order.zipcode}</div>
+<div style="position:absolute;font-size:30pt;top:308px;left:622px;">√</div>
+
+<div style="position:absolute;font-size:14pt;top:340px;left:70px;"></div>
+<div style="position:absolute;font-size:14pt;top:360px;left:40px;"></div>
+
+</body>
+</html>

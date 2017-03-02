@@ -1,0 +1,56 @@
+<!-- 寄回商品信息 -->
+<!-- 商品信息 -->
+<form action="sale_service_actionV3.php" method="post" id="goods_amount_form" onsubmit="return checkForm();">
+<table cellpadding="0" cellspacing="0" class="back_goods">
+	<tr>
+    	<th width="43%">商品名称</th>
+      <th width="10%">商品单价</th>
+      <th width="10%">商品总数量</th>
+      <th width="10%">可操作数</th>
+      <th width="12%"><strong>退（换）货数</strong></th>
+      <th width="15%">发票</th>
+	</tr>	
+  {foreach from=$service.goods_list item=goods name=goodsList}
+    <tr align="center">
+    	<td style='text-align:center;padding-left:10px;color:blue;'>{$goods.goods_name}</td>
+        <td>{$goods.goods_price|price_format}</td>
+        <td>{$goods.goods_number}</td>
+        <td class='availableAmount'>{$goods.service_amount_available}</td>
+        <td>
+        <input type="hidden" name="service_order_goods[{$goods.order_goods_id}][service_order_goods_id]" value="{$goods.service_order_goods_id}"  />
+        <input type="hidden" name="service_order_goods[{$goods.order_goods_id}][order_goods_id]" value="{$goods.order_goods_id}" />
+        <input type="text" class='editAmount' name="service_order_goods[{$goods.order_goods_id}][service_amount]" style="text-align:center;width:70%" value="{$goods.service_amount}"
+        	{if !$service.can_edit_service_order_goods}readonly="readonly"{/if} {if $goods.cat_name == "耗材商品"}readonly="readonly"{/if}
+        />
+        </td>
+        <td>{$goods.shipping_invoice}</td>
+    </tr>
+    {/foreach}
+    <tr align="center">
+    	<td colspan="6" align="right">
+    		{if $service.can_edit_service_order_goods} {* 判断是否能修改售后服务的商品 *}
+    			<input type='hidden' name='service_id' value='{$service.service_id}' />
+				<input type='hidden' name='act' value='update_service_goods_amount' />
+				<input type='hidden' name='back_url' value='{$smarty.server.REQUEST_URI}' />
+				<input type='submit' value='修改商品数量' class="button_1" onclick="return confirm('确定修改吗？')" style='margin:5px;width:100px'>
+			{/if}
+    	</td>
+    </tr>
+</table>
+</form>
+<form action="sale_service_actionV3.php" method="post" id="facility_form" >
+<p style="margin:10px;">
+原订单发货仓库：
+<b>{$service.origin_facility_name}</b>
+受理仓库：
+<select name="facility_id">
+    {html_options options=$service.available_facility selected=$service.facility_id }
+</select>
+{if $service.can_edit_service_order_goods} {* 判断是否能修改售后服务的商品 *}
+<input type='submit' value='修改受理仓库' class="button_1" onclick="return confirm('确定修改吗？')" style='margin:5px;width:100px'>
+{/if}
+</p>
+<input type='hidden' name='service_id' value='{$service.service_id}' />
+<input type='hidden' name='act' value='update_service_facility' />
+<input type='hidden' name='back_url' value='{$smarty.server.REQUEST_URI}' />
+</form>

@@ -1,0 +1,227 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<TITLE>普通批次面单追加</TITLE>
+		<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_add_rule.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_check.js"></script>
+		<script type="text/javascript" src="misc/jquery.js"></script>
+		
+		<style type="text/css" > 
+		<!--{literal}-->
+		h2{ font-size:12pt; clear:both; margin:10px 0; } 
+		h3{ font-size:10pt; clear:both; margin:8px 0; } 
+		ul{ 				list-style:none; font-size:10pt; width:49%; float:left; } 
+		ul li{ height:40px; line-height:40px; } 
+		table{ font-size:10pt; 
+		text-align:center; border:1px solid #000; border-collapse:collapse; 
+		margin:20px 0 20px 2px; } 
+		table td{ padding:5px 10px; } 
+		table td,table th{ border:1px solid #000; height:25px; line-height:25px; } 
+		p{ font-size:10pt; clear:both; -- text-align:center; } 
+		 <!--{/literal}-->
+		</style>	
+		
+		<!--{literal}-->
+		<script type="text/javascript">
+		
+			function BTN_SINCE(start,endbefore){
+				var this_TN=document.getElementById("TN_"+start).value;
+				var origin_TN = this_TN;
+				
+		        // 判断末尾字母
+				var ato_index=this_TN.search(/[A-z]+$/);
+				if(ato_index<0) {
+					var ato='';
+					//this_TN=this_TN.substr(0,ato_index);
+				}
+				else {
+					var ato=this_TN.substr(ato_index,this_TN.length-ato_index);
+					this_TN=this_TN.substr(0,ato_index);
+				}
+				
+				// 开头数字
+				var mae=this_TN.substr(0,this_TN.length-9);
+				// 中间的9个数字，用于处理批量变化
+				var usiro=this_TN.substr(-9,9);
+				for(var i=start+1;i<=endbefore;i++){
+					var box=document.getElementById("TN_"+i);
+					if(box){
+					    var tail = auto_add_tracking_number(usiro,i-start);//由于快递规则不一样，递增时需要特殊判断
+						box.value=mae+tail+ato;
+					}
+				}
+			}
+			
+			// 批量追加面单
+			function batch_add_shipment() {
+			    $('#btn_batch_add_shipment').attr('disabled',true);
+				document.getElementById('mainact').value='batch_add_shipment';
+				document.getElementById('mainform').setAttribute('action','batch_add_shipment_actionV5_new.php');
+				
+				var shipment_ids = document.getElementsByName('SID[]');
+				for(var i=0;i<shipment_ids.length;i++) {
+					var shipment_id = $('#shipment_id_'+i).val();
+					var carrier_id = $('#carrier_id_'+i).val();
+					var tracking_number = $('#TN_'+i).val();
+					// 检查复核状态
+					if(!check_shipment_recheck(shipment_id)) {
+					    $('#btn_batch_add_shipment').attr('disabled',false);
+						return false;
+					}
+					
+					//检查运单号是否存在 以及合法性
+					if(!check_tracking_number(carrier_id,tracking_number)) {
+					    $('#btn_batch_add_shipment').attr('disabled',false);
+						return false;
+					}
+				}
+				document.mainform.submit();
+			}
+			
+			//更新快递单记录并重新打印快递单
+			function update_tracking_number(no) {
+				var shipment_id = $('#shipment_id_'+no).val();
+				var carrier_id = $('#carrier_id_'+no).val();
+				var tracking_number = $('#TN_'+no).val();
+				$('#mainact').val('print');
+				$('#sel_ssid').val(shipment_id);
+				$('#sel_soid').val($('#order_id_'+no).val());
+				$('#sel_tn').val($('#TN_'+no).val());
+
+				// 检查复核状态
+				if(!check_shipment_recheck(shipment_id)) {
+					return false;
+				}
+				
+				//检查运单号是否存在 以及合法性
+				if(!check_tracking_number(carrier_id,tracking_number)) {
+					return false;
+				}
+
+				document.mainform.submit();
+			}
+			
+			// 检查是否复核过了
+			function check_shipment_recheck(shipment_id){
+		        var result = false;
+				$.ajax({
+					async:false,
+					type: 'POST',
+					url: 'ajax.php?act=check_shipment_recheck',
+				    data: 'shipment_id=' + shipment_id,
+				    dataType: 'json',
+				    error: function() {
+			          alert('ajax请求错误,检查是否复核过了ajax失败:' + shipment_id); 
+				    },
+				    success: function(data) {
+				    	if(data.success) {
+				    	   result = true;
+				    	} else {
+							alert('发货单：'+shipment_id+' 未复核，不能追加或更新面单，请先去复核！');
+				    	}
+				    }
+				});
+				return result;
+			}
+
+			
+			
+		</script>
+		<!--{/literal}-->
+		
+		
+	</head>
+	<body>
+		<DIV>			
+			<h1>批量追加普通面单：批量拣货单对应的快递单打印</h1>
+			<p>
+				查询并列出批拣单对应的发货单以为其打印快递面单
+			</p>
+			<p>
+				<form action="batch_add_order_shipment_new.php" method="post">
+					<input type="hidden" id='query' name="act" value="query">
+					批拣单号：<input type="text" name="BPSN" value="{$BPSN}">
+					<input type="submit" value="查询"> 
+				</form>
+			</p>
+			<hr>
+			
+		</DIV>
+		
+
+		{if $message}
+			<div id='message' style='color:red;'>{$message}</div>
+		{/if}
+
+		<DIV>
+				
+		{if $shipments}
+		<form id="mainform" name="mainform" action="batch_add_order_shipment_new.php" method="post">
+			<input type="hidden" id="sel_ssid" name="SSID"> 
+			<input type="hidden" id="sel_soid" name="SOID"> 
+			<input type="hidden" id="sel_tn" name="STN"> 
+			<input type="hidden" id='mainact' name="act" value="">
+			<input type="hidden" name="BPSN" value="{$BPSN}">
+			
+			<table>
+				<tr>
+					<th>序号</th>
+					<th>发货单号</th>
+					<th>主订单号</th>
+					<th>快递名称</th>
+					<th>快递面单号录入和更新</th>
+					<th>操作</th>
+				</tr>
+			    {foreach from=$shipments key=key item=shipment name='shipment_list'}
+				<tr>
+					<td>{$key+1}</td>
+					<td><input type='hidden' id='shipment_id_{$key}' name='SID[]' value="{$shipment.shipment_id}">{$shipment.shipment_id}</td>
+					<td><input type='hidden' id='order_id_{$key}' name='OID[]' value="{$shipment.main_order_id}">{$shipment.main_order_id}</td>
+					<td>
+					{$shipment.carrier_name}
+					<input type='hidden' id='shipping_id_{$key}' name='shipping_ID[]' value="{$shipment.shipping_id}">
+					<input type='hidden' id='carrier_id_{$key}' name='carrier_ID[]' value="{$shipment.carrier_id}">
+					</td>
+					<td>
+						<input type="text" id="TN_{$key}" name="TNS[]" value="{$shipment.tracking_number}">
+						<input type="button" id="BTN_{$key}" value="以此开始向下批量" onclick="BTN_SINCE({$key},{$shipment_size})">
+					</td>
+					<td>
+						<input type="button" value="更新快递单记录并重新打印快递单" disabled='true' onclick="update_tracking_number({$key})">
+					</td>
+				</tr>
+				{/foreach}
+			   <tr>
+	           {if $shipments}
+					<td colspan=5>
+						 <input type="button" id='btn_batch_add_shipment' value="批量追加面单并打印" onclick="batch_add_shipment();">
+					</td>
+	           {else}
+					<td>没有能打的面单</td>
+	           {/if}
+			   </tr>
+		</table>
+	 </form>
+	 {/if}
+	 </DIV>
+	 
+    {if $update_done}
+     <div style="display: none;">
+		<form name="KyrieEleison" id="KyrieEleison" action="print_shipping_orders.php" method='POST' target="print_frame">
+			<input type="hidden" name="print" value="1">
+			<textarea name='order_id'>{$order_ids}</textarea>
+			<input type="submit">
+		</form>
+	</div>
+	<iframe name="print_frame" width="100%" height="100%" frameborder="1" src="" ></iframe> <!--{$src}-->
+	<script type="text/javascript">
+	document.KyrieEleison.submit();
+	</script>
+
+    <!-- <iframe name="print_frame" width="100%" height="100%" frameborder="1" src="print_shipping_orders.php?print=1&order_id={$order_ids}" ></iframe> -->
+    {/if}
+	</body>
+</html>

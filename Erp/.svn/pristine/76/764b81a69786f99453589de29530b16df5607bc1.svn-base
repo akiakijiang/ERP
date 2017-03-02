@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>  
+<script type="text/javascript" src="../admin/misc/jquery.ajaxQueue.js"></script>
+
+<script type="text/javascript" src="../admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="../admin/misc/autocomplete.css" />
+ 
+  <!-- Calendar -->
+  <link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+  <script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+  <script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+  <!-- Calendar /-->
+
+
+<style type="text/css">
+{literal}
+    .navigation span.options {
+        padding: 1px;
+    }
+    .navigation span.options a:hover {
+        background-color:#FF6600;
+        color:#FFFFFF;
+        padding:1px;
+    }
+    .navigation span.actived {
+        background-color:#FF6600;
+        color: #FFFFFF;
+        padding:1px;
+    }
+    .navigation span.actived a{
+        color: #FFFFFF;
+    }
+    .remind{
+        float:left;
+        border:#D4FF55 1px solid;
+        padding:0 5px;
+        color:#FFFFFF;
+        background-color:#008000;
+        position: absolute;
+        left:20px;
+    }
+   
+{/literal}
+</style>
+<script language = "javascript" type = "text/javascript">
+// 载入执行
+	// <![CDATA[	
+var WEB_ROOT = '{$WEB_ROOT}';
+var show_query_result = '{$show_query_result}';
+var province = '{$province}';
+var city = '{$city}';
+var district = '{$district}';
+var begin_date = '{$begin_date}';
+var end_date = '{$end_date}';
+// {literal}
+
+	/**
+	 * 改变地域的下拉框
+	 */
+	var Region = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+				{name: 'address[province]', data:{type:2} }, // 省
+				{name: 'address[city]',     data:{type:3} }, // 市
+				{name: 'address[district]'}                  // 区
+		],
+		
+		expr : ':select[name="?"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+				for (var i = 0; i < this.regions.length; i++) {
+					var node = $(this.expr.replace('?', this.regions[i].name));
+					node.bind('change', this.regions[i].data, this.change_region_list);
+					if (i > 0) {
+						var prev = $(this.expr.replace('?', this.regions[i-1].name));
+						var value = parseInt(prev.val());
+						if (isNaN(value) || value < 1) {
+							node.hide();
+						} else {
+                            node.show();	
+						}
+					}					
+				}
+		},
+
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = Region.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == Region.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				if (!last) {
+					$c = $(Region.expr.replace('?', Region.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(Region.expr.replace('?', Region.regions[i].name)).hide();	
+					}
+				}
+			
+				$c.unbind();
+				$.ajax({
+					type: 'POST',
+					async: false,
+					url: WEB_ROOT + 'admin/ajax.php?act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', Region.regions[next].data, Region.change_region_list);
+							}
+						}
+					}
+				});	
+
+		}
+	};	  
+	
+	var property={
+    	    divId:"demo",
+    	    needTime:true,
+    	    yearRange:[1970,2030],
+    	    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+    	    month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    	    format:"yyyy-MM-dd hh:mm:ss"
+    	};
+	
+	var property_date={
+    	    divId:"demo_date",
+    	    needTime:true,
+    	    yearRange:[1970,2030],
+    	    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+    	    month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    	    format:"yyyy-MM-dd"
+    	};	
+	
+	
+
+$(document).ready(function(){
+	 canva2=$.createGooCalendar("begin_date",property_date);   
+	 canva3=$.createGooCalendar("end_date",property_date);
+		$("#begin_date").val(begin_date);
+		$("#end_date").val(end_date);	 
+	//地址信息 
+	 Region.init();
+	//发送时间	
+	 canva1=$.createGooCalendar("send_time",property);
+	 canva1.setDate({});	
+	 
+	if(1 == show_query_result) {
+		if(0 != province) {
+		$("select[name='address[province]']").attr("value",province);
+		$("select[name='address[province]']").change();
+		}
+		 
+		if(0 != city) {
+			 
+			// setTimeout(function(){$("select[name='address[city]']").attr("value",city); $("select[name='address[city]']").change();},500);
+			$("select[name='address[city]']").attr("value",city);
+			$("select[name='address[city]']").change();
+		}
+		if(0 != district) {
+			 
+			$("select[name='address[district]']").attr("value",district);
+			$("select[name='address[district]']").change();
+		}	
+		
+		
+	}
+	
+    //商品搜索
+	$('#search_product').autocomplete(WEB_ROOT + 'admin/sendmessagebatch.php?request=ajax&act=search_goods', {
+		dataType : 'json',
+		minChars: 1,
+		delay: 1000, 
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.goods_name);
+		},
+		formatResult : function(row) {
+			return(row.goods_name);
+		}
+	}).result(function(event, row, formatted) {
+		$('#search_product_id').val(row.goods_id);
+	});
+}); 
+
+      function previewcheck(){
+          document.getElementById("form1").target = "_blank";
+      }
+      function change_server() {
+        	$("#server_name").val($("#server_name_list").val());
+        	$("#form1").submit();
+      }
+      function send(){
+    	  $("#server_name").val($("#server_name_list").val());
+    	  if(0 == $('#subject').val().length) {
+    		  alert("内容主题不能为空");
+    		  return false;
+    	  }
+    	  var content = $('#content').val();
+    	  var len = content.length
+    	  if ( 0 == len){
+    		  alert("短信内容不能为空");
+    		  return false;
+    	  }
+          if(content.indexOf("【") <= 0 || content.indexOf("】")<=0 || content.indexOf("】") + 1 != len){
+        	  alert("短信内容需加后缀名" + content.indexOf("】") + "MM" + content.length)
+        	  return false;
+          }
+          if (len > 67 && !confirm("短信内容长度为" + len + "，将收取2倍的费用，确认发送吗？")) {
+              return false;
+           } 
+          
+          var send_time = $('#send_time').val();
+          if (''==send_time || null == send_time ) {
+         	 alert("发送时间不能为空")
+              return false;
+           }
+           if(send_time.match(/^(\d{4})(-)(\d{2})(-)(\d{2})( )(\d{2})(:)(\d{2})(:)(\d{2})$/) ==  null) {
+         	  alert("输入发送时间格式要正确。。。")
+         	  return false;
+           };
+          
+          var send_number = $('#send_number').val(); 
+          if('' == send_number || null == send_number) {
+        	  alert("短信条数不能为空"); 
+        	  return false;
+          }
+          if(isNaN(send_number) || send_number <= 0) { 
+        	  alert("短信条数请输入合法的数字，且数字大于0"); 
+        	  return false;} 
+          if(parseInt(send_number) > parseInt($('#max_send_number').val())) {
+        	  alert("短信剩余不足，请联系ERP");
+        	  return false;
+          }
+          return true;
+      }
+      function check() {
+          var begin_date = document.getElementsByName("begin_date")[0].value;         
+          if (''==begin_date || null == begin_date ) {
+        	 alert("开始日期不能为空")
+             return false;
+          }
+          if(begin_date.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/) ==  null) {
+        	  alert("输入活动开始日期格式要正确。。。")
+        	  return false;
+          };
+          
+          var end_date = document.getElementsByName("end_date")[0].value;         
+          if (''==end_date || null == end_date ) {
+        	 alert("结束日期不能为空")
+             return false;
+          }
+          if(end_date.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/) ==  null) {
+        	  alert("输入活动结束日期格式要正确。。。")
+        	  return false;
+          };    
+          var curDate = new Date;
+          var curDateStr = (curDate.getFullYear() + '-' + (curDate.getMonth()+1)+'-'+curDate.getDate());          
+          if(end_date >= curDateStr) {
+        	  alert("结束日期最大只能选择昨天的数据");
+        	  return false;
+          }
+          var order_amount = $('#order_amount').val();
+          if(isNaN(order_amount)) { 
+        	  alert("订单金额请输入合法的数字"); 
+        	  return false;} 
+          return ;
+      } 
+  	// {/literal}
+  	// ]]>
+</script>
+
+
+
+<title>批量短信</title>
+</head>
+
+<body>
+
+<!-- 发送短信的页面 -->
+{if ! $show_send_report}
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;发送短信&nbsp;</span></legend>
+    <div class="menu-tab">
+          <div class="right-edge">&nbsp;</div>
+          <div class="item"><a href="sendmessagebatch.php?sendReport=1">查看状态报告</a></div>
+          <div class="active"><a href="sendmessagebatch.php">发送短信</a></div>
+          <div class="left-edge">&nbsp;</div>
+    </div>
+<p style="color:red;">各位店长请在发送的短信内容最后不要忘了添加后缀，例如：多美滋官方旗舰店后缀可以写为【多美滋】</p>
+<p style="color:red;">移动、联通、电信每条短信 70 个字! 短信内容的总字数等于短信内容的字数加上签名的字数!</p>
+{if $server_name=='emay'} 
+<p style="color:red;">为了保证顺利地发送亲们的短信内容，请亲们在发送前务必确认短信内容中没有黑字典内容。是否含有黑字典内容请联系亿美客服，TEL:<font size="20">4007797255。</font></p>
+{else}
+<p style="color:red;">为了保证顺利地发送亲们的短信内容，请亲们在发送前务必确认短信内容中没有黑字典内容。是否含有黑字典内容请联系北京亿度动力客服，TEL:<font size="20">4006990903。</font></p>
+{/if}<h3>短信剩余: {$balance}条</h3>
+<h3 style="color:#09F;">查询</h3>
+<form method="post" enctype="multipart/form-data" id="form1" onsubmit="return check()">
+ 开始日期： <input style="width:90px" id="begin_date" name="begin_date" value="{$begin_date}"/>  &nbsp;&nbsp;                  
+ 结束日期： <input style="width:90px" id="end_date" name="end_date" value="{$end_date}"/>  <br/>
+         
+订单金额： <input type="text" id="order_amount" name="order_amount" maxlength="11" style="width: 100px;" value="{$order_amount}"/> <br/> 
+商品名称： <input type="text" id="search_product" name="goods_name" value="{$goods_name}" size="60" /> #<input type="text" id="search_product_id" name="goods_id" value="{$goods_id}" size="5" readonly="readonly" style="border:none;" /> <br/>
+客户地址：           
+         <select name="address[province]"><option value="0">-请选择-</option>{html_options options=$province_list selected=$province}</select>省 &nbsp;&nbsp;
+         <select name="address[city]"  ><option value="0">-请选择-</option>{html_options options=$city_list selected=$city}</select> &nbsp;&nbsp;
+         <select name="address[district]" style="display:none"><option value="0">-请选择-</option>{html_options options=$district_list selected=$district}</select>  <br/>    
+ 
+<input type="submit" name="customerquery" value="查询"  />  {if $query_result neq null }<font size="4" color="red"><strong>结果{$query_result}客户</strong></font>{/if}  <br/>
+<br/>
+服务商
+<select id="server_name_list" onchange=change_server()>
+    {html_options options=$server_name_list selected=$smarty.request.server_name}
+</select>
+<input type="hidden" name="server_name" id="server_name" />
+内容主题： <input type="text" id="subject" name="subject" maxlength="36" size="36"/><br />
+发送内容： <input type="text" id="content" name="content" maxlength="300" size="120"/><br />
+发送时间： <input type="text" value="" id="send_time" name="send_time"></input> <br/> 
+发送条数： <input type="text" id="send_number" name="send_number" maxlength="11" style="width: 100px;" value="{$query_result}"/> <br/>
+<input type="hidden" name="max_send_number" id="max_send_number" value='{$balance}'/>
+<input type="submit" name="sendmessage" value="按此查询客户发送短信" onclick="return send();" />
+{if $affected_rows neq null }<font size="4" color="red"><strong>已生成{$affected_rows}客户加入队列待发送</strong></font>{/if}  <br/>
+<br />
+{/if}  
+</form></fieldset>  <br /><br /> 
+
+
+<!-- 查看发送报告的页面 -->
+{if $show_send_report}
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;查看发送报告&nbsp;</span></legend>
+    <div class="menu-tab">
+          <div class="right-edge">&nbsp;</div>
+          <div class="active"><a href="sendmessagebatch.php">查看发送报告</a></div>
+        <div class="item"><a href="sendmessagebatch.php">发送短信</a></div>
+          <div class="left-edge">&nbsp;</div>
+      </div>
+      
+    <div style="clear:both;"> 
+        <h3 style="color:#09F;">查询</h3>
+          <form method="post" action="sendmessagebatch.php">
+             开始日期：<input style="width:90px" id="begin_date" name="begin_date" value="{$begin_date}"> &nbsp;&nbsp;
+             结束日期：<input style="width:90px" id="end_date" name="end_date" value="{$end_date}">  <br/>
+             内容主题：<input type="text" id="subject" name="subject" maxlength="36" size="36" value="{$subject}"/><br />              
+             发送内容： <input type="text" id="content" name="content" maxlength="120" size="130" value="{$content}"/><br>
+             服务商
+			 <select name="server_name">
+					    {html_options options=$server_name_list selected=$smarty.request.server_name}
+			</select>
+&nbsp;&nbsp; <br/>                      
+        <input type="hidden" name="sendReport" value="1">
+        <input type="submit" value="查询" />
+          </form>
+     </div>  
+     
+     <br><br>
+     <h3 style="color:#09F;">查询结果</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>发送时间</td>
+              <td>内容主题</td>
+              <td>发送内容</td>
+              <td>待发送</td>
+              <td>成功</td>
+              <td>失败</td>
+              <td>服务商</td>
+          </tr>
+          {foreach from=$list item=report}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$report.start_time}</td>
+              <td>{$report.template_subject}</td>
+              <td>{$report.template_content}</td>
+              <td>{$report.wait}</td>
+              <td>{$report.suc}</td>
+              <td>{$report.fail}</td>
+              <td>{$report.server_name}</td>
+          </tr>
+          {foreachelse}
+              暂无数据
+          {/foreach}
+      </table>
+  <br/>
+  </fieldset> 
+    {literal}
+    <script type="text/javascript">//<![CDATA[
+          Zapatec.Calendar.setup({
+            weekNumbers       : false,
+            electric          : false,
+            inputField        : "begin_date",
+            button            : "begin_date",
+            ifFormat          : "%Y-%m-%d",
+            daFormat          : "%Y-%m-%d"
+          });
+          Zapatec.Calendar.setup({
+            weekNumbers       : false,
+            electric          : false,
+            inputField        : "endCalendar",
+            button            : "endTrigger",
+            ifFormat          : "%Y-%m-%d",
+            daFormat          : "%Y-%m-%d"
+          });
+        //]]>
+    </script>
+    {/literal}
+{/if}
+
+</body>
+</html>

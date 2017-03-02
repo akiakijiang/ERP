@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>追加面单单个再次打印</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_add_rule.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_check.js"></script>
+		<script type="text/javascript" src="misc/jquery.js"></script>
+		
+		<style type="text/css" media="all">
+		{literal}
+			h2{
+				font-size:12pt;
+				clear:both;
+				margin:10px 0;
+			}
+			h3{
+				font-size:10pt;
+				clear:both;
+				margin:8px 0;
+			}
+			ul{
+				list-style:none;
+				font-size:10pt;
+				width:49%;
+				float:left;
+			}
+			ul li{
+				height:40px;
+				line-height:40px;
+			}
+			
+			table{
+				font-size:10pt;
+				text-align:center;
+				border:1px solid #000;
+				border-collapse:collapse;
+				margin:20px 0 20px 2px;
+			}
+			table td{
+			    padding:5px 10px;
+			}
+			table td,table th{
+				border:1px solid #000;
+				height:25px;
+				line-height:25px;
+			}
+			p{
+				font-size:10pt;
+				clear:both;
+			}
+		{/literal}
+		</style>
+		<script type="text/javascript">
+		// <![CDATA[
+        //{literal}
+		
+	        //单张打印
+	        function single_print(trackNum){
+				document.getElementById('mainact').value='single_print';
+				document.getElementById('sel_tn').value=trackNum;
+				document.mainform.submit();
+	        }
+
+	        
+	        //查询给定运单号的历史打印记录
+	        function selectRecord(trackNum,eventTag){
+	        	document.getElementById('mainact').value='selectRecord';
+				document.getElementById('sel_tn').value=trackNum;
+	        	var data= "act=selectRecord&STN="+trackNum;
+				 $.ajax({
+		                type:'post',
+		                datatype: "json",
+		                url:'add_order_shipment_arata_add_new.php',
+		                data:data,
+		                success:function($response){
+		                	var record=eval($response);
+		                	var len=record.length;
+		         			
+							$("#divRemark table").html(
+			         				"<tr>"
+		         						+"<td width='80px' align='center'><b>打印人员</b></td>"
+		         						+"<td width='170px' align='center'><b>打印时间</b></td>"
+		         					+"</tr>");
+		         			var divStr = "";		
+                            for(var i=0;i<len;i++){
+                            	divStr = divStr + "<tr><td width='80px' align='center'>"+record[i].PRINT_USER+"</td>"
+                            		    +"<td width='170px' align='center'>" +record[i].PRINT_TIME+ "</td></tr>";
+	         							
+                            } 	
+                            divStr = divStr + 	
+					         				"<tr>"
+					         					+"<td align='center' colspan='2'>"
+					         						+"<input type='button' id='button'  value='close' onclick='noShowRemark();'>"
+					         					+"</td>"
+					         				+"</tr>";
+					        $("#divRemark table").append(divStr);
+					        showRecord(eventTag);  
+		                },
+		                error:function(){
+		                    alert("selectRecordNew AJAX加载失败");
+		                }
+	              });
+		    }
+
+
+	        function showRecord(eventTag)
+	        {
+	            var event = eventTag || window.event;
+	            var top = event.clientY;      
+	            if((top+80) > document.body.offsetHeight)
+	                document.getElementById("divRemark").style.top = (top + document.documentElement.scrollTop-80)+'px';
+	            else   
+	                document.getElementById("divRemark").style.top = (top + document.documentElement.scrollTop)+'px';
+	            var left = event.clientX;   
+	            if((left+360) > document.body.offsetWidth)
+	                document.getElementById("divRemark").style.left = (left + document.documentElement.scrollLeft - 360)+'px';
+	            else
+	                document.getElementById("divRemark").style.left = (left + document.documentElement.scrollLeft)+'px';
+
+	           document.getElementById("divRemark").style.display = '';
+	        }
+
+	        function noShowRemark()
+	        {
+	            document.getElementById("divRemark").style.display = 'none';
+	        }
+	        
+	        
+	    //{/literal}
+        //]]>
+        
+		</script>
+</head>
+<body>
+		<div>			
+			<h1>追加面单的再次打印：再次打印已经追加过的热敏面单，仅限单张打印</h1>
+			<p>
+				<form  action="add_order_shipment_arata_add_new.php" method="POST">
+					<input type="hidden" name="act" value="query">
+					发货单号：<input type="text" id="shipment_id" name="shipment_id" value="{$shipment_id}">
+					<input type="submit" value="查询"> 
+				</form>
+			</p>
+			<hr>
+			{if $message}
+				<div id='message' style='color:red;'>{$message}</div>
+			{/if}
+			
+			<div>
+			{if $shipment_id}
+			<div> 主订单： {$shipment.main_order_id}</div>
+			<div> 快递方式：{$shipment.carrier_name}</div>
+			{/if}
+	{if $trackNum}
+            <form name="mainform" action="add_order_shipment_arata_add_new.php" method="POST">
+          		<input type="hidden" id="mainact" name="act" value="">
+          		<input type="hidden" id="shipment_id" name="shipment_id" value="{$shipment_id}">
+				<input type="hidden" id="sel_tn" name="STN"> 
+				<table>
+					<tr>
+						<th>发货单号</th>
+						<th>追加的热敏单号</th>
+						<th>打印</th>
+						<th>查看打印记录</th>
+					</tr>
+							
+					{foreach from=$trackRecord key=k item=tn}
+			        <tr>
+			                <td>
+			                	<span>{$tn.SHIPMENT_ID}</span>
+			                	<input type='hidden' id='shipment_id_{$k}' name='SID[]' value="{$tn.shipment_id}"/>
+			                </td>
+			                <td>
+			                     <input type="text" id="TN_{$k}" name="TNS[]" value="{$tn.TRACKING_NUMBER}" readonly="true" />
+			                </td>
+			                <td>
+			                  <input type="button" value="重新打印单张运单" onclick="single_print({$tn.TRACKING_NUMBER});"  />
+			                </td>    
+			                <td>        	
+			                	<input type="button" value="查看打印记录" onclick="selectRecord({$tn.TRACKING_NUMBER},event);" />
+			                </td>    
+			        </tr>
+			        {/foreach}
+				</table>
+		</form>
+	{/if}
+			</div>
+		</div>
+        {if $ifUpdateDone}
+        	<div style="display: none;">
+        		<form name="KyrieEleison" id="KyrieEleison" action="print_shipping_order_add_tracking_number.php" method='POST' target="print_frame">
+					<input type="hidden" name="print" value="1">
+					<input type="hidden" name="arata" value="1">
+					<input type="hidden" name="tracking_number" value="{$tracking_number}">  
+					<textarea name='order_id'>{$order_id}</textarea>
+					<input type="submit">
+				</form>
+			</div>
+				<iframe name="print_frame" width="100%" height="100%" frameborder="1" src="" ></iframe> <!--{$src}-->
+				<script type="text/javascript">
+				document.KyrieEleison.submit();
+				</script>
+	    {/if}
+	    
+	    
+	     <div id="divRemark" style="z-index:100px;position:absolute;background:#FFF; margin:0; padding:5px 5px 0 5px; width:260px; border:1px solid #b4e3e5; font-size:12px; line-height:20px; color:#5c5c5c; font-family:宋体;display:none;">
+			<table id="recordTable">
+				
+			</table>	
+		 </div>
+	    
+		
+	</body>
+</html>

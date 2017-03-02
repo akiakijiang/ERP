@@ -1,0 +1,6 @@
+支付宝账户,红包金额,状态,创建时间,修改时间
+{foreach from=$alipay_bonus_list item=alipay_bonus}
+{assign var="status" value=$alipay_bonus.status}
+" {$alipay_bonus.buyer_alipay_no}",{$alipay_bonus.alipay_bonus},{$status_mapping.$status},{*
+*}{$alipay_bonus.created_time},{$alipay_bonus.update_time}
+{/foreach}

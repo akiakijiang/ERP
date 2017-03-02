@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<style type="text/css" media="all">
+    {literal}
+    *{
+      margin:0;
+      padding:0;
+    }
+    h2{
+      font-size:12pt;
+      clear:both;
+      margin:10px 0;
+    }
+    ul{
+      list-style:none;
+      font-size:10pt;
+      width:49%;
+      float:left;
+    }
+    ul li{
+      height:40px;
+      line-height:40px;
+    }
+    
+    table{
+      width:99.7%;
+      font-size:10pt;
+      text-align:center;
+      border:1px solid #000;
+      border-collapse:collapse;
+      margin:20px 0 20px 2px;
+    }
+    table td{padding:5px 10px;}
+    table td,table th{
+      border:1px solid #000;
+      height:25px;
+      line-height:25px;
+    }
+    p{
+      font-size:10pt;
+      clear:both;
+      text-align:center;
+    }
+    .left{
+      float:left;
+      margin-left:40px;
+      display:inline;
+    }
+    .right{
+      float:right;
+      margin-right:20px;
+    }	
+    h1{
+      text-align:center;
+      font-size:14pt;
+    }
+    li.c{
+      clear:both;
+      width:100%;
+    }	
+    .postscript {
+    font-size:14px;
+    font-family: "黑体";
+    font-weight:bold;
+    }
+  {/literal}
+  </style>
+  
+	<title>批拣任务拣货单</title>
+</head>
+
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+<h1>批拣单（{$picklist->facilityId|facility_mapping}）{$picklist->createdStamp|date_format:"%Y-%m-%d %H:%M"}</h1>
+
+<img src="code_img.php?barcode={$picklist->picklistId}&height=50" />
+
+<table>
+	<tr>
+        <th width="10%">No.</th>
+        <th width="25%">品名</th>
+        <th width="10%">编码</th>
+        <th width="10%">新旧</th>
+        <th width="20%">库位</th>
+        <th width="15%">数量</th>
+        <th width="10%">备注</th>
+	</tr>
+
+	{foreach from=$list item=item name="list"}
+	<tr>
+        <td>{$smarty.foreach.list.iteration}</td>
+        <td align="left">{$item.PRODUCT_NAME}</td>
+        <td>{$item.PRODUCT_CODE}</td>
+        <td>{if $item.STATUS_ID == 'INV_STTS_AVAILABLE'}全新{else}二手{/if}</td>
+    	<td>{$item.LOCATION_SEQ_ID}</td>
+        <td>{$item.QUANTITY|string_format:"%01d"}</td>
+        <td>&nbsp;</td>
+    </tr>	
+	{/foreach}
+</table>
+
+<div style="page-break-after: always;"></div>
+
+{if $smarty.request.print != 1}
+<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+
+
+</body>
+</html>

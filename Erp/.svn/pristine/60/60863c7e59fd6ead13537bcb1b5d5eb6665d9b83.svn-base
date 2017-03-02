@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销串号产品跟踪</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// 载入执行
+	$(document).ready(function(){
+														 
+			// 提交禁用按钮
+			$(':button, :submit').attr('disabled', false);
+			$('form').bind('submit', function(){
+					$(':button, :submit').attr('disabled', true);
+			});
+			
+	});
+
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;串号产品跟踪&nbsp;</span></legend>
+  
+
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">串号</h3>
+    <form method="post">
+    	商品串号： &nbsp;&nbsp;
+      <input type="text" name="serial_number" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="查询" />
+      <input type="hidden" name="act" value="search" />
+    </form>
+  </div>
+  
+  
+  
+  <br />
+  <!--{if $items}-->
+  <div style="clear:both; width:900px;">
+  
+      <h3 style="color:#09F;">查询结果</h3>
+      
+      {foreach from=$items item=item}
+      {if $item.quantity_on_hand_diff <0}
+      
+    	<table cellpadding="5" cellspacing="1">
+      
+      <tr>
+      	<td colspan="2"><strong>出库记录</strong></td>
+			</tr>
+      
+      <tr>
+      	<td width="120">商品名</td>
+      	<td>{$item.goods_name}</td>
+      </tr>
+      
+      <tr>
+      	<td>商品串号</td>
+      	<td>{$item.serial_number}</td>
+      </tr>
+      
+      <tr>
+      	<td>订单号</td>
+      	<td>{$item.order_sn}</td>
+      </tr>
+      
+      <tr>
+      	<td>发货时间</td>
+      	<td>{$item.shipping_time|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+      </tr>
+      
+      <tr>
+      	<td>购买用户</td>
+      	<td>{$item.consignee} ({$item.user_name})</td>
+      </tr>
+      
+      <tr>
+      	<td>联系方式</td>
+      	<td>{$item.tel} / {$item.mobile}</td>
+      </tr>
+      
+      <tr>
+      	<td>发往地</td>
+      	<td>
+        	[{$item.province|get_region_names}] [{$item.city|get_region_names}] 
+        	{if $item.district}[{$item.district|get_region_names}] {$item.address}{/if}
+				</td>
+      </tr>
+      
+      </table>
+      <br />
+
+      {elseif $item.quantity_on_hand_diff >0}
+      
+    	<table cellpadding="5" cellspacing="1">
+      
+      <tr>
+      	<td colspan="2"><strong>入库记录</strong></td>
+			</tr>
+      
+      <tr>
+      	<td width="120">商品名</td>
+      	<td>{$item.goods_name}</td>
+      </tr>
+      
+      <tr>
+      	<td>商品串号</td>
+      	<td>{$item.serial_number}</td>
+      </tr>
+      
+      <tr>
+      	<td>入库时间</td>
+      	<td>{$item.created_stamp}</td>
+      </tr>
+      
+      <tr>
+      	<td>订单号</td>
+      	<td>{$item.order_sn}</td>
+      </tr>
+      
+      </table>
+      <br />
+
+      {/if}
+      {/foreach}
+
+      
+      
+  </div>
+  <!--{/if}-->
+  
+  <br />
+
+</fieldset>
+
+</body>
+</html>

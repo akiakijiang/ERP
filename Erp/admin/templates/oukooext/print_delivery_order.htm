@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+
+<title>打印提货单</title>
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" class="bWindow" style="width:95%" align="center">
+<caption><h2>采购提货清单{$extra_info}</h2><br><br></caption>
+<tr>
+<th>商品</th>
+<th>移动定制</th>
+<th>快递</th>
+<th>备注</th>
+</tr>
+{foreach from=$goods_list item=goods name=goods}
+<tr align="center">
+<td style="width:200px">{$goods.goods_number}</td>
+<td align="left">{$goods.customized}</td>
+<td align="left" nowrap>{$goods.shipping}</td>
+<td align="left">{$goods.action_notes}</td>
+</tr>
+{/foreach}
+</table>
+<center><input type="button" value="打印" onclick="this.style.display='none';window.print();"></center>
+</body>
+</html>

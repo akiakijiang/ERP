@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>创建采购发票</title>
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+<!-- Autocomplete -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+
+<script type="text/javascript">
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+// <![CDATA[
+$(document).ready(function(){
+	/**
+	 * 供应商
+	 */
+	$('#autocomplete_provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+		minChars: 0,
+		mustMatch: true,
+		dataType : 'json',
+		formatItem : function(row, i, max, value, term) {
+			return(row.provider_name);
+		},
+		formatResult : function(row) {
+			return(row.provider_name);
+		}
+	}).result(function(event, row, formatted) {
+		// 将隐藏域的值设为供应商的id
+		$('#provider_id').val(row.provider_id);
+	});
+	
+});
+// ]]>
+
+</script>
+{/literal}
+</head>
+
+<body>
+
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+<p>创建采购发票</p>
+<p>发票号：<input type="text" name="invoice_no" /></p>
+<p>开票单位：
+	<input type="text" name="provider_name" id="autocomplete_provider" size="40" />
+	<input type="hidden" name="provider_id" id="provider_id" >
+</p>
+<p>开票时间：<input type="text" name="invoice_date" id="invoice_date" size="10"/><input type="button" value="..." id="invoice_data_trigger"></p>
+<p>发票备注：</p>
+<p><textarea name="note" id="note" cols="45" rows="5"></textarea></p>
+<p><input type="submit" value="创建发票" /></p>
+<input type="hidden" name="action" value="purchase_invoice_add" />
+</form>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "invoice_date",
+        button            : "invoice_data_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

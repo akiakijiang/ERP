@@ -1,0 +1,4 @@
+product_id,facility_id,inventory_summary_id,stock_quantity,available_to_reserved,reserved,diff
+{foreach from=$atp_detail item=atp}
+"{$atp.product_id}","{$atp.facility_id}","{$atp.inventory_summary_id}","{$atp.stock_quantity}","{$atp.available_to_reserved}","{$atp.reserved}","{$atp.diff}"
+{/foreach}

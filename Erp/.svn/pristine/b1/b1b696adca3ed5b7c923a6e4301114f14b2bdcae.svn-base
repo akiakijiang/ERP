@@ -1,0 +1,60 @@
+<!-- 客户信息 -->
+<table cellpadding="0" cellspacing="0" class="user_info">
+	<tr>
+    	<th width="7%;">客户名</th>
+      <th width="7%;">用户名</th>
+      <th width="10%;">联系方式</th>
+      <th>客户地址</th>
+      <th width="11%">发货操作人</th>
+      <th width="11%">发货操作时间</th>
+      <th style="width:25%;">快递信息</th>				
+    </tr>
+    <tr>
+    	<td>{$service.consignee}</td>
+        <td>{if $service.apply_username}{$service.apply_username}{else}{$service.post_username}{/if}</td>
+        <td>
+        	{if check_admin_priv('check_user_tel')}
+        	{if $service.mobile}{$service.mobile}<br />{/if}
+				  {if $service.tel}{$service.tel}{/if}
+          {else}
+          ××××××
+          {/if}
+				</td>
+        <td>{if check_admin_priv('check_user_tel')}{$service.province|get_region_names}{$service.city|get_region_names}{$service.district|get_region_names} {$service.address}{else}××××××{/if}</td>
+				<td>{$service.shipping_user}</td>
+				<td>{$service.shipping_time}</td>
+				<td style="line-height:150%;">
+					快递方式：<a href="#">{$service.shipping_name}</a><br />
+				  快递单号：<a href="catch_carrier_info.php?act=getCarrier&carrier_id={$service.carrier_id}&bill_no={$service.bill_no}" class="get_carrier">{$service.bill_no}</a><br />
+					快递电话：{$carrier[$service.carrier_id].phone_no}
+				</td>
+		</tr>
+</table>
+{foreach from=$service.shipping_action item=action name=shippings}
+{if $smarty.foreach.shippings.first}
+<table cellpadding="0" cellspacing="0" class="user_info">
+	<tr>
+		<th style="width:150px;">订单状态(物流部分)</th>
+		<th style="width:100px;">操作人</th>
+		<th style="width:150px;">操作时间</th>
+		<th>备注</th>
+	</tr>
+{/if}
+  <tr>
+  	<td>
+  		{$action.status_name}
+  	</td>
+    <td>
+      {$action.action_user}
+    </td>
+    <td>
+      {$action.action_time}
+    </td>
+    <td>
+      {$action.action_note}
+    </td>						
+  </tr>
+{if $smarty.foreach.shippings.last}			
+</table>
+{/if}
+{/foreach}

@@ -1,0 +1,23 @@
+<html>
+<head>
+<title>补寄发票批量打印</title>
+<script type="text/javascript" src="../js/js_wms/sinri_print_iframe.js"></script> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1 }onload="window.print()"{/if}>
+{php}$is_first=true;{/php}
+{foreach from=$ids item=f key=k}
+	<!-- [{$k}-{$f}] -->	
+	<script type="text/javascript">
+		document.write("<iframe id='iframe{$k}' src=\""+get_invoice_url({$f})+
+				"&print=2&from_url=batch_print\" frameborder=0 scrolling=\"no\""+
+				"onload='document.getElementById(\"iframe{$k}\").height=document.getElementById(\"iframe{$k}\").contentWindow.document.body.scrollHeight;"+
+				"document.getElementById(\"iframe{$k}\").width=document.getElementById(\"iframe{$k}\").contentWindow.document.body.scrollWidth;'"+
+				"></iframe>");
+	</script>
+	
+	{if next($ids)}<div STYLE="page-break-after: always;"></div>{/if}
+{/foreach}
+
+</body>
+</html>

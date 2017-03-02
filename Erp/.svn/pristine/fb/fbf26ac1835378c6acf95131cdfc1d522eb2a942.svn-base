@@ -1,0 +1,35 @@
+<!-- {if $arrange eq "h"} 横排 -->
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    {foreach from=$goods_list item=goods}
+    <td><table width="100%">
+      {if $need_image}
+      <tr>
+        <td align="center"><img src="{$url}{$goods.goods_thumb}" alt="{$goods.goods_name}" border="0" {if $thumb_width and $thumb_height}width="{$thumb_width}" height="{$thumb_height}"{/if}></td>
+      </tr>
+      {/if}
+      <tr>
+        <td align="center"><a href="{$goods_url}{$goods.goods_id}" target="_blank">{$goods.goods_name}</a><br />{$goods.goods_price}</td>
+      </tr>
+    </table></td>
+    {/foreach}
+  </tr>
+</table>
+<!-- {else} 竖排 -->
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+  {foreach from=$goods_list item=goods}
+  <tr>
+    <td><table width="100%">
+      {if $need_image}
+      <tr>
+        <td align="center"><img src="{$url}{$goods.goods_thumb}" alt="{$goods.goods_name}" border="0" width="{$thumb_width}" height="{$thumb_height}"></td>
+      </tr>
+      {/if}
+      <tr>
+        <td align="center"><a href="{$goods_url}{$goods.goods_id}" target="_blank">{$goods.goods_name}</a><br />{$goods.goods_price}</td>
+      </tr>
+    </table></td>
+  </tr>
+  {/foreach}
+</table>
+<!-- {/if} -->

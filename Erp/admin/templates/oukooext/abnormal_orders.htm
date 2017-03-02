@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>异常订单跟踪</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<script type="text/javascript">
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+
+function setEditable(id, value) {
+	ES("content-" + id)[0].disabled = value;
+	ES("reason-" + id)[0].disabled = value;
+	ES("is_deal-" + id)[0].disabled = value;
+	
+	E("consult_id-" + id).disabled = value;
+}
+{/literal}
+
+if ('{$smarty.request.info}' != '') alert('{$smarty.request.info}');
+</script>
+
+
+</head>
+
+<body>
+<form>
+原因：
+<select name="reason_id">
+<option value="-1">所有</option>
+{foreach from=$abnormal_reasons item=reason}
+<option value="{$reason.id}" {if $smarty.request.reason_id == $reason.id}selected{/if}>{$reason.name}</option>
+{/foreach}
+</select>
+是否处理：
+<select name="is_deal">
+<option value="-1">所有</option>
+<option value="0" {if $smarty.request.is_deal == '0'}selected{/if}>未处理</option>
+<option value="1" {if $smarty.request.is_deal == '1'}selected{/if}>已处理</option>
+</select>
+模糊框(订单号、具体事项)：
+<input name="search_text" value="{$smarty.request.search_text}">
+<br>
+
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="hidden" name="act" value="search">
+<input type="submit" value="    搜索    ">
+<input type="submit" value="导出CSV" name="csv">
+</form>
+<br/>
+<!--添加权限-->
+{if $smarty.session.admin_name == 'ncchen' || $smarty.session.admin_name == 'liangliang' || $smarty.session.admin_name == 'pjun'}
+<form method="POST">
+<input name="act" type="hidden" value="reasons">
+请输入分类：<input name="reason" type="text">
+<input type="submit" value="添加原因">
+</form>
+<form method="POST">
+<input name="act" type="hidden" value="edit_reason">
+修改原因：
+<select name="reason_id" onchange="if (this.value != -1) document.getElementById('reason_name').value=this.options[this.selectedIndex].innerHTML; else document.getElementById('reason_name').value = '';">
+<option value="-1">请选择</option>
+{foreach from=$abnormal_reasons item=reason}
+<option value="{$reason.id}">{$reason.name}</option>
+{/foreach}
+</select>
+<input type="text" name="reason_name" id="reason_name" >
+<input type="submit" value="修改原因">
+</form>
+<br/>
+{/if}
+<form action="abnormal_orders.php" method="POST">
+<table class="bWindow">
+<caption><h1>异常订单跟踪</h1><br></caption>
+未处理异常订单，按原因分类：
+{foreach from=$abnormal_reasons item=reason}
+<a href="abnormal_orders.php?reason_id={$reason.id}">{$reason.name}</a>
+{/foreach}
+<tr align="center"><td colspan="20"><input type="button" value="新建" onclick="E('new').style.display='';E('new_consult_id').disabled=''"></td></tr>
+<tr align="center">
+<td colspan="20"><input type="submit" value="    提交    ">&nbsp;&nbsp;<input type="reset" value="重设"></td>
+</tr>
+<tr>
+<th>操作</th>
+<th>创建日期</th>
+<th>订单号</th>
+<th>用户名</th>
+<th>联系方式</th>
+<th>原因</th>
+<th>具体事项</th>
+<th>日志</th>
+<th>是否处理</th>
+<th>处理时间</th>
+<th>记录人</th>
+<th>操作</th>
+</tr>
+<tr align="center" id="new" style="display:none">
+<td><input type="button" value="取消" onclick="E('new').style.display='none';E('new_consult_id').disabled='disabled'"></td>
+<td><input type="hidden" name="creatation_time-0" value="{$smarty.now|date_format:"%Y-%m-%d %H:%M:%S"}"></td>
+<td><input name="abnormal_order-0" ></td>
+<td><!--<input name="customer_name-0">--></td>
+<td><!--<input name="contact-0">--></td>
+<td>
+<select name="reason-0">
+{foreach from=$abnormal_reasons item=reason}
+<option value="{$reason.id}" >{$reason.name}</option>
+{/foreach}
+</select>
+</td>
+<td><textarea name="content-0" style="width:300px" ></textarea></td>
+<td></td>
+<td></td>
+<td></td>
+<td><input type="hidden" name="action_user-0" value="{$smarty.session.admin_id}"></td>
+<td><input type="button" value="取消" onclick="E('new').style.display='none';E('new_consult_id').disabled='disabled'"></td>
+</tr>
+<input type="hidden" name="consult_id[]" value="0" id="new_consult_id" disabled>
+
+<!--{foreach from=$abnormal_orders item=order}-->
+<tr align="center">
+<td style="width:50px"><input type="button" value="编辑" onclick="setEditable('{$order.id}', '')"><input type="button" value="取消" onclick="setEditable('{$order.id}', 'disabled')"></td>
+<td>{$order.date}</td>
+<td>{$order.order_sn}</td>
+<td>{$order.customer_name}</td>
+<td>联系电话：{$order.tel}<br/>手机号：{$order.mobile}</td>
+<td><select disabled name="reason-{$order.id}">
+{foreach from=$abnormal_reasons item=reason }
+<option value="{$reason.id}" {if $order.reason_id == $reason.id}selected{/if}>{$reason.name}</option>
+{/foreach}
+</td>
+<td><textarea style="width:300px" name="content-{$order.id}" disabled>{$order.content}</textarea></td>
+<td>{$order.note}</td>
+<td>
+	<select name="is_deal-{$order.id}" disabled>
+	<option value="0" {if $order.is_deal == 0}selected{/if}>否</option>
+	<option value="1" {if $order.is_deal == 1}selected{/if}>是</option>
+	</select>
+</td>
+<td>{$order.deal_time}</td>
+<td>{$order.user_name}</td>
+<td style="width:50px">
+	<input type="button" value="编辑" onclick="setEditable('{$order.id}', '')">
+	<input type="button" value="取消" onclick="setEditable('{$order.id}', 'disabled')">
+</td>
+</tr>
+<input type="hidden" name="consult_id[]" id="consult_id-{$order.id}" value="{$order.id}" disabled>
+<!--{/foreach}-->
+<input type="hidden" name="act" value="edit">
+<tr align="center">
+<td colspan="20"><input type="submit" value="    提交    ">&nbsp;&nbsp;<input type="reset" value="重设"></td>
+</tr>
+<tr align="center">
+<td colspan="20">{$pager}</td>
+</tr>
+</table>
+<input type="hidden" name="back" value="{$back}">
+</form>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

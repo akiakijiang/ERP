@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>昨日遗留订单明细</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+		*.margin: 0;
+  </style>
+  <!-- Loading Calendar JavaScript files -->
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <link href="../misc/thickbox.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../misc/thickbox.js"></script>
+</head>
+<body>
+
+<div style="width:900px; margin:0 auto;">
+	<legend>
+		<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;昨日遗留订单明细&nbsp;</span>
+	</legend>
+	<table class="bWindow">
+	<tr align="center">
+		<th width="100">业务组</th>
+	  	<th width="100">仓库名</th>
+	  	<th width="100">ERP订单</th>
+	  	<th width="100">下单时间</th>
+	  	<th width="100">付款时间</th>
+	  	<th width="100">预订单间</th>
+	  	<th width="100">订单状态</th>
+	</tr>
+  
+	{foreach from=$overStock_orders item=item}
+	<tr align="center">
+		<td>{$item.pName}</td>
+		<td>{$item.FACILITY_NAME}</td>
+		<td>{$item.order_sn}</td>
+		<td>{$item.order_time}</td>
+		<td>{$item.pay_time}</td>
+		<td>{$item.reserved_time}</td>
+		<td>{$item.status}</td>
+	</tr>
+  {foreachelse}
+	<tr align="center">
+		<td colspan="6" style="height:100px; line-height:100px;">没有查询到交易记录</td>
+	</tr>
+  {/foreach}
+  <tr align="center">
+	<td colspan="6">{$pager}</td>
+	</tr>
+  </table>
+</div>
+</body>
+</html>

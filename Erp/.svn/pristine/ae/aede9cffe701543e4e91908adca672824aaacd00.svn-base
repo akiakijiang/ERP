@@ -1,0 +1,4 @@
+类别,总数,全新,二手,总计,全新总计,二手总计
+{foreach from=$brand_storage_list item=brand_storage key=brand_name}
+{$brand_name},{$brand_storage.count|default:0},{$brand_storage.new_count|default:0},{$brand_storage.second_hand_count|default:0},{$brand_storage.purchase_paid_amount|default:0},{$brand_storage.new_purchase_paid_amount|default:0},{$brand_storage.second_hand_purchase_paid_amount|default:0}
+{/foreach}

@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销运费管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;规则维护&nbsp;</span></legend>
+  
+  <div style="float:right;clear:both;"><a href="distribution_postage_assign.php">为商品指定运费模板</a>&nbsp;</div>
+    
+  <div style="clear:both;">
+    <form method="post" id="form" action="distribution_postage_manage.php">
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+            <td>规则描述 <span class="require"> * </span></td>
+            <td colspan="4"><input type="text" name="postage[description]" size="50" /></td>
+        </tr>
+        
+        <tr>
+            <td width="120" rowspan="3">地区选择 <span class="require"> * </span></td>
+            <td rowspan="3">
+                <select name="postage[region_id][]" multiple="multiple" size="15" style="width:150px;">
+                   {html_options options=$region_list}
+                </select>            
+			</td>
+            <td width="80">&nbsp;</td>
+            <td>快递选择 <span class="require"> * </span></td>
+            <td>
+                <select name="postage[shipping_id][]" multiple="multiple" size="10" style="width:150px;">
+                   {html_options options=$shipping_list}
+                </select>            
+			</td>
+        </tr>
+        
+        <tr>
+            <td width="80">&nbsp;</td>
+            <td>单价运费 <span class="require"> * </span></td>
+            <td><input type="text" name="postage[post_fee]" /></td>
+        </tr>
+        
+        <tr>
+            <td width="80">&nbsp;</td>
+            <td>超出运费</td>
+            <td><input type="text" name="postage[extra_fee]" /></td>
+        </tr> 
+        
+        <tr>
+            <td colspan="4">&nbsp;</td>
+            <td><input type="submit" value="保存"/></td>
+        </tr>           
+    </table>
+    
+    <input type="hidden" name="act" value="update" />
+    </form>
+  </div>
+</fieldset>
+  
+
+<br /><br /><br />
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;规则查询&nbsp;</span></legend>
+
+  {if $postage_list}
+  <div style="clear:both;">
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="10%">规则ID</th>
+          <th width="40%">描述</th>
+          <th>单价运费</th>
+          <th>超出运费</th>
+          <th width="15%">创建时间</th>
+          <th width="10%">操作</th>
+        </tr>
+        
+        <!--{foreach from=$postage_list item=item}-->
+		<tr align="center" bgcolor="#f9f9f9">
+		    <td>{$item.postage_id}</td>
+			<td>{$item.description}</td>
+			<td>{$item.post_fee}</td>
+			<td>{$item.extra_fee}</td>
+            <td>{$item.created}</td>
+            <td>
+                <!-- 
+            	<a href="facility_location_update.php?facility_id={$facilityLocation->facilityId}&location_seq_id={$facilityLocation->locationSeqId}">编辑</a>
+                &nbsp;&nbsp;
+            	<a href="product_facility_location_update.php?facility_id={$facilityLocation->facilityId}&location_seq_id={$facilityLocation->locationSeqId}">分配</a>
+            	-->
+			</td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br /><br />
+      {$pagination}
+      
+  </div>
+  {else}
+  
+  <br /><div style="clear:both;text-align:center;">没有记录</div>
+  {/if}
+  
+  <br />
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

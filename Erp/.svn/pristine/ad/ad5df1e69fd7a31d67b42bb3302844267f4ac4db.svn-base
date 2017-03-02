@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>申通货到付款[多美滋#电商服务仓]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+
+<div style="position:absolute;font-size:11pt;top:60px;left:20px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:11pt;top:60px;left:150px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:11pt;top:140px;left:0px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:11pt;top:260px;left:90px;">毕艳超</div><!-- 经办人 -->
+<div style="position:absolute;font-size:11pt;top:260px;left:230px;">{$smarty.now|date_format:"%Y %m %d"}</div>
+<div style="position:absolute;font-size:11pt;top:260px;left:420px;">乐其</div>
+<div style="position:absolute;font-size:20pt;top:290px;left:65px;">√</div><!-- 内件说明 -->
+<div style="position:absolute;font-size:20pt;top:320px;left:410px;">√</div><!-- 代收货款 -->
+<div style="position:absolute;font-size:11pt;top:60px;left:340px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:11pt;top:60px;left:480px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:11pt;top:130px;left:320px;">{if $order.province != ''}{$order.province}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:130px;left:380px;">{if $order.city != ''}{$order.city}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:130px;left:440px;">{if $order.district != ''}{$order.district}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:160px;left:290px;width:380px;">{$order.address}<br />(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:11pt;top:60px;left:620px;">东莞市</div>
+<div style="position:absolute;font-size:11pt;top:90px;left:620px;">{$order.city}</div>
+<div style="position:absolute;font-size:11pt;top:360px;left:560px;">请检查包裹再签收，破损请拒收</div>
+<div style="position:absolute;font-size:11pt;top:290px;left:640px;">{$order.order_amount|price_format}</div>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>多美滋cod订单修改</title>
+{literal}
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+    function test() {
+        if(confirm("这些订单都已修改了吗?")) {
+            location.href="corr_order.php?all=all";
+        }
+    }
+</script>
+<style type="text/css">
+div {
+   margin-bottom: 20px;
+   margin-top: 50px;
+}
+.table, td, th {
+    border:1px solid #ccc;
+    border-collapse:collapse;
+    line-height: 30px;
+}
+.table .table_2 td{
+    border:1px solid #FFFFFF;
+    border-collapse:collapse;
+    line-height: 20px;
+}
+.a:link{
+    color:#fff;
+    text-decoration: none;
+}
+body {
+    font-family: "宋体";
+    font-size: 12px;
+    margin-right: auto;
+    margin-left: auto;
+}
+#show_edid{
+    margin-right: auto;
+    margin-left: auto;
+}
+</style>
+</head>
+{/literal}
+<body>
+<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+<legend><span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;多美滋cod订单修改&nbsp;</span></legend>
+    <a href="corr_order.php?csv=csv" class="a"><input type="button" value="导出csv"></a>
+    <a class="a"><input type="button" value="批量确认" onclick="test();"></a>
+    <h3>提醒：<span style="color: red;">请先修改再确认！</span></h3>
+    {foreach from=$orders item=order}
+    <div>
+        <div>
+            <table border="1" width="100%" class="table" cellpadding="0px" cellspacing="0px">
+                <tr>
+                    <td colspan="7">
+                                                                               淘宝订单号:<a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.taobao_order_sn}</a>&nbsp;&nbsp;
+                                                                               套餐:{$order.group_goods_name} × {$order.group_goods_number}<br/>
+                                                                               时间:{$order.created_stamp}&nbsp;&nbsp;
+                          <a href="corr_order.php?corr_order_id={$order.corr_order_id}" class="a"><input type="button" value="确认"></a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>省</th>
+                    <th>市</th>
+                    <th>区</th>
+                    <th>详细地址</th>
+                    <th>邮编</th>
+                    <th>手机/电话</th>
+                </tr>
+                <tr>
+                    <td>{if $order.new_province != null && $order.old_province != $order.new_province}{$order.old_province}{/if}</td><!-- 省 -->
+                    <td>{if $order.new_city != null && $order.old_city != $order.new_city}{$order.old_city}{/if}</td><!-- 市 -->
+                    <td>{if $order.new_district != null && $order.old_district != $order.new_district}{$order.old_district}{/if}</td><!-- 区 -->
+                    <td>{if $order.new_address != null && $order.old_address != $order.new_address}{$order.old_address}{/if}</td><!-- 详细地址 -->
+                    <td>{if $order.new_zipcode != null && $order.old_zipcode != $order.new_zipcode}{$order.old_zipcode}{/if}</td><!-- 邮编 -->
+                    <td><!-- 手机/电话 -->
+                        {if $order.new_mobile != null && $order.old_mobile != $order.new_mobile}{$order.old_mobile}{/if}
+                        {if $order.new_tel != null && $order.old_tel != $order.new_tel}{$order.old_tel}{/if}
+                    </td>
+                </tr>
+                <tr>
+                    <td>{if $order.new_province != null && $order.old_province != $order.new_province}{$order.new_province}{/if}</td><!-- 省 -->
+                    <td>{if $order.new_city != null && $order.old_city != $order.new_city}{$order.new_city}{/if}</td><!-- 市 -->
+                    <td>{if $order.new_district != null && $order.old_district != $order.new_district}{$order.new_district}{/if}</td><!-- 区 -->
+                    <td>{if $order.new_address != null && $order.old_address != $order.new_address}{$order.new_address}{/if}</td><!-- 详细地址 -->
+                    <td>{if $order.new_zipcode != null && $order.old_zipcode != $order.new_zipcode}{$order.new_zipcode}{/if}</td><!-- 邮编 -->
+                    <td><!-- 手机/电话 -->
+                        {if $order.old_mobile != $order.new_mobile}{$order.new_mobile}{/if}
+                        {if $order.new_tel != null && $order.old_tel != $order.new_tel}{$order.new_tel}{/if}
+                    </td>
+                </tr>
+                <tr>
+                    <th>订单总金额</th>
+                    <th>商品金额</th>
+                    <th>运费</th>
+                    <th>红包</th>
+                    <th colspan="2">商品明细</th>
+                </tr>
+                <tr>
+                    <td>{if $order.new_order_amount != null && $order.old_order_amount != $order.new_order_amount}{$order.old_order_amount}{/if}</td><!-- 订单总金额 -->
+                    <td>{if $order.new_goods_amount != null && $order.old_goods_amount != $order.new_goods_amount}{$order.old_goods_amount}{/if}</td><!-- 商品基恩 -->
+                    <td>{if $order.new_shipping_fee != null && $order.old_shipping_fee != $order.new_shipping_fee}{$order.old_shipping_fee}{/if}</td><!-- 运费 -->
+                    <td>{if $order.new_bonus != null && $order.old_bonus != $order.new_bonus}{$order.old_bonus}{/if}</td><!-- 红包 -->
+                    <td colspan="2">{if $order.new_goods != null && $order.old_goods != $order.new_goods}{$order.old_goods_item}{/if}</td><!-- 商品明细 -->
+                </tr>
+                <tr>
+                    <td>{if $order.new_order_amount != null && $order.old_order_amount != $order.new_order_amount}{$order.new_order_amount}{/if}</td><!-- 订单总金额 -->
+                    <td>{if $order.new_goods_amount != null && $order.old_goods_amount != $order.new_goods_amount}{$order.new_goods_amount}{/if}</td><!-- 商品基恩 -->
+                    <td>{if $order.new_shipping_fee != null && $order.old_shipping_fee != $order.new_shipping_fee}{$order.new_shipping_fee}{/if}</td><!-- 运费 -->
+                    <td>{if $order.new_bonus != null && $order.old_bonus != $order.new_bonus}{$order.new_bonus}{/if}</td>
+                    <td colspan="2">{if $order.new_goods != null && $order.old_goods != $order.new_goods}{$order.new_goods_item}{/if}</td><!-- 商品明细 -->
+                </tr>
+            </table>
+        </div>
+    </div>
+    {foreachelse}
+                                    暂无数据
+    {/foreach}
+</fieldset>
+</body>
+</html>

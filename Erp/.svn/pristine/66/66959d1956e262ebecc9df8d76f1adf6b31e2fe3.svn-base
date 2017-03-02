@@ -1,0 +1,4 @@
+订单号,收货人,联系电话,订单金额,订单商品,运单号
+{foreach from=$orders item=order}
+"{$order.order_sn}","{$order.consignee}","{$order.mobile} {$order.tel}","{$order.order_amount}","{$order.order_goods}","{$order.bill_no}　"
+{/foreach}

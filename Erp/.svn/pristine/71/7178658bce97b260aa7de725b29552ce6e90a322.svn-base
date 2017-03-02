@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>淘宝订单列表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css" />
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <form>
+        商店名：
+        <select name="application_key" >
+          <option value="ALL">不选</option>
+          {html_options options=$application_nicks selected=$smarty.request.application_key }
+        </select>
+        订单号：<input name="order_sn" value="{$smarty.request.order_sn}" />
+        淘宝订单号：<input name="taobao_order_sn" value="{$smarty.request.taobao_order_sn}" />
+        起始时间：<input style="width: 80px;" id="start_time" name="start_time" value="{$smarty.request.start_time}" />
+            <input id="start_time_trigger" type="button" value="..." />
+        结束时间：<input style="width: 80px;" id="end_time" name="end_time" value="{$smarty.request.end_time}" />
+            <input id="end_time_trigger" type="button" value="..." />
+        订单状态：<select name="order_status" >
+        <option value="all">所有</option>
+        <option value="0" {if $smarty.request.order_status eq "0"}selected{/if}>未确认</option>
+        <option value="1" {if $smarty.request.order_status eq 1}selected{/if}>已确认</option>
+        <option value="2" {if $smarty.request.order_status eq 2}selected{/if}>已取消</option>
+        </select>
+        发货状态：<select name="shipping_status" >
+        <option value="all">所有</option>
+        <option value="0" {if $smarty.request.shipping_status eq "0"}selected{/if}>未发货</option>
+        <option value="1" {if $smarty.request.shipping_status eq 1}selected{/if}>已发货</option>
+        <option value="2" {if $smarty.request.shipping_status eq 2}selected{/if}>已收货</option>
+        </select>
+        发货状态：<select name="type" >
+        <option value="fixed" {if $smarty.request.type eq 'fixed'}selected{/if}>先款后货</option>
+        <option value="cod" {if $smarty.request.type eq 'cod'}selected{/if}>货到付款</option>
+        <option value="fenxiao" {if $smarty.request.type eq 'fenxiao'}selected{/if}>分销</option>
+        <option value="all">所有</option>
+        </select>
+        <input type="submit" value="搜索" />
+    </form>
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝订单列表&nbsp;</span></legend>
+    <br />
+    <div style="clear:both;">
+        <h3 style="color:#09F;">淘宝订单列表</h3>
+        
+        <table class="bWindow" style="margin-top:10px;">
+        <tr>
+            <th>映射ID</th>
+            <th>商店名</th>
+            <th>订单号</th>
+            <th>淘宝订单号</th>
+            <th>订单金额</th>
+            <th>订单状态</th>
+            <th>状态</th>
+            <th>导入时间</th>
+        </tr>
+        
+        <!--{foreach from=$taobao_order_list item=taobao_order}-->
+        <tr align="center" class="{cycle values='odd,even'}">
+            <td>{$taobao_order.mapping_id}</td>
+            <td>{$taobao_order.nick}</td>
+            <td><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$taobao_order.order_id}" target="_blank">{$taobao_order.order_sn}</a></td>
+            <td>
+                <a href="http://trade.taobao.com/trade/detail/trade_item_detail.htm?biz_order_id={$taobao_order.taobao_order_sn}" target="_blank">
+                    {$taobao_order.taobao_order_sn}
+                </a>
+            </td>
+            <td align="right">￥{$taobao_order.order_amount}</td>
+            <td>{$taobao_order.order_status_desc},{$taobao_order.shipping_status_desc}</td>
+            <td>{$taobao_order.status}</td>
+            <td>{$taobao_order.created_time}</td>
+        </tr>
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        <tr align="center"><td colspan="11">{$pager}</td></tr>
+        </table>
+        
+        <br />
+    </div>
+  
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start_time",
+	button            : "start_time_trigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end_time",
+	button            : "end_time_trigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

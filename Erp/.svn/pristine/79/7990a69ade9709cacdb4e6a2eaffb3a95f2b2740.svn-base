@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="misc/autocomplete.js"></script>
+	  
+	<link rel="stylesheet" href="misc/thickbox.css" type="text/css"></link>
+	<script type="text/javascript" src="misc/thickbox.js"></script>
+	
+	<script type="text/javascript" src="js/json2.js"></script>
+	<script type="text/javascript" src="js/v3.js"></script>
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<style type="text/css">
+	{literal}
+	body{
+		font-size: 14px;
+	}
+	table{
+		font-size: 13px;
+		width: 97%;
+		margin:0px auto
+	}
+	table th,table td{
+	    font-weight: normal;
+	    text-align: center;
+	    border:1px solid #62B4E8;
+	}
+	table td{
+	    padding:6px 0;
+	}
+
+	table th{
+	    padding:10px 0;
+	    background: #62B4E8;
+	    color:#fff;
+	}
+	h1{
+		font-size: 1.5em;
+		color:#333;
+		text-align: center;
+		margin:10px 0;
+	}
+	.button{
+				border:none;
+				outline: none;
+			    display: block;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 8px 12px !important;
+			    color: #fff !important;
+			    width: 200px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 20px auto;
+	}
+	.submit{
+				border:none;
+				outline: none;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 2px !important;
+			    color: #fff !important;
+			    width: 80px;
+			    height:30px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	.simpEditBtn{
+		width: auto;
+		margin:5px;
+	}
+	
+	.simpNewBtn{
+		width: auto;
+		margin:5px;
+	}
+	
+	.button:hover { 
+	                background: #3da1d1;
+	                transition:all .2s;
+	                -o-transition:all .2s;
+	                }
+	                
+	.button:active {
+	                position: relative;
+	                top:1px;
+	                }
+	input[type="text"]{
+                display: inline-block;
+                height: 26px;
+                line-height: 32px;
+                width: 200px;
+                color: #333;
+                border-radius: 3px;
+                -o-border-radius: 3px;
+                border:1px solid #b1b1b1;
+                outline: none; /* for chorme & safari's default effect */
+            }
+    {/literal}
+    </style>
+    
+    
+    <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+ 	 $(function(){
+ 		$('#change').click(function(){
+			 $('#form').hide();
+		})
+	   });
+ 	}
+ 	// {/literal}
+	// ]]>
+	</script>	
+	
+</head>
+<body>
+	<form action="kuajing_items_modify.php" method="post" id="form">
+		<table>
+			<tr><td>商品名称：</td><td>{$goods_name}</td></tr>
+			<tr><td>商家编码：</td><td>{$outer_id}</td></tr>
+			<tr><td>跨境维护码：</td><td><input type="text" name="item_code" class="item_code" value="{$item_code}"></td></tr>
+			<tr><td>品牌内部编码：</td><td><input type="text" name="kao_code" class="kao_code" value="{$kao_code}"></td></tr>
+			
+			<tr><td colspan="2" align="right"><input type="submit" id="change" value="修改" />
+			<input type="hidden" name="act" value="modify">
+			<input type="hidden" name="product_id" value="{$product_id}">
+			<input type="hidden" name="goods_name" value="{$goods_name}">
+			<input type="hidden" name="outer_id" value="{$outer_id}"></td>
+		</table>
+	</form>
+</body>
+</html>

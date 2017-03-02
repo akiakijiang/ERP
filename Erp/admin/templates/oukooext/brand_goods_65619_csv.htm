@@ -1,0 +1,4 @@
+商家编码,商品（套餐名）,material_number,goods_type
+{foreach from=$goods_list item=goods}
+="{$goods.code}",="{$goods.goods_name}",="{$goods.material_number}","{$goods.goods_type}"
+{/foreach}

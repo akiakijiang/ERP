@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<head>
+	<title>历史订单查询 </title>
+
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+	<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+	<link href="styles/css/odiv.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<style>
+	{literal}
+	.main_contain{
+		min-width:1000px;
+		/*margin-top: 20px;
+		margin-left: 10px;*/
+		margin:1px 2px;
+		text-align: left;
+		/*border:1px solid rgba(220,220,200,.8);*/
+		/*border-radius: 10px;*/
+		/*box-shadow: 2px 2px 2px rgba(220,220,220,.8);*/
+	}
+	{/literal}
+	</style>
+</head>
+<body>
+ <!-- <div class="Caption" style="width:987px">
+ 客服管理模块 — 查询订单历史记录
+</div> -->
+<div class="main_contain">
+	<!-- <div class="Hr1"><img src="images/image/hr1.gif" width=998 height=2></div> -->
+	<div class="Search_Bo">
+		<form id="filter_form" method="GET">
+			<table>
+			<input type="hidden" name="act" value="search">
+			<tr> 	
+	
+				<td class="word_width">ERP订单号</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name="erp_order_sn" value="{$smarty.request.erp_order_sn}">
+				</td>
+
+				<td class="word_width">外部订单号</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name="taobao_order_sn" value="{$smarty.request.taobao_order_sn}">
+				</td>
+
+<!-- 				<div class="third_precent first_margin_top">
+					<select name="search_type" class="form-control-select">
+						<option value="basic_null">请选择其他方式</option>
+						<option value="nick_name"  {if $smarty.request.search_type == 'nick_name'}selected{/if}>用户ID</option>
+						<option value="tel_mobile"  {if $smarty.request.search_type == 'tel_mobile'}selected{/if}>电话</option>
+						<option value="consignee"  {if $smarty.request.search_type == 'consignee'}selected{/if}>收货人</option>
+						<option value="tracking_number"  {if $smarty.request.search_type == 'tracking_number'}selected{/if}>快递单号</option>
+					</select>
+					<span>
+						<input type="text" class="new_input" name="search_text" value="{$smarty.request.search_text}">
+					</span>
+				</div> -->
+			</tr>
+			<tr >
+				<td class="word_width">用户ID(3月内)</td>
+				<td>
+				<input type="text" class="new_input word_width_bigger" name = "user_name" value="{$smarty.request.user_name}"/>
+				</td>
+				<td class="word_width">电话(3月内)</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "tel_mobile" value="{$smarty.request.tel_mobile}"/>
+				</td>
+				<td class="word_width">收货人</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "consignee" value="{$smarty.request.consignee}"/>				
+				</td>
+				<td class="word_width">快递单号</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "tracking_number"  value="{$smarty.request.tracking_number}"/>
+				</td>
+			</tr>
+			<tr>
+
+				<td class="word_width">所属仓库</td>
+				<td>
+					<select class="form-control form-control-bigger" name="facility_id">
+						<option value="0">所有仓库</option>
+						{foreach from=$facilitys key=facility_id item=facility_name}
+						<option value="{$facility_id}" {if $smarty.request.facility_id !=null && $smarty.request.facility_id == $facility_id}selected{/if}>{$facility_name}</option>
+						{/foreach}
+					</select>
+				</td>
+
+					<td class="word_width">快递方式</td>
+					<td>
+						<input type="text" class="new_input word_width_bigger" name="shipping_name" id = "shipping_name" value="{$smarty.request.shipping_name}"/>
+						<input type="hidden" name="shipping_id" id = "shipping_id" value="{$smarty.request.shipping_id}"/>	
+					</td>
+
+					<td class="word_width">收款方式</td>
+					<td>
+						<input type="text" name = "pay_name" id = "pay_name" class="new_input word_width_bigger" value="{$smarty.request.pay_name}"/>
+						<input type="hidden" name = "pay_id" id = "pay_id" value="{$smarty.request.pay_id}"/>
+					</td>	
+			</tr>
+			<tr>
+				<td class="word_width">订单状态</td>
+				<td>
+					<select class="form-control form-control-bigger" name="order_status">
+						<option value="-1">所有状态</option>
+						{foreach from=$_CFG.adminvars.order_status key=key item=order_status}
+						{if $key!=4 && $key!=8}
+						<option value="{$key}" {if $smarty.request.order_status != null && $smarty.request.order_status == $key}selected{/if}>{$order_status}</option>
+						{/if}
+						{/foreach}
+					</select>
+				</td>
+				<td class="word_width">收款状态</td>
+				<td>
+					<select class="form-control form-control-bigger" name="pay_status">
+						<option value="-1">所有状态</option>
+						{foreach from=$_CFG.adminvars.pay_status key=key item=pay_status}
+						{if $key!=1}
+						<option value="{$key}" {if $smarty.request.pay_status != null && $smarty.request.pay_status == $key}selected{/if}>{$pay_status}</option>
+						{/if}
+						{/foreach}
+					</select>
+				</td>	
+					<td class="word_width">发货状态</td>
+					<td>
+						<select class="form-control form-control-bigger" name="shipping_status">
+							<option value="-1">所有状态</option>
+							{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}
+							{if $key < 3 ||$key > 7}
+							<option value="{$key}" {if $smarty.request.shipping_status != null && $smarty.request.shipping_status == $key}selected{/if}>{$shipping_status}</option>
+							{/if}
+							{/foreach}
+							<!-- <option value="transit_step"  {if $smarty.request.shipping_status == 'transit_step'}selected{/if}>有走件信息</option> -->
+						</select>
+					</td>
+			</tr>
+			<tr>
+				<!-- 设置日期格式 -->
+					<td class="word_width">日  期:从</td>
+					<td ><input type="text" class="new_input date-width-more" id="startCalendar" name="startCalendar" value="{$result.startCalendar}"></td>
+					<!-- <span><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" /></span> -->
+					<td class="word_width">到</td>
+					<td><input type="text" class="new_input date-width-more" id="endCalendar" name="endCalendar"  value="{$result.endCalendar}"></td>
+					<!-- <span style="margin-top:13px;float:left;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" /></span> -->
+					<td class="word_width">
+						<span class="btn_searches" disabled="disabled">查询</span>
+						<input type="submit" class="btn search_disable" value="查询" name="search">
+					</td>
+					{if $type == 'search'}
+					<td class="word_width">
+						<input type="submit" class="btn daochu_cvs" value="  导出CSV  " name="csv">
+					</td>
+					{/if}
+			</tr>
+			</table>
+		</form>
+	</div>
+	<div class="Table3_Bo" id="Table2">
+		<table class="max_table">
+			<tr class="max_table_tr">
+				<th>订单号/淘宝订单号/发货单号</th>
+				<th>订单时间</th>
+				<th>收货人</th>
+				<th>电话</th>
+				<th>支付方式</th>
+				<th>仓库</th>
+				<th>订单状态</th>
+			</tr>
+			{foreach from = $result.order_list item = list}
+			<tr>
+				<td style="line-height:15px;" class="content_test">
+					订单号：<a href="order_edit.php?order_id={$list.order_id}" target="_blank">{$list.order_sn}</a><br/>淘宝：{$list.taobao_order_sn}<br/>发货单：{$list.shipment_id}
+				</td>
+				<td style="line-height:15px;">订单时间:{$list.order_time}<br/>确认时间:{$list.confirm_time}<br/>预订时间:{$list.reserved_time}<br/>发货时间:{$list.shipping_time}</td>
+				<td style="line-height:15px;">{$list.consignee}</td>
+				<td style="line-height:35px;">{$list.mobile|default:$list.tel}</td>
+				<td style="line-height:35px;">{$list.pay_name}</td>
+				<td style="line-height:35px;">{$list.facility_name}</td>
+				<td>{$adminvars.order_status[$list.order_status]},{$adminvars.pay_status[$list.pay_status]},{$adminvars.shipping_status[$list.shipping_status]}</td>
+			</tr>
+			{/foreach}
+			<tr>
+				<td colspan="9" style="text-align:right;padding-right:20px;">{$Pager}</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+
+
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+
+<script type="text/javascript" src="js/json2.js"></script>
+<script type="text/javascript" src="js/v3.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<script>
+	var order_list_result_check ="{$order_list_result_check}";
+</script>
+<script type="text/javascript">
+	// {literal}
+	$(document).ready(function(){
+
+		$(".search_disable").click(function(e) {
+			if(order_list_result_check.length != 0){
+				$(".btn_searches").css("display","inline-block");
+				// if($(".content_test").text() != ""){
+					$(".search_disable").css("display","none");
+				// }
+			}
+		});
+	   // 绑定滑动效果
+	   $('legend.expand').bind('click', function(event){
+	   	$(this).next().slideToggle('normal');
+	   }); 
+	   $('#shipping_name').autocomplete('search_history_order.php?do=search_history_shipping', {
+	   	dataType : 'json',
+	   	minChars: 0,
+	   	mustMatch: false,
+	   	formatItem : function(row, i, max, value, term) {
+	   		return(row.shipping_name);
+	   	},
+	   	formatResult : function(row) {
+	   		return(row.shipping_name);
+	   	}
+	   }).result(function(event, row, formatted) {
+	   	$('#shipping_id').val(row.shipping_id);
+	   	$('#shipping_name').val(row.shipping_name);
+	   }); 
+
+	   $('#pay_name').autocomplete('search_history_order.php?do=search_history_pay_type', {
+	   	dataType : 'json',
+	   	minChars: 0,
+	   	mustMatch: false,
+	   	formatItem : function(row, i, max, value, term) {
+	   		return(row.pay_name);
+	   	},
+	   	formatResult : function(row) {
+	   		return(row.pay_name);
+	   	}
+	   }).result(function(event, row, formatted) {
+	   	$('#pay_id').val(row.pay_id);
+	   	$('#pay_name').val(row.pay_name);
+	   }); 	  
+	});
+	// {/literal}
+	</script>
+</body>
+
+
+{literal}
+	<script type="text/javascript">//<![CDATA[
+	$(function(){
+		Zapatec.Calendar.setup({
+
+			weekNumbers       : false,
+			electric          : false,
+			inputField        : "startCalendar",
+			button            : "startTrigger",
+			ifFormat          : "%Y-%m-%d",
+			daFormat          : "%Y-%m-%d"
+		});
+		Zapatec.Calendar.setup({
+			weekNumbers       : false,
+			electric          : false,
+			inputField        : "endCalendar",
+			button            : "endTrigger",
+			ifFormat          : "%Y-%m-%d",
+			daFormat          : "%Y-%m-%d"
+		});
+		selectedByValue($("select[name=pay_id]"));
+		selectedByValue($("select[name=shipping_status]"));
+		selectedByValue($("select[name=pay_status]"));
+		selectedByValue($("select[name=order_status]"));
+		selectedByValue($("select[name=shipping_id]"));
+		selectedByValue($("select[name=search_type]"));
+	});
+    //]]>
+    function selectedByValue(node){
+    	node.val(node.attr("sValue"));
+    }
+    </script>
+    {/literal}
+    </html>

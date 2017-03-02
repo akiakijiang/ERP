@@ -1,0 +1,319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style type="text/css">
+.lefttd{
+ text-align:right;
+ padding-right:10px!important;
+}
+</style>
+<title>查看返利</title>
+<!--<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>-->
+<script type="text/javascript">
+
+var process_request = '..';
+
+function disable_input(id) {
+  document.getElementById(id).disabled = true;
+  document.getElementById(id).readonly = true;
+}
+function enable_input(id) {
+  document.getElementById(id).disabled = false;
+  document.getElementById(id).readonly = false;
+}
+
+function changesupplierRebateTypeId(obj) {
+  var supplierRebateTypeId_enum = new Array('SINGLEPRODUCT', 'ORDERPRODUCT', 'PROVIDERPRODUCT', 'PROVIDER');
+  enable_input('SerialNumber');
+  enable_input('originalOrderId');
+  enable_input('search');
+  enable_input('keyword');
+  for (var i = 0; i< supplierRebateTypeId_enum.length; i++) {
+    if(supplierRebateTypeId_enum[i] == 'ORDERPRODUCT') {
+      disable_input('SerialNumber');
+    }
+    if(supplierRebateTypeId_enum[i] == 'PROVIDERPRODUCT') {
+      disable_input('originalOrderId');
+    }
+    if(supplierRebateTypeId_enum[i] == 'PROVIDER') {
+      disable_input('search');
+      disable_input('keyword');
+    }
+    if(obj.value == supplierRebateTypeId_enum[i]) break; 
+  }
+}
+
+function changereceivable(obj) {
+  if(obj.value.replace(' ', '') != '') {
+    disable_input('receivableRatio');
+  } else {
+    enable_input('receivableRatio');
+  }
+}
+
+function changereceivableRatio(obj) {
+  if(obj.value.replace(' ', '') != '') {
+    disable_input('receivable');
+  } else {
+    enable_input('receivable');
+  }
+}
+
+{/literal}
+</script>
+</head>
+
+<body>
+<h3>返利 {$SupplierRebate->supplierRebateId} 详细信息 </h3> 
+<h3>
+{if $SupplierRebate->supplierRebateStatusId == 'UNPAID'}
+{if $SupplierRebate->supplierRebateModeId == 'DEDUCTED'}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'confirm', '{$SupplierRebate->supplierRebateModeId}', '{$SupplierRebate->expectedAmount}'); return false;">确认抵扣货款金额</a>
+{/if}
+{if $SupplierRebate->supplierRebateModeId == 'INVOICEPAID'}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'confirm', '{$SupplierRebate->supplierRebateModeId}', '{$SupplierRebate->expectedAmount}'); return false;">确认返利现金金额</a>
+{/if}
+{if $SupplierRebate->supplierRebateModeId == 'GIFTED'}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'confirm', '{$SupplierRebate->supplierRebateModeId}', '{$SupplierRebate->expectedGiftAmount}'); return false;">确认返利实物数量</a>
+{/if}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'discard', ''); return false;">采购废弃返利</a> 
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'cancel', ''); return false;">供应商取消返利</a>
+{/if}
+{if $SupplierRebate->supplierRebateStatusId == 'CONFIRMED'}
+{if $SupplierRebate->supplierRebateModeId == 'DEDUCTED'}
+    {if $can_receive_rebate_deducted && $SupplierRebate->receivedAmount < $SupplierRebate->confirmedAmount}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'receive', '{$SupplierRebate->supplierRebateModeId}', '{math equation="x-y" x=$SupplierRebate->confirmedAmount y=$SupplierRebate->receivedAmount}'); return false;" >输入收到返利抵扣货款金额</a>
+    {/if}
+{/if}
+{if $SupplierRebate->supplierRebateModeId == 'INVOICEPAID'}
+    {if $can_receive_rebate_cash && $SupplierRebate->receivedAmount < $SupplierRebate->confirmedAmount}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'receive', '{$SupplierRebate->supplierRebateModeId}', '{math equation="x-y" x=$SupplierRebate->confirmedAmount y=$SupplierRebate->receivedAmount}'); return false;" >输入收到返利现金</a>
+    {/if}
+{/if}
+{/if}
+</h3>
+
+<table class="bWindow" style="width:700px;" cellpadding="5">
+  <tr>
+    <td class="lefttd">供应商 </td><td>
+    {$SupplierRebate->supplierName}
+    </td>
+  </tr>
+  <tr>
+    <td width="150" class="lefttd">返利类型</td>
+    <td>
+    {$SupplierRebate->supplierRebateTypeId_description}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利形式</td><td>
+    {$SupplierRebate->supplierRebateModeId_description}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利状态</td><td>
+    {$SupplierRebate->supplierRebateStatusId_description}
+    </td>
+  </tr>
+{if $SupplierRebate->supplierRebateModeId == 'GIFTED' }
+  <tr>
+    <td class="lefttd">预期返实物数量</td><td>
+    {$SupplierRebate->expectedGiftAmount}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">确认返实物数量</td><td>
+    {$SupplierRebate->confirmedGiftAmount}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">实际返实物数量</td><td>
+    {$SupplierRebate->receivedGiftAmount}
+    </td>
+  </tr>
+{else}
+  <tr>
+    <td class="lefttd">预期返利金额</td><td>
+    {$SupplierRebate->expectedAmount}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">确认返款金额</td><td>
+    {$SupplierRebate->confirmedAmount}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">实际返款金额</td><td>
+    {$SupplierRebate->receivedAmount}
+    </td>
+  </tr>
+{/if}
+  <tr>
+    <td class="lefttd">返利的描述</td><td>
+    {$SupplierRebate->description}
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利的创建时间</td></td><td>
+     {$SupplierRebate->createdStamp} by {$SupplierRebate->createdByUserLogin} 
+  </tr>
+  <tr>
+    <td class="lefttd">返利的最后更新时间</td></td><td>
+    {$SupplierRebate->lastUpdatedStamp}
+  </tr>
+</table>
+
+
+
+<h3>返利对应的明细</h3>
+<table class="bWindow" style="width:700px;" cellpadding="5">
+<tr><td width="33%">串号</td><td width="33%">采购订单</td><td width="33%">商品</td></tr>
+{foreach from=$SupplierRebate->supplierRebateItems item=supplierRebateItem}
+<tr>
+<td>{$supplierRebateItem->serialNumber}</td>
+<td>{$supplierRebateItem->purchaseOrderSn}</td>
+<td>{$supplierRebateItem->productName}</td>
+</tr>
+{/foreach}
+</table>
+
+
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+  var process_request = '..';
+  function editSupplierRebate(supplierRebateId, act_detail, mode_id, suggest_value) {
+//    alert(obj.href); 
+    var amount, tips;
+    if(mode_id == 'GIFTED') tips = '返利实物数量';
+    else tips = '返利金额';
+    if(act_detail == 'confirm') {
+      amount = window.prompt("请输入确认的" + tips, suggest_value);
+      if(!amount) return false;
+    } else if(act_detail == 'receive') {
+      if(suggest_value < 0) {
+        alert('请输入正确的数字');
+        return false;
+      }
+      amount = window.prompt("请输入收到的" + tips, suggest_value);
+      if(!amount) return false;
+      if(Number(suggest_value) < Number(amount)) {
+        alert("收到的金额大于确认的金额");
+        return false;
+      }
+    } else if(act_detail == 'discard') {
+      if(!confirm('确认要采购废弃返利吗？')) return false;
+    } else if(act_detail == 'cancel') {
+      if(!confirm('确认要供应商取消返利吗？')) return false;
+    }
+    
+    var url = 'supplier_rebate_detail.php?supplierRebateId=' + supplierRebateId + '&act=edit_submit&act_detail=' + act_detail + '&confirmedAmount=' + amount ;
+    supplierRebateRebateId_global = supplierRebateId;
+    Ajax.call(url,'',editSupplierRebateResponse, 'GET', 'JSON');
+  }
+
+  function editSupplierRebateResponse(result) {
+    if(result.error > 0) {
+      alert(result.message);
+    } else {
+     alert(result.content);
+    }
+    location.reload();
+  }
+  function searchGoods()
+  {
+    /* 填充列表 */
+    var keyword = document.getElementById("keyword").value;
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+//      alert('fd');
+	  var sel = document.getElementById('goods_id');
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+    		var opt = document.createElement('OPTION');
+    		opt.value = '';
+    		opt.text = '';
+    		sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+        }
+      }
+    }
+  }
+  function searchGoodsStyle(obj) {
+    /* 填充列表 */
+    var goods_id = obj.value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_goods_style&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+  }
+    
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+	  var sel = document.getElementById('style_id');
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+      }
+      
+    }
+  }
+</script>
+{/literal}
+</html>

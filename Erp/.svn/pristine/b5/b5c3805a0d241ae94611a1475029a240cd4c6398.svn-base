@@ -1,0 +1,4 @@
+批次号,批次订单号,订单号,订单时间,商品,商品条码,{if $party_id==65625}箱规,{/if}计划入库个数,已入库个数,入库时间,未入库个数,收货仓库,供应商,发票类型,供应商采购订单号,供应商出库订单号
+{foreach from=$search_orders item=search_order}
+{$search_order.batch_order_id},{$search_order.batch_order_sn},="{$search_order.order_sn}",{$search_order.order_time},"{$search_order.goods_name}",="{$search_order.barcode}",{if $party_id ==65625}="{$search_order.spec}",{/if}{$search_order.goods_number},{$search_order.new_in_number},{$search_order.iid_created_stamp},{$search_order.new_needed_number},"{$search_order.facility_name}","{$search_order.provider_name}","{$search_order.order_type}",="{$search_order.provider_order_sn}",="{$search_order.provider_out_order_sn}"
+{/foreach}

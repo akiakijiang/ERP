@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>产品库位管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;产品库位管理&nbsp;</span></legend>
+
+
+  <div style="float:right;clear:both;">
+    <a href="facility_location_manage.php?facility_id={$filter.facility_id}">库位列表</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+  	<a href="product_facility_location_update.php?facility_id={$filter.facility_id}&location_seq_id={$filter.location_seq_id}">添加产品</a>
+  </div>
+
+  <div style="clear:both;"> 
+	<h3 style="color:#09F;">库位</h3>
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      		<td>
+            <select disabled="disabled">
+            	{html_options options=$facility_list selected=$filter.facility_id}
+            </select>
+            {$facility->facilityName} -> 库位：<strong>{$facility_location->locationSeqId}</strong>
+			</td>
+		</tr>
+        
+	</table>
+    
+    <input type="hidden" name="act" value="add" />
+    </form>
+  </div>
+  
+  
+  
+  {if $product_faclity_location_list}
+  <br />
+  <div style="clear:both;">
+  
+      <h3 style="color:#09F;">产品列表</h3>
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="12%">PRODUCT ID</th>
+          <th width="10%">GOODS ID</th>
+          <th width="10%">STYLE ID</th>
+          <th width="25%">产品名</th>
+          <th width="10%">MIN Quantity</th>
+          <th width="10%">MOVE Quantity</th>
+          <th width="15%">创建时间</th>
+          <th width="8%"></th>
+        </tr>   
+        
+        <!--{foreach from=$product_faclity_location_list item=productFaclityLocation}-->
+		<tr align="center" bgcolor="#f9f9f9">
+		    <td>{$productFaclityLocation->productId}</td>
+			<td>{$productFaclityLocation->goodsId}</td>
+			<td>{$productFaclityLocation->styleId}</td>
+			<td>{$productFaclityLocation->productName}</td>
+			<td>{$productFaclityLocation->minQuantity}</td>
+			<td>{$productFaclityLocation->moveQuantity}</td>
+			<td>{$productFaclityLocation->createdStamp|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+            <td>
+                <a href="product_facility_location_manage.php?act=delete&facility_id={$productFaclityLocation->facilityId}&location_seq_id={$productFaclityLocation->locationSeqId}&product_id={$productFaclityLocation->productId}">移除</a>
+			</td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+  </div>
+  {else}
+  
+  <br /><div style="clear:both;text-align:center;">没有记录</div>
+  {/if}
+  
+  <br />
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

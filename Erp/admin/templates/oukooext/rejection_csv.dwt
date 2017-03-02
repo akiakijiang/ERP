@@ -1,0 +1,13 @@
+"",总共拒收,同城拒收,顺丰拒收,EMS拒收,自提拒收
+上周 {$last_num.start} - {$last_num.end},{$last_num.all}单,{$last_num.same},{$last_num.sf}单,{$last_num.ems}单,{$last_num.self}单
+本周 {$this_num.start} - {$this_num.end},{$this_num.all}单,{$this_num.same},{$this_num.sf}单,{$this_num.ems}单,{$this_num.self}单
+订单号,用户信息,支付快递,订单确认方式,拒收原因,操作人,操作时间,退回入库时间
+{foreach from=$order_list item=order key=key}
+{$order.order_sn},"用户名：{$order.user_name}
+客户姓名：{$order.consignee}
+{*客户手机：{$order.mobile}
+客户Email：{$order.email}
+{$order.province|get_region_names}{$order.city|get_region_names}{$order.district|get_region_names} {$order.address}*}","{$order.pay_name}
+{$order.shipping_name}","{if $order.comment_cat == 4}留言确认{else}电话确认{/if}
+{$order.order_time}",{$order.action_note},{$order.action_user},{$order.action_time},{$order.back_time}
+{/foreach}

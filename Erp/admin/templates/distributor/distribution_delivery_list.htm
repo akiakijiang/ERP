@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>串口商品发货</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+	<script type="text/javascript">
+	// {literal}
+	// <![CDATA[
+	function aaa(){
+		var goods_style_id = $('#goods_style_id').val();
+		 $.ajax({
+             type: "GET",
+             url: "distribution_delivery_list.php?act=search&goods_style_id="+goods_style_id,
+             dataType: "json",
+             success: function(data){
+            	 $('#num').val(data.num);
+             },
+             error:function(){
+        
+             }
+         });
+	}
+	// ]]>
+	// {/literal}
+	</script>
+</head>
+<body>
+<div style="margin:20px auto; width:960px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;串口商品发货&nbsp;</span></legend>
+<form method="post" id="form" style="width:96%; margin:auto;">
+
+    <!--{if $message}-->
+    <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+    {$message}
+    </div>
+    <!--{/if}-->
+    <br />
+    分销商订购数：&nbsp;&nbsp;
+    商品名称：<select name="goods_style_id" onchange="aaa()" id="goods_style_id" >
+           <option value="-1">所有</option>
+           {html_options options=$goods_style_name_list selected = $smarty.request.goods_style_id}>
+           </select>
+  &nbsp;&nbsp;&nbsp;
+    订购总数量： <input type="text" id="num" style="border:0;background:#CCCCCC;" size="5" readonly="true" 
+             {if $goods_style_num != 0} value={$goods_style_num}{/if} >  
+  &nbsp;&nbsp;&nbsp;
+  <input type="submit" name="act" value="搜索">
+   &nbsp;&nbsp;
+  <br/>
+  <table class="inner">
+      <tr align="center" class="th">
+        <th>订单号</th>
+        <th>下单时间</th>
+        <th>商品名称</th>
+        <th>订购数量</th>
+        <th>发货仓库</th>
+        <th>备注</th>
+      </tr> 
+      <!--{if $order_list}-->
+      <!--{foreach from=$order_list  item=order name="order"}-->
+      <tr align="center" class="{cycle values='odd,even'}">
+        <td> <a href='{$order.url}'>{$order.order_sn}</a></td>
+        <td> {$order.order_time}   </td>
+        <td> {$order.goods_name}   </td>
+        <td> {$order.goods_number} </td>
+        <td> {$order.facility_name} </td>
+        <td>   </td>
+      </tr>
+     <!--{/foreach}-->
+     <!--{/if}-->
+    </table>    
+</form>
+</fieldset>
+</div>
+</body>
+</html>

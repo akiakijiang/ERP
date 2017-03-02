@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>{$monitor_header->title_}</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style type="text/css">
+        {literal}
+        body{
+          font-size: 13px;
+        }
+        {/literal}
+        </style>
+    </head>
+    <body>
+
+    <form action="{$monitor_header->back_url_}" method="GET">
+        搜索项
+        <table>
+            {foreach from = $monitor_header->search_condition_list_  key=type item = search_condition}
+                <tr>
+                    <td>{$search_condition}:</td>
+                    <td>
+                    {if is_numeric($type)}
+                     <input type="text" style="height:20px;width:100px" id="{$search_condition}" name="{$search_condition}">
+                    {else}
+                     <input type="text" style="height:20px;width:100px" onclick="new Calendar().show(this);" id="{$search_condition}" name="{$search_condition}">
+                    {/if}
+                    </td>
+                </tr>
+            {/foreach}
+        </table>
+        <input type="submit" value="确认提交"/>
+    </form>
+    message: {$msg}
+
+    {foreach from = $monitor_data item = specific_info}
+      <hr>{$specific_info.table_name}</hr>
+      <table border="1">
+        <tr>
+          {foreach from=$specific_info.attr_list item=attr_name}
+          <th>{$attr_name}</th>
+          {/foreach}
+        </tr>
+        {foreach from=$specific_info.item_list item=item_data}
+          <tr>
+            {foreach from=$item_data item=value}
+              <td>{$value}</td>
+            {/foreach}
+          </tr>
+        {/foreach}
+      </table>
+      <br />
+    {/foreach}
+
+    </body>
+      
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    {literal}
+	<style type="text/css" media="all">
+	*{
+		margin:0;
+		padding:0;
+	}
+	h2{
+		font-size:12pt;
+		clear:both;
+		margin:10px 0;
+	}
+	ul{
+		list-style:none;
+		font-size:10pt;
+		width:49%;
+		float:left;
+	}
+	ul li{
+		height:40px;
+		line-height:40px;
+	}
+	
+	table{
+		width:99.7%;
+		font-size:10pt;
+		text-align:center;
+		border:1px solid #000;
+		border-collapse:collapse;
+		margin:20px 0 20px 2px;
+	}
+	table td{
+	    padding:5px 10px;
+	}
+	table td,table th{
+		border:1px solid #000;
+		height:25px;
+		line-height:25px;
+	}
+	p{
+		font-size:10pt;
+		clear:both;
+		text-align:center;
+	}
+	.left{
+		float:left;
+		margin-left:40px;
+		display:inline;
+	}
+	.right{
+		float:right;
+		margin-right:20px;
+	}	
+	h1{
+		text-align:center;
+		font-size:15pt;
+	}
+	li.c{
+		clear:both;
+		width:100%;
+	}	
+	.postscript {
+	    font-size:15px;
+	    font-family: "黑体";
+	    font-weight:bold;
+	}
+	.top{
+	    margin-top:140px;
+	    margin-left:0px;
+	}
+	</style>
+    {/literal}
+    
+    <title>打印发货单</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+
+
+ {foreach from=$list item=shipment name=shipment}
+ {if $shipment.facilityId|facility_convert != '19568549'}
+ {if '65540' == $shipment.partyId} 
+<br/><br/><br/><br/>
+ {elseif '65548' == $shipment.partyId} 
+<br/><br/><br/><br/><br/>
+{elseif '65547' == $shipment.partyId}
+<br/><br/><br/><br/><br/><br/><br/>
+{elseif '65558' == $shipment.partyId}
+<br/><br/><br/><br/><br/><br/><br/><br><br>
+ {/if}  
+<img src="code_img.php?barcode={$shipment.shipmentId}&height=60" />
+<h3 style="text-align:right;font-size:15pt;">{$shipment.carrierId|getCarrierName}</h3>
+<br/><br/>
+<h1>发货单（{$shipment.facilityId|facility_mapping}）</h1>
+ {if 'cod' == $shipment.pay_code} 
+<br/><h1><span style="font-size:22px;">货到付款</span>订单</h1>
+ {/if}
+ {else}
+<br/><br/><br/><br/><br/><br/><br/><br/>
+<img src="code_img.php?barcode={$shipment.shipmentId}&height=60" />
+<h3 style="text-align:right;font-size:15pt;">{$shipment.carrierId|getCarrierName}</h3>
+ {/if}
+
+<h2>配送信息</h2>
+<table style="text-align:left;">
+<tr>
+    <td width="25%">收货人：{$shipment.consignee}</td>
+    {if '65547' == $shipment.partyId}
+    <td width="25%">会员名： {$shipment.mobile}</td>
+    {/if}
+    <td width="25%">联系手机： {$shipment.mobile}</td>
+    <td width="25%">联系电话： {$shipment.tel}</td>
+</tr>
+<tr>
+    <td colspan="3">收货地址：{if $shipment.province != 0}[{$shipment.province|get_region_names}]{/if}{if $shipment.city != 0}[{$shipment.city|get_region_names}]{/if}{if $shipment.district != 0}[{$shipment.district|get_region_names}]{/if}{$shipment.address}</td>
+</tr>
+</table>
+
+{if '65547' == $shipment.partyId}<div style="text-align: right;"><img src="code_img.php?barcode={$shipment.mobile}&height=60" /></div>{/if}
+<h2>商品信息</h2>
+{foreach from=$shipment.order_list item=order}
+{if $smarty.foreach.order.first}<p>&nbsp;</p> {/if}
+<p style="text-align: left;">
+	<img src="code_img.php?barcode={$order.order_sn}&height=60"/>
+	订单号: <span style="text-decoration:underline;">{$order.order_sn}</span>
+	&nbsp;&nbsp; | &nbsp;&nbsp;
+	外部订单号: <span style="text-decoration:underline;">{$order.taobao_order_sn}</span> 
+</p>
+<table cellpadding="0" cellspacing="0">
+<tr>
+    <th style="width:5%;">序号</th>
+    <th style="width:40%;">品名</th>
+    <th style="width:20%;">编码</th> 
+    <th style="width:5%;">数量</th>
+    <th style="width:30%;">库位</th>
+</tr>
+{foreach from=$order.goods_list key=k item=ogi name=goods}
+<tr> 
+    <td>{$smarty.foreach.goods.iteration}</td>
+    <td>{$ogi.goods_name}</td>
+    <td>{if $ogi.product_code}(<font style="font-weight:bold;">{$ogi.product_code}</font>){/if}</td>
+    <td style="font-size:18px;"><B>{$ogi.goods_number}</B></td>
+    <td>{$ogi.location_seq_id}</td>
+</tr>
+
+{/foreach}
+{if $order.important_note != '' }
+<tr>
+    <td colspan="10" style="color:red;">重要备注：{$order.important_note}</td>
+</tr>
+{/if}
+</table>
+{/foreach}
+{if $download_info}
+<font style="font-weight:bold; font-size:48px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;需要下载</font>
+</tr>
+{/if}
+
+
+<!-- <div align="center" >
+友情提示：如查询有关退换货事宜，请参见此页背面。
+</div>
+ -->
+{if !$smarty.foreach.shipment.last}<div STYLE="page-break-after: always;"></div>{/if}
+{/foreach}
+
+
+
+{if $smarty.request.print != 1}
+<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+
+</body>
+</html>

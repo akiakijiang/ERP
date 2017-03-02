@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品列表</title>
+</head>
+{literal}
+<style type="text/css">
+#table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 14px;
+}
+
+#table th {
+	background: #ffffff;
+	border-bottom: 1px solid #CCC;
+	padding: 4px;
+	text-align: center;
+}
+
+#table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+	text-align: left;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+</style>
+{/literal} 
+<body>
+<table id="table">
+	<tr>
+		<th>使用指南</th>
+	</tr>
+	<tr>
+		<td>1.添加分类,请先选择分类,再选择添加同级或子类</td>
+	</tr>
+	<tr>
+		<td>2.选择有子类的类别时,请点击文字,进行编辑此类,或添加同类,或添加子类</td>
+	</tr>
+	<tr>
+		<td>3.选择无子类的类别时,可点击文字,图片</td>
+	</tr>
+	<tr>
+		<td>4.展开分类,请点击文件夹图片,或点击加号</td>
+	</tr>
+</table>
+</body>
+{literal}
+<script type="text/javascript">
+	var obj = document.getElementById("table");
+	for ( var i = 0; i < obj.rows.length; i++) {
+		obj.rows[i].onmouseover = function() {
+			this.style.background = "#bbdde5";
+		}
+		obj.rows[i].onmouseout = function() {
+			this.style.background = "";
+		}
+	}
+</script>
+{/literal}
+</html>

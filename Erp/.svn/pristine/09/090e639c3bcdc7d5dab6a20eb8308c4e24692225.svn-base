@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>发票打印列表</title>
+</head>
+
+<body>
+<form>
+报税状态：
+<select name="tax_returned">
+{html_options options=$tax_returned_array selected=$smarty.request.tax_returned }
+</select>
+是否红冲：
+<select name="red_flag">
+{html_options options=$red_flag_array selected=$smarty.request.red_flag }
+</select>
+状态：
+<select name="print_status">
+{html_options options=$print_status_array selected=$smarty.request.print_status }
+</select>
+搜索类型：
+<select name="search_type">
+{html_options options=$search_type_array selected=$smarty.request.search_type }
+</select>
+关键词：
+<input name="keyword" value="{$smarty.request.keyword}">
+<p>
+开始时间：
+<input type="text" name="startDate" id="startDate" value="{$smarty.request.startDate}" size="10" />
+<input type="button" id="startDate_trigger" value="..." />
+结束时间：
+<input type="text" name="endDate" id="endDate" value="{$smarty.request.endDate}" size="10" />
+<input type="button" id="endDate_trigger" value="..." />
+</p>
+<input type="submit" value="搜 索">
+<input type="submit" name="csv" value="导出CSV">
+<input type="hidden" name="act" value="search">
+</form>
+<br>
+
+<form action="sales_invoice_manage.php" method="POST">
+<table class="bWindow">
+<tr>
+<th>选择</th>
+<th>发票号</th>
+<th>总金额</th>
+<th>抬头</th>
+<th>总金额</th>
+<th>发票明细</th>
+<th>开票时间</th>
+<th>开票人</th>
+<th>快递方式</th>
+<th>支付方式</th>
+<th>打印状态</th>
+<th>发票类型</th>
+<th>是否报税</th>
+<th>发票开具方</th>
+</tr>
+{foreach from=$sales_invoices item=sales_invoice}
+{assign var=order_sn value=''}
+{assign var=order_id value=0}
+<tr align="center">
+<td>
+<input type="checkbox" name="invoice_no[]" value="{$sales_invoice.invoice_no}" />
+</td>
+<td>{$sales_invoice.invoice_no}</td>
+<td>{$sales_invoice.total_amount|string_format:"%.2f"}</td>
+<td>{$sales_invoice.partner_name}</td>
+<td>
+{if $sales_invoice.total_amount > 0}
+<span style="color:blue;font-weight:bold;">
+{else}
+<span style="color:red;font-weight:bold;">
+{/if}
+¥ {$sales_invoice.total_amount|string_format:"%.2f"}
+</span>
+</td>
+<td align="left">
+{foreach from=$sales_invoice.sales_invoice_items item=item}
+{assign var=order_sn value=$item.order_sn}
+{assign var=order_id value=$item.order_id}
+<a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a> 
+ {$item.item_name}
+ 单价:{$item.unit_price|string_format:"%.2f"}
+ 数量:{$item.quantity}  <br />
+{/foreach}
+</td>
+<td>{$sales_invoice.invoice_date}</td>
+<td>{$sales_invoice.created_user}</td>
+<td>{$sales_invoice.shipping_name}</td>
+<td>{$sales_invoice.pay_name}</td>
+<td>
+{$print_status_array[$sales_invoice.print_status]}
+</td>
+<td>
+{$red_flag_array[$sales_invoice.red_flag]}
+{if $sales_invoice.red_flag == 'Y'}
+<br /><br />
+原发票：{$sales_invoice.original_invoice_no}
+{/if}
+</td>
+<td>{$tax_returned_array[$sales_invoice.tax_returned]}</td>
+<td>
+{$sales_invoice.invoice_issuer}
+</td>
+</tr>
+{/foreach}
+<tr align="center">
+<td colspan="2">
+<input type="hidden" name="act" value="tax_returned" />
+<input id="selectall2" type="checkbox" onclick="selectall();" /> 
+<label for="selectall2">全选</label>
+<input style="margin-left:20px;" type="submit" name="go" value="报税" />
+</td>
+<td colspan="12">{$pager}</td>
+</tr>
+</table>
+</form>
+</body>
+<script type="text/javascript">
+{literal}
+function selectall() {
+    var selected = document.getElementById('selectall2').checked;
+    var invoices = document.getElementsByName('invoice_no[]');
+    for (var i=0; i<invoices.length; i++ ) {
+        invoices[i].checked = selected;
+    }
+}
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startDate",
+        button            : "startDate_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endDate",
+        button            : "endDate_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+{/literal}
+</script>
+</html>

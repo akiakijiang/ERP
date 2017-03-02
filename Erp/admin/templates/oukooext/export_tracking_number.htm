@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>查询运单号</title>
+<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+$(document).ready(function(){
+    $('#distributor_type').bind('change',function(){
+    	var distributor_type = $('#distributor_type').val();
+    	if(distributor_type != "0"){
+    		$.ajax({
+    			beforeSend : function(){
+    				$('#distributor_id').attr('disabled', true);
+				},
+				async : false,
+				dataType : "json",
+				data: "distributor_type=" + distributor_type,
+				url : "export_tracking_number.php?act=search_distributors",
+				type : 'POST',
+				success : function(data) {
+					if (data.length) {	
+						var tpl = '';
+						for (var i = 0; i < data.length; i++) {
+							tpl += '<option value="'+ data[i].distributor_id +'">'+ data[i].name +'</option>';
+						}
+					}else{
+						tpl = '<option value="0">N/A</option>';
+					} 
+					$('#distributor_id').html(tpl);
+				},
+				complete : function() {
+					$('#distributor_id').attr('disabled', false);
+				}
+			});
+    	}
+    });
+    
+    $('#search').bind('click', function(event){
+		if (!check()) {
+			event.preventDefault();
+			return false;
+		}else {
+			$('#form').find(":hidden[name='act']").val('search');
+			$('#form').submit();
+		}
+	});
+    
+    $('#export').bind('click', function(event){
+		if (!check()) {
+			event.preventDefault();
+			return false;
+		}else {
+			$('#form').find(":hidden[name='act']").val('export');
+			$('#form').submit();
+		}
+	});
+});
+function check() {
+	var distributor_type = $.trim($('#distributor_type').val());
+    var distributor_id = $.trim($('#distributor_id').val());
+    var start = $.trim($('#start').val());
+    var end = $.trim($('#end').val());
+    var taobao_order_sn = $.trim($('#taobao_order_sn').val());
+    if (start!='' && end!='' && start>end) {
+    	alert("查询的开始时间大于终止时间，请重新选择时间范围。");
+        return false;
+    }else if ((distributor_type == 0) && (taobao_order_sn == '')) {
+        alert("选择直分销批量查询/输入淘宝订单号独立查询");
+        return false;
+    }else{
+    	return true;
+    }
+}
+// {/literal}
+//]]>
+</script>
+</head>
+<body>
+<br/>
+	<form action="export_tracking_number.php" id="form" method="post">
+		发货时间：<input type="text" id="start" name="start" value="{$start}" size="10" />
+		<input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+            <input type="text" id="end" name="end" value="{$end}" size="10" />
+            <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />&nbsp;&nbsp;
+		 直(分)销：<select name="distributor_type" id="distributor_type">
+					<option value="0">-请选择-</option>
+					<option value="zhixiao" {if $smarty.request.distributor_type == 'zhixiao'}selected="selected"{/if}>-直销-</option>
+					<option value="fenxiao" {if $smarty.request.distributor_type == 'fenxiao'}selected="selected"{/if}>-分销-</option>
+				</select>&nbsp; <select name="distributor_id" id="distributor_id">
+				{if $distributor_id}<option value="{$distributor_id}" >{$name}</option>{/if}
+				</select>&nbsp;&nbsp; 
+		外部订单号：<input type="text" id="taobao_order_sn" name="taobao_order_sn" value="{$taobao_order_sn}" size="25" /> 
+		<input type="hidden" name="act"  /> 
+		<input type="button" id="search" value="查询" />&nbsp;&nbsp;&nbsp;
+		<input type="button" id="export" value="导出CSV" />
+	</form>
+	<br /> 
+	<div>
+	
+	<table class="bWindow">
+	{if $tracking_numbers}
+		<tr align="center" style="size: 20px;font-weight: bold;">
+			<td>ERP订单号</td>
+			<td>淘宝订单号</td>
+			<td>分销商</td>
+			<td>发货单号</td>
+			<td>仓库</td>
+			<td>运单号</td>
+			<td>发货时间</td>
+			<td>快递方式</td>
+			<td>收货地址</td>
+		</tr>
+	{/if}	
+		{foreach from=$tracking_numbers item=item name="trackList"}
+		<tr align="center" {if $smarty.foreach.trackList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+			<td>{$item.order_sn}</td>
+			<td>{$item.taobao_order_sn}</td> 
+			{if $item.distributor_id==0}
+				<td>X</td>
+			{else}
+				<td>{$item.name}</td> 
+			{/if}
+			<td>{$item.SHIPMENT_ID}</td>
+			<td>{$item.facility_name}</td>
+			<td>{$item.tracking_number}</td>
+			<td>{$item.shipping_time}</td>
+			<td>{$item.shipping_name}</td>
+			<td>{$item.address}</td>
+		</tr>
+		{/foreach}
+	
+	</table>
+	
+	</div>
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d 00:00:00",
+	daFormat          : "%Y-%m-%d 00:00:00"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d 23:59:59",
+	daFormat          : "%Y-%m-%d 23:59:59"
+});
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

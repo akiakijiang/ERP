@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<title>短信发送控制</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body onload="submitEnabled('submit_button');">
+
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;{if $smarty.request.status neq 'WAIT'}<a href="message_queue.php?status=WAIT">{/if}待发送{if $smarty.request.status neq 'WAIT'}</a>{/if}
+&nbsp;&nbsp;&nbsp;&nbsp;{if $smarty.request.status neq 'SEND'}<a href="message_queue.php?status=SEND">{/if}已发送{if $smarty.request.status neq 'SEND'}</a>{/if}
+&nbsp;&nbsp;&nbsp;&nbsp;{if $smarty.request.status neq 'REJECT'}<a href="message_queue.php?status=REJECT">{/if}已过滤{if $smarty.request.status neq 'REJECT'}</a>{/if}
+</p>
+
+<form method="POST">
+配置设置
+<select name='config'>
+<option id="test" value="test" {if $config eq 'test'}selected{/if}>测试</option>
+<option id="formal" value="formal" {if $config eq 'formal'}selected{/if}>正式</option>
+</select>
+<input type="hidden" name="type" value="message" />
+<input type="hidden" name="action" value="set_config" />
+<input type="submit" name="submit" value="提交" />
+</form>
+<p style="text-align:center;"><font color="red"></font>&nbsp;&nbsp;{$pager}</p>
+
+<table cellpadding="0" cellspacing="0" class="bWindow">
+<tr style="background:#f1f1f1;">
+	<td width="10%">序号</td>
+	<td width="15%">手机号</td>
+	<td width="40%">短信</td>
+	<td width="10%">服务商</td>
+	<td width="10%">状态</td>
+	<td width="10%">操作
+	</td>
+</tr>
+{foreach from=$message_list item=message}
+<tr >
+	<td width="10%">{$message->id}</td>
+	<td width="15%">{$message->destMobile}</td>
+	<td width="40%">{$message->content}</td>
+	<td width="10%">{$message->serverName}</td>
+	<td width="10%">{$message->status}</td>
+	<td width="10%">
+	<form method="POST">
+	<input type="hidden" name="action" value="set_message" />
+	<input type="hidden" name="message_status" value="SEND" />
+	<input type="hidden" name="message_id[]" value="{$message->id}" />
+	<input type="submit" name="submit" value="发送" />
+	</form>
+	<form method="POST">
+	<input type="hidden" name="action" value="set_message" />
+	<input type="hidden" name="message_status" value="REJECT" />
+	<input type="hidden" name="message_id[]" value="{$message->id}" />
+	<input type="submit" name="submit" value="过滤" />
+	</form>
+	</td>
+</tr>
+{/foreach}
+</table>
+<p style="text-align:center;"><font color="red"></font>&nbsp;&nbsp;{$pager}</p>
+
+</body>
+</html>

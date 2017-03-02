@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>供应商发票使用一览</title>
+	<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<!-- Autocomplete -->
+	<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+<!-- Autocomplete /-->
+<!-- Calendar -->
+	<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+
+	<script type="text/javascript">
+	// <![CDATA[
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	{literal}
+	
+	var Control = {
+		/** 
+		 * WEB控件ID
+		 */		
+		elements : { 
+				'provider' : '#autocomplete_provider'
+		},
+		
+		/**
+		 * 渲染
+		 */
+		render : function() {
+				// 需要自动完成的对象
+				var $provider = $(this.elements.provider);
+		
+				// 供应商提示输入
+				$provider.autocomplete(WEB_ROOT+ 'admin/ajax.php?act=get_provider', {
+					minChars: 0,
+					mustMatch: true,
+					dataType : 'json',
+					formatItem : function(row, i, max, value, term) {
+						return(row.provider_name);
+					},
+					formatResult : function(row) {
+						return(row.provider_name);
+					}
+				}).result(function(event, row, formatted) {
+					// 将隐藏域的值设为供应商的id
+					$('#provider_id').val(row.provider_id);
+				}).focus();		
+		} ,
+		
+		/**
+		 * 初始化
+		 */
+		init : function() {
+				this.render();
+		} ,
+		
+		/**
+		 * 绑定到表单, 当表单提交时 ,没有输入供应商时将供应商id设置为0
+		 */
+		bind : function(expr) {
+				var $form = $(expr);
+				$form.bind('submit', function(){
+					// 判断供应商
+					if ($.trim($('#autocomplete_provider').val()) == '') {
+						$('#provider_id').val(0);
+						alert('请选择供应商');
+						return false;
+					}
+					
+					// 判断时间区间				
+					if ($('#statStartCalendar').val() == '') {
+						alert('必须指定时间区间');
+						return false;
+					}
+
+					if($form.find("input[name*='act']").val() != 'export') {
+						$form.find(':button').attr('disabled', true);
+					}
+					return true;
+				});
+		}
+		
+	};
+	
+	$(document).ready(function(){
+		Control.init();
+		Control.bind('#form');
+	});
+	
+	// 表单提交动作
+	function formSubmit(act)
+	{
+		var form = $('#form');
+		form.find("input[name*='act']").val(act);
+		form.submit();
+	}
+	// ]]>
+	{/literal}
+	</script>
+</head>
+
+<body>
+
+<div style="margin-top:20px;" align="left">
+<form method="post" autocomplete="off" id="form">
+<table class="bWindow" style="margin-top:20px; width:640px;">
+<tr align="center">
+  <th>供应商</th>
+  <th>期初时间</th>
+  <th>期末时间</th>
+  <th>&nbsp;</th>
+  <th>&nbsp;</th>
+</tr>
+<tr align="center">
+  <td><input id="autocomplete_provider" name="provider_name" value="{$smarty.request.provider_name}" size="45" /><input type="hidden" id="provider_id" name="provider_id" value="{$smarty.request.provider_id}" /></td>
+  <td><input style="width:80px" id="statStartCalendar" name="start" value="{$start}"><input type="button" value=".." id="statStartTrigger"></td>
+  <td><input style="width:80px" id="statEndCalendar" name="end" value="{$end}"><input type="button" value=".." id="statEndTrigger"></td>
+  <td><input type="button" value="查询" onclick="formSubmit('view')" /></td>
+  <td><input type="button" value="生成报表" onclick="formSubmit('export')" /> <input type="hidden" name="act" /></td>
+</tr>
+</table>
+</form>
+</div>
+
+
+<div align='center'><br><font color='red'>{$info}</font></div>
+
+<table class="bWindow" style="margin-top:20px">
+<caption>
+<h2>供应商发票使用一览</h2>
+<div style="float:left">
+供应商代码: <span style="border-bottom:#333333 1px solid">{$provider.provider_code}</span>  &nbsp;&nbsp;&nbsp;&nbsp;
+供应商名称: <span style="border-bottom:#333333 1px solid">{$provider.provider_name}</span> &nbsp;&nbsp;&nbsp;&nbsp;
+开始日期:   <span style="border-bottom:#333333 1px solid">{$start}</span> &nbsp;&nbsp;&nbsp;&nbsp;
+结束日期:   <span style="border-bottom:#333333 1px solid">{$end}</span> &nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+</caption>
+
+<tr>
+  <th>发票号</th>
+  <th>发票时间</th>
+  <th>商品名称</th>
+  <th>数量</th>
+  <th>单价</th>
+  <th>金额</th>
+  <th>已使用数量</th>
+  <th>未使用数量</th>
+</tr>
+
+<!-- {foreach from=$list item=item name="goods_list"} -->
+
+<tr align="center">
+  <td>{$item->invoiceNo}</td>
+  <td>{$item->invoiceDate|date_format:"%Y-%m-%d"}</td>
+  <td>{$item->goodsName}</td>
+  <td>{$item->amount}</td>
+  <td>&yen; {$item->unitCost}</td>
+  <td>&yen; {$item->totalCost}</td>
+  <td>{$item->matchedQuantity}</td>
+  <td>{$item->unmatchedQuantity}</td>
+</tr>
+<!-- {if $smarty.foreach.goods_list.last} -->
+	<td colspan="5" align="right"> 合计金额：&yen; {$total} &nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td colspan="2">&nbsp;</td>
+<!-- {/if} -->
+
+<!-- {/foreach} -->
+
+</table>
+</body>
+
+<script type="text/javascript">//<![CDATA[
+{literal}
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "statStartCalendar",
+		button            : "statStartTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "statEndCalendar",
+		button            : "statEndTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+    //]]>
+</script>
+{/literal}
+</html>

@@ -1,0 +1,1242 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="styles/font-awesome.min.css">
+	<style type="text/css">
+	{literal}
+	body{
+		    font-size: 12px;
+	    }
+	html ,body{
+			font-size: 100%;
+		    height: 100%;
+			margin-bottom: 1px;
+			/* Always show a scrollbar to avoid jumping when the scrollbar appears :D*/ 
+	    }
+	select{
+		font-size: 13px;
+	} 
+    h1{
+    	    color:#434343;
+    	    letter-spacing: .1em;
+        }
+	table{
+		    font-size: 13px;
+		    width: 100%;
+	    }
+	table th,table td{
+		    font-weight: normal;
+		    text-align: center;
+		    border:1px solid #62B4E8;
+		}
+	table td{
+	    	padding:2px 0;
+		}
+    table td p,table td a{
+    		display: block;
+    		margin:0 auto 5px auto;
+    		text-align: left;
+    	}
+    table td a.erp_order_sn{
+    	float: left;
+    }
+    table td a{
+    		color:#00a0e9;
+    	}
+    table td a:hover{
+    		color:#0075a9;
+    	}
+	table th{
+		    padding:2px 0; 
+		    background: #62B4E8;
+		    color:#fff;
+		}
+	label{
+			display: inline-block;
+			text-align: right;
+		}
+	textarea{
+			resize:none;
+			width: 200px;
+			height: 100px;
+			vertical-align: top;
+			outline: none;
+			border:1px solid #b1b1b1;
+			border-radius: 2px;
+		}
+	.act{
+		width: 200px;
+		}
+
+	.nos{
+		min-width: 300px;
+	}
+	h1{
+			font-size: 18px;
+			color:#434343;
+			text-align: center;
+			margin:10px 0;
+	    }
+	input[type="text"]{
+            display: inline-block;
+            height: 24px;
+            line-height: 24px;
+            width: 100px;
+            padding:2px 5px;
+            color: #333;
+            border-radius: 2px;
+            border:1px solid #b1b1b1;
+            outline: none; /* for chorme & safari's default effect */
+        }
+    .clear{
+    	clear:both;
+    }
+    #mark-note{
+    	width: 300px;
+    	font-size: 13px;
+    }
+    #search_content p{
+    		margin:10px 0;
+    	}
+    #search_content label,.back_modal label{
+	    	font-size: 13px;
+	    	width: 80px;
+	    }
+	#search_content label,.back_shippingfee_modal label{
+    	font-size: 13px;
+    	width: 80px;
+    }
+	#search_erp label{
+		margin-bottom: 10px;
+	}
+    #search_content input[type='text']{
+	    	width: 175px;
+	    	font-size: 12px;
+	    }
+	#search_content input[type='text'].time_input{
+	    	width: 80px;
+	    }
+    .back_shippingfee_modal input[type='text'],.back_modal input[type='text'],#closePO-modal input[type='text'],#reopenPO-modal input[type='text']{
+    	margin:10px 0;
+    }
+    .msg{
+	        width: 50%;
+	    	padding:5px 0 5px 40px;
+	    	margin:10px auto;
+	    	display: none;
+	    	
+	    }
+    .msg-success{
+	    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+	    	background-position: 10px center;
+	        border-color: #9adf8f;
+	        color: #556652;
+	        
+	    }
+    .msg-error{
+	    	background: url('img/cross_circle.png') #ffcece no-repeat;
+	    	background-position: 10px center;
+	        border-color: #df8f8f;
+	        color: #665252;
+	    }
+    .btn-flat {
+    	    font-size: 13px;
+		    cursor: pointer;
+		    display: inline-block;
+		    zoom: 1;
+		    *display: inline;
+		    /* ie7 hack for inline-block :C */
+		    overflow: visible;
+		    /* padding won't effect without this attr :C */
+		    vertical-align: bottom;
+		    margin: 0 10px;
+		    padding:10px;
+		    transition: background-color .4s linear;
+		    background-color: #62B4E8; 
+		    color:#fff;
+		    opacity: .7;
+		    border: none;
+		    outline: none;
+		    -webkit-border-radius: 0.2em;
+		    -moz-border-radius: 0.2em;
+		    -o-border-radius: 0.2em;
+		    -ms-border-radius: 0.2em;
+		    border-radius: 0.2em; 
+	    }
+	.btn-flat:hover {
+	        opacity: 1;
+	    }
+	.btn-flat:active {
+		    position: relative;
+		    top: 1px;
+		    box-shadow: 0.1em 0.1em 0.6em #a0a0a0 inset;
+	    }
+	.btn-small {
+		    font-size: 12px;
+		    padding: .2em .6em;  
+		}
+    .btn-normal {
+			font-size: 14px;
+			padding: .3em 1.5em;
+		}
+	.btn-edit-mark{
+			position: relative;
+			color:#62B4E8;
+			margin-left: 10px;
+			cursor: pointer ;
+	}
+	#sub_back_info,#sub_back_shippingfee_info{
+			margin:10px 0 0 85px;
+		}
+    #show_content .btn-small{
+	    	width: 60px;
+	    	padding:.1em .4em;	
+	    	margin:5px 10px;
+	    	height: 26px;
+			line-height: 26px;
+	    }
+	i.icon-spinner{
+			display: none;
+		}
+	.back_btn{
+			background-color: #E8543F;
+		}
+
+	.act_modal{
+		    z-index: 1000;
+            width:100%;
+            height: 100%;
+            position: fixed;
+            top:0;
+            left: 0;
+            font-size: 14px;
+            overflow: auto;
+            background-color: rgba(0,0,0,.4);
+            display: none;
+	    }
+	.act_modal_content{
+			z-index: 101;
+			background-color: #fff;
+			box-shadow: 0 0 8px #a0a0a0;
+			border-radius: 5px;
+			width: 80%;
+			position: relative;
+			top:100px;
+			padding: 20px 10px 40px 10px;
+			margin: 0 auto;
+	    }
+	.act_modal_content h2{
+			text-align: center;
+			font-size: 16px;
+			margin: 10px 0;
+			color:#333;
+	    }
+	.edit_PO_info{
+		    display: none;
+	}
+	.sync_record_modal{
+            width:300px;
+            min-height: 100px;
+            padding:10px;
+            border-radius: 5px;
+            background-color:#EAEDEF;
+            position: absolute;
+            top:-1000px;
+            left: 430px;
+            opacity: 0;
+            z-index: 999; 
+            box-shadow: 0 0 8px #a0a0a0;
+            font-size: 14px;
+	}
+	.sync_record_modal table{
+			width: 100%;
+		}
+	.back_modal,#closePO-modal,#reopenPO-modal,.back_shippingfee_modal{
+		    width:330px;
+            padding:10px;
+            border-radius: 5px;
+            background-color:#EAEDEF;
+            position: absolute;
+            top:-1000px;
+            left: 800px;
+            opacity: 0;
+            z-index: 999; 
+            box-shadow: 0 0 8px #a0a0a0;
+            font-size: 13px;
+		}
+	.act_modal div{
+			margin-bottom: 10px;
+		}
+	.act_modal p{
+			margin:5px 0;
+		}
+	.add_edit_info{
+			cursor: pointer;
+		}
+	.delete_btn{
+			cursor: pointer;
+		}
+	.radiospan{
+		font-size: 12px;
+	}
+	.edit-po-modal{
+		width:100%;
+		height: 100%;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 999;
+		background: rgba(0,0,0,.5);
+        display: none;
+	}
+	.edit-po-content{
+		background-color: #fff;
+		width: 1200px;
+		min-height: 300px;
+		position: relative;
+		margin:20px auto;
+		padding:10px 5px;
+
+	}
+	.edit-po-content label{
+		display: inline-block;
+		margin:10px;
+	}
+	#edit-po-table{
+		margin-top: 20px;
+	}
+	.edit-po-content h2{
+		font-size: 18px;
+		width: 200px;
+		margin:0 auto;
+	}
+	.btn-submit-editdata{
+		padding:5px 8px;
+		font-size: 13px;
+	}
+	#edit-mark-modal{
+		position: absolute;
+		height: 150px;
+		width: 400px;
+		left: -500px;
+		top: -500px;
+		background-color:#EAEDEF;
+		border-radius: 5px;
+		padding:10px 5px;
+		z-index:999;
+	}
+	#edit-mark-submit{
+		margin-left:52px;
+		margin-top:10px;
+	}
+	#sub_closePO,#sub_reopenPO{
+		margin-left: 43px;
+		margin-top: 10px;
+	}
+	.remark-wrap{
+		text-align: left;
+		margin-bottom: 5px;
+		margin-left: 27px;
+	}
+    {/literal}
+	</style>
+</head>
+<body>
+	<h1>{$party_name}品牌商对接监控</h1>
+	<p class="msg msg-success">操作成功：操作信息  :D</p>
+	<p class="msg msg-error">操作失败：错误信息  :(</a></p>
+	<!-- 编辑mark -->
+	<div id="edit-mark-modal">
+		<label>备注：</label>
+		<textarea id="mark-note"></textarea>
+		<span class="btn-flat btn-normal" id="edit-mark-submit"><i class="icon-spinner icon-spin"></i>提交</span>
+		<input type="hidden" id="modal_editMark_header_id" value="">
+		<input type="hidden" id="modal_editMark_index" value="">
+	</div>
+	<!-- closePO-modal -->
+	<div id="closePO-modal">
+		<label>备注：</label>
+		<textarea></textarea>
+		<span class="btn-flat btn-normal" id="sub_closePO"><i class="icon-spinner icon-spin"></i>提交</span>
+		<input type="hidden" id="closePO_header_id">
+		<input type="hidden" id="closePO_index">
+	</div>
+	<!-- reopenPO-modal -->
+	<div id="reopenPO-modal">
+		<label>备注：</label>
+		<textarea></textarea>
+		<span class="btn-flat btn-normal" id="sub_reopenPO"><i class="icon-spinner icon-spin"></i>提交</span>
+		<input type="hidden" id="reopenPO_header_id">
+		<input type="hidden" id="reopenPO_index">
+	</div>
+	
+    <!-- 编辑PO -->
+    <div class="edit-po-modal">
+    	<div class="edit-po-content">
+    		<h2>编辑PO信息</h2>
+    		<form action="brand_integration_monitor_estee.php" method="post" id="editPoForm">
+    			<label for="edit_PO_data[order_type]">order_type：</label>
+    			<input type="text" value="" name="edit_PO_data[order_type]" id="editOrderType" style="width:160px;">
+    			<label for="edit_PO_data[condition_type]">condition_type：</label>
+    			<input type="text" value="" name="edit_PO_data[condition_type]" id="editConditionType">
+    			<label for="edit_PO_data[condition_value]">condition_value：</label>
+    			<input type="text" value="" name="edit_PO_data[condition_value]" id="editConditionVal">
+    		</br>
+    		    <label for="edit_PO_data[note]"  style="width:92px;">备注：</label>
+    		    <input type="text" name="edit_PO_data[note]" id="edit_PO_data_note" style="width:400px;">
+    		</br>
+    			<label for="edit_PO_data[order_date]">order_date：</label>
+    			<input type="text" value="" name="edit_PO_data[order_date]" id="editOrderDate" style="width:160px;">
+    			<label for="edit_PO_data[pricing_date]">pricing_date：</label>
+    			<input type="text" value="" name="edit_PO_data[pricing_date]" id="editPricingDate" style="width:160px;">
+    		<div id="edit-po-table">
+    			
+    		</div>
+    		    <input type="hidden" value="" id="editOrHeaderId">
+    			<button class="btn-flat btn-submit-editdata">
+    				<i class="icon-spinner icon-spin"></i>
+    				确认修改
+    			</button>
+    		</form>
+    	</div>
+    </div>
+	<!-- 同步记录弹出层 -->
+	<div class="sync_record_modal">
+		<table>
+			<tr>
+				<th>同步类型</th>
+				<th>创建时间</th>
+			</tr>
+		</table>
+	</div>
+
+	<!-- 退单弹出层 -->
+ 	<div class="back_modal">
+		<label>PO号：</label>
+		<input type="text" class="back_edit_document_id" style="width:180px;"></br>
+		<label>备注：</label>
+		<textarea id="modal_note"></textarea>
+		<span class="btn-flat btn-normal" id="sub_back_info"><i class="icon-spinner icon-spin"></i>提交</span>
+		<input type="hidden" id="modal_header_id">
+	</div>
+
+	<!-- 退运费弹出层 -->
+	<div class="back_shippingfee_modal">
+		<label>PO号：</label>
+		<input type="text" class="back_shippingfee_document_id" style="width:180px;" ></br>
+		<label>退还运费：</label>
+		<input type="text" class="back_shippingfee"style="width:180px;"></br>
+		<label>备注：</label>
+		<textarea id="shippingfee_modal_note"></textarea>
+		<span class="btn-flat btn-normal" id="sub_back_shippingfee_info"><i class="icon-spinner icon-spin"></i>提交</span>
+		<input type="hidden" id="shippingfee_modal_header_id">
+	</div>
+
+	<!-- 新建PO弹出层 -->
+	<div class="act_modal">
+		<div class="act_modal_content">
+			<h2>当前PO信息</h2>
+			<p>PO号：<span id="show_document_id"></span>，order_type：<span id="show_order_type"></span>，condition_type：<span id="show_condition_type"></span>，condition_value：<span id="show_condition_value"></span>
+			</p>
+			<p>
+			order_date：<span id="show_order_date"></span>，requested_delivery_date：<span id="show_requested_delivery_date"></span>，pricing_date：<span id="show_pricing_date"></span>
+		    </p>
+			<table class="current_PO_info">
+				<tr>
+					<th>material_number</th>
+					<th>quantity</th>
+					<th>order_type</th>
+					<th>condition_type</th>
+					<th>discount_amount</th>
+				</tr>
+			</table>
+			<div class="edit_PO_info">
+				<h2>新建PO信息</h2>
+				<form id="edit_PO_info_form">
+					<p>
+					<label>PO_number:</label>
+					<input type="text"  name="new_PO_data[document_id]" id="new_PO_data_po_number" style="width:150px;">
+					<label>备注:</label>
+					<input type="text" name="note" id="note" style="width:250px;" value="">
+					</p>
+				</br>
+					<p>
+						<label>pricing_date：</label>
+						<input type="text" class="date_input" name="new_PO_data[pricing_date]" id="new_PO_data_pricing_date" style="width:150px;">
+
+					</p>
+				</br>
+				<div id="edit_info_wrapper">
+
+				</div>
+					<input type="button" class="add_edit_info" value="增加">
+				</form>
+				<input type="hidden" name="estee_header_id_edit" id="estee_header_id_edit">
+				<input type="button" class="btn-flat btn-small sub_po_btn" value="提交修改">
+			</div>
+		</div>
+	</div>
+
+	<!-- 搜索功能 -->
+	<form id="search_content" action="brand_integration_monitor_estee.php" method="post">
+    	<input type="hidden" name="search_type" value="SEARCH_ONLY">
+		<p id="search_erp">
+			<label for="search_order_sn">ERP订单号：</label>
+			<input type="text" name="search_order_sn" id="search_order_sn">
+
+			<label for="search_taobao_order_sn">淘宝订单号：</label>
+			<input type="text" name="search_taobao_order_sn" id="search_taobao_order_sn">
+            
+            <label for="search_erp_order_type_id">ERP订单类别</label>
+			<select id="search_erp_order_type_id" name="search_erp_order_type_id">
+				{foreach from=$erp_order_type_id_list item=erp_order_type}
+				    <option value="{$erp_order_type.value}">{$erp_order_type.name}</option>
+				{/foreach}
+			</select>
+			
+		</p>
+		<p>
+			<label for="search_order_time">订单时间：</label>
+			<input type="text" class="time_input" name="search_order_time_start" id="search_order_time_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="search_order_time_end" id="search_order_time_end" onclick="new Calendar().show(this);" readonly="readonly">
+
+			<label for="search_pricing_time">下单时间：</label>
+			<input type="text" class="time_input" name="search_pricing_time_start" id="search_pricing_time_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="search_pricing_time_end" id="search_pricing_time_end" onclick="new Calendar().show(this);" readonly="readonly">
+	
+			<label for="search_shipping_time_start">发货时间：</label>
+			<input type="text" class="time_input" name="search_shipping_time_start" id="search_shipping_time_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="search_shipping_time_end" id="search_shipping_time_end" onclick="new Calendar().show(this);" readonly="readonly">
+        </p>
+        <p>
+        	<label for="search_erp_to_po_status">转化状态</label>
+            <select id="search_erp_to_po_status" name="search_erp_to_po_status">
+				{foreach from=$erp_to_po_status_list item=erp_to_po_status}
+				    <option value="{$erp_to_po_status.value}">{$erp_to_po_status.name}</option>
+				{/foreach}
+			</select>
+
+			<label for="search_created_stamp_start">转化时间：</label>
+			<input type="text" class="time_input" name="search_created_stamp_start" id="search_created_stamp_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="search_created_stamp_end" id="search_created_stamp_end" onclick="new Calendar().show(this);" readonly="readonly">
+        </p>
+		<p>
+			<label for="seach_po_no">PO号：</label>
+			<input type="text" name="seach_po_no" id="seach_po_no">
+
+			<label for="search_PO_status">PO状态：</label>
+			<select name="search_PO_status" id="search_PO_status">
+				{foreach from=$po_status_list item=status}
+				    <option value="{$status.value}">{$status.name}（{$status.count}）</option>
+				{/foreach}
+			</select>
+
+			<label for="search_sap_order_type_id">SAP订单类别</label>
+			<select id="search_sap_order_type_id" name="search_sap_order_type_id">
+				{foreach from=$sap_order_type_list item=sap_order_type}
+				    <option value="{$sap_order_type.value}">{$sap_order_type.name}</option>
+				{/foreach}
+			</select>
+
+			<label for="search_sync_status">同步状态：</label>
+			<select name="search_sync_status" id="search_sync_status">
+				{foreach from=$sync_status_list item=status}
+				    <option value="{$status.sync_status}">{$status.name}（{$status.count}）</option>
+				{/foreach}
+			</select>
+
+			
+		</p>
+		<p> 
+			
+	
+			<label for="search_last_updated_stamp_start">同步时间：</label>
+			<input type="text" class="time_input" name="search_last_updated_stamp_start" id="search_last_updated_stamp_start" onclick="new Calendar().show(this);" readonly="readonly"><span> -</span>
+			<input type="text" class="time_input" name="search_last_updated_stamp_end" id="search_last_updated_stamp_end" onclick="new Calendar().show(this);" readonly="readonly">
+            <!-- </br> -->
+			<button class="btn-flat"><i class="icon-search"></i>搜索订单</button>
+		</p>
+	</form>
+    <form action="brand_integration_monitor_estee.php" method="post">
+    	<input type="hidden" name="search_type" value="NEED_SYNC_BUT_NOT">
+    	<input type="submit" class="btn-flat" value="搜索待转化订单">
+    </form>
+	<!-- 展示订单表格 -->
+	<form action="brand_integration_monitor_estee.php" method="post" id="show_content">
+		<table>
+			<thead>
+				<tr>
+					<th class="nos">订单号</th>
+					<th>时间</th>
+					<th>PO号（生成时间）</th>
+					<th>同步</th>
+					<th class="act">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach from=$data_list item=order key=order_id}
+				<tr>
+					<td rowspan="{$order.PO_count}" class="nos-td">
+						<a href="order_edit.php?order_id={$order_id}" title="链接到订单详情页" target="blank" class="erp_order_sn">ERP订单号：{$order.order_sn}<i class="icon-external-link"></i></a>
+						
+						
+						<div class="clear"></div>
+						<div class="remark-wrap">
+							<span>备注：</span>
+							<span class="remark-content">
+								{$order.remark}
+							</span>
+							{if $order.remarker != ""}
+							    by&nbsp;<span class="remarker-name">{$order.remarker}</span>
+							{else}
+							    <span class="remarker-name">{$order.remarker}</span>
+							{/if}
+							<span class="btn-edit-mark">添加备注</span>
+							<input type="hidden" class="edit-mark-order_id" value="{$order_id}">
+						</div>
+						
+						<p>淘宝订单号：{$order.taobao_order_sn}</p>
+						{if $order.estee_order_id}
+						<p>
+							<a href="SinriTest/estee_integration_monitor.php?order_ids={$order_id}" title="链接到estee监控页" target="blank">
+							estee订单号：{$order.estee_order_id}<i class="icon-external-link"></i>
+						    </a>
+						</p>
+						{else}
+						<p>
+							estee订单号：{$order.estee_order_id}
+						</p>
+						{/if}
+					</td>
+					<td rowspan="{$order.PO_count}">
+						<p>订单时间：{$order.order_time}</p>
+						<p>下单时间：{$order.pricing_time}</p>
+						<p>发货时间：{$order.shipping_time}</p>
+					</td>
+					{foreach from=$order.PO_list item=PO}
+					    {if $PO.document_id}
+						<td class="po_no">
+							{if $PO.header_status == "CLOSED"}
+							<span class="close_line"></span>
+							{/if}
+							<a href="javascript:;" class="getPOInfo"><i class="icon-spinner icon-spin"></i>{$PO.document_id}（生成时间：{$PO.created_stamp}）<i class="icon-external-link"></i></a>
+							<input type="hidden" class="po_number" value="{$PO.document_id}">
+						</td>
+						{else}
+						<td class="po_no"></td>
+						{/if}
+						<td>
+							<p>同步状态：{$PO.sync_status}</p>
+							<p>同步时间：{$PO.sync_time}</p>
+							<a href="javascript:;" class="sync_btn"><i class="icon-spinner icon-spin"></i>同步记录<i class=" icon-list"></i></a>
+							<input type="hidden" class="estee_header_id" value="{$PO.estee_header_id}">
+						</td>
+						<td>
+							{foreach from = $PO.action_list item = PO_ACT}
+							<span class="btn-flat btn-small {$PO_ACT.action}" style="margin-right:0;margin-left:0"><i class="icon-spinner icon-spin"></i>{$PO_ACT.name}</span>
+							{/foreach}
+						</br>
+						</td></tr>
+                    {/foreach}
+				{/foreach}
+			</tbody>
+		</table>
+	</form>
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="js/Calendar3.js"></script>
+<script src="js/jquery.js"></script>
+<script>
+// <![CDATA[
+//{literal}
+$(document).ready(function(){
+    
+    //新建PO：初始化函数，接收初始数据
+	$(document).delegate(".AddPOFromOld","click",function(event){
+		var _this = $(this);
+		event.stopPropagation();
+		var data = "type=Header&action=GetData&header_id="+_this.parents("tr").find(".estee_header_id").val();
+		$("#estee_header_id_edit").val(_this.parents("tr").find(".estee_header_id").val());
+        $.ajax({
+        	type:"post",
+        	dataType:"json",
+        	url:"brand_integration_monitor_estee_ajax.php",
+        	data:data,
+        	beforeSend:function(){
+        		_this.find("i").fadeIn("fast");
+        	},
+        	success:function(data){
+        		_this.find("i").fadeOut("fast");
+        		var current_PO_info_html = "";
+        		for(var key in data.lines){
+        			current_PO_info_html = current_PO_info_html+"<tr><td>"+data.lines[key].material_number+"</td><td>"+data.lines[key].quantity+"</td><td>"+data.lines[key].order_type+"</td><td>"+data.lines[key].condition_type+"</td><td>"+data.lines[key].discount_amount+"</td></tr>";
+        		}
+        		$("#edit_info_wrapper").html("");
+        		for(var key1 in data.lines){
+        			$("#edit_info_wrapper").append("<p class='one_edit_info'><label>material_number:</label><input type='text' name='new_PO_data[lines]["+key1+"][material_number]' value='"+data.lines[key1].material_number+"'><label>order_type:</label><input type='text'  name='new_PO_data[lines]["+key1+"][order_type]' value='"+data.lines[key1].order_type+"'><label>quantity:</label><input type='text'  name='new_PO_data[lines]["+key1+"][quantity]' value='"+data.lines[key1].quantity+"'><label>condition_type:</label><input type='text'  name='new_PO_data[lines]["+key1+"][condition_type]' value='"+data.lines[key1].condition_type+"'><label>discount_amount:</label><input type='text'  name='new_PO_data[lines]["+key1+"][discount_amount]' value='"+data.lines[key1].discount_amount+"'><input type='button' class='one_edit_info_delete_btn' value='删除'></p>");
+        		}
+        		$("#show_document_id").text(data.document_id);
+        		$("#new_PO_data_po_number").val(data.document_id);
+        		$("#show_order_type").text(data.order_type);
+        		$("#show_order_date").text(data.order_date);
+        		$("#new_PO_data_order_date").val(data.order_date);
+        		$("#show_condition_value").text(data.condition_value);
+        		$("#show_condition_type").text(data.condition_type);
+        		$("#show_requested_delivery_date").text(data.requested_delivery_date);
+        		$("#new_PO_data_requested_delivery_date").val(data.requested_delivery_date);
+        		$("#show_pricing_date").text(data.pricing_date);
+        		$("#new_PO_data_pricing_date").val(data.pricing_date);
+        		$(".current_PO_info").html("<tr><th>material_number</th><th>quantity</th><th>order_type</th><th>condition_type</th><th>discount_amount</th></tr>").append(current_PO_info_html);
+        		$(".edit_PO_info").show();
+	        	$(".act_modal").fadeIn("fast");
+        	},
+        	error:function(data){
+        		_this.find("i").fadeOut("fast");
+        		alert("ajax error");
+        	}
+        });
+		
+	});
+    
+
+    //新建PO：修改数据函数
+    $(document).delegate(".sub_po_btn","click",function(){
+    	var data = $("#edit_PO_info_form").serialize()+"&type=Header&action=AddPOFromOld&header_id="+$("#estee_header_id_edit").val();
+    	$.ajax({
+    		type:"post",
+    		dataType:"json",
+    		url:"brand_integration_monitor_estee_ajax.php",
+    		data:data,
+    		success:function(data){
+    			if(data.err_no == "0"){
+    				alert("success");
+    				$(".act_modal").fadeOut("fast");
+    			}else{
+    				alert(data.msg);
+    			}
+    		},
+    		error:function(){
+    			alert("ajax error");
+
+    		}
+    	});
+    });
+    
+
+    //新建PO：信息增删功能
+	(function(){
+		var index_edit_info;
+		
+		$(document).delegate(".add_edit_info","click",function(){
+			index_edit_info = $(".one_edit_info").length;
+			$("#edit_PO_info_form").append("<p class='one_edit_info'><label>material_number:</label><input type='text' name='new_PO_data[lines]["+index_edit_info+"][material_number]'><label>quantity:</label><input type='text'  name='new_PO_data[lines]["+index_edit_info+"][quantity]'><input type='button' class='delete_btn' value='删除'></p>");
+		});
+		$(document).delegate(".delete_btn","click",function(event){
+            event.stopPropagation();
+			index_edit_info=index_edit_info-1;
+	    	$(this).parent().remove();
+	    });
+	})();
+
+	 //新建PO：删除line
+    $(document).delegate(".one_edit_info_delete_btn","click",function(){
+	    $(this).parent().remove();
+    });
+
+    //查看PO信息
+    $(document).delegate(".getPOInfo","click",function(event){
+    	event.stopPropagation();
+    	var _this = $(this);
+    	var data = "type=Header&action=GetData&header_id=" + _this.parents("tr").find(".estee_header_id").val();
+    	$.ajax({
+    		type:"post",
+    		dataType:"json",
+    		url:"brand_integration_monitor_estee_ajax.php",
+    		data:data,
+    		beforeSend:function(){
+    			_this.find(".icon-spinner").fadeIn("fast");
+    		},
+    		success:function(data){
+    			_this.find(".icon-spinner").fadeOut("fast");
+        		var current_PO_info_html = "";
+        		for(var key in data.lines){
+        			current_PO_info_html = current_PO_info_html+"<tr><td>"+data.lines[key].material_number+"</td><td>"+data.lines[key].quantity+"</td><td>"+data.lines[key].order_type+"</td><td>"+data.lines[key].condition_type+"</td><td>"+data.lines[key].discount_amount+"</td></tr>";
+        		}
+        		$(".act_modal h2").eq(0).find("span").text(data.document_id);
+        		$(".current_PO_info").html("<tr><th>material_number</th><th>quantity</th><th>order_type</th><th>condition_type</th><th>discount_amount</th></tr>").append(current_PO_info_html);
+        		$("#show_document_id").text(data.document_id);
+        		$("#show_order_type").text(data.order_type);
+        		$("#show_order_date").text(data.order_date);
+        		$("#show_condition_value").text(data.condition_value);
+        		$("#show_condition_type").text(data.condition_type);
+        		$("#show_requested_delivery_date").text(data.requested_delivery_date);
+        		$("#show_pricing_date").text(data.pricing_date);
+	        	$(".act_modal").fadeIn("fast");
+    		},
+    		error:function(){
+    			_this.find(".icon-spinner").fadeOut("fast");
+    			alert("ajax error");
+    		}
+    	});
+    });
+    
+    //废除PO
+    $(document).delegate("#sub_closePO","click",function(){
+    	var _this = $(this);
+    	var i = $("#closePO_index").val();
+    	if(_this.prev().val() == ""){
+    		alert("请填写备注再提交");
+    	}
+    	else{
+    		var data = "type=Header&action=ClosePO&header_id=" + _this.next().val() + "&note=" + _this.prev().val();
+	    	$.ajax({
+	    		type:"post",
+	    		dataType:"json",
+	    		url:"brand_integration_monitor_estee_ajax.php",
+	    		data:data,
+	    		beforeSend:function(){
+	    			_this.find(".icon-spinner").fadeIn("fast");
+	    		},
+	    		success:function(data){
+	    			_this.find(".icon-spinner").fadeOut("fast");
+	    			var new_action = "";
+	    			for(var key in data.action_list){
+	    				new_action = new_action+"<span class='btn-flat btn-small "+data.action_list[key].action+"' style='margin-right:0;margin-left:0'><i class='icon-spinner icon-spin'></i>"+data.action_list[key].name+"</span>&nbsp;";
+	    			}
+	    			$(".ClosePO").eq(i).parent().html(new_action);
+	        		alert(data.msg);
+	        		$("#closePO-modal").animate({
+						"top":"-1000px",
+						"opacity":0
+					},"normal");
+	    		},
+	    		error:function(){
+	    			_this.find(".icon-spinner").fadeOut("fast");
+	    			alert("ajax error");
+	    		}
+	    	});
+    	}
+    });
+
+    //恢复PO
+    $(document).delegate("#sub_reopenPO","click",function(){
+    	var _this = $(this);
+    	var i = $("#reopenPO_index").val();
+    	if(_this.prev().val() == ""){
+    		alert("请填写备注再提交");
+    	}else{
+    		var data = "type=Header&action=ReopenPO&header_id=" + _this.next().val() + "&note=" + _this.prev().val();
+	    	$.ajax({
+	    		type:"post",
+	    		dataType:"json",
+	    		url:"brand_integration_monitor_estee_ajax.php",
+	    		data:data,
+	    		beforeSend:function(){
+	    			_this.find(".icon-spinner").fadeIn("fast");
+	    		},
+	    		success:function(data){
+	    			_this.find(".icon-spinner").fadeOut("fast");
+	    			var new_action = "";
+	    			for(var key in data.action_list){
+	    				new_action = new_action+"<span class='btn-flat btn-small "+data.action_list[key].action+"' style='margin-right:0;margin-left:0'><i class='icon-spinner icon-spin'></i>"+data.action_list[key].name+"</span>&nbsp;";
+	    			}
+	    			$(".ReopenPO").eq(i).parent().html(new_action);
+	        		alert(data.msg);
+	        		$("#reopenPO-modal").animate({
+						"top":"-1000px",
+						"opacity":0
+					},"normal");
+	    		},
+	    		error:function(){
+	    			_this.find(".icon-spinner").fadeOut("fast");
+	    			alert("ajax error");
+	    		}
+	    	});
+    	}
+    });
+
+    //初始化同步
+    $(document).delegate(".InitSyncStatus","click",function(){
+    	var _this = $(this);
+    	var data = "type=Header&action=InitSyncStatus&header_id=" + _this.parents("tr").find(".estee_header_id").val();
+    	$.ajax({
+    		type:"post",
+    		dataType:"json",
+    		url:"brand_integration_monitor_estee_ajax.php",
+    		data:data,
+    		beforeSend:function(){
+    			_this.find(".icon-spinner").fadeIn("fast");
+    		},
+    		success:function(data){
+    			_this.find(".icon-spinner").fadeOut("fast");
+    			var new_action = "";
+    			for(var key in data.action_list){
+    				new_action = new_action+"<span class='btn-flat btn-small "+data.action_list[key].action+"' style='margin-right:0;margin-left:0'><i class='icon-spinner icon-spin'></i>"+data.action_list[key].name+"</span>&nbsp;";
+    			}
+    			_this.parent().html(new_action);
+        		alert(data.msg);
+    		},
+    		error:function(){
+    			_this.find(".icon-spinner").fadeOut("fast");
+    			alert("ajax error");
+    		}
+    	});
+    });
+
+    //查看同步记录
+	$(document).delegate(".sync_btn","click",function(event){
+		event.stopPropagation();
+		var _this = $(this);
+		var data="type=Sync&action=GetData&header_id="+$(this).next().val();
+		var top = $(this).position().top -10;
+		$.ajax({
+			type:"post",
+        	dataType:"json",
+        	url:"brand_integration_monitor_estee_ajax.php",
+        	data:data,
+        	beforeSend:function(){
+        		_this.find(".icon-spinner").fadeIn("fast");
+        	},
+        	success:function(data){
+        		_this.find(".icon-spinner").fadeOut("fast");
+        		var sync_record_html = "";
+        		for(var key in data){
+        			sync_record_html = sync_record_html +"<tr><td>"+data[key].record_type+"</td><td>"+data[key].created_stamp+"</td></tr>";
+        		}
+        		$(".sync_record_modal table").html("<tr><th>同步类型</th><th>创建时间</th></tr>").append(sync_record_html);
+        		$(".sync_record_modal").animate({
+					"top":top,
+					"opacity":1
+				},"normal");
+        		
+        	},
+        	error:function(){
+        		_this.find(".icon-spinner").fadeOut("fast");
+        		alert("ajax error");
+        	}
+		});
+	});
+
+
+	//编辑功能
+	$(document).delegate(".EditPO","click",function(event){
+		var _this = $(this);
+		event.stopPropagation();
+		var data = "type=Header&action=GetData&header_id="+_this.parents("tr").find(".estee_header_id").val();
+		$("#editOrHeaderId").val(_this.parents("tr").find(".estee_header_id").val());
+		$.ajax({
+			type:"post",
+			dataType:"json",
+			data:data,
+			url:"brand_integration_monitor_estee_ajax.php",
+			beforeSend:function(){
+				_this.find("i").fadeIn("fast");
+			},
+			success:function(data){
+				_this.find("i").fadeOut("fast");
+				$("#editOrderType").val(data.order_type);
+				$("#editConditionType").val(data.condition_type);
+				$("#editConditionVal").val(data.condition_value);
+				$("#editOrderDate").val(data.order_date);
+				$("#editPricingDate").val(data.pricing_date);
+				$(".edit-po-modal").fadeIn("fast");
+				var h = "";
+        		for(var key in data.lines){
+        			h = h + "<p><input type='hidden' name='edit_PO_data[lines]["+key+"][estee_line_id]' value='"+data.lines[key].estee_line_id+"'><label>material_number:</label><input type='text' name='edit_PO_data[lines]["+key+"][material_number]' value='"+data.lines[key].material_number+"'><label>order_type:</label><input type='text'  name='edit_PO_data[lines]["+key+"][order_type]' value='"+data.lines[key].order_type+"'><label>quantity:</label><input type='text'  name='edit_PO_data[lines]["+key+"][quantity]' value='"+data.lines[key].quantity+"'><label>condition_type:</label><input type='text'  name='edit_PO_data[lines]["+key+"][condition_type]' value='"+data.lines[key].condition_type+"'><label>discount_amount:</label><input type='text'  name='edit_PO_data[lines]["+key+"][discount_amount]' value='"+data.lines[key].discount_amount+"'></p>";
+        		}
+				$("#edit-po-table").html(h);
+			},
+			error:function(){
+				_this.find("i").fadeOut("fast");
+				alert("ajax error");
+			}
+		});
+	});
+	
+
+
+	// 提交编辑信息
+	$(document).delegate(".btn-submit-editdata","click",function(e){
+		e.preventDefault();
+		if($("#edit_PO_data_note").val() == ""){
+			alert("请填写备注再提交");
+		}else{
+			var data = $("#editPoForm").serialize()+"&type=Header&action=EditPO&header_id="+$("#editOrHeaderId").val();
+			var _this = $(this);
+			$.ajax({
+				type:"post",
+				dataType:"json",
+				data:data,
+				url:"brand_integration_monitor_estee_ajax.php",
+				beforeSend:function(){
+					_this.find("i").fadeIn("fast");
+				},
+				success:function(data){
+					_this.find("i").fadeOut("fast");
+					alert("修改成功");
+					$(".edit-po-modal").fadeOut("fast");
+				},
+				error:function(data){
+					_this.find("i").fadeOut("fast");
+					alert("修改失败，原因：ajax请求失败");
+				}
+			});
+		}
+		
+	});
+    
+
+    $(document).delegate(".btn-edit-mark","click",function(event){
+		event.stopPropagation();
+		var _this = $(this);
+		var i = $(".btn-edit-mark").index(this);
+		var top = $(this).position().top;
+		var left = $(this).position().left + 70;
+		// alert(top+","+left);
+		$("#edit-mark-modal").animate({
+			"top":top,
+			"left":left,
+			"opacity":1
+		},"normal");	
+		$("#modal_editMark_header_id").val(_this.next().val());
+		$("#modal_editMark_index").val(i);
+	});
+
+
+	//退单功能
+	$(document).delegate(".GenerateZRTO","click",function(event){
+		event.stopPropagation();
+		var _this = $(this);
+		var top = $(this).position().top;
+		var left = $(this).position().left - 430;
+		$(".back_modal").animate({
+			"top":top,
+			"left":left,
+			"opacity":1
+		},"normal");
+		$("#modal_header_id").val(_this.parents("tr").find(".estee_header_id").val());
+		
+	});
+
+	//退运费功能
+	$(document).delegate(".GenerateZRTOSR","click",function(event){
+		event.stopPropagation();
+		var _this = $(this);
+		var top = $(this).position().top;
+		var left = $(this).position().left - 430;
+		$(".back_shippingfee_modal").animate({
+			"top":top,
+			"left":left,
+			"opacity":1
+		},"normal");
+		$("#shippingfee_modal_header_id").val(_this.parents("tr").find(".estee_header_id").val());
+		var po_number = _this.parents("tr").find(".po_number").val();
+		if(po_number.indexOf("|") > 0) {
+			$(".back_shippingfee_document_id").val(_this.parents("tr").find(".po_number").val()+'TF');
+		} else {
+			$(".back_shippingfee_document_id").val(_this.parents("tr").find(".po_number").val()+'|TF');
+		}		
+	});
+	
+	$(document).delegate(".ClosePO","click",function(event){
+		event.stopPropagation();
+		var _this = $(this);
+		var i = $(".ClosePO").index(this);
+		var top = $(this).position().top;
+		var left = $(this).position().left - 430;
+		$("#closePO-modal").animate({
+			"top":top,
+			"left":left,
+			"opacity":1
+		},"normal");
+		$("#closePO_header_id").val(_this.parents("tr").find(".estee_header_id").val());
+		$("#closePO_index").val(i);
+	});
+
+	$(document).delegate(".ReopenPO","click",function(event){
+		event.stopPropagation();
+		var _this = $(this);
+		var i = $(".ReopenPO").index(this);
+		var top = $(this).position().top;
+		var left = $(this).position().left - 430;
+		$("#reopenPO-modal").animate({
+			"top":top,
+			"left":left,
+			"opacity":1
+		},"normal");
+		$("#reopenPO_header_id").val(_this.parents("tr").find(".estee_header_id").val());
+		$("#reopenPO_index").val(i);
+	});
+   
+    $("#sub_back_info").click(function(){
+    	var _this = $(this);
+		var data="type=Header&action=GenerateZRTO&document_id="+$(".back_edit_document_id").val()+"&header_id="+_this.next().val()+"&note="+$("#modal_note").val();
+		$.ajax({
+			type:"post",
+        	dataType:"json",
+        	url:"brand_integration_monitor_estee_ajax.php",
+        	data:data,
+        	beforeSend:function(){
+        		_this.find("i").fadeIn("fast");
+        	},
+        	success:function(data){
+        		_this.find("i").fadeOut("fast");
+        		if(data.err_no == "0"){
+        			alert("success");
+        			$(".back_modal").animate({
+						"top":"-1000px",
+						"opacity":0
+					},"fast");
+        		}else{
+        			alert(data.msg);
+        		}
+        	},
+        	error:function(){
+        		_this.find("i").fadeOut("fast");
+        		alert("ajax error");
+        	}
+		});
+		});
+
+    
+    $("#sub_back_shippingfee_info").click(function(){
+    	var _this = $(this);
+		var data="type=Header&action=GenerateZRTOSR&document_id="+$(".back_shippingfee_document_id").val()+"&header_id="+_this.next().val()+"&note="+$("#shippingfee_modal_note").val()+"&shipping_fee="+$(".back_shippingfee").val();
+		$.ajax({
+			type:"post",
+        	dataType:"json",
+        	url:"brand_integration_monitor_estee_ajax.php",
+        	data:data,
+        	beforeSend:function(){
+        		_this.find("i").fadeIn("fast");
+        	},
+        	success:function(data){
+        		_this.find("i").fadeOut("fast");
+        		if(data.err_no == "0"){
+        			alert("success");
+        			$(".back_modal").animate({
+						"top":"-1000px",
+						"opacity":0
+					},"fast");
+        		}else{
+        			alert(data.msg);
+        		}
+        	},
+        	error:function(){
+        		_this.find("i").fadeOut("fast");
+        		alert("ajax error");
+        	}
+		});
+    });
+
+    
+    //点击任意位置关闭弹出层
+	$(document).bind("click",function(e){
+		var target  = $(e.target);
+		//表示当前对象，切记，如果没有e这个参数，即表示整个BODY对象 :)
+		
+		if(target.closest(".sync_record_modal").length == 0){
+			$(".sync_record_modal").animate({
+				"top":"-1000px",
+				"opacity":0
+			},"normal");
+		}
+		if(target.closest(".back_modal").length == 0){
+			$(".back_modal").animate({
+				"top":"-1000px",
+				"opacity":0
+			},"normal");
+		}
+		if(target.closest(".back_shippingfee_modal").length == 0){
+			$(".back_shippingfee_modal").animate({
+				"top":"-1000px",
+				"opacity":0
+			},"normal");
+		}
+		if(target.closest("#edit-mark-modal").length == 0){
+			$("#edit-mark-modal").animate({
+				"top":"-1000px",
+				"opacity":0
+			},"normal");
+		}
+		if(target.closest("#closePO-modal").length == 0){
+			$("#closePO-modal").animate({
+				"top":"-1000px",
+				"opacity":0
+			},"normal");
+		}
+		if(target.closest("#reopenPO-modal").length == 0){
+			$("#reopenPO-modal").animate({
+				"top":"-1000px",
+				"opacity":0
+			},"normal");
+		}
+	});
+
+	$(".act_modal").click(function(event){
+		if($(event.target).attr("class") == "act_modal"){
+			$(this).fadeOut("fast");
+		}
+		
+	});
+
+	$(".edit-po-modal").click(function(event){
+		if($(event.target).attr("class") == "edit-po-modal"){
+			$(this).fadeOut("fast");
+		}
+		
+	});
+
+	$(".sub_po_btn").click(function(){
+		var note = $("#note").val();
+		if(note == ""){
+			alert("请填写备注再提交");
+			return false;
+		}
+		return true;
+	});
+
+	$("#edit-mark-submit").click(function(){
+		var _this = $(this);
+		var note = $("#mark-note").val();
+		var i = $("#modal_editMark_index").val();
+		if(note == ""){
+			alert("请填写备注再提交");
+			return false;
+		}else{
+			var data = "type=ErpOrder&action=MarkOrder&note=" + note + "&order_id=" + _this.next().val();
+			$.ajax({
+				type:"post",
+				dataType:"json",
+				data:data,
+				url:"brand_integration_monitor_estee_ajax.php",
+				beforeSend:function(){
+					_this.find("i").fadeIn("fast");
+				},
+				success:function(data){
+					_this.find("i").fadeOut("fast");
+					if(data.err_no == 0){
+						alert(data.msg);
+                        $(".remark-content").eq(i).text(data.remark);
+                        $(".remarker-name").eq(i).text("by " + data.remarker);
+						$("#edit-mark-modal").animate({
+							"top":"-1000px",
+							"opacity":0
+						},"normal");
+					}
+				},
+				error:function(){
+					_this.find("i").fadeOut("fast");
+					alert("修改失败，原因：ajax请求失败");
+				}
+			});
+		}
+	});
+});
+//{/literal}
+// ]]>
+</script>
+	
+</body>
+</html>

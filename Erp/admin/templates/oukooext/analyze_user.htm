@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－注册用户</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索"> <a href="{$smarty.server.REQUEST_URI|remove_param_in_url:"view"}">切换到新的界面</a>
+</form>
+<br>
+<table style="font-size:14px">
+<tr>
+<td style="width:200px">所有注册用户数：<span style="color:red;font-weight:bold">{$sum.total_user_count}</span></td>
+<td style="width:200px">所有确认订单数：<span style="color:red;font-weight:bold">{$sum.total_confirm_count}</span></td>
+</tr>
+</table>
+
+<table class="bWindow" style="width:1500px">
+<caption><h1>用户/订单统计</h1></caption>
+<tr>
+<th>时间</th>
+<th>流量</th>
+<th>注册用户数</th>
+<th>订单数</th>
+<th>确认订单数(转化率)</th>
+<th>未确认订单数(百分比)</th>
+<th>取消订单数(取消率)</th>
+<th>拒收订单数(拒收率)</th>
+<th>商品>1订单数</th>
+<th>套餐订单数</th>
+<th>上海地区订单数</th>
+<th>使用红包订单数</th>
+</tr>
+<tr align="center">
+<th>总计</th>
+<!--注册用户数-->
+<td>
+	IP：{if $sum.ip_days > 0}{math equation="x / y" x=$sum.ip y=$sum.ip_days format="%.2f"}{/if}<br>
+	PV：{if $sum.pv_days > 0}{math equation="x / y" x=$sum.pv y=$sum.pv_days format="%.2f"}{/if}
+</td>
+<td>
+	<a href="analyze_user_detail.php?type=user_count&start={$start}&end={$end}" target="_blank">
+		{$sum.register_user_count}
+	</a>
+	<br>
+	下单数：
+	<a href="analyze_user_detail.php?type=user_count&start={$start}&end={$end}&order_status=exist" target="_blank">
+		{$sum.register_user_order_count}
+		{if $sum.register_user_count > 0}
+			({math equation="x / y * 100" x=$sum.register_user_order_count y=$sum.register_user_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	购买数：
+	<a href="analyze_user_detail.php?type=user_count&start={$start}&end={$end}&order_status=1" target="_blank">
+		{$sum.register_user_confirm_order_count}
+		{if $sum.register_user_count > 0}
+			({math equation="x / y * 100" x=$sum.register_user_confirm_order_count y=$sum.register_user_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--订单数-->
+<td>
+	总数：<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal" target="_blank">{$sum.order_count|default:0}</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=ouku" target="_blank">
+		{$sum.ouku_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.ouku_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=biaoju" target="_blank">
+		{$sum.biaoju_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.biaoju_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--确认订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&order_status=1" target="_blank">
+		{$sum.confirm_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.confirm_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=ouku&order_status=1" target="_blank">
+		{$sum.ouku_confirm_order_count|default:0}
+		{if $sum.ouku_order_count > 0}
+			({math equation="x / y * 100" x=$sum.ouku_confirm_order_count|default:0 y=$sum.ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=biaoju&order_status=1" target="_blank">
+		{$sum.biaoju_confirm_order_count|default:0}
+		{if $sum.biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$sum.biaoju_confirm_order_count|default:0 y=$sum.biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--未确认订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&order_status=0" target="_blank">
+		{$sum.unconfirm_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.unconfirm_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=ouku&order_status=0" target="_blank">
+		{$sum.ouku_unconfirm_order_count|default:0}
+		{if $sum.ouku_order_count > 0}
+			({math equation="x / y * 100" x=$sum.ouku_unconfirm_order_count|default:0 y=$sum.ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=biaoju&order_status=0" target="_blank">
+		{$sum.biaoju_unconfirm_order_count|default:0}
+		{if $sum.biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$sum.biaoju_unconfirm_order_count|default:0 y=$sum.biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--取消订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&order_status=2" target="_blank">
+		{$sum.cancel_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.cancel_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=ouku&order_status=2" target="_blank">
+		{$sum.ouku_cancel_order_count|default:0}
+		{if $sum.ouku_order_count > 0}
+			({math equation="x / y * 100" x=$sum.ouku_cancel_order_count|default:0 y=$sum.ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=biaoju&order_status=2" target="_blank">
+		{$sum.biaoju_cancel_order_count|default:0}
+		{if $sum.biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$sum.biaoju_cancel_order_count|default:0 y=$sum.biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--拒收订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&order_status=4" target="_blank">
+		{$sum.returned_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.returned_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=ouku&order_status=4" target="_blank">
+		{$sum.ouku_returned_order_count|default:0}
+		{if $sum.ouku_order_count > 0}
+			({math equation="x / y * 100" x=$sum.ouku_returned_order_count|default:0 y=$sum.ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&store_id=biaoju&order_status=4" target="_blank">
+		{$sum.biaoju_returned_order_count|default:0}
+		{if $sum.biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$sum.biaoju_returned_order_count|default:0 y=$sum.biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--商品>1订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&extra=multi_goods" target="_blank">
+		{$sum.more_than_one_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.more_than_one_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--套餐订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&extra=set" target="_blank">
+		{$sum.binding_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.binding_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--上海地区订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&province=10" target="_blank">
+		{$sum.sh_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.sh_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--使用红包订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$start}&end={$end}&order_sn_type=normal&extra=use_bonus" target="_blank">
+		{$sum.bonus_order_count|default:0}
+		{if $sum.order_count > 0}
+			({math equation="x / y * 100" x=$sum.bonus_order_count|default:0 y=$sum.order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+</tr>
+<!--{foreach from=$dates item=date}-->
+<tr align="center">
+<td style="width:80px">{$date}</td>
+<!--流量-->
+<td>
+	IP：{$values[$date].ip}<br>
+	PV：{$values[$date].pv}
+</td>
+
+<!--注册用户数-->
+<td>
+	<a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}" target="_blank">
+		{$values[$date].register_user_count}
+	</a>
+	<br>
+	下单数：
+	<a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}&order_status=exist" target="_blank">
+		{$values[$date].register_user_order_count}
+		{if $values[$date].register_user_count > 0}
+			({math equation="x / y * 100" x=$values[$date].register_user_order_count y=$values[$date].register_user_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	购买数：
+	<a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}&order_status=1" target="_blank">
+		{$values[$date].register_user_confirm_order_count}
+		{if $values[$date].register_user_count > 0}
+			({math equation="x / y * 100" x=$values[$date].register_user_confirm_order_count y=$values[$date].register_user_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal" target="_blank">{$values[$date].order_count|default:0}</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&store_id=ouku" target="_blank">
+		{$values[$date].ouku_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&store_id=biaoju" target="_blank">
+		{$values[$date].biaoju_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].biaoju_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--确认订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=1" target="_blank">
+		{$values[$date].confirm_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].confirm_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=1&store_id=ouku" target="_blank">
+		{$values[$date].ouku_confirm_order_count|default:0}
+		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_confirm_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=1&store_id=biaoju" target="_blank">
+		{$values[$date].biaoju_confirm_order_count|default:0}
+		{if $values[$date].biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].biaoju_confirm_order_count|default:0 y=$values[$date].biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+
+<!--未确认订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=0" target="_blank">
+		{$values[$date].unconfirm_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].unconfirm_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=0&store_id=ouku" target="_blank">
+		{$values[$date].ouku_unconfirm_order_count|default:0}
+		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_unconfirm_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=0&store_id=biaoju" target="_blank">
+		{$values[$date].biaoju_unconfirm_order_count|default:0}
+		{if $values[$date].biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].biaoju_unconfirm_order_count|default:0 y=$values[$date].biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--取消订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=2" target="_blank">
+		{$values[$date].cancel_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].cancel_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=2&store_id=ouku" target="_blank">
+		{$values[$date].ouku_cancel_order_count|default:0}
+		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_cancel_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=2&store_id=biaoju" target="_blank">
+		{$values[$date].biaoju_cancel_order_count|default:0}
+		{if $values[$date].biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].biaoju_cancel_order_count|default:0 y=$values[$date].biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--拒收订单数-->
+<td>
+	总数：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=4" target="_blank">	
+		{$values[$date].returned_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].returned_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	欧酷：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=4&store_id=ouku" target="_blank">	
+		{$values[$date].ouku_returned_order_count|default:0}
+		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_returned_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}
+	</a>
+	<br>
+	镖局：
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=4&store_id=biaoju" target="_blank">	
+		{$values[$date].biaoju_returned_order_count|default:0}
+		{if $values[$date].biaoju_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].biaoju_returned_order_count|default:0 y=$values[$date].biaoju_order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--商品>1订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&extra=multi_goods" target="_blank">
+		{$values[$date].more_than_one_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].more_than_one_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--套餐订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&extra=set" target="_blank">
+		{$values[$date].binding_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].binding_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--上海地区订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&province=10" target="_blank">
+		{$values[$date].sh_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].sh_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+
+<!--使用红包订单数-->
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&extra=use_bonus" target="_blank">
+		{$values[$date].bonus_order_count|default:0}
+		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].bonus_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}
+	</a>
+</td>
+</tr>
+<!--{/foreach}-->
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

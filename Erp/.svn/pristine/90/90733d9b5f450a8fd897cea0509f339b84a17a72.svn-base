@@ -1,0 +1,288 @@
+<script type="text/javascript">
+{if $smarty.request.info}alert('{$smarty.request.info}');{/if}
+{literal}
+{/literal}
+</script>
+<div class="Search_Bo">
+	<form id="filter_form" method="GET">
+	<table class="filter">	
+		<input type="hidden" name="my_type" value="{$my_type}">
+		<input type="hidden" name="type" value="search">
+		<tr>
+		
+				<td class="word_width ">ERP订单号</td>
+				<td>
+					<input type="text" class="new_input new_input word_width_bigger" name="erp_order_sn" value="{$smarty.request.erp_order_sn}">
+				</td>
+				<td class="word_width">外部订单号</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name="taobao_order_sn" value="{$smarty.request.taobao_order_sn}">
+				</td>
+				<td class="word_width">平台</td>
+				<td>
+					
+					<select  name="platform_select" id="platform_select" class="form-control-bigger">
+					<option value="">所有平台</option>
+					{foreach from=$outer_type key=outer_type_key item=outer_type_name}
+					<option name="outer_type_key" value="{$outer_type_key}" {if $smarty.request.platform_select !=null && $smarty.request.platform_select == $outer_type_key}selected{/if} >{$outer_type_name}</option>
+					{/foreach}
+					</select>
+					
+				</td>	
+<!-- 
+				<td>
+				<select name="search_type" class="form-control-select">
+					<option value="basic_null">请选择其他方式</option>
+					<option value="user_name"  {if $smarty.request.search_type == 'user_name'}selected{/if}>用户ID(3月内)</option>
+					<option value="tel_mobile"  {if $smarty.request.search_type == 'tel_mobile'}selected{/if}>电话(3月内)</option>
+					<option value="consignee"  {if $smarty.request.search_type == 'consignee'}selected{/if}>收货人</option>
+					<option value="tracking_number"  {if $smarty.request.search_type == 'tracking_number'}selected{/if}>快递单号</option>
+				</select>
+				</td> -->
+				<!--<select style="height:21px;width:100px" name="order_type">
+					<option value="b2c" {if !$smarty.request.order_type || $smarty.request.order_type == 'b2c'}selected{/if}>B2C订单</option>
+					<option value="c2c" {if $smarty.request.order_type == 'c2c'}selected{/if}>C2C订单</option>
+					<option value="parent" {if $smarty.request.order_type == 'parent'}selected{/if}>父订单</option>
+					<option value="all" {if $smarty.request.order_type == 'all'}selected{/if}>所有订单</option>
+				</select>-->
+<!-- 				<td>
+					<input type="text" class="new_input word_width_bigger" name="search_type" value="user_name" "{$smarty.request.search_text}">
+				</td> -->
+		</tr>
+
+		<tr>
+				<td class="word_width">用户ID(3月内)</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "user_name" value="{$smarty.request.user_name}"/>
+				</td>	
+				<td class="word_width">电话(3月内)</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "tel_mobile" value="{$smarty.request.tel_mobile}"/>
+				</td>	
+				<td class="word_width">收货人(3月内)</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "consignee" value="{$smarty.request.consignee}"/>
+				</td>	
+				<td class="word_width">快递单号</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "tracking_number"  value="{$smarty.request.tracking_number}"/>
+				</td>	
+		</tr>
+		<tr>
+				<td class="word_width">店铺类型</td>
+				<td>
+					<select name="shop_type" id="shop_type" class="form-control-bigger">
+						<option value="">请选择</option>
+						<option value="zhixiao" {if $shop_type == 'zhixiao'}selected{/if}>直销</option>
+						<option value="fenxiao" {if $shop_type == 'fenxiao'}selected{/if}>分销</option>
+					</select>
+				</td>	
+				<td class="word_width">店铺名称</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "shop_name" id = "shop_name" size="11px" value="{$smarty.request.shop_name}"/>
+					<input type="hidden" name = "distributor_id" id = "distributor_id" value="{$smarty.request.distributor_id}"/>
+				</td>	
+				<td class="word_width">商品名称</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "goods_name" id = "goods_name" size="20px" value="{$smarty.request.goods_name}"/>
+					<input type="hidden" name = "goods_id" id = "goods_id" value="{$smarty.request.goods_id}"/>
+				</td>	
+				<td class="word_width">商品数量</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "goods_number" id = "goods_number"/>
+				</td>	
+		</tr>
+		<tr>
+				<td class="word_width">所属仓库</td>
+				<td><select class="form-control-bigger" name="facility_id">
+					<option value="0">所有仓库</option>
+					{foreach from=$facilitys key=facility_id item=facility_name}
+					<option value="{$facility_id}" {if $smarty.request.facility_id !=null && $smarty.request.facility_id == $facility_id}selected{/if}>{$facility_name}</option>
+					{/foreach}
+				</select></td>
+				<td class="word_width">快递方式</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name="shipping_name" id = "shipping_name" size="20" value="{$smarty.request.shipping_name}"/>
+					<input type="hidden" name="shipping_id" id = "shipping_id" value="{$smarty.request.shipping_id}"/>	
+				</td>
+				<td class="word_width">支付方式</td>
+				<td>
+					<input type="text" class="new_input word_width_bigger" name = "pay_name" id = "pay_name" value="{$smarty.request.pay_name}"/>
+					<input type="hidden" name = "pay_id" id = "pay_id" value="{$smarty.request.pay_id}"/>
+				</td>	
+				<td class="word_width">订单类型</td>
+				<td>
+					<select name="order_type" id="order_type" class="form-control-bigger">
+						<option value="">请选择</option>
+						<option value="yes" {if $order_type == 'yes'}selected{/if}>有备注</option>
+						<option value="no" {if $order_type == 'no'}selected{/if}>无备注</option>
+					</select>
+				</td>	
+		</tr>
+		<tr>
+				<td class="word_width">订单状态</td>
+				<td>
+					<select class="form-control-bigger" name="order_status">
+						<option value="-1">所有状态</option>
+						{foreach from=$_CFG.adminvars.order_status key=key item=order_status}
+						{if $key!=4 && $key!=8}
+						<option value="{$key}" {if $smarty.request.order_status != null && $smarty.request.order_status == $key}selected{/if}>{$order_status}</option>
+						{/if}
+						{/foreach}
+					</select>
+				</td>
+				<td class="word_width">收款状态</td>
+				<td>
+					<select class="form-control-bigger" name="pay_status">
+						<option value="-1">所有状态</option>
+						{foreach from=$_CFG.adminvars.pay_status key=key item=pay_status}
+						{if $key!=1}
+						<option value="{$key}" {if $smarty.request.pay_status != null && $smarty.request.pay_status == $key}selected{/if}>{$pay_status}</option>
+						{/if}
+						{/foreach}
+					</select>
+				</td>	
+				<td class="word_width">发货状态</td>
+				<td>
+					<select class="form-control-bigger" name="shipping_status">
+						<option value="-1">所有状态</option>
+						{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}
+						{if $key < 3 ||$key > 7}
+						<option value="{$key}" {if $smarty.request.shipping_status != null && $smarty.request.shipping_status == $key}selected{/if}>{$shipping_status}</option>
+						{/if}
+						{/foreach}
+						<!-- <option value="transit_step"  {if $smarty.request.shipping_status == 'transit_step'}selected{/if}>有走件信息</option> -->
+					</select>
+				</td>
+		</tr>
+		
+		<tr>
+				<td class="word_width">日期：从</td>
+				<td><input type="text" class="new_input date-width-more" id="startCalendar" name="startCalendar" value="{$startCalendar}"></td>
+
+				<td class="word_width">到</td>
+				<td ><input type="text" class="new_input date-width-more" id="endCalendar" name="endCalendar"  value="{$smarty.request.endCalendar}"></td>
+				<!-- <span class="Button4" style="margin-top:9px;margin-right:10px;float:right" onClick="document.getElementById('filter_form').submit()">查询</span>  --> 
+				<td class="word_width">
+					<span class="btn_searches" disabled="disabled">查询</span>
+					<input type="submit" class="btn search_disable" value="查询" name="search"> 
+				</td>
+				<td>
+					{if $type == 'search'}
+					<input type="submit" class="btn daochu_cvs" value="  导出CSV  " name="csv">
+					{/if}
+				</td>
+		</tr>
+		</table>	
+	</form>
+</div>
+
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+<script type="text/javascript" src="js/WdatePicker.js"></script>
+<script type="text/javascript">
+var order_list_check = '{$order_list_check}';
+{literal}
+$(document).ready(function(){
+	   // 绑定滑动效果
+	   $('legend.expand').bind('click', function(event){
+	   	$(this).next().slideToggle('normal');
+	   }); 
+	   var property={
+	   	divId:"demo",
+	   	needTime:true,
+	   	isFirst :true,
+	   	yearRange:[1970,2030],
+	   	week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+	   	month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+	   	format:"yyyy-MM-dd hh:mm:ss"
+	   };
+	   $(document).ready(function(){
+	   	canva1=$.createGooCalendar("startCalendar",property);
+	   	property.isFirst = false;
+	   	canva2=$.createGooCalendar("endCalendar", property);
+	   });
+	   $('#shipping_name').autocomplete('csmo.php?act=ajax&do=search_shipping', {
+	   	dataType : 'json',
+	   	minChars: 0,
+	   	mustMatch: false,
+	   	formatItem : function(row, i, max, value, term) {
+	   		return(row.shipping_name);
+	   	},
+	   	formatResult : function(row) {
+	   		return(row.shipping_name);
+	   	}
+	   }).result(function(event, row, formatted) {
+	   	$('#shipping_id').val(row.shipping_id);
+	   	$('#shipping_name').val(row.shipping_name);
+	   }); 
+	   $('#pay_name').autocomplete('csmo.php?act=ajax&do=search_pay_type', {
+	   	dataType : 'json',
+	   	minChars: 0,
+	   	mustMatch: false,
+	   	formatItem : function(row, i, max, value, term) {
+	   		return(row.pay_name);
+	   	},
+	   	formatResult : function(row) {
+	   		return(row.pay_name);
+	   	}
+	   }).result(function(event, row, formatted) {
+	   	$('#pay_id').val(row.pay_id);
+	   	$('#pay_name').val(row.pay_name);
+	   }); 	  
+
+		//店铺名称搜索
+		$('#shop_name').autocomplete('csmo.php?act=ajax&do=search_shop_name', {
+			dataType : 'json',
+			minChars : 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.name);
+			},
+			formatResult : function(row) {
+				return(row.name);
+			}
+		}).result(function(even, row, formatted){
+			$('#distributor_id').val(row.distributor_id);
+			$('#shop_name').val(row.name);
+		});
+		//商品名称搜索
+		$('#goods_name').autocomplete('csmo.php?act=ajax&do=search_goods_name', {
+			dataType : 'json',
+			minChars : 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		}).result(function(even, row, formatted){
+			$('#goods_id').val(row.goods_id);
+			$('#goods_name').val(row.goods_name);	
+		});
+		$(".search_disable").click(function(e) {
+			startCalendar = $.trim($('#startCalendar').val());
+			endCalendar = $.trim($('#endCalendar').val());
+			if(startCalendar==''){
+				alert('请务必选择起始时间！');
+				return false;
+			}else if(endCalendar!='' && startCalendar>endCalendar){
+				alert('请保证起始时间小于截止时间');
+				return false;
+			}
+			if(order_list_check.length != 0){
+				$(".btn_searches").css("display","inline-block");
+				// if($(".content_test").text() != ""){
+					$(".search_disable").css("display","none");
+				// }
+			}
+		});
+
+	});
+</script>
+{/literal}

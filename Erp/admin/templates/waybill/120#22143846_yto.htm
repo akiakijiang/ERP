@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>圆通[乐其#杭州仓]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:10pt;top:40px;left:80px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:10pt;top:70px;left:80px;"><!--上海乐其--></div>
+<div style="position:absolute;font-size:10pt;top:108px;left:70px;">{$order.company_address}</div>
+<div style="position:absolute;font-size:10pt;top:150px;left:70px;">崧煌路810号1栋3楼</div>
+<div style="position:absolute;font-size:10pt;top:180px;left:90px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:20pt;top:200px;left:40px;">√</div>
+<div style="position:absolute;font-size:10pt;top:260px;left:75px;">配件</div>
+
+<div style="position:absolute;font-size:10pt;top:60px;left:430px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:60px;left:560px;">{$order.city}</div>
+<div style="position:absolute;font-size:10pt;top:130px;left:440px;">{if $order.province != ''}{$order.province}{/if}</div>
+<div style="position:absolute;font-size:10pt;top:130px;left:560px;">{if $order.city != ''}{$order.city}{/if}</div>
+<div style="position:absolute;font-size:10pt;top:130px;left:640px;">{if $order.district != ''}{$order.district}{/if}</div>
+<div style="position:absolute;font-size:10pt;top:160px;left:390px;width:400px;">{$order.address} (订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:10pt;top:190px;left:490px;">{$order.mobile}</div>
+<div style="position:absolute;font-size:10pt;top:190px;left:640px;">{$order.tel}</div>
+<div style="position:absolute;font-size:20pt;top:230px;left:620px;">√</div>
+<div style="position:absolute;font-size:10pt;top:400px;left:400px;">请检查包裹再签收，破损请拒收</div>
+<div style="position:absolute;font-size:10pt;top:340px;left:70px;">乐其</div>
+<div style="position:absolute;font-size:10pt;top:360px;left:40px;">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+
+</body>
+</html>

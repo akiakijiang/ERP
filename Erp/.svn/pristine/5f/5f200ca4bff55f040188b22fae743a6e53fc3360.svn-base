@@ -1,0 +1,852 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>{$lang.cp_home}{if $ur_here} - {$ur_here} {/if}</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/general.css" rel="stylesheet" type="text/css" />
+<link href="{$WEB_ROOT}admin/styles/main.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<script type="text/javascript" src="../admin/misc/jquery.ajaxQueue.js"></script>
+
+
+ <script language="JavaScript">
+  var actId = '{$act_id}' ;
+ {literal}
+ function E(id) {return document.getElementById(id);}
+ function ES(name) {return document.getElementsByName(name);}
+ 
+	$(document).ready(function() {
+		if(actId == 'default_facility_assign_facility') {
+			show(0);
+		} else if(actId == 'region_facility_assign_facility') {
+			show(1);
+		} else if(actId == 'best_shipping_assign_shipping') {
+			show(2);
+		} else if(actId == 'region_shipping_assign_shipping') {
+			show(3);
+		} else if(actId == 'show_shipping_assign_shipping') {
+			show(4);
+		} else {
+			show(2);
+		}
+
+	});
+
+   // 最优快递的仓库（默认仓库）
+   function default_facility_change() {
+       // 先清除之前选中的CheckBox
+       var checkedList = $('#default_facility_ret_detail').find("input:checked[name='default_facility_chkbox[]']");
+       $.each(checkedList, function(i, item){
+          // item.attr("checked", false);
+          item.checked = false ;  
+       });  
+       
+       $.ajax( {
+           url : "party_assign_shipping_manage.php",
+           data : "act=search_default_facility_list",
+           type : "POST",
+           cache: false,
+           dataType :"json",
+           error : function(XMLHttpRequest, textStatus, errorThrown) {
+               // alert("检索失败：" + XMLHttpRequest.responseText);
+               alert(XMLHttpRequest.status) ;
+           },
+           success : function(json) {
+               for (var i=0; i<json.length; i++) {
+                   var aaa = $('#default_facility_ret_detail').find('#default_facility_facility_id_' + json[i]);
+                   aaa.attr("checked", true);
+               }
+           }
+        }); 
+   }
+   
+   // 区域转仓
+   function region_facility_region_change() {
+       var region_id = $('#region_facility_region').val() ;
+
+       // 先清除之前选中的CheckBox
+       var checkedList = $('#region_facility_ret_detail').find("input:checked[name='region_facility_chkbox[]']");
+       $.each(checkedList, function(i, item){
+          // item.attr("checked", false);
+          item.checked = false ;  
+       });  
+
+       $.ajax( {
+           url : "party_assign_shipping_manage.php",
+           data : "region_facility_region_id="+region_id+"&act=search_region_facility_list",
+           type : "POST",
+           cache: false,
+           dataType :"json",
+           error : function(XMLHttpRequest, textStatus, errorThrown) {
+               // alert("检索失败：" + XMLHttpRequest.responseText);
+               alert(XMLHttpRequest.status) ;
+           },
+           success : function(json) {
+               for (var i=0; i<json.length; i++) {
+                   var aaa = $('#region_facility_ret_detail').find('#region_facility_facility_id_' + json[i]);
+                   aaa.attr("checked", true);
+               }
+           }
+        }); 
+
+   }
+   
+   // 最优快递
+   function best_shipping_facility_change() {
+       var facility_id = $('#best_shipping_facility').val() ;
+       // 先清除之前选中的CheckBox
+       var checkedList = $('#best_shipping_ret_detail').find("input:checked[name='best_shipping_chkbox[]']");
+       $.each(checkedList, function(i, item){
+          // item.attr("checked", false);
+          item.checked = false ;  
+       });  
+       
+       $.ajax( {
+           url : "party_assign_shipping_manage.php",
+           data : "best_shipping_facility_id="+facility_id+"&act=search_best_shipping_list",
+           type : "POST",
+           cache: false,
+           dataType :"json",
+           error : function(XMLHttpRequest, textStatus, errorThrown) {
+               // alert("检索失败：" + XMLHttpRequest.responseText);
+               alert(XMLHttpRequest.status) ;
+           },
+           success : function(json) {
+               for (var i=0; i<json.length; i++) {
+                   var aaa = $('#best_shipping_ret_detail').find('#best_shipping_shipping_id_' + json[i]);
+                   aaa.attr("checked", true);
+               }
+           }
+        }); 
+
+   }
+   
+   // 区域快递
+   function region_shipping_region_change() {
+       var region_id = $('#region_shipping_region').val() ;
+
+       // 先清除之前选中的CheckBox
+       var checkedList = $('#region_shipping_ret_detail').find("input:checked[name='region_shipping_chkbox[]']");
+       $.each(checkedList, function(i, item){
+          // item.attr("checked", false);
+          item.checked = false ;  
+       });  
+       
+       $.ajax( {
+           url : "party_assign_shipping_manage.php",
+           data : "region_shipping_region_id="+region_id+"&act=search_region_shipping_list",
+           type : "POST",
+           cache: false,
+           dataType :"json",
+           error : function(XMLHttpRequest, textStatus, errorThrown) {
+               // alert("检索失败：" + XMLHttpRequest.responseText);
+               alert(XMLHttpRequest.status) ;
+           },
+           success : function(json) {
+               for (var i=0; i<json.length; i++) {
+                   var aaa = $('#region_shipping_ret_detail').find('#region_shipping_shipping_id_' + json[i]);
+                   aaa.attr("checked", true);
+               }
+           }
+        }); 
+
+   }
+   
+   // 展示快递
+   function show_shipping_change() {
+       // 先清除之前选中的CheckBox
+       var checkedList = $('#show_shipping_ret_detail').find("input:checked[name='show_shipping_chkbox[]']");
+       $.each(checkedList, function(i, item){
+          // item.attr("checked", false);
+          item.checked = false ;  
+       });  
+       
+       $.ajax( {
+           url : "party_assign_shipping_manage.php",
+           data : "act=search_show_shipping_list",
+           type : "POST",
+           cache: false,
+           dataType :"json",
+           error : function(XMLHttpRequest, textStatus, errorThrown) {
+               // alert("检索失败：" + XMLHttpRequest.responseText);
+               alert(XMLHttpRequest.status) ;
+           },
+           success : function(json) {
+               for (var i=0; i<json.length; i++) {
+                   var aaa = $('#show_shipping_ret_detail').find('#show_shipping_shipping_id_' + json[i]);
+                   aaa.attr("checked", true);
+               }
+           }
+        }); 
+   }
+
+  
+  function default_facility_validate() {
+      var checkedList = $('#default_facility_ret_detail').find("input:checked[name='default_facility_chkbox[]']");
+      
+      var count = 0;
+      $.each(checkedList, function(i, item){
+	   	 count++;
+      });
+
+	  if(count == 0) {
+		 if(!confirm('该组织确定不维护默认仓库吗？')){
+			 return false;
+		 }
+	  }
+      return true;
+  }
+  
+  
+  function region_facility_validate() {
+      var region_id = $('#region_facility_region').val() ;
+      if (0 == region_id) {
+          return false ;
+      }
+      var checkedList = $('#region_facility_ret_detail').find("input:checked[name='region_facility_chkbox[]']");
+
+      var count = 0;
+      $.each(checkedList, function(i, item){
+	   	 count++;
+      });
+	  if(count > 1) {
+		 alert('一个地区最多只能选择1个仓库，请检查！');
+		 return false;
+	  } 
+	  if(count == 0) {
+		 if(!confirm('该地区确定不维护仓库吗？')){
+			 return false;
+		 }
+	  } 
+      return true;
+  }
+  
+  
+  function best_shipping_validate() {
+      var facility_id = $('#best_shipping_facility').val() ;
+      if (0 == facility_id) {
+          return false ;
+      }
+      var checkedList = $('#best_shipping_ret_detail').find("input:checked[name='best_shipping_chkbox[]']");
+      
+      var count = 0;
+      $.each(checkedList, function(i, item){
+	   	 count++;
+      });
+
+	  if(count == 0) {
+		 if(!confirm('该仓库确定不维护最优快递吗？')){
+			 return false;
+		 }
+	  }
+	  return true;
+  }
+  
+  function region_shipping_validate() {
+      var region_id = $('#region_shipping_region').val() ;
+      if (0 == region_id) {
+          return false ;
+      }
+      var checkedList = $('#region_shipping_ret_detail').find("input:checked[name='region_shipping_chkbox[]']");
+
+      var count = 0;
+      $.each(checkedList, function(i, item){
+	   	 count++;
+      });
+	  if(count > 1) {
+		 alert('一个地区最多只能选择1个默认快递，请检查！');
+		 return false;
+	  } 
+	  if(count == 0) {
+		 if(!confirm('该地区确定不维护默认快递吗？')){
+			 return false;
+		 }
+	  } 
+      return true;
+  }
+  
+  function show_shipping_validate() {
+      var checkedList = $('#show_shipping_ret_detail').find("input:checked[name='show_shipping_chkbox[]']");
+      
+      var count = 0;
+      $.each(checkedList, function(i, item){
+	   	 count++;
+      });
+
+	  if(count == 0) {
+		 if(!confirm('该组织确定不维护展示快递吗？')){
+			 return false;
+		 }
+	  }
+      return true;
+  }
+  
+  function show(num){
+      var shippingLi = E('shipping_li').getElementsByTagName('li');
+  
+      for(var i=0;i<shippingLi.length;i++){
+          E('shipping_li_'+i).className = '';
+          E('shipping_detail_'+i).style.display = 'none';
+      }
+      if(num==0) {
+    	  default_facility_change();
+      } else if(num==4) {
+    	  show_shipping_change();
+      } 
+      E('shipping_detail_'+num).style.display = '';
+      E('shipping_li_'+num).className = 'on';
+
+  }
+
+  /**
+	 * 改变地域的下拉框
+	 */
+	var Region = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+				{name: 'facility_province', data:{type:2} }, // 省
+				{name: 'facility_city',     data:{type:3} }, // 市
+				{name: 'facility_district'  }  // 区
+		],
+		
+		expr : ':select[name="#"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+			$(this.expr.replace('#', this.regions[0].name)).bind('change', this.regions[0].data, this.change_region_list);	
+			$(this.expr.replace('#', this.regions[1].name)).bind('change', this.regions[1].data, this.change_region_list);
+			$(this.expr.replace('#', this.regions[2].name)).bind('change', this.change_region_list);
+			
+		},
+		
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = Region.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == Region.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				Region.init_region_facility_region_val(next-1);  //初始化区域转仓方式
+				
+				
+				if (!last) {
+					$c = $(Region.expr.replace('#', Region.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(Region.expr.replace('#', Region.regions[i].name)).hide();	
+					}
+				}
+			    
+				$c.unbind();
+				
+				
+				$.ajax({
+					type: 'POST',
+					url: 'ajax.php?act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', Region.regions[next].data, Region.change_region_list);
+							}else if(next + 1 == ln){//如果是省才需要解绑市的
+								$c.bind('change', Region.regions[next].data, Region.change_region_list);
+							}
+						}
+					}
+				});	
+		},
+		
+		init_region_facility_region_val : function( elemNum ){
+			console.log(elemNum);
+			var regionId = "0";
+			var region = $(this.expr.replace('#', this.regions[elemNum].name));			
+			var regionVaule=region.val();
+			
+			//console.log(Region.expr.replace('#', Region.regions[elemNum].name).val());
+			
+			if(regionVaule != ""){
+				regionId = regionVaule;
+			}
+			$('#region_facility_region').val( regionId) ;
+			region_facility_region_change();
+		},
+		
+		change_district_list : function() {
+			Region.init_region_facility_region_val(2);  //初始化区域转仓方式
+		}
+
+		
+	};	
+	
+	/**
+	 * 改变地域的下拉框
+	 */
+	var RegionShipping = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+				{name: 'shipping_province', data:{type:2} }, // 省
+				{name: 'shipping_city',     data:{type:3} }, // 市
+				{name: 'shipping_district'  }  // 区
+		],
+		
+		expr : ':select[name="#"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+			$(this.expr.replace('#', this.regions[0].name)).bind('change', this.regions[0].data, this.change_region_list);	
+			$(this.expr.replace('#', this.regions[1].name)).bind('change', this.regions[1].data, this.change_region_list);
+			$(this.expr.replace('#', this.regions[2].name)).bind('change', this.change_region_list);
+			
+		},
+		
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = RegionShipping.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == RegionShipping.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				RegionShipping.init_region_shipping_region_val(next-1);  //初始化区域转仓方式
+				
+				
+				if (!last) {
+					$c = $(RegionShipping.expr.replace('#', RegionShipping.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(RegionShipping.expr.replace('#', RegionShipping.regions[i].name)).hide();	
+					}
+				}
+			    
+				$c.unbind();
+				
+				
+				$.ajax({
+					type: 'POST',
+					url: 'ajax.php?act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', RegionShipping.regions[next].data, RegionShipping.change_region_list);
+							}else if(next + 1 == ln){//如果是省才需要解绑市的
+								$c.bind('change', RegionShipping.regions[next].data, RegionShipping.change_region_list);
+							}
+						}
+					}
+				});	
+		},
+		
+		init_region_shipping_region_val : function( elemNum ){
+			console.log(elemNum);
+			var regionId = "0";
+			var region = $(this.expr.replace('#', this.regions[elemNum].name));			
+			var regionVaule=region.val();
+			
+			//console.log(RegionShipping.expr.replace('#', RegionShipping.regions[elemNum].name).val());
+			
+			if(regionVaule != ""){
+				regionId = regionVaule;
+			}
+			$('#region_shipping_region').val( regionId) ;
+			region_shipping_region_change();
+		},
+		
+		change_district_list : function() {
+			RegionShipping.init_region_shipping_region_val(2);  //初始化区域转仓方式
+		}
+
+		
+	};	
+	
+	$(document).ready(function(){
+		// 绑定 选择省会改变地区的事件
+		Region.init();  //绑定区域转仓的省市联动
+		RegionShipping.init();  //绑定区域转快递的省市联动
+	});
+  
+  
+	
+</script>
+{/literal}
+
+<style type="text/css">
+
+{literal}
+.order_liTab{float:left;margin-bottom:-1px;margin-top:20px;}
+.order_liTab li{width:110px;height:21px;padding-top:11px;background:url(../../images/order_liBg_1.gif) 0 5px no-repeat;float:left;text-align:center;margin-left:-1px;cursor:pointer;list-style:none;}
+.order_liTab li.on{background:url(../../images/order_liOn.png) no-repeat;font-weight:bold;font-size:14px;margin-bottom:-1px;position:relative;cursor:default;color:#000;}
+.order_liTab li a{color:#fff;}
+.order_liTab li.on a{color:#000;}
+
+.ddan{
+width:900px;
+float:left;
+}
+</style>
+{/literal}
+
+</head>
+<body>
+<h1>
+<span><a href="index.php?act=main">{$lang.cp_home}</a> {if $ur_here} - {$ur_here} {/if}</span>
+</h1>
+
+<div class="ddan">
+ <table> 
+          <tr>
+          <td>使用说明：</td>
+          </tr>
+          
+          <tr>
+          <td>1、店铺默认仓库：{$shop_default_facility_shipping.facility_name} &nbsp;&nbsp;&nbsp;默认快递：{$shop_default_facility_shipping.shipping_name}</td>
+          </tr>
+          
+          <tr>
+          <td>2、"最优快递的仓库"：即跑最优快递的仓库，会算出最便宜的仓库,但店长要保证这个仓库有货，不勾选默认为店铺默认仓库</td>
+          </tr>
+          
+          <tr>
+          <td>3、"区域转仓"：特殊地区转仓库</td>
+          </tr>
+          
+          <tr>
+          <td>4、"最优快递"：从某个仓库出发最便宜的快递</td>
+          </tr>
+          
+          <tr>
+          <td>5、"区域快递"：特殊地区发指定快递</td>
+          </tr>
+          
+          <tr>
+          <td>6、"展示快递"：非最优快递，但是在订单详情页可以提供价格参考（最优快递展示过了就不再展示）</td>
+          </tr>
+          
+          <tr>
+          <td>该功能即时修改，同步订单即时生效！</td>
+          </tr>
+
+ </table>
+ <br />
+</div>
+
+<div class="ddan">
+    <ul class="order_liTab fix" id="shipping_li" style="margin:0 0 -1px 0;padding:0 0 0 1px;">
+      <li id="shipping_li_0" onclick="show(0)">最优快递的仓库</li>
+      <li id="shipping_li_1" onclick="show(1)">区域转仓</li>
+      <li id="shipping_li_2" onclick="show(2)">最优快递</li>
+      <li id="shipping_li_3" onclick="show(3)">区域快递</li>
+      <li id="shipping_li_4" onclick="show(4)">展示快递</li>
+    </ul>
+</div>
+</br></br></br></br>
+
+<!-- 最优快递的仓库（默认仓库） -->
+<div class="main-div" style="float:left" id="shipping_detail_0">
+<form method="post" action="party_assign_shipping_manage.php" name="default_facility_form" onsubmit="return default_facility_validate()">
+<table >
+  
+  <tr align="center">
+    <td>
+       <input type="submit" id='default_facility_btn_submit' name='default_facility_btn_submit' 
+       {if $can_edit eq '0' } disabled='disabled' {/if}
+       value="确&nbsp;定" /> &nbsp; &nbsp; &nbsp;
+       <input type="reset" id='default_facility_btn_reset' name='default_facility_btn_reset' value="取&nbsp;消" />  
+       <input type="hidden" id="act" name="act" value="default_facility_assign_facility"/>
+    </td>
+  </tr>
+  <tr align="center">
+    <td>
+       <div id='default_facility_ret_detail' style=" width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$facility_lists item=facility name=facilityList }
+          {if $smarty.foreach.facilityList.iteration > 1 and ($smarty.foreach.facilityList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="default_facility_chkbox[]" id="default_facility_facility_id_{$facility.facility_id}" value="{$facility.facility_id}"/>&nbsp; {$facility.facility_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 区域转仓-->
+<div class="main-div" style="float:left" id="shipping_detail_1">
+<form method="post" action="party_assign_shipping_manage.php" name="default_shipping_form" onsubmit="return region_facility_validate()">
+<table >
+   <tr>
+    <td>
+       <div style="margin-left: 90px; float: left; width: 100px;">地区名称：</div>
+       <div style="float: left;">
+          <!-- <select id="region_facility_region" name="region_facility_region" onchange="javascript:region_facility_region_change();" >
+            <option label="-- 请选择地区 --" value="0" selected="selected" >-- 请选择地区  --</option>
+             {html_options options=$region_list }
+          </select> -->
+           <select name="facility_province"><option value="">-请选择-</option><!--{foreach from=$province_list item=item}--><option value="{$item.region_id}">{$item.region_name}</option> <!--{/foreach}--></select>省 &nbsp;&nbsp;
+          <select name="facility_city" style="display:none"><option>-请选择-</option></select> &nbsp;&nbsp;
+          <select name="facility_district" style="display:none" ><option>-请选择-</option></select>
+          
+           
+          <input type="hidden" id="region_facility_region" name="region_facility_region" value="0"  />
+       </div> 
+       <div style="float: left; margin-left: 40px;"> <input type="submit" id='region_facility_btn_submit' name='region_facility_btn_submit' 
+        {if $can_edit eq '0' } disabled='disabled' {/if}
+        value="确&nbsp;定" /> </div>
+       <div style="float: left; margin-left: 30px;"> <input type="reset" id='region_facility_reset' name='region_facility_btn_reset' value="取&nbsp;消" /> </div>  
+       <input type="hidden" id="act" name="act" value="region_facility_assign_facility"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+       <div id='region_facility_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$facility_lists item=facility name=facilityList }
+          {if $smarty.foreach.facilityList.iteration > 1 and ($smarty.foreach.facilityList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="region_facility_chkbox[]" id="region_facility_facility_id_{$facility.facility_id}" value="{$facility.facility_id}"/>&nbsp; {$facility.facility_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+     <tr>
+    <td>
+       <div id='region_facility_all_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+         <th>组织地区默认仓库列表：</th>
+          {foreach from=$party_region_assign_facility_list item=region_facility name=party_region_assign_facilityList }
+              <tr><td>
+            {if $region_facility.grand_parent_region_id != null and $region_facility.grand_parent_region_id > 1 }
+               {$region_facility.grand_parent_region_name}-
+            {/if}
+            {if $region_facility.parent_region_id != null and $region_facility.parent_region_id > 1 }
+               {$region_facility.parent_region_name}-
+            {/if}
+            {$region_facility.region_name}:&nbsp;&nbsp;&nbsp;{$region_facility.facility_name}</br></br>
+             </td></tr>
+          {/foreach}
+          <tr><td>
+                                  其他地区:&nbsp;&nbsp;&nbsp;最优快递仓库跑出来的最便宜的仓库，没勾选最优快递仓库的则为店铺默认仓库</br></br> 
+          </td></tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+    <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 最优快递 -->
+<div class="main-div" style="float:left" id="shipping_detail_2">
+<form method="post" action="party_assign_shipping_manage.php" name="best_shipping_form" onsubmit="return best_shipping_validate()">
+<table >
+  
+  <tr>
+    <td>
+       <div style="margin-left: 90px; float: left; width: 100px;">仓库名称：</div>
+       <div style="float: left;">
+          <select id="best_shipping_facility" name="best_shipping_facility" onchange="javascript:best_shipping_facility_change();" >
+            <option label="-- 请选择仓库 --" value="0" selected="selected" >-- 请选择仓库  --</option>
+             {html_options options=$available_facility_list }
+          </select>
+       </div> 
+       <!-- <div style="float: left; margin-left: 30px;">COD快递 <input type="checkbox" id='is_cod' name='is_cod' checked="checked" /> </div> -->
+       <div style="float: left; margin-left: 40px;"> <input type="submit" id='best_shipping_btn_submit' name='best_shipping_btn_submit' 
+        {if $can_edit eq '0' } disabled='disabled' {/if}
+        value="确&nbsp;定" /> </div>
+       <div style="float: left; margin-left: 30px;"> <input type="reset" id='best_shipping_btn_reset' name='best_shipping_btn_reset' value="取&nbsp;消" /> </div>  
+       <input type="hidden" id="act" name="act" value="best_shipping_assign_shipping"/>
+    </td>
+  </tr>
+    <td>
+       <div id='best_shipping_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$shipping_list item=shipping name=shippingList }
+          {if $smarty.foreach.shippingList.iteration > 1 and ($smarty.foreach.shippingList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="best_shipping_chkbox[]" id="best_shipping_shipping_id_{$shipping.shipping_id}" value="{$shipping.shipping_id}"/>&nbsp; {$shipping.shipping_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+  <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 区域快递 -->
+<div class="main-div" style="float:left" id="shipping_detail_3">
+<form method="post" action="party_assign_shipping_manage.php" name="region_shipping_form" onsubmit="return region_shipping_validate()">
+<table >
+   <tr>
+    <td>
+       <div style="margin-left: 90px; float: left; width: 100px;">地区名称：</div>
+       <div style="float: left;">
+          <!-- <select id="region_shipping_region" name="region_shipping_region" onchange="javascript:region_shipping_region_change();" >
+            <option label="-- 请选择地区 --" value="0" selected="selected" >-- 请选择地区  --</option>
+             {html_options options=$region_list }
+          </select> -->
+          <select name="shipping_province"><option value="">-请选择-</option><!--{foreach from=$province_list item=item}--><option value="{$item.region_id}">{$item.region_name}</option> <!--{/foreach}--></select>省 &nbsp;&nbsp;
+          <select name="shipping_city" style="display:none"><option>-请选择-</option></select> &nbsp;&nbsp;
+          <select name="shipping_district" style="display:none" ><option>-请选择-</option></select>
+          
+           
+          <input type="hidden" id="region_shipping_region" name="region_shipping_region" value="0"  />
+       </div> 
+       <div style="float: left; margin-left: 40px;"> <input type="submit" id='region_shipping_btn_submit' name='region_shipping_btn_submit' 
+        {if $can_edit eq '0' } disabled='disabled' {/if}
+        value="确&nbsp;定" /> </div>
+       <div style="float: left; margin-left: 30px;"> <input type="reset" id='region_shipping_reset' name='region_shipping_btn_reset' value="取&nbsp;消" /> </div>  
+       <input type="hidden" id="act" name="act" value="region_shipping_assign_shipping"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+       <div id='region_shipping_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$shipping_list item=shipping name=shippingList }
+          {if $smarty.foreach.shippingList.iteration > 1 and ($smarty.foreach.shippingList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="region_shipping_chkbox[]" id="region_shipping_shipping_id_{$shipping.shipping_id}" value="{$shipping.shipping_id}"/>&nbsp; {$shipping.shipping_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+     <tr>
+    <td>
+       <div id='region_shipping_all_ret_detail' style="margin-left: 80px; width: 70%">
+         <table> 
+         <th>组织地区默认快递列表：</th>
+          {foreach from=$party_region_assign_shipping_list item=region_shipping name=party_region_assign_shippingList }
+              <tr><td>
+            {if $region_shipping.grand_parent_region_id != null and $region_shipping.grand_parent_region_id > 1 }
+               {$region_shipping.grand_parent_region_name}-
+            {/if}
+            {if $region_shipping.parent_region_id != null and $region_shipping.parent_region_id > 1 }
+               {$region_shipping.parent_region_name}-
+            {/if}
+            
+            {$region_shipping.region_name}:&nbsp;&nbsp;&nbsp;{$region_shipping.shipping_name}</br></br>
+             </td></tr>
+          {/foreach}
+          <tr><td>
+                                  其他地区:&nbsp;&nbsp;&nbsp;最优快递跑出来的快递</br></br> 
+          </td></tr>
+         </table>
+       </div>
+    </td>
+   </tr>
+   
+    <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+<!-- 展示快递 -->
+<div class="main-div" style="float:left" id="shipping_detail_4">
+<form method="post" action="party_assign_shipping_manage.php" name="show_shipping_form" onsubmit="return show_shipping_validate()">
+<table >
+  
+  <tr align="center">
+    <td align="center">
+       <input type="submit" id='btn_submit' name='btn_submit' 
+       {if $can_edit eq '0' } disabled='disabled' {/if}
+       value="确&nbsp;定" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <input type="reset" id='btn_reset' name='btn_reset' value="取&nbsp;消" />  
+       <input type="hidden" id="act" name="act" value="show_shipping_assign_shipping"/>
+    </td>
+  </tr>
+  <tr align="center">
+    <td>
+       <div id='show_shipping_ret_detail' style=" width: 70%">
+         <table> 
+          <tr>
+          {foreach from=$shipping_list item=shipping name=shippingList }
+          {if $smarty.foreach.shippingList.iteration > 1 and ($smarty.foreach.shippingList.iteration-1) % 5 eq 0}
+          </tr><tr>
+          {/if}
+            <td><input type="checkbox" name="show_shipping_chkbox[]" id="show_shipping_shipping_id_{$shipping.shipping_id}" value="{$shipping.shipping_id}"/>&nbsp; {$shipping.shipping_name}</td>
+          {/foreach}
+          </tr>
+         </table>
+       </div>
+    </td>
+  <tr>
+  </tr>
+</table>
+</form>
+</div>
+
+</body>

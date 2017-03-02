@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>系统登录</title>
+  <link href="../admin/styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../admin/misc/jquery.js"></script>
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;用户登录&nbsp;</span></legend>
+  
+ 	<form method="post" id="form" action="login.php" >  
+
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">请输入用户名和密码</h3>
+
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">分销商名称 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="account[name]" value="{$account.name}" size="20" /> 
+				</td>
+			</tr>
+      
+    	<tr>
+      	<td>密码 <span class="require"> * </span></td>
+        <td>
+        	<input type="password" name="account[password]" value="" /> &nbsp;
+				</td>
+			</tr>
+        
+        <tr>
+        <td></td>
+        <td><button type="submit">登录</button></td>
+        </tr>
+		</table>
+  </div>
+  
+  <input type="hidden" name="act" value="login" /> 
+  </form>
+  
+  
+</fieldset>
+
+</body>
+</html>

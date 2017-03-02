@@ -1,0 +1,725 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>新订单详情页</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" type="text/css" href="../styles/orderNew1.css">
+		<link rel="stylesheet" type="text/css" href="../styles/pikaday.css">
+</head>
+<body>
+	<div id='mainWrap'>
+		<div id='header'>
+			<p class='orderId'>
+				订单号：<span>{$order_header->order_sn_}</span>
+			</p>
+			<ul id='stateList'>
+				<li>订单状态:</li> 
+				<li><span>{$order_header->order_status_}</span></li>
+			</ul>
+			<ul id='actList'>
+				{foreach from = $order_header->allowed_action_list_ key=action_id
+				item=action_name }
+				<li><span id='{$action_id}'>{$action_name}</span></li> {/foreach}
+			</ul>
+			</br>
+			<p id='uniOrder'>
+				{if $merge_info->can_edit_} <span class='addUniOrder'>添加合并订单</span>
+				{/if}
+				<div class='merged_order_ids_wrap' style=''>
+					<span class='disUniOrder'>拆分</span> <span>已合并的订单：</span> <span
+						class='orderSnWrap'> 
+						{foreach from =
+						$merge_info->merged_order_ids_ key=k item=value } <span
+						class='existUniOrderId'>{$value.order_sn}，</span> {/foreach}
+					</span>
+				</div>
+			</p>
+			<div class='inputUniOrder'>
+				<img src='../images/topArrow.png'> <select>
+						<option value='taobao'>淘宝订单号</option>
+						<option value='erp'>ERP订单号</option>
+				</select> <input type='text' placeholder='请输入合并的订单号'> <input
+						type='button' class='subUniOrder' value='合并订单'><br>
+			</div>
+			<div id='actListTab' class='add_note'>
+				<img src='../images/close.png' id='closeActTab'> <img
+					src='../images/topArrow.png' id='topArrofActTab'> <span>添加备注：</span>
+						<textarea class='noteText'
+							style='resize: none; vertical-align: top'>
+              </textarea></br> <label for='datepicker'>处理时间：</label> <input type='text'
+						id='datepicker'></br> <input type='button' class='subActBtn'
+							value='提交'>
+			</div>
+		</div>
+
+		<div id='detailWrap'>
+			<ul>
+				<li id='source_order_info'>订单详细信息</li>
+				<li id='pay_info'>付款信息</li>
+				<li id='logistic_info'>物流信息</li>
+				<li id='service_records'>售后记录<span>{$service_count}</span></li>
+				<li id='action_records'>操作信息<span>{$action_count}</span></li>
+				<li id='status_history_records'>历史记录<span>{$history_count}</span></li>
+				<li id="time_line_info">时间线</li>
+			</ul>
+			<img src="../images/preloader.gif" title='loadingajax' id='loadimg' />
+			<div id='detailContent'>
+				<div class='info' id='orderDetail'>
+					<div id='custDetail' class='orderDetailChild'>
+						<div class='custgrid'>
+							<form id='platForm'>
+								{if $platform_info->can_edit_}<span class='editBtn'>修改</span>{/if}
+								<span id='custgridTitle'>平台：</span>
+								{$platform_info->info_}
+							</form>
+						</div>
+						<div class='custgrid'>
+							<form id='custInfoForm'>
+								{if $consignee->can_edit_}<span class='editBtn'>修改</span> {/if}
+								<span id='custgridTitle'>收货人：</span>{$consignee->info_}
+							</form>
+						</div>
+						<div class='custgrid'>
+							<form id='payForm'>
+								{if $payment->can_edit_}<span class='editBtn'>修改</span>{/if}
+								<span id='custgridTitle'>支付方式：</span> 
+								{$payment->pay_info_}
+							</form>
+						</div>
+						<div class='custgrid'>
+							<form id='facilityForm'>
+								{if $distribution->can_edit_}<span class='editBtn'>修改</span>{/if}
+								<span id='custgridTitle'>配送方式：</span> 
+								{$distribution->info_}
+							</form>
+						</div>
+						<div class='custgrid'>
+							<span id='custgridTitle'>商品列表：</span>
+							{if $goods_list->can_edit_}
+							<span id='showGoodsInfo'>显示详情</span>&nbsp;
+							<span id='addGoods'>添加商品</span>
+							{/if}
+							<table style='width:98%;'>
+							<tr><th>商品名</th><th>类型名</th><th>单价</th><th>数量</th><th>小计</th><th>操作</th></tr>
+							{foreach from=$goods_list->goods_list_ item=goods_list}<tr>
+							<td>{$goods_list->goods_name_}</td><td>{$goods_list->style_name_}</td>
+							<td>{$goods_list->goods_price_}</td><td>{$goods_list->goods_number_}</td>
+							<td>{$goods_list->total_price_}</td><td>{if $goods_list->can_edit_}<span class='editBtn'>修改</span>{/if}</td></tr>
+							{/foreach}
+							</table>
+						</div>
+						
+						<div class='clear'></div>
+					</div>
+					
+				</div>
+				<div class='info' id='payInfo'>
+					<div id='payInfoBox'>
+					<div class='payInfoChild'></div>
+					<form id='payInfoForm'>
+					<span class='editBtn'>修改</span><input type='button' value='提交修改' class='subPaySubmit' />
+					</form>
+					</div>
+				</div>
+				<div class='info' id='logisticsInfo'>
+					<h2>基本信息</h2>
+					<p>
+						发货仓库：<span class='facility'></span>
+					</p>
+					<p>
+						中转地址：<span class='midAddr'></span>
+					</p>
+					<div id='shipList'></div>
+					<div id='estWeight'>
+						<h2>预估重量</h2>
+						<p>
+							商品重量：<span class='egw'></span>g
+						</p>
+						<p>
+							耗材重量：<span class='pew'></span>g（以该耗材重量为准）
+						</p>
+						<p>
+							总重量：<span class='tew'></span>g
+						</p>
+					</div>
+					<div id='bestExp'></div>
+					<div id='otherExp'></div>
+				</div>
+				<div class='info' id='customRecord'>
+					<table>
+					</table>
+					<div class='recordDetailBox'></div>
+				</div>
+				<div class='info' id='actHistoryBox'>
+					<table></table>
+				</div>
+				<div class='info' id='statusHistoryBox'>
+					<table></table>
+				</div>
+				<div class='info' id='timeLineInfo'>
+					<div style="height: 40px; width: 800px;"></div>
+					<ull id='nodeList'></ull>
+					<!-- 
+					<ull id='nodeList'> {foreach from = $order_header->time_line_
+					item = time_spot} {if $time_spot->timestamp_ != 0} <lii
+						class="doneNode" id='{$time_spot->icon_img_name_}'>
+					<div>
+						<span class='nodeAct'>{$time_spot->action_}</span><span
+							class='actTime'>{$time_spot->time_}</span>
+					</div>
+					</lii> {else} <lii id='{$time_spot->icon_img_name_}'>
+					<div>
+						<span class='nodeAct'>{$time_spot->action_}</span>
+					</div>
+					</lii> {/if} {/foreach} </ull>
+					-->
+					<div id='line'></div>
+					<div class='clear'></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src='../js/jquery.min.js'></script>
+	<script type="text/javascript" src='../js/pikaday.min.js'></script>
+	<script>
+      //{literal}
+          var picker = new Pikaday(
+          {//时间控件初始化
+              field: document.getElementById('datepicker'),
+              firstDay: 1,
+              minDate: new Date('2000-01-01'),
+              maxDate: new Date('2020-12-31'),
+              yearRange: [2000,2020]
+          });
+      //{/literal}
+      </script>
+	<script type="text/javascript">
+      // <![CDATA[
+      var $order_id = {$order_header->order_id_};
+      var $party_id = {$order_header->party_id_};
+      //{literal}
+      
+      $(document).ready(function(){
+        //定义正则表达式
+        var regNumber = new RegExp("^[0-9]*$");
+        var regMobile = new RegExp("^((13[0-9]{9})|(18[0-9]{9})|(15[89][0-9]{8}))$");
+        var regZipcode = new RegExp("^[1-9][0-9]{5}$");
+        var regEmail = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        // var regPhone = /^[+]{0,1}(\d){1,3}[ ]?([-]?((\d)|[ ]){1,12})+$/;
+        /*
+        全局jquery函数绑定，主要针对HTML初始化的时候不存在的元素的函数绑定，例如ajax动态生成的商品列表中商品的修改以及删除操作，也用于添加商品新生成的商品的修改以及删除操作。
+        */
+         $("#goods").delegate(".goodsDeleteBtn","click",function(){//删除商品，需要改进
+                var that = $(this);
+                var data = 'content_type=goods_list&action_type=delete&order_goods_id='+that.parent().parent().find(".order_goods_id").text()+'&order_id='+$order_id;
+                          if(confirm('确定删除该商品吗？')){
+                              $.ajax({
+                                type:'get',
+                                dataType:'json',
+                                url:'../order/sales_order_edit_ajax.php',
+                                data:data,
+                                beforeSend:function(){
+                                  that.text("正在努力删除");
+                                },
+                                success:function(data){
+                                  that.text("删除");
+                                  if(data.error_info_.err_no == 0){
+                                    that.parent().parent().hide();
+                                    alert("删除成功");
+                                  }else{
+                                    alert(data.error_info_.message);
+                                  }
+
+                                },
+                                error:function(){
+                                  that.text("删除");
+                                  alert("AJAX加载失败");
+                                }
+                              });
+                              
+                          }
+         });
+
+        $("#bestExp").delegate(".changeTrackBtn","click",function(){//最优快递修改
+          var that = $(this);
+          var data="content_type=shipping_info_of_order_detail&action_type=update&order_id="+$order_id+"&shipping_id="+$(this).next().text();
+          $.ajax({
+            type:'get',
+            dataType:'json',
+            url:'../order/sales_order_edit_ajax.php',
+            data:data,
+            beforeSend:function(){
+              that.attr("disabled",true).val("正在努力修改");
+            },
+            success:function(data){
+              that.attr("disabled",false).val("修改快递");
+              if(data.error_info_.err_no == 0){
+                alert("快递修改成功");
+              }else{
+                alert(data.error_info_.message);
+              }
+            },
+            error:function(){
+              that.attr("disabled",false).val("修改快递");
+              alert("AJAX加载失败");
+            }
+          });
+        });
+
+
+
+        $("#actList").delegate("span","click",function(){
+        	  console.log(this);
+              var left = $(this).position().left - 300;
+              var action_id = $(this).attr("id");
+              $(".noteText").val("");
+              $("#datepicker").val("");
+              $("#actListTab").show().attr("class",action_id).animate({"left":left},"fast"); 
+        });
+
+        $(".subActBtn").click(function(){//提交头部操作内容
+            header_action_ajax($(this),$(this).parent().attr("class"),0);
+       });
+       
+       function header_action_ajax(that,order_action_id,force_update) {
+            var data="order_action_id="+order_action_id+"&content_type=order_header&action_type=update&note_content="+$(".noteText").val()+"&add_time="+$("#datepicker").val()+"&order_id="+$order_id+"&force_update="+force_update;
+            $.ajax({
+              type:'get',
+              dataType:'json',
+              url:'order/sales_order_edit_ajax.php',
+              data:data,
+              beforeSend:function(){
+                that.addClass('disableBtn').text("正在提交").attr("disabled",true);
+              },
+              success:function(data){
+                that.removeClass('disableBtn').text("提交").attr("disabled",false);
+                if(data.error_info_.err_no == 0){
+                  alert("操作成功");
+                  $("#stateList").html("<li>订单状态:</li>");
+                  for(var key in data.status_list_){
+                    $("#stateList").append("<li><span>"+data.status_list_[key]+"</span></li>");
+                  }
+                  var $actList = $("#actList");
+                  $actList.html("");
+                  for(var key in data.allowed_action_list_){
+                    $actList.append("<li><span id='"+key+"'>"+data.allowed_action_list_[key]+"</span></li>");
+                  }
+                }
+                // 可以强制更新
+                else if(data.error_info_.err_no == 5){
+               	 if(confirm(data.error_info_.message)) {
+                   	 header_action_ajax(that,order_action_id,1);
+               	 }
+                } else {
+               	 alert(data.error_info_.message);
+                }
+                $("#actListTab").hide();
+              },
+              error:function(){
+                that.removeClass('disableBtn').text("提交").attr("disabled",false);
+                alert("AJAX加载失败");
+              }
+            });
+       }
+
+        $("#closeActTab").click(function(){//关闭头部操作菜单
+              $(this).parent().hide();
+        });
+
+        $(".addUniOrder").click(function(){
+          var that=$(this);
+          $(".inputUniOrder").slideToggle(50);
+        });
+
+        $(".subUniOrder").click(function(){//合并订单
+            var that = $(this);
+            if(!regNumber.test(that.siblings("input[type='text']").val())){
+                  alert("请输入数字!");
+            }else{
+                  var data="merge_type=merge&content_type=merge_info&action_type=update&order_id="+$order_id+"&merge_shipment_external_type="+that.siblings("select").val()+"&merge_shipment_order_sn="+that.siblings("input[type='text']").val();
+                  // alert(data);
+                  $.ajax({
+                    type:'get',
+                    dataType:'json',
+                    url:'../order/sales_order_edit_ajax.php',
+                    data:data,
+                    beforeSend:function(){
+                      that.attr("disabled",true);
+                    },
+                    success:function(data){
+                      that.attr("disabled",false);
+                      if(data.error_info_.err_no == 0){
+                        alert("合并成功");
+                        $(".inputUniOrder").slideUp(200);
+                        var merged_order_ids_wrap = $(".merged_order_ids_wrap");
+                        merged_order_ids_wrap.fadeIn();
+                        for(var key in data.merged_order_ids_){
+                          merged_order_ids_wrap.append("<span class='existUniOrderId'>"+data.merged_order_ids_[key].order_sn+"<span>");
+                        }
+
+                      }else{
+                        that.attr("disabled",false);
+                        alert(data.error_info_.message);
+                      }
+                    },
+                    error:function(){
+                      alert("AJAX加载失败");
+                    }
+                  });
+            }
+        });
+
+        $(".disUniOrder").click(function(){//拆分订单
+            var that = $(this);
+            var data="merge_type=split&content_type=merge_info&action_type=update&order_id="+$order_id;
+            var existUniOrderId=$(".existUniOrderId");
+            // alert(data);
+            $.ajax({
+              type:'get',
+              dataType:'json',
+              url:'../order/sales_order_edit_ajax.php',
+              data:data,
+              beforeSend:function(){
+
+              },
+              success:function(data){
+                if(data.error_info_.err_no == 0){
+                  if(data.can_edit_){
+                    alert("拆分成功");
+                    $(".merged_order_ids_wrap").fadeOut(200);
+                  }
+                }else{
+                  alert(data.error_info_.message);
+                }
+              },
+              error:function(){
+                alert("AJAX加载失败");
+              }
+            });
+        });
+
+        
+        $("#searchName").keyup(function(e){//根据关键字搜索商品id&name&style
+          if(e.which == 13){
+            var that = $(this);
+            var data = "keyword=" + $(this).val();
+                $.ajax({
+                    type:'get',
+                    dataType:'json',
+                    url:"../order.php?act=search_goods",
+                    data:data,
+                    beforeSend:function(){
+                      that.addClass("searchNameLoad");
+                    },
+                    success:function(data){
+                        that.removeClass("searchNameLoad");
+                        var $nameNumber = data.goodslist.length;
+                        if($nameNumber > 0){
+                              $(".goodsNameList").html("");
+                              for(var i=0;i<$nameNumber;i++){
+                                $(".goodsNameList").append("<p>"+data.goodslist[i].name+"</p>");
+                              }
+                              $(".goodsNameList").fadeIn();
+                              $(".goodsNameList p").click(function(){
+                                var goodsInd = $(".goodsNameList p").index(this);
+                                $(this).parent().prev().val($(this).text());
+                                $("#searchGoodsId").val(data.goodslist[goodsInd].goods_id);
+                                $(this).parent().fadeOut();
+                                var $searchStyleList = $("#searchStyleList");
+                                if(data.goodslist[goodsInd].style_list){
+                                  $searchStyleList.html("");
+                                  for(var key in data.goodslist[goodsInd].style_list){
+                                    $searchStyleList.append("<option value='"+data.goodslist[goodsInd].style_list[key].style_id+"'>"+data.goodslist[goodsInd].style_list[key].color+"</option>");
+                                  }
+                                }else{
+                                  $searchStyleList.html("<option value='0'>无样式</option>");
+                                }
+                              });
+                        }else{
+                          $(".goodsNameList").html("");
+                          $(".goodsNameList").append("<p>没搜到呀，换个关键字再试试~</p>").fadeIn();
+                        }
+                    },
+                    error:function(error){
+                      that.removeClass("searchNameLoad");
+                        alert("关键字搜索请求失败!");
+                    }
+                });
+          }
+        }).blur(function(){
+          $(".goodsNameList").fadeOut();
+        });
+
+        
+        var $subPaySubmit = $(".subPaySubmit");
+        $("#payInfoForm .editBtn").click(function(){//点击付款信息下的修改按钮，获取抵用券
+                  if($(this).text() == '修改'){
+                        $(this).text('取消').addClass('cancelEditBtn');
+                  }else{
+                    $(this).text('修改').removeClass('cancelEditBtn');
+                  }
+                  $subPaySubmit.slideToggle(100);
+        });
+
+        $subPaySubmit.click(function(){//提交修改的付款信息
+               var data= "order_id="+$order_id+"&bonus="+$("#bonus").val()+"&note_content="+$(this).prev().prev().val()+"&content_type=pay_info&action_type=update";
+               // alert(data);
+               $.ajax({
+                 type:'get',
+                 dataType:'json',
+                 url:'../order/sales_order_edit_ajax.php',
+                 data:data,
+                 beforeSend:function(){
+                     $subPaySubmit.attr("disabled",true).val("正在提交").addClass("disableBtn");
+                 },
+                 success:function(data){
+                   if(data.error_info_.err_no == 0){
+                     alert("success");
+                   }else{
+                     alert(data.error_info_.message);
+                   }
+                   $subPaySubmit.attr("disabled",false).val("提交修改").removeClass("disableBtn").hide();
+                   $("#payInfoForm .editBtn").text('修改').removeClass('cancelEditBtn');
+                 },
+                 error:function(){
+                	 $subPaySubmit.attr("disabled",false).val("提交修改").removeClass("disableBtn").hide();
+                	 $("#payInfoForm .editBtn").text('修改').removeClass('cancelEditBtn');
+                   alert("AJAX加载失败");
+                 }
+               });
+        });
+
+
+        
+
+        $("#customRecord").delegate(".openBtn","click",function(){//售后记录界面，打开售后详细信息按钮
+                    var thisServiceId = $(this).parent().parent().find(".serviceId").text();
+                    var odt = $(this).attr("id");
+                    var data = "content_type="+odt+"&service_id="+thisServiceId+"&action_type=query&order_id="+$order_id;
+                    var top = $(this).position().top +30;
+                    var left = $(this).position().left -687;
+                    // $(".recordDetailBox").animate({"top":top,"left":left},"fast");
+                    $.ajax({
+                      type:'get',
+                      dataType:'json',
+                      data:data,
+                      url:'../order/sales_order_edit_ajax.php',
+                      beforeSend:function(){
+                        
+                        $(".recordDetailBox").html("<img src='../images/close.png' id='close'><img src='../images/topArrow.png' id='topArrow'><p>Loading ...</p>").fadeIn(200);
+                      },
+                      success:function(data){
+                        if(data.error_info_.err_no == 0){
+                          $(".recordDetailBox").animate({"top":top,"left":left},"fast");
+                          $(".recordDetailBox p").remove();
+                          if(odt == 'service_record_logs'){
+                              $(".recordDetailBox").append("<table><th>记录类型</th><th>订单状态</th><th>记录人</th><th style='width:80px'>记录时间</th><th>备注</th></table>");
+                              for(var key in data.service_logs_){
+                                $(".recordDetailBox table").append("<tr><td>"+data.service_logs_[key].logger_type_+"</td><td>"+data.service_logs_[key].status_name_+"</td><td>"+data.service_logs_[key].logger_+"</td><td>"+data.service_logs_[key].datetime_+"</td><td>"+data.service_logs_[key].note_+"</td></tr>");
+                              }
+                          }
+                          if(odt == 'service_record_comments'){
+                            $(".recordDetailBox").append("<table><th>评论人</th><th>评论内容</th><th style='width:80px'>评论时间</th><th>回应人</th><th>回应内容</th><th style='width:80px'>回应时间</th></table>");
+                            for(var key in data.service_comments_){
+                              $(".recordDetailBox table").append("<tr><td>"+data.service_comments_[key].post_username_+"</td><td>"+data.service_comments_[key].post_comment_+"</td><td>"+data.service_comments_[key].post_datetime_+"</td><td>"+data.service_comments_[key].replied_username_+"</td><td>"+data.service_comments_[key].reply_+"</td><td>"+data.service_comments_[key].replied_datetime_+"</td></tr>");
+                            }
+
+                          }
+
+                        }else{
+                          alert(data.error_info_.message);
+                        } 
+                      },
+                      error:function(){
+                        $(".recordDetailBox").html("<img src='../images/close.png' id='close'><img src='../images/topArrow.png' id='topArrow'><p>ajax error...</p>");
+                      }
+                    });
+                    $(".recordDetailBox #close").click(function(){
+                        $(this).parent().fadeOut(100);
+                    });
+        });
+        $("#customRecord").delegate("#service_record_messages","click",function(){//售后记录界面，售后沟通记录详情
+                    var data = "content_type="+$(this).attr("id")+"&order_id="+$order_id+"&action_type=query";
+                    var top = $(this).position().top +30;
+                    var left = $(this).position().left;
+                    $(".recordDetailBox").animate({"top":top,"left":left},"fast");
+                    $.ajax({
+                      type:'get',
+                      dataType:'json',
+                      data:data,
+                      url:'../order/sales_order_edit_ajax.php',
+                      beforeSend:function(){
+                        $(".recordDetailBox").html("<img src='../images/close.png' id='close'><img src='../images/topArrow.png' id='topArrow'><p>Loading ...</p>").fadeIn(200);
+                        left = left+140;
+                        $("#topArrow").animate({"left":left},"fast");
+
+                      },
+                      success:function(data){
+                          if(data.error_info_.err_no == 0){
+                            $(".recordDetailBox p").remove();                  
+                            $(".recordDetailBox").append("<table><th>发送时间</th><th>咨询类型</th><th>咨询详情</th><th>发送人</th><th>操作状态</th></table>");
+                              for(var key in data.service_message_list_){
+                                $(".recordDetailBox table").append("<tr><td>"+data.service_message_list_[key].created_stamp_+"</td><td>"+data.service_message_list_[key].support_type_+"</td><td>"+data.service_message_list_[key].message_+"</td><td>"+data.service_message_list_[key].send_by_+"</td><td>"+data.service_message_list_[key].status_+"</td></tr>");
+                              }
+                          }
+                          
+                      },
+                      error:function(){
+                        $(".recordDetailBox").html("<img src='../images/close.png' id='close'><img src='../images/topArrow.png' id='topArrow'><p>ajax error...</p>");
+                      }
+
+                    });
+                    $(".recordDetailBox #close").click(function(){
+                        $(this).parent().fadeOut(100);
+                    });
+        });
+
+
+        var $detailLi = $("#detailWrap ul li");
+        var $info = $(".info");
+        $detailLi.click(function(){//标签页ajax控制代码，用于全站式ajax
+        var detailLiInd = $("#detailWrap ul li").index(this);
+          if( ! $(this).hasClass("detailShown")){
+            $(this).addClass("detailShown").siblings().removeClass("detailShown");
+          }
+          var data ='order_id=' + $order_id + '&content_type=' + $(this).attr('id')+"&action_type=query";
+          if($(this).attr('id') == 'source_order_info'){
+            $("#loadimg").fadeOut(100);
+            $info.eq(detailLiInd).fadeIn(260).siblings().fadeOut(100);
+          }else{
+            $.ajax({
+            type:'get',
+            dataType:'json',
+            url:"../order/sales_order_edit_ajax.php",
+            data:data,
+            beforeSend:function(){
+              $("#loadimg").fadeIn(200);
+              $info.eq(detailLiInd).siblings().hide();
+            },
+            success:function(data){
+              if(data.error_info_.err_no == 0){
+                $info.eq(detailLiInd).fadeIn(260);
+                $info.eq(detailLiInd).siblings().hide(); 
+                $("#loadimg").fadeOut(100);
+                if(detailLiInd == 1){
+                	var feeNum = data.fee_list_.length;
+                	var payInfoChild = $('.payInfoChild');
+                	payInfoChild.html("");
+					payInfoChild.prepend("<p>发票："+data.shipping_invoices_[0]+"</p>");
+					for(var i=feeNum-1;i>=0;i--){ 
+						if(data.fee_list_[i].id_ == "bonus"){
+							payInfoChild.prepend("<p id='"+data.fee_list_[i].id_+"'><span class='name_'>"+data.fee_list_[i].name_ +"</span><input type='text' style='width:50px;' class='value_' value='"+ data.fee_list_[i].value_ +"'></input></p>");
+						}else{
+							payInfoChild.prepend("<p id='"+data.fee_list_[i].id_+"'><span class='name_'>"+data.fee_list_[i].name_ +"</span><span class='value_'>"+ data.fee_list_[i].value_ +"</span></p>");
+						}
+					}
+					// alert(data.can_edit_);
+					if(!data.can_edit_){
+						$(".editBtn").hide();
+					}else{
+						$(".editBtn").show();
+					}
+						                 
+                }else if(detailLiInd == 2){
+                  $(".egw").html(data.estimate_goods_weight_);
+                  $(".pew").html(data.package_estimate_weight_);
+                  $(".tew").html(data.total_estimate_weight_);
+                  $(".midAddr").html(data.midway_address_);
+                  $(".facility").html(data.facility_name_);
+                  var shipNumber = data.shipping_list_.length;
+                  if(shipNumber!=0){
+                    $("#shipList").html("<h2>发货信息</h2>");
+                    for(var i=0;i<shipNumber;i++){
+                      $("#shipList").append("<p><span class='shipmentId'>发货单号："+data.shipping_list_[i].shipment_id_+"</span><span class='trackId'>快递单号："+data.shipping_list_[i].tracking_number_+"</span><span class='shipCost'>快递实际费用："+data.shipping_list_[i].shipping_cost_+"</span></p>");
+                    }
+                  }else{
+                    $("#shipList").html("<h2>该订单还没有发货单呀~</h2>");
+                  }
+                  var bestExpNum = data.best_express_list_.length;
+                  $("#bestExp").html("<h2>最优快递</h2><table><th>配送仓</th><th>快递方式</th><th>预计费用</th><th>可达情况</th><th>操作</th></table>");
+                  if(bestExpNum!=0){
+                    for(var i=0;i<bestExpNum;i++){
+                      $("#bestExp table").append("<tr><td>"+data.best_express_list_[i].facility_name_+"</td><td>"+data.best_express_list_[i].shipping_name_+"</td><td>"+data.best_express_list_[i].shipping_fee_+"元</td><td>"+data.best_express_list_[i].arrive_type_+"</td><td><input type='button' class='changeTrackBtn' value='修改快递'><p style='display:none'>"+data.best_express_list_[i].shipping_id_+"</p></tr>");
+                    }
+                  }else{
+                    $("#bestExp").html("<h2>暂时没有最优快递呀~</h2>");
+                  }
+                  var otherExpNum = data.other_express_list_.length;
+                  $("#otherExp").html("<h2>其他快递</h2><table><th>配送仓</th><th>快递方式</th><th>预计费用</th><th>可达情况</th></table>");
+                  if(otherExpNum!=0){
+                    for(var i=0;i<otherExpNum;i++){
+                      $("#otherExp table").append("<tr><td>"+data.other_express_list_[i].facility_name_+"</td><td>"+data.other_express_list_[i].shipping_name_+"</td><td>"+data.other_express_list_[i].shipping_fee_+"元</td><td>"+data.other_express_list_[i].arrive_type_+"</td></tr>");
+                    }
+                  }else{
+                    $("#otherExp").html("<h2>暂时没有其他快递呀~</h2>");
+                  }
+                  // alert(data.can_edit_);
+                  if(!data.can_edit_){
+                    $(".changeTrackBtn").hide();
+                  }else{
+                    $(".changeTrackBtn").show();
+                  }
+
+                }else if(detailLiInd == 3){
+                  $("#customRecord table").html("<th>售后类型</th><th>售后状态</th><th>申请信息</th><th>审核信息</th><th style='width:80px'>售后评论</th><th style='width:80px'>售后记录</th>");
+                  var recordNum = data.record_list_.length;
+                  for(var i=0;i<recordNum;i++){
+                    var oneRecord = "<tr><td class='serviceId'>"+data.record_list_[i].service_id_+"<td>"+data.record_list_[i].type_name_+"</td><td>"+data.record_list_[i].status_name_+"</td><td>"+data.record_list_[i].apply_username_+"</br>"+data.record_list_[i].apply_reason_+"</br>"+data.record_list_[i].apply_datetime_+"</td><td>"+data.record_list_[i].review_username_+"</br>"+data.record_list_[i].review_remark_+"</br>"+data.record_list_[i].review_datetime_+"</td><td><p class='commentsBtn openBtn' id='service_record_comments'>"+data.record_list_[i].service_comment_count_+"条</p></td><td><p class='logBtn openBtn' id='service_record_logs' >"+data.record_list_[i].service_log_count_+"条</p></td></tr>";
+                    $("#customRecord table").append(oneRecord); 
+                  }
+                  $("#customRecord table").append("<tr><td class='orderId'>"+data.order_id_+"</td><td class='messageTd'><p class='messageBtn' id='service_record_messages' >"+data.service_message_count_+"条售后沟通记录</p></td></tr>");
+                  
+                }else if(detailLiInd == 4){
+                  $("#actHistoryBox table").html("<th>订单状态</th><th>操作人</th><th>操作时间</th><th>操作备注</th>");
+                  var ahTable = "";
+                  for(var key in data.action_list_){
+                    ahTable = ahTable + "<tr><td rowspan='"+data.action_list_[key].action_count+"'>"+data.action_list_[key].order_status+"</td>";
+                    for(var key1 in data.action_list_[key].action_list){
+                      ahTable = ahTable + "<td>"+data.action_list_[key].action_list[key1].action_user_+"</td><td>"+data.action_list_[key].action_list[key1].action_time_+"</td><td>"+data.action_list_[key].action_list[key1].note_+"</td></tr>"
+                    }
+                  }
+                  $("#actHistoryBox table").append(ahTable);
+                }else if(detailLiInd == 5){
+                    $("#statusHistoryBox table").html("<th>订单状态</th><th>支付状态</th><th>仓库物流</th><th>配货单，发票，快递面单</th><th>操作</th><th>备注</th>");
+                    var shTable = "";
+                    for(var key in data.hostory_list_){
+                      shTable = shTable+"<tr><td rowspan='"+data.hostory_list_[key].note_count_+"'>"+data.hostory_list_[key].order_status_+"</td><td rowspan='"+data.hostory_list_[key].note_count_+"'>"+data.hostory_list_[key].pay_status_+"</td><td rowspan='"+data.hostory_list_[key].note_count_+"'>"+data.hostory_list_[key].logistic_status_+"</td><td rowspan='"+data.hostory_list_[key].note_count_+"'>"+data.hostory_list_[key].shipment_print_status_+"，"+data.hostory_list_[key].invoice_print_status_+"，"+data.hostory_list_[key].waybill_print_status_+"</td>";
+                      if(data.hostory_list_[key].notes_ != null){
+                        for(var key1 in data.hostory_list_[key].notes_){
+                        shTable = shTable+"<td>"+data.hostory_list_[key].notes_[key1].created_by_user_login+"</br>"+data.hostory_list_[key].notes_[key1].created_stamp+"</td><td>"+data.hostory_list_[key].notes_[key1].note+"</td></tr>";
+                        }
+                      }else{
+                        shTable = shTable+"<td>无</td><td>无</td></tr>";
+                      }
+                      
+                    }
+                    $("#statusHistoryBox table").append(shTable);
+                }else if(detailLiInd == 6){
+                	for(var key in data.time_line_){
+                		if(key.timestamp_ != 0){
+                    		$('#timeLineInfo #nodeList').append("<lii class='doneNode' id='"+key.icon_img_name_+"'><div><span class='nodeAct'>"+key.action_+"</span><span class='actTime'>"+key.time_+"</span></div></lii>");
+                		}else{
+                			$('#timeLineInfo #nodeList').append("<lii id='"+key.icon_img_name_+"'><div><span class='nodeAct'>"+key.action_+"</span></div></lii>");
+                		}
+                	}
+                }
+              }else{
+                $("#loadimg").fadeOut(100);
+                alert(data.error_info_.err_no);
+              }
+            },
+            error:function(){
+              $("#loadimg").fadeOut(100);
+              alert("AJAX加载失败");
+            }
+          });
+          }
+          
+        });
+      });
+      //{/literal}
+      //]]>
+      </script>
+</body>
+</html>

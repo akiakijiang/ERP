@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－财务组运营状况详细</title>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+
+<body>
+<table class="bWindow">
+<caption><h2>银行汇款详细</h2></caption>
+<tr>
+<th>订单号</th>
+<th>订单时间</th>
+<th>财务确认到款时间</th>
+<th>时间差</th>
+</tr>
+<tr align="center">
+<th>汇总</th>
+<th></th>
+<th></th>
+<th>{$sum.sum_second}秒</th>
+</tr>
+<!--{foreach from=$values item=order}-->
+<tr align="center">
+<td style="width:80px"><a href='detail_info.php?order_id={$order.order_id}'>{$order.order_sn}</td>
+<td style="width:80px">{$order.order_time}</td>
+<td style="width:80px">{$order.pay_time}</td>
+<td>{$order.diff_time}秒</td>
+</tr>
+<!--{/foreach}-->
+</table>
+</body>
+</html>

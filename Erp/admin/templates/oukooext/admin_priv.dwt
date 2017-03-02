@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+
+</style>
+{/literal}
+<title>管理员</title>
+</head>
+
+<body>
+
+<h3>留言管理员</h3>
+<form method="POST">
+添加留言管理员<br />
+<input type="hidden" name="add_type" value="comment" />
+<input type="hidden" name="back" value="{$back}" />
+ouku用户名 <input type="text" name="user_name" /> <br />
+留言回复昵称 <input type="text" name="nick" /> <br />
+真实姓名 <input type="text" name="real_name" /> <br />
+erp帐号 <input type="text" name="erp_user_name" /> <br />
+设置部门 <select name="party_id" >
+{foreach from=$party_names item=party_name key=key}
+<option id="{$key}" value="{$key}" >{$party_name}</option>
+{/foreach}
+</select> <br />
+是否可以登录广告系统 <input type="radio" name="ads" value="1" /> 是 <input type="radio" name="ads" value="0" checked="true" /> 否
+<input type="submit" value="添加" />
+</form>
+<table class="bWindow" style="width:800px;">
+<tr><td colspan="3">留言用户</td></tr>
+<tr><td>真实姓名</td><td>ouku用户名</td><td>uni_userid</td><td>是否可以登录广告系统</td><td>留言回复昵称</td><td>erp帐号</td><td>设置部门</td><td>操作</td></tr>
+{foreach from=$causers item=causer}
+<form method="POST">
+<input type="hidden" name="update_type" value="comment" />
+<input type="hidden" name="back" value="{$back}" />
+<input type="hidden" name="uni_user_id" value="{$causer.UNI_USER_ID}" />
+<tr><td>{$causer.USER_NAME}</td><td>{$causer.u_name}</td><td>{$causer.UNI_USER_ID}</td>
+<td>{if $causer.IS_ADSTRACKER}已开通<br />
+<a href="?del_type=ads&uni_user_id={$causer.UNI_USER_ID}" onclick="return confirm('确定要删除吗？')">删除广告权限</a>
+{else}未开通<br />
+<a href="?del_type=ads&uni_user_id={$causer.UNI_USER_ID}" onclick="return confirm('确定要开通吗？')">开通广告权限</a>
+{/if}</td>
+<td>{$causer.nick}</td>
+<td><input type='text' name='erp_user_name' value='{$causer.erp_user_name}' /></td>
+<td><select name="party_id" >
+{html_options options=$party_names selected=$causer.PARTY_ID}
+</select></td>
+<td>
+<input type="submit" value="修改" />
+<br />
+<a href="?del_type=comment&uni_user_id={$causer.UNI_USER_ID}" onclick="return confirm('确定要删除吗？')">删除</a>
+</td>
+</tr>
+</form>
+{/foreach}
+</table>
+
+<h3>价格跟踪用户</h3>
+添加价格跟踪管理员<br />
+<form method="POST">
+<input type="hidden" name="add_type" value="price_tracker" />
+<input type="hidden" name="back" value="{$back}" />
+ouku用户名 <input type="text" name="user_name" /> <br />
+类型 
+<input type="radio" name="user_type" value="ADMIN" checked="true" /> 管理员 
+<input type="radio" name="user_type" value="EDITOR" /> 编辑
+<input type="radio" name="user_type" value="VIEWER" /> 查看
+<input type="submit" value="添加" />
+</form>
+
+<table class="bWindow" style="width:800px;">
+<tr><td colspan="3">价格跟踪用户</td></tr>
+<tr><td>ouku用户名</td><td>uni_userid</td><td>类型</td><td>操作</td></tr>
+{foreach from=$price_trakers item=price_traker}
+<tr><td>{$price_traker.u_name}</td><td>{$price_traker.USER_ID}</td><td>{$price_traker.TYPE}</td>
+<td><a href="?del_type=price_tracker&uni_user_id={$price_traker.USER_ID}" onclick="return confirm('确定要删除吗？')">删除</a></td></tr>
+{/foreach}
+</table>
+</body>
+</html>

@@ -1,0 +1,1701 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品列表</title>
+<head>
+<meta charset="utf-8">
+{literal}
+<script src="./js/colorChange/dhtmlxcolorpicker.js"></script> 
+<script src="./js/colorChange/dhtmlxcommon.js"></script> 
+<!-- <script src="./js/jquery-1.3.2.js"></script> --> 
+<script type="text/javascript" src="misc/jquery1.11.min.js"></script>
+<script	src="./js/jquery.ui/jquery.ui.widget.js"></script>
+<script src="./js/jquery.ui/jquery.ui.tabs.js"></script> 
+{/literal}
+{literal}
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.core.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.tabs.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.theme.css">
+<link rel="stylesheet" href="./js/colorChange/dhtmlxcolorpicker.css">
+<style type="text/css">
+body {
+	font-family: "新宋体";
+	font-size: 12px;
+	z-index: 1; 
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+
+h1 {
+	font-size: 16px;
+}
+
+.table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 12px;
+	font-family: "宋体";
+}
+
+.table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+}
+ .table th{background:#ffffff;border-bottom:1px solid #CCC;padding:4px; text-align:center;}
+#holder li {
+	padding: 4px;
+}
+
+.input {
+	width: 100%;
+	height: 20px;
+}
+#menu{
+		font-size: 16px;
+}
+
+#button {
+	text-align: center;
+}
+.styleWidth {
+	float: left;
+	width: 97%;
+	list-style-type: none;
+}
+.styleColor {
+	float: left;
+	width: 80px;
+	height: 80px;
+}
+.styleSport {
+	float: left;
+	width: 115px;
+	height: 30px;
+}
+.styleCloth {
+	float: left;
+	width: 115px;
+	height: 30px;
+}
+.styleYear {
+	float: left;
+	width: 115px;
+	height: 30px;
+}
+.li{
+	height: 30px;
+}
+
+#modal a:hover {
+	color: blue;
+}
+.provider_list{
+	 z-index: 10; 
+	 width: 260px; 
+	 position: absolute; 
+	 display: none; 
+}
+ ul,ul li{list-style:none;font-size:12px;margin:0;padding:0;background:#fff;} 
+.del_purchase_info{
+	text-decoration: none; 
+	color: red;
+}
+</style>
+{/literal}
+</head>
+	<body onload="initColorPicker()">
+	<table id="menu" cellpadding="0" cellspacing="0">
+	 <tr>
+	 	<td><a href="goods_index.php?act=detail&&goods_id={$goods.goods_id}"><font color="#0099FF">返回详细页</font></a>　</td>
+	 </tr>
+	</table>
+	<br />
+
+	<div id="modal"  style="position: fixed; top: 30%;left: 20%;z-index: 9999;background-color: white;width: 450px;border: 2px solid gray;">
+		<p> 
+			<span style="float:right;color:red; padding: 5px;" id="close-modal">&nbsp;&nbsp;&times;关闭</span>
+		</p>
+		<div></div>
+	</div>
+
+<div class="demo">
+<form id="form1" name="form1" method="post" action="goods_index.php?act=editGoods">
+<div id="tab">
+<ul>
+	<li><a href="#tabs-1">基本信息</a></li>
+	<li><a href="#tabs-4">商品属性</a></li>
+</ul>
+<div id="tabs-1">
+<table class="table" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right">商品名称：</td>
+		<td><textarea name="goods_name" id="goods_name" rows="2" cols="100"  onblur="checkName();">{$goods.goods_name}</textarea>
+		<font id="goods_name_info" name="goods_name_info" color="red" >*</font>
+		<input type="hidden" id="name_state" name="name_state" value="1"></input>
+		</td>
+		<input type="hidden" id="goods_id" name="goods_id" value={$goods.goods_id}></input>
+	</tr>
+	<tr>
+		<td align="right">商品条码：</td>
+		<td>
+		    <input type="text" class="input" name="barcode" style="width:100%;"  id="barcode" onblur="checkBarcode();"value="{$goods.barcode}" />
+		    <font id="code_info" name="code_info" color="red">请输入商品条码(康师傅多码情况中间以英文逗号分隔)</font>
+		    <!-- All Hail Sinri Edogawa -->
+		    <input type="button" name="In the beginning God created Heavens and the earth." 
+		    	value="实在没有条码伪造一个";
+		    	id="sinri_try_create_barcode"
+		    	onclick="getBarcodeBySinri();">
+		</td>
+		<input type="hidden" id="code_state" name="code_state" value="1"></input>
+	</tr>
+	<tr>
+		<td align="right">商品分类：</td>
+		<td>{$goods.cat_name}{$cat_name} </td>
+	</tr>
+	<tr>
+		<td align="right">重量维护：</td>
+		<td> <label> <input type="radio" id = 'maintainWeightYes' name="maintainWeight" value="1" {if $goods.is_maintain_weight eq 1}checked="checked" {/if}/> 是</label>
+			 <label> <input type="radio" id = 'maintainWeightNo' name="maintainWeight" value="0" {if $goods.is_maintain_weight eq 0}checked="checked" {/if} /> 否 </label>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品重量：</td>
+		<td><input type="text" class="input" name="goods_weight" id="goods_weight"  value="{$goods.goods_weight}" />（单位：g）</td>
+	</tr>
+	<tr>
+	    <td align="right">保质期维护：</td>
+		<td> <label> <input type="radio" id = 'maintainWarrantyYes' name="maintainWarranty" value="1" {if $goods.is_maintain_warranty eq 1}checked="checked" {/if}/> 是</label>
+			 <label> <input type="radio" id = 'maintainWarrantyNo' name="maintainWarranty" value="0" {if $goods.is_maintain_warranty eq 0}checked="checked" {/if}/> 否 </label>
+	    </td>
+	</tr>
+	<tr>
+		<td align="right">保质期：</td>
+		<td><input type="text" class="input" name="goods_warranty" id="goods_warranty"  value="{$goods.goods_warranty}" />（单位：月）</td>
+	</tr>
+	<tr>
+	    <td align="right">批次号维护：</td>
+		<td> <label> <input type="radio" id = 'maintainBatchSnYes' name="maintainBatchSn" value="1" {if $goods.is_maintain_batch_sn eq 1}checked="checked" {/if}/> 是</label>
+			 <label> <input type="radio" id = 'maintainBatchSnNo' name="maintainBatchSn" value="0" {if $goods.is_maintain_batch_sn eq 0}checked="checked" {/if}/> 否 </label>
+	    </td>
+	</tr>
+	
+	<tr>
+        <td align="right">违禁品：</td>
+        <td> <label> <input type="radio" id = 'contrabandYes' name="contraband" value="1" {if $goods.is_contraband eq 1}checked="checked" {/if}/> 是</label>
+             <label> <input type="radio" id = 'contrabandNo' name="contraband" value="0" {if $goods.is_contraband eq 0}checked="checked" {/if}/> 否 </label>
+        </td>
+    </tr>
+    <tr>
+    	<td align="right">商品货号：</td> 
+    	<td>
+    		<input type="text" class="input" id="goods_code" name="goods_code" value="{$goods.goods_code}"/>
+    	</td>
+    </tr>
+    <tr>
+    	<td align="right">商品单位：</td> 
+    	<td>
+    		<input type="text" class="input" id="unit_name" name="unit_name" value="{$goods.unit_name}"/> （个、件等）
+    	</td>
+    </tr>
+	<tr>
+		<td align="right">商品长度：</td>
+		<td><input type="text" class="input" id="goods_length" name="goods_length" value="{$goods.goods_length|default:0}"></input>（单位：cm 保留两位小数）
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品宽度：</td>
+		<td> <input type="text" class="input" id ="goods_width" name="goods_width" value="{$goods.goods_width|default:0}"></input>（单位：cm 保留两位小数）
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品高度：</td>
+		<td><input type="text" class="input" name="goods_height" id="goods_height"  value="{$goods.goods_height|default:0}" ></input>（单位：cm 保留两位小数）
+		</td>
+	</tr>
+	<tr>
+        <td align="right">商品体积：</td>
+        <td><input type="text" class="input" name="goods_volume" id="goods_volume"  value="{$goods.goods_volume}" />（单位：cm³）</td>
+    </tr>
+    <tr>
+    	<td align="right">箱子：</td>
+    	<td>
+    		长度：
+			<input type="text" class="input" id="box_length" name="box_length" value="{$goods.box_length|default:0}"></input>
+		 	宽度： 
+		 	<input type="text" class="input" id ="box_width" name="box_width" value="{$goods.box_width|default:0}"></input> 
+		 	高度： 
+		 	<input type="text" class="input" name="box_height" id="box_height"  value="{$goods.box_height|default:0}" ></input>
+		 	&nbsp; 
+		 	（单位：cm 保留两位小数）
+    	</td>
+    </tr>
+    <tr>
+		<td align="right">商品价格：</td>
+		<td><input type="text" class="input" name="goods_price" id="goods_price"  value="{$goods.shop_price}" />（单位：元）
+		<font id="warn_price_info" name="warn_price_info" color="red" ></font></td>
+	</tr>
+
+	<tr>
+		<td align="right">采购信息：</td>
+
+		<td>
+			<span style='display: none' id="providers">
+				{foreach from=$providers item=provider}
+					<li gid='{$provider.provider_id}' code="{$provider.provider_code}">{$provider.provider_name}</li>
+				{/foreach}
+			</span>
+			<span>
+				<span class="purchase_info">
+					{foreach from=$goods.purchase_info item=purchase}
+	                   <span class="purchase_info_one" style="padding:2px;" > 
+			 			 	采购单价:<input type="text" class="input" class="purchase_unit_price" name="purchase_unit_price[]"   value="{$purchase.unit_price}" /> 
+			 				<input type="hidden" class="input purchase_provider_id" class="purchase_provider_id" name="purchase_provider_id[]"   value="{$purchase.provider_id}" />
+			 				(元)&nbsp;&nbsp;  
+			 				<span> 
+			 					供应商:<input type="text" class="input select_provider" autocomplete="off" class="purchase_provider_name" name="purchase_provider_name[]"   value="{$purchase.provider_name}" /> 
+			 					<ul class="provider_list" ></ul> 
+			 				</span> 
+							<i class="del_purchase_info" styel="color:red;">&nbsp;&times;删除&nbsp;</i> 
+							 <br/> 
+			 			</span> 
+			        {/foreach}
+		        </span>
+	        	<input type="button"  class="add_purchase_info" value="添加采购信息"/>
+			</span> 
+		</td>
+	</tr>
+
+	<tr>
+		<td align="right">是否上架：</td>
+		<td> <label> <input type="radio" name="onSale" value="1" {if $goods.is_on_sale eq 1}checked="checked" {/if}/> 是</label>
+			 <label> <input type="radio" name="onSale" value="0" {if $goods.is_on_sale eq 0}checked="checked" {/if} /> 否 </label>
+			 <input type="hidden" id="is_on_sale_status" value="{$goods.is_on_sale}" />
+		</td>
+	</tr>
+	
+<!--  	<tr>
+		<td align="right">是否使用气泡袋：</td>
+		<td> <label> <input type="radio" name="is_bubble_bag" value="1" {if $goods.is_bubble_bag eq 1}checked="checked"{/if} onclick="change_bubble_bag('yes')"/> 是</label>
+			 <label> <input type="radio" name="is_bubble_bag" value="0" {if $goods.is_bubble_bag eq 0}checked="checked"{/if} onclick="change_bubble_bag('no')"/> 否 </label>
+			气泡袋数量：<input type="text" name="bubble_bag_number" id="bubble_bag_number" {if $goods.is_bubble_bag eq 0}disabled{/if} value="{$goods.bubble_bag_number}"></input>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">是否使用泡沫箱：</td>
+		<td> <label> <input type="radio" name="is_bubble_box" value="1" {if $goods.is_bubble_box eq 1}checked="checked"{/if} onclick="change_bubble_box('yes')"/> 是</label>
+			 <label> <input type="radio" name="is_bubble_box" value="0" {if $goods.is_bubble_box eq 0}checked="checked"{/if} onclick="change_bubble_box('no')"/> 否 </label>
+			气泡箱数量：<input type="text" name="bubble_box_number" id="bubble_box_number" {if $goods.is_bubble_box eq 0}disabled{/if} value="{$goods.bubble_box_number}"></input>
+		</td>
+	</tr>
+-->
+	<tr>
+		<td  align="right">耗材名称：</td>		
+		<td colspan="5">{$consumable_str} 
+		</td>
+	</tr>
+	<tr>
+		<td  align="right">编辑耗材：</td>			                 
+		<td colspan="5">
+				<select name="consumable_id" id="consumable_id">
+					<option value="0"  selected="selected" >---</option>
+					<!-- {foreach from=$consumable_list item=item} -->
+		     		<option value="{$item.consumable_id}" >{$item.consumable_name}</option>
+		     		<!-- {/foreach} -->
+		    	</select> 				
+			 数量：<input type="text" name="consumable_count" id="consumable_count"></input>
+			 <input type="button" name="add_consumable" value="添加/修改" onclick="AddConsumable()">
+			 <input type="button" name="del_consumable" value="删除" onclick="DelConsumable()">			 
+		</td>
+	</tr>
+	<tr>
+		<td align="right">警告库存：</td>
+		<td><input type="text" class="input" name="warn_number" id="warn_number" 
+			value="{$goods.warn_number}" /></td>
+	</tr>
+	<tr>
+		<td align="right">商品税率：</td>
+		<td><input type="text" class="input" name="added_fee" id="added_fee" 
+			value="{$goods.added_fee}" /><font id="added_fee_info" name="added_fee_info" color="red" >商品税率默认为1.17，如不是1.17仔细确认</font></td>
+	</tr>
+	
+	<tr>
+	   <td align="right">商品标签：</td>
+	   </td>	
+	</tr>
+	
+	<tr>
+	<td align="right">货币种类</td>
+	<td>
+		{if $smarty.session.party_id == '65566' || $smarty.session.party_id == '65560' || $smarty.session.party_id == '65630' || $smarty.session.party_id == '65543'}
+	    <select name="currency">
+	    <option value="">--请选择--</option>
+	    {html_options options=$currencys selected=$goods.currency}
+	    </select>
+	    {else}
+	    <select name="currency">
+	    <option value="">--请选择--</option>
+	    {html_options options=$currency selected=$goods.currency }
+	    </select>
+	    {/if}
+	</td>
+	</tr>
+	
+	<tr>
+		<td align="right">箱规：</td>
+		<td><input type="text" class="input" name="spec" id="spec" value="{$goods.spec}" /><font color="red">*</font></td>
+	</tr>
+	
+	<tr>
+		<td align="right">产品重要性：</td>
+		<td>
+			<select name="product_importance" id="product_importance">
+				<option value="" selected="selected" >--请选择--</option>
+				{html_options options=$product_importance_list selected=$goods.product_importance}
+			</select>
+		</td>
+	</tr>	
+	
+	{if $show_item_number}
+		<tr>
+			<td align="right">易碎品：</td>
+			<td> <label> <input type="radio" name="is_fragile" value="1" {if $goods.is_fragile eq 1}checked="checked" {/if}/> 是</label>
+			 <label> <input type="radio" name="is_fragile" value="0" {if $goods.is_fragile eq 0}checked="checked" {/if} /> 否 </label>
+			</td>
+		</tr>
+	 
+		<tr>
+			<td align="right">物料编码：</td>
+			<td><input type="text" class="input" name="item_number" id="item_number" value="{$goods.item_number}" /><font color="red">*</font></td>
+		</tr>
+	{/if}
+	
+	<!-- 
+	<tr id="button">
+		<td  align="center" colspan="2">
+		<input type="hidden" name="test" value="{$cat_name}" id="test"></input>
+		　	<input type="button" name="submits" id="submits" value="提交" onclick="subEditGoods();" />　　
+			<input type="hidden" name="party_id" value="{$smarty.session.party_id}" id="party_id"></input>
+	　　　		<input type="reset" name="Submit2" value="重置" />　　
+		</td>
+	</tr>
+	 -->
+	 
+</table>
+ <div id="tagsBox" >
+	<ul class="styleWidth" id="tag_ul">
+	{foreach from=$tag_list item=tag}
+	    {if in_array($tag.tag_id, $tagmap_list)}
+		<li class="styleColor">	
+		     <input type="checkbox" name="tags[]" value="{$tag.tag_id}" id="tags"  checked="true"  title="{$tag.tag_name}"/>{$tag.tag_name}	
+		</li>
+		{else}
+		   <li class="styleColor">	
+		     <input type="checkbox" name="tags[]" value="{$tag.tag_id}" id="tags"  title="{$tag.tag_name}"/>{$tag.tag_name}	
+		   </li>
+		{/if}
+	{/foreach}
+		
+  </div>  
+  
+ <div id="button"><input type="button" id="sub" value="提交" onclick="subEditGoods();"/>
+ <input type="hidden" name="party_id" value="{$smarty.session.party_id}" id="party_id"></input>
+ <input type="reset" name="Submit2" value="重置" />
+</div>
+</form>
+    
+</div>
+<div id="tabs-4">
+<div>
+<table class="table" id="t_style">
+	<tr id="edition">
+		<th colspan="8">已有版本</th>
+	</tr>
+	
+	{foreach from=$style item=style}
+	<tr>
+		<td>商品颜色/尺寸/年份</td>
+		<td>{$style.color}</td>
+		<td>商品价格</td>
+		<td>{$style.style_price}</td>
+		<td>商品条码<input type="hidden" id="editStyleGoodId" name="editStyleGoodId" value="0" /></td>
+		<td>{if $style.barcode eq 'null' }{else}{$style.barcode}{/if}<input type="hidden" id="editStyleType" name="editStyleType" value="0" /></td>
+		<td><img src="images/icon_edit.gif" style="cursor:pointer" onclick="edit_style(this);" title="{$style.goods_style_id}"/></td>
+		<td><label onclick="hideEdit(this);" style="cursor:pointer">隐藏</label><input type="hidden" id="editStyleId" name="editStyleId" value="0" /></td>
+	</tr>
+	<tr>
+		<td>商品货号</td>
+		<td>{$style.goods_code}</td>
+		<td>采购信息</td>
+		<td colspan="5">
+			{foreach from=$style.purchase_info item=purchase}
+                <span class="purchase_info_one" style="padding:2px;" > 
+		 			 采购单价: {$purchase.unit_price} 
+		 			 供应商: {$purchase.provider_name} 
+		 			 <br/> 
+		 		</span> 
+		    {/foreach}
+		</td>
+	</tr>
+	<tr><td colspan="8"><hr/></td></tr>
+	{foreachelse}
+	<tr id="no_style">
+		<td>商品颜色/尺寸/年份</td>
+		<td colspan="7">无</td>
+	</tr>
+	{/foreach}
+</table>
+<div id="editColorBox" style="display: none">
+	<ul class="styleWidth" >
+	{foreach from=$stylePhonesList item=style}
+		<li class="styleColor">
+			<table>
+				<tr>
+					<td>
+					<div id="pic" style="background-color: #{$style.value}; width: 50px; height: 50px"></div>
+					</td>
+				</tr>
+				<tr>
+					<td align="center"><label><input type="radio" name="editcolor" value="{$style.style_id}" id="editcolor" title="{$style.color}"/>{$style.color} </label></td>
+				</tr>
+			</table>
+		</li>
+	{/foreach}	
+				
+	</ul>
+</div>
+<div id="editSportSizeBox" style="display: none">
+	<ul class="styleWidth">
+	{foreach from=$styleSportsList item=style}
+		<li class="styleSport"><label><input type="radio" name="editsports" value="{$style.style_id}" title="{$style.color}"/>{$style.color}</label></li>
+	{/foreach}
+	</ul>
+</div>
+<div id="editColthSizeBox" style="display: none">
+	<ul class="styleWidth">
+	{foreach from=$styleClothingList item=style}
+		<li class="styleCloth"><label><input type="radio" name="editclothings" value="{$style.style_id}" title="{$style.color}" />{$style.color}</label></li>
+	{/foreach}
+	</ul>
+</div>
+<div id="editYearBox" style="display: none">
+	<ul class="styleWidth">
+	{foreach from=$styleYearList item=style}
+		<li class="styleYear"><label><input type="radio" name="edityears" value="{$style.style_id}" title="{$style.color}" />{$style.color}</label></li>
+	{/foreach}
+	</ul>
+</div>
+
+<table class="table">
+<tr>
+		<th colspan="5">添加新版本</th>
+	</tr>
+	<tr>
+		<td align="right">商品价格：</td>
+		<td style="width: 200px;"><input class="input" type="text" id="price" name="price" /></td>
+		<td colspan="3" style="color:red;">康师傅一品多条码情况,多个条码之间用英文都好分隔;如1234;4321</td>
+	</tr>
+	<tr>
+		<td align="right">商品条码：</td>
+		<td style="width: 200px;" colspan='3'><input class="input" type="text" id="barcodeStyle" name="barcodeStyle" /></td>
+		<td><input type="button"  id="sub" name="sub" value="添加" onclick="addStyle();"/></td>
+	</tr>
+
+    <tr>
+		<td align="right">商品货号：</td>
+		<td style="width: 200px;"><input class="input" type="text" id="style_goods_code" name="style_goods_code" /></td>
+		<td colspan="3"></td>
+	</tr> 
+
+
+	<tr class="purchase_info_add">
+		<td align="right">采购信息：</td> 
+		<td colspan="4">
+			<span>
+				<span class="purchase_info">	 
+				</span>
+		    	<input type="button"  class="style_add_purchase_info" value="添加采购信息"/>
+			</span> 
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品属性：</td>
+		<td style="width: 200px;"><label> <input type="radio" name="changSize" value="1" id="changColor" />选择颜色 </label>
+		</td>
+		<td style="width: 200px;"><label> <input type="radio" name="changSize" value="2" id="changSportsSize" />选择鞋子尺码 </label>
+		</td>
+		<td style="width: 200px;"> <label> <input type="radio" name="changSize" value="3" id="changClothSize" />选择服装配件尺码 </label>
+		</td>
+		<td> <label> <input type="radio" name="changSize" value="5" id="changYear" />选择年份 </label>
+		</td>
+	</tr>
+	
+</table>
+	
+</div>
+<div id="colorBox" style="display: none">
+	<ul class="styleWidth" id="color_ul">
+	{foreach from=$stylePhonesList item=style}
+		<li class="styleColor">
+			<table>
+				<tr>
+					<td>
+					<div id="pic" style="background-color: #{$style.value}; width: 50px; height: 50px"></div>
+					</td>
+				</tr>
+				<tr>
+					<td align="center"><label><input type="radio" name="color" value="{$style.style_id}" id="color" title="{$style.color}"/>{$style.color} </label></td>
+				</tr>
+			</table>
+		</li>
+	{/foreach}	
+				
+	</ul>
+	<ul class="styleWidth" >
+	<li class="li"><label> <input type="radio" name="addStyles" value="1" id="addColor"/>添加颜色</label></li>
+	<li class="li" id="add_color_tr" style="display: none">颜色名称：<input class="input" type="text" id="color_name" name="color_name" />颜色色值：<input type="text" imagepath="./js/colorChange/imgs/" id="color_value" name="color_value" ><input type="button" value="添加" onclick="addStyleSub();"/></li>
+	</ul>
+ 	<!--　<label> <input type="radio" name="addStyles" value="1" id="addColor"/>添加颜色</label>--> 
+
+</div>
+
+
+<div id="sportSizeBox" style="display: none">
+	<ul class="styleWidth" id="sports_ul">
+	{foreach from=$styleSportsList item=style}
+		<li class="styleSport"><label><input type="radio" name="sports" value="{$style.style_id}" title="{$style.color}"/>{$style.color}</label></li>
+	{/foreach}
+	</ul>
+	<ul class="styleWidth" >
+	<li class="li"><label> <input type="radio" name="addStyles" value="2" id="addSports"/>添加鞋子尺码</label></li>
+	<li class="li" id="add_sports_tr" style="display: none">运动鞋尺码：　<input class="input" type="text" id="sports_name" name="sports_name" />　<input type="button" value="添加" onclick="addStyleSub();"/></li>
+	</ul>
+ </table>
+</div>
+<div id="colthSizeBox" style="display: none">
+	<ul class="styleWidth" id="cloth_ul">
+	{foreach from=$styleClothingList item=style}
+		<li class="styleCloth"><label><input type="radio" name="clothings" value="{$style.style_id}" title="{$style.color}" />{$style.color}</label></li>
+	{/foreach}
+	</ul>
+    <ul class="styleWidth" >
+ 	 <li class="li"><label> <input type="radio" name="addStyles" value="3" id="addCloth"/>添加服装尺码</label></li>
+   	 <li class="li" id="add_cloth_tr" style="display: none">服装尺码：<input class="input" type="text" id="cloths_name" name="cloths_name" />　　<input type="button"  value="添加" onclick="addStyleSub();"/></li>
+    </ul>
+</div>
+<div id="yearBox" style="display: none">
+	<ul class="styleWidth" id="year_ul">
+	{foreach from=$styleYearList item=style}
+		<li class="styleYear"><label><input type="radio" name="years" value="{$style.style_id}" title="{$style.color}" />{$style.color}</label></li>
+	{/foreach}
+	</ul>
+    <ul class="styleWidth" >
+ 	 <li class="li"><label> <input type="radio" name="addStyles" value="5" id="addYear"/>添加年份</label></li>
+   	 <li class="li" id="add_year_tr" style="display: none">年份：<input class="input" type="text" id="year_name" name="year_name" />　　<input type="button"  value="添加" onclick="addStyleSub();"/></li>
+    </ul>
+</div>
+</div>
+<div id="button"></div>
+</div>
+ </form>
+ 
+</div>
+<!-- End demo -->
+
+
+{literal}
+<script type="text/javascript">
+function hideEdit(that){
+	$(that).parents("tr").css("background","#fff"); 
+	$('.ajaxAdd').remove();
+	$(".style_purchase_info_upd").remove(); 
+	$('#editColthSizeBox').hide();
+	$('#editColorBox').hide();
+	$('#editSportSizeBox').hide();
+	$('#editYearBox').hide();
+}
+
+$("#modal").hide();
+
+$("#close-modal").click(function(){
+	$("#modal").hide();
+}); 
+
+// 点击下架时判断该商品是否在某个套餐中 
+$("input[name='onSale']:radio").bind("change",function(){
+	var thisVal = $(this).val();
+	thisVal = parseInt(thisVal)
+	if(  thisVal != 0 ) return false; 
+	var is_on_sale_status = $("#is_on_sale_status").val( );
+	if(is_on_sale_status == 1){
+		 goodsGroup($("#goods_id").val()); 
+	}
+}); 
+
+// 判断该商品是否属于某个套餐  
+function goodsGroup(goods_id){
+	console.log(goods_id); 
+	$.getJSON("goods_index.php?act=is_group_goods&goods_id="+goods_id,function(data){
+		if(data.hehe == "hehe"){
+			var group = data.data; 
+			if(group.length > 0 ){
+				var html = "";
+				for(var i in group){
+					html += "<p>"; 
+					html += "<a target='_blank' href='distribution_group_goods.php?id="+group[i].group_id+"'>套餐："+group[i].group_name+"</a>";
+					html += "&nbsp;&nbsp;&nbsp;"
+					if(group[i].style_id != 0){
+						html += "中包含 样式为 "+group[i].color+"的该商品"; 
+					}else{
+						html += "中包含该商品";
+					} 
+				}
+				$("#modal").show(); 
+				$("#modal div").html(html);  	 
+			}
+		} 
+	}); 
+}
+
+
+// 主要用在 style 时 添加 修改 采购信息
+function onePurchaseInfoNoNameHtml(purchase_info){
+	var html = ""; 
+	if( purchase_info ){
+		html += '<span class="purchase_info_one" style="padding:2px;">'; 
+		html += '采购单价:<input type="text" class="input purchase_unit_price"      value="'+purchase_info.unit_price+'" />';
+		html += ' (元) &nbsp;&nbsp;'
+		html += '<input type="hidden" class="input purchase_provider_id"     value="'+purchase_info.provider_id+'" />'; 
+		html += "<span>"; 
+		html += '供应商:<input type="text" class="input select_provider purchase_provider_name" autocomplete="off" value="'+purchase_info.provider_name+'" />';
+		html += '<ul class="provider_list" ></ul>'; 
+		html += "</span>"; 
+		html += '<i class="del_purchase_info" styel="color:red;">&nbsp;&times;删除&nbsp;</i>'
+		html += "<br/>"; 
+		html += '</span>';
+	}else{
+		html += '<span class="purchase_info_one" style="padding:2px;">'; 
+		html += '采购单价:<input type="text" class="input purchase_unit_price"      value="" />';
+		html += ' (元) &nbsp;&nbsp;'
+		html += '<input type="hidden" class="input purchase_provider_id"   value="" />'; 
+		html += "<span>"; 
+		html += '供应商:<input type="text" class="input select_provider purchase_provider_name" autocomplete="off" value="" />';
+		html += '<ul class="provider_list" ></ul>'; 
+		html += "</span>"; 
+		html += '<i class="del_purchase_info" styel="color:red;">&nbsp;&times;删除&nbsp;</i>'
+		html += "<br/>"; 
+		html += '</span>';
+	}
+	return html; 
+}
+
+
+// 商品页 添加采购信息 
+function onePurchaseInfoHtml( ){
+	var html = ""; 
+	html += '<span class="purchase_info_one" style="padding:2px;">'; 
+	html += '采购单价:<input type="text" class="input purchase_unit_price"  name="purchase_unit_price[]"  />';
+	html += ' (元) &nbsp;&nbsp;'
+	html += '<input type="hidden" class="input purchase_provider_id"   name="purchase_provider_id[]"   />'; 
+	html += "<span>"; 
+	html += '供应商:<input type="text" class="input select_provider purchase_provider_name" autocomplete="off"  name="purchase_provider_name[]" />';
+	html += '<ul class="provider_list" ></ul>'; 
+	html += "</span>"; 
+	html += '<i class="del_purchase_info" styel="color:red;">&nbsp;&times;删除&nbsp;</i>'
+	html += "<br/>"; 
+	html += '</span>';
+	return html; 
+}
+
+// 商品基本信息页 添加采购信息  doing  
+$("body").on("click",".add_purchase_info",function(){
+	var html = onePurchaseInfoHtml( );   
+	$(this).siblings(".purchase_info").append(html); 
+}); 
+
+// style页 添加采购信息  doing  
+$("body").on("click",".style_add_purchase_info",function(){
+	var html = onePurchaseInfoNoNameHtml( ); 
+	$(this).siblings(".purchase_info").append(html); 
+}); 
+ 
+
+ // 删除一个采购信息 
+$("body").on("click",".del_purchase_info",function(){
+	$(this).parents("span.purchase_info_one").remove(); 
+}); 
+
+var contrl = {
+		tmp : '', //  input里的值默认值
+		num : -1, //  li的所在的列数
+	} ; 
+
+// 选择供应商 
+$("body").on("keyup",".select_provider",function(event){
+	var that = $(this); 
+	var ul = $(this).siblings("ul.provider_list"); 
+	ul.show().css("left",$(this).position().left+"px"); 
+
+	var li = ul.find("li"); 
+	if(li.length > 0 ){
+		if (event.keyCode == 40){  // 向下 
+			if (contrl.num < li.length -1){
+				contrl.num++;
+			}
+		}else if(event.keyCode == 38){  // 向上 
+			if(contrl.num >= 1){
+				contrl.num--;
+			}
+		}else{
+			fill_provider_list(that,ul);
+			return; 
+		}
+		if (contrl.num >=0 && contrl.num < li.length){
+			li.css("background","#fff").css("color",'#000');  
+		    li.get(contrl.num).style.background = '#36c';  
+			li.get(contrl.num).style.color = '#fff';  
+			var id = $(li.get(contrl.num)).attr("gid");
+		    $(that).parents(".purchase_info_one").find(".purchase_provider_id").val(id); 
+			contrl.tmp = $(li.get(contrl.num)).text(); 
+			$(that).val(contrl.tmp);
+		}
+	}else{
+		fill_provider_list(that,ul);
+	}
+}); 
+
+$("body").on("blur",".select_provider",function(event){
+	var that = $(this); 
+	var ul = $(this).siblings("ul.provider_list"); 
+	ul.hide( ); 
+}); 
+
+// 检索包含关键字的供应商 
+function fill_provider_list(input,ul){
+    var provider = input.val().toUpperCase();
+    console.log(provider); 
+    var provider_name = '';
+    ul.html($("#providers").html()); 
+
+    var li = ul.find("li"); 
+    if($.trim(provider).length > 0){
+    	var html = ''; 
+	    li.each(function(){
+	    	provider_name = $(this).html(); 
+	    	if(  provider_name.toUpperCase().indexOf(provider) != -1 ){
+	    		html += '<li gid="'+$(this).attr("gid")+'">'+provider_name+'</li>'; 
+	    	}
+	    }); 
+	    ul.html(html); 
+	} 
+    contrl.num = -1; 
+    contrl.tmp = ""; 
+}
+
+// 检查采购价格 填写的正确性 
+$("body").on("blur",".purchase_unit_price",function(){
+	var reg=/^[0-9]+(.[0-9]{2})?$/;
+	if(!reg.test($(this).val()) && goods_price!='')
+	{
+		alert('采购价格为带有两位小数的数字 \n示例:32.00');
+		return false;
+	}
+	return true; 
+}); 
+
+
+// 在样式页 修改样式 或 添加样式时 提交数据时 获取 采购信息 
+function getStylePurchaseInfo(dom){
+	var purchase_info = []; 
+	$(dom).find(".purchase_info_one").each(function(){
+		var one_info = {};
+		one_info.unit_price = $(this).find('input.purchase_unit_price').val(); 
+		one_info.provider_id = $(this).find('input.purchase_provider_id').val();
+		if($.trim(one_info.unit_price) =='' || one_info.provider_id ==''){
+			$(this).remove(); 
+		}else{
+			purchase_info.push(one_info); 
+		}
+	}); 
+	return purchase_info; 
+}
+
+
+
+
+
+function editStyleG(){
+	var goods_id      =$('#goods_id').val();
+	var style_price   =$('#editStylePrice').val();//更新的价格
+	var style_barcode =$('#editBarcodeStyle').val();//更新的barcode
+	var style_id      =$('#editStyleId').val();     //原样式中的style_id
+	var goods_style_id=$('#editStyleGoodId').val();//更新依据
+	var type          =$('#editStyleType').val(); //原样式类型,用来判断是否更新...
+	var goods_code    =$("#upd_style_goods_code").val(); 
+
+	var color=$('input:radio[name="editcolor"]:checked').val();
+	var sportSize=$('input:radio[name="editsports"]:checked').val();
+	var clothSize=$('input:radio[name="editclothings"]:checked').val();
+	var year=$('input:radio[name="edityears"]:checked').val();
+	
+	var color_value=$('input:radio[name="editcolor"]:checked').attr('title');
+	var sport_value=$('input:radio[name="editsports"]:checked').attr('title');
+	var cloth_value=$('input:radio[name="editclothings"]:checked').attr('title');
+	var year_value=$('input:radio[name="edityears"]:checked').attr('title');
+
+	var purchase_info = getStylePurchaseInfo("tr.style_purchase_info_upd");
+
+    console.log(purchase_info); 
+    
+    if(style_barcode[style_barcode.length - 1]==';'){
+		alert("商品条码最后一个不能为分号，请检查");
+		return false;
+	}
+	
+	if(!style_barcode.match(/^[0-9]+[;[0-9]+]*$/)){
+		alert('商品条码中不能出现除数字和英文分号以外的其他字符，请检查');
+		return false;
+	}
+
+	if(style_barcode == 'null' || style_barcode=='')
+	{
+		style_barcode='null';
+	}
+	if(type==1 && color!=null){
+		style_id=color;
+	}else if(type==2 && sportSize!=null){
+		style_id=sportSize;
+			
+	}else if(type==3 && clothSize!=null){
+		style_id=clothSize;
+	}
+	else if(type==5 && year!=null){
+		style_id=year;
+	}
+	$.ajax({
+		url: "goods_index.php?act=editGoodsStyle",
+		type: "POST",
+        data:{style_price:style_price,update_style_id:style_id,goods_style_id:goods_style_id,goods_id:goods_id,barcode:style_barcode,goods_code:goods_code,purchase_info:purchase_info},  
+        dataType:"json",  		
+		success: function(data){
+			//alert(data);
+			if(data==-1)
+			{
+				alert('您输入的商品条码已经存在');	
+			}else if(data>0)
+			{
+				alert('更新成功');
+				window.location.reload(); 
+			}else{
+				alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+	
+}
+function edit_style(obj){
+	$(obj).parents("tr").css("background","#286"); 
+	var style_id=obj.title;
+	var goods_id = $('#goods_id').val();
+	$.ajax({
+		type: "POST",
+		url: "goods_index.php?act=editStyle&goods_id="+goods_id+"&style_id="+style_id,
+		success: function(data){
+			var obj = JSON.parse(data); 
+			console.log(obj);
+			if(obj.error==1)
+			{
+				alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			}
+			
+			$('.ajaxAdd').remove();
+			$(".style_purchase_info_upd").remove(); 
+			if(obj.barcode=='null')
+			{
+				obj.barcode='';
+			}
+			var tr="<tr class='ajaxAdd'><td>原颜色/尺寸/年份:</td><td><font color='#0099FF'>"+
+			obj.color+"</font></td><td>商品价格:</td><td><input class='input' type='text' id='editStylePrice' name='editStylePrice' value='"+
+			obj.style_price+"' /></td><td colspan='3' style='color:red;'>康师傅一品多条码情况请用英文逗号分隔,如123;4345</td></tr><tr><td>商品条码:</td><td colspan='5'><input class='input' type='text' id='editBarcodeStyle' name='editBarcodeStyle'	value='"+
+			obj.barcode+"'/></td><td><input type='button' value='提交' onclick='editStyleG();' /></td></tr>";
+
+			tr += "<tr><td>商品货号:</td>";
+			tr += "<td colspan='6'> <input type='text' width='200px' id='upd_style_goods_code' value='"+obj.goods_code+"' > </td>";  
+			tr += " </tr>"; 
+
+			tr +="<tr class='style_purchase_info_upd'>"; 
+			tr += "<td>采购信息</td>";
+			tr += "<td colspan='6'>";
+            tr += "<span class='purchase_info'>"; 
+			for(var i =0 in obj.purchase_info ){
+				tr += onePurchaseInfoNoNameHtml(obj.purchase_info[i]); 
+			}
+			tr += "</span>"; 
+			tr += '<input type="button"  class="style_add_purchase_info" value="添加采购信息"/>'; 
+			tr += "</td>"; 
+			tr += "</tr>"; 
+			var table=$('#t_style');
+			
+			table.append(tr);
+			
+			$('#editStyleGoodId').val(obj.goods_style_id);
+			$('#editStyleId').val(obj.style_id);
+			$('#editStyleType').val(obj.type);
+			
+			if(obj.type==1){
+				$('#editColorBox').show();
+				$('#editSportSizeBox').hide();
+				$('#editColthSizeBox').hide();
+				$('#editYearBox').hide();
+			}else if(obj.type==2){
+				$('#editSportSizeBox').show();
+				$('#editColorBox').hide();
+				$('#editColthSizeBox').hide();
+				$('#editYearBox').hide();
+			}else if(obj.type==3){
+				$('#editColthSizeBox').show();
+				$('#editColorBox').hide();
+				$('#editSportSizeBox').hide();
+				$('#editYearBox').hide();
+			}
+			else if(obj.type==5){
+				$('#editYearBox').show();
+				$('#editColthSizeBox').hide();
+				$('#editColorBox').hide();
+				$('#editSportSizeBox').hide();
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+}
+    
+String.prototype.replaceAll = function(reallyDo, replaceWith, ignoreCase) {  
+    if (!RegExp.prototype.isPrototypeOf(reallyDo)) {  
+    	return this.replace(new RegExp(reallyDo, (ignoreCase ? "gi": "g")), replaceWith);  
+    } else {  
+    	return this.replace(reallyDo, replaceWith);  
+    }  
+} 
+
+function subEditGoods(){
+	var falg_weight = true;
+    var goods_weight = $.trim($('#goods_weight').val()).replaceAll(",","");
+    $("#goods_weight").val(goods_weight); 
+    var hehe_goods_volume = $.trim($('#goods_volume').val()).replaceAll(",","");
+    $("#goods_volume").val(hehe_goods_volume); 
+
+    if(!checkBarcode()) {
+    	alert('条码检测有问题，请看错误提示');
+    	return false;
+    }
+    var reg = /^[1-9][0-9]*$/;
+    
+    //检测价格框输入的价格是否合理
+	if($.trim($('#goods_price').val()) != ''){
+		var prices = $.trim($('#goods_price').val()).split('.');
+		if(prices.length > 2){
+			$('#warn_price_info').html('您输入的价格不合理');
+			return;
+		}else if(prices.length == 2){
+			if(prices[1].length > 2){
+				$('#warn_price_info').html('商品价格只能保存两位小数');
+				return;
+			}
+		}
+	}
+	
+   
+	var spec = $("#spec");
+	var reg = new RegExp('^[0-9]+$');
+	if(spec.length > 0 && !reg.test(spec.val())){
+		alert('商品规格必须为正整数');
+		return false;
+	}
+	var item_number = $("#item_number");
+		if(item_number.length > 0 && item_number.val() == ''){
+			alert("物料号不能为空")
+			return false;
+		}
+	if (goods_weight != 0 && goods_weight) {
+        if (goods_weight.match(reg)) {
+            falg_weight = true;
+        } else {
+            falg_weight = false;
+        }
+        if (!falg_weight) {
+            alert("重量单位为g，请输入整数");
+            return;
+        }
+    } 
+    var maintain_weight = document.getElementById('maintainWeightYes');
+    if (maintain_weight.checked) {
+       if (!(goods_weight && goods_weight != 0)) {
+            alert('请维护重量');
+            return;
+        }
+    }
+    
+	var goods_warranty = $.trim($('#goods_warranty').val());
+	if (goods_warranty && goods_warranty != 0) {
+		if (goods_warranty.match(reg)) {
+			falg_warranty = true;
+		} else {
+			falg_warranty = false;
+		}
+		if (!falg_warranty) {
+			alert("保质期单位为月，请输入整数");
+			return;
+		}
+	}
+    var maintain_warranty = document.getElementById('maintainWarrantyYes');
+    if (maintain_warranty.checked) {
+    	if (!(goods_warranty && goods_warranty != 0)) {
+        	alert('请维护保质期');
+        	return;
+    	}
+    }
+
+    var falg_volume = true;
+	var goods_volume = "";
+	var cat_name = $.trim($('#test').val());
+	var reg_1 = /^[1-9][0-9]*(.[0-9]{0,2})?$/;
+
+
+    if (cat_name == "耗材商品") {
+    	var goods_length = $.trim($('#goods_length').val());
+    	var goods_width = $.trim($('#goods_width').val());
+    	var goods_height = $.trim($('#goods_height').val());
+   		if (!goods_length.match(reg_1)) {
+   			alert("请输入合法的商品长度");
+   			return;
+   		}
+   		if (!goods_width.match(reg_1)) {
+   			alert("请输入合法的宽度");
+   			return;
+   		}
+   		if (!goods_height.match(reg_1)) {
+   			alert("请输入合法的高度");
+   			return;
+   		}
+   		goods_volume = (Math.round(goods_length*100)/100)*(Math.round(goods_width*100)/100)*(Math.round(goods_height*100)/100);
+    	goods_volume = Math.round((goods_volume*100)/100);
+    } else {
+    	goods_volume = $.trim($('#goods_volume').val());
+    }
+
+    var box_length = $.trim($('#box_length').val());
+	var box_width = $.trim($('#box_width').val());
+	var box_height = $.trim($('#box_height').val()); 
+	var reg_box = /^[0-9]*(.[0-9]{0,2})?$/;
+	if (!box_length.match(reg_box)) {
+   		alert("请输入合法的箱子长度");
+   		return;
+   	}
+   	if (!box_width.match(reg_box)) {
+   		alert("请输入合法的箱子宽度");
+   		return;
+   	}
+   	if (!box_height.match(reg_box)) {
+   		alert("请输入合法的箱子高度");
+   		return;
+   	}
+
+    if (goods_volume != 0 && goods_volume) {
+    	goods_volume = goods_volume+"";
+        if (goods_volume.match(reg)) {
+            falg_volume = true;
+        } else {
+            falg_volume = false;
+        }
+        if (!falg_volume) {
+            alert("体积单位为cm³，请输入整数");
+            return;
+        }
+    } 
+	var state=$('#code_state').val();
+	if(state==1)
+	{
+		$("#goods_volume").attr('value', goods_volume);
+		$('#form1').submit();
+	}else
+	{
+		alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+	}
+	
+	var consumable_id = $("#consumable_id").val();
+	var consumable_count = $("#consumable_count").val();
+
+}
+function checkBarcode(){
+	var goodsBar= $('#barcode').val();
+	var goods_id =$('#goods_id').val();
+	
+	// 判断条码中是否含空格
+	if(goodsBar.match(/\s+/)) {
+		$('#code_info').html('商品条码不能含空格，请检查！');
+		return false;
+	}
+	
+	if(goodsBar[goodsBar.length - 1]==';'){
+		$('#code_info').html('商品条码结尾不能有分号，请检查！');
+		return false;
+	}
+	
+	if(!goodsBar.match(/^[0-9A-Za-z]+[;[0-9A-Za-z]+]*$/)){
+		$('#code_info').html('商品条码中不能出现除数字和英文分号以外的其他字符');
+		return false;
+	}
+	
+	if(goodsBar.indexOf("；")>0){
+		$('#code_info').html('商品多码条件下多码间隔请用英文的分号，请检查！');
+		return false;
+	}
+	
+	if(goodsBar=='')
+	{
+		$('#code_state').val('0');
+		$('#code_info').html('商品条码不能为空！');
+		return false;
+	}
+	var result = false;
+	$.ajax({
+		async: false,
+		type: "POST",
+		url: "goods_index.php?act=checkBarCode&goodsBar="+goodsBar,
+		data: "goods_id="+goods_id,
+		success: function(data){
+			if(data.trim()=='ok')
+			{
+				result = true;
+				$('#code_state').val('1');
+				$('#code_info').html('您输入商品条码是唯一的');
+			}
+			else if(data.trim()=='-1')
+			{
+				$('#code_state').val('0');
+				$('#code_info').html('您输入商品条码已经存在,请查检后再输入');
+			}
+			else 
+			{
+				alert('checkBarCode出现问题,请与ERP组联系,谢谢---');
+			}
+		},
+		error: function(){
+			alert('checkBarCode ajax出现错误,请与ERP组联系,打bug报告,谢谢---');
+		}
+	});	
+	return result;
+}
+function addStyleSub(){
+	var colorName=$('#color_name').val();
+	var sport=$('#sports_name').val();
+	var cloth=$('#cloths_name').val();
+	var colorValue=$('#color_value').val();
+	var colorvalue=colorValue.slice(1);
+	var year=$('#year_name').val();
+	var styleType=$('input:radio[name="addStyles"]:checked').val();
+	
+	if(styleType==1)
+	{
+		if(colorName=='' || colorValue=='')
+		{
+			alert('您输入颜色为空');
+			return false;
+		}
+		color=colorName;
+		value=colorvalue;
+	}else if(styleType==2)
+	{
+		if(sport=='')
+		{
+			alert('您输入的运动鞋尺码为空');
+			return false;
+		}
+		color=sport+'码';
+		value=sport;
+	}else if(styleType==3)
+	{
+		if(cloth=='')
+		{
+			alert('您输入服装尺码为空');
+			return false;
+		}
+		color=cloth+'码';
+		value=cloth;
+	}else if(styleType==5)
+	{
+		if(year=='')
+		{
+			alert('您输入年份为空');
+			return false;
+		}
+		color=year+'年';
+		value=year;
+	}
+	
+	$.ajax({
+		url: "goods_index.php?act=addStyle",
+		type: "POST",
+        data:{color:color,value:value,type:styleType},  
+        dataType:"json",  		
+		success: function(data){
+			if(data.style_id>0)
+			{
+				if(data.type==1)
+				{
+					var ul=$('#color_ul');
+					var li="<li class='styleColor'><table><tr><td><div id='pic' style='background-color:"
+							+colorValue+"; width: 50px; height: 50px'></div></td></tr><tr><td align='center'><label><input type='radio' name='color' value='"+data.style_id+"' id='color' title='"
+							+colorName+"'/>"+colorName+"</label></td></tr></table></li>";
+					ul.append(li);
+				}else if(data.type==2)
+				{
+					var ul=$('#sports_ul');
+					var li="<li class='styleSport'><label><input type='radio' name='sports' value='"+data.style_id+"' title='"+sport+"码'/>"+sport+"码</label></li>";
+					ul.append(li);
+				}else if(data.type==3)
+				{
+					var ul=$('#cloth_ul');
+					var li="<li class='styleCloth'><label><input type='radio' name='clothings' value='"+data.style_id+"' title='"+cloth+"码'/>"+cloth+"码</label></li>";
+					ul.append(li);
+				}
+				else if(data.type==5)
+				{
+					var ul=$('#year_ul');
+					var li="<li class='styleYear'><label><input type='radio' name='years' value='"+data.style_id+"' title='"+year+"年'/>"+year+"年</label></li>";
+					ul.append(li);
+				}
+			}
+			else if(data.style_id==-1)
+			{
+				alert('您添加的颜色/尺码/年份已存在');
+				return false;
+			}
+			else if(data.style_id==-2)
+			{
+				alert('添加失败,请与ERP组联系,打bug报告,谢谢---');
+				return false;
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+	
+	
+}
+function initColorPicker(){
+  	var myCP1 = new dhtmlXColorPickerInput('color_value');
+		myCP1.setImagePath("./js/colorChange/imgs/");
+		myCP1.init();
+  }
+
+function addStyle()
+{
+	var goods_id		=$('#goods_id').val();
+	var goods_price		=$('#price').val();
+	var style_barcode	=$('#barcodeStyle').val();
+	var goods_code = $("#style_goods_code").val(); 
+	
+	var type=$('input:radio[name="changSize"]:checked').val();
+	var color=$('input:radio[name="color"]:checked').val();
+	var sportSize=$('input:radio[name="sports"]:checked').val();
+	var clothSize=$('input:radio[name="clothings"]:checked').val();
+	var year=$('input:radio[name="years"]:checked').val();
+	
+	var color_value=$('input:radio[name="color"]:checked').attr('title');
+	var sport_value=$('input:radio[name="sports"]:checked').attr('title');
+	var cloth_value=$('input:radio[name="clothings"]:checked').attr('title');
+	var year_value=$('input:radio[name="years"]:checked').attr('title');
+	
+	if(style_barcode=='')
+	{
+		style_barcode='null';
+	}
+	
+	if(style_barcode[style_barcode.length - 1]==';'){
+		alert("商品条码最后一个不能为分号，请检查");
+		return false;
+	}
+	
+	if(!style_barcode.match(/^[0-9]+[;[0-9]+]*$/)){
+		alert('商品条码中不能出现除数字和英文分号以外的其他字符，请检查');
+		return false;
+	}
+	
+	var reg=/^[0-9]+(.[0-9]{2})?$/;
+	if(!reg.test(goods_price) && goods_price!='')
+	{
+		alert('请检查您输入此样式的价格\n示例:32.00');
+		return false;
+	}
+	if(goods_price=='')
+	{
+		goods_price="0.00";
+	}
+	if(type==null)
+	{
+		alert('请选择样式');
+		return false;
+	}
+	if(type==1)
+	{
+		if(color==null)
+		{
+			alert('请选择商品的颜色');
+			return false;
+		}
+		style_id = color;
+		style_value=color_value;
+	}else if(type==2)
+	{
+		if(sportSize==null)
+		{
+			alert('请选择鞋子的尺码');
+			return false;
+		}
+		style_id = sportSize;
+		style_value=sport_value;
+	}else if(type==3)
+	{
+		if(clothSize==null)
+		{
+			alert('请选择服装的尺码');
+			return false;
+		}
+		style_id = clothSize;
+		style_value=cloth_value;
+	}
+	else if(type==5)
+	{
+		if(year==null)
+		{
+			alert('请选择年份');
+			return false;
+		}
+		style_id = year;
+		style_value=year_value;
+	}
+
+	var purchase_info = getStylePurchaseInfo("tr.purchase_info_add"); 
+
+
+	$.ajax({
+		url: "goods_index.php?act=ajax",
+		type: "POST",
+		data:{goods_id:goods_id,style_id:style_id,goods_price:goods_price,barcode:style_barcode,goods_code:goods_code,purchase_info:purchase_info},  
+		dataType:"json",  		
+		success: function(data){
+			if(data>0)
+			{	
+				window.location.reload(); 
+			}else if(data==-1)
+			{
+				alert('此商品条码已经存在');
+			}else if(data==-2){
+				alert('此样式已经存在,请不要重复添加');
+			}else if(data==-4){
+				alert('该商品已经下过采购订单，不能添加样式！');
+			}
+			else 
+			{
+				alert('出现问题,请与ERP组联系');
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+}
+function checkName(){
+	var goodsName=$.trim($('#goods_name').val());
+	if(goodsName==''){
+		$('#name_state').val('0');
+		$('#goods_name_info').html('您输入的值为空');
+	}
+	else if(goodsName!=''){
+		var party_id = $.trim($('#party_id').val());
+		var cat_name = $.trim($('#test').val())
+		if (party_id == 65581 && cat_name != "耗材商品")　{
+			var name = goodsName.split(" ", -1);
+			var size = name.length;
+			var color_name = $.trim(name[1]);
+			if (size > 2) {
+				alert("商品名称维护规则：商品名称加空格加颜色名称");
+				$('#name_state').val('0');
+				$('#goods_name_info').html('您输入商品名称不符合要求');
+			} else if(size == 2 && color_name != '' && color_name) {
+				//检查第二个是否为颜色名称
+				$.ajax({
+					type: "POST",
+					url: "goods_index.php?act=checkColorName&&color="+color_name,
+					success: function(data){
+						if (data == '"success"') {
+							$('#name_state').val('1');
+							$('#goods_name_info').html('正确');
+						} else {
+							$('#name_state').val('0');
+							$('#goods_name_info').html('您输入商品名称不符合要求');
+						}
+					},
+					error: function(){
+						alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+						$('#name_state').val('0');
+						$('#goods_name_info').html('您输入商品名称不符合要求');
+					}
+				});	
+			} else {
+				$('#name_state').val('1');
+				$('#goods_name_info').html('正确');
+			}
+		} else {
+			$('#name_state').val('1');
+			$('#goods_name_info').html('正确');
+		}
+		
+	}
+}
+
+$(document).ready(function(){
+	 $("#addColor").click(function(){
+	 	var val=$('input:radio[name="addStyles"]:checked').val();
+		if(val!=null)
+		{
+			$("#add_color_tr").show();
+			$("#add_sports_tr").hide();
+			$("#add_cloth_tr").hide();
+			$("#add_year_tr").hide();
+		}
+		else
+		{
+			$("#add_color_tr").hide();
+		}
+	 });
+	 $("#addSports").click(function(){
+		 	var val=$('input:radio[name="addStyles"]:checked').val();
+			if(val!=null)
+			{
+				$("#add_sports_tr").show();
+				$("#add_cloth_tr").hide();
+				$("#add_color_tr").hide();
+				$("#add_year_tr").hide();
+			}
+			else
+			{
+				$("#add_sports_tr").hide();
+			}
+		 });
+	 $("#addCloth").click(function(){
+		 	var val=$('input:radio[name="addStyles"]:checked').val();
+			if(val!=null)
+			{
+				$("#add_cloth_tr").show();
+				$("#add_color_tr").hide();
+				$("#add_sports_tr").hide();
+				$("#add_year_tr").hide();
+			}
+			else
+			{
+				$("#add_cloth_tr").hide();
+			}
+		 });
+	 $("#addYear").click(function(){
+		 	var val=$('input:radio[name="addStyles"]:checked').val();
+			if(val!=null)
+			{
+				$("#add_year_tr").show();
+				$("#add_cloth_tr").hide();
+				$("#add_color_tr").hide();
+				$("#add_sports_tr").hide();
+			}
+			else
+			{
+				$("#add_year_tr").hide();
+			}
+		 });
+	 $("#changColor").click(function(){
+		 	var val=$('input:radio[name="changSize"]:checked').val();
+			if(val!=null)
+			{
+				$("#colorBox").show();
+				$("#sportSizeBox").hide();
+				$("#colthSizeBox").hide();
+				$("#yearBox").hide();
+			}
+			else
+			{
+				$("#color").hide();
+			}
+		 });
+
+	  $("#changSportsSize").click(function(){	
+		var val=$('input:radio[name="changSize"]:checked').val();
+		if(val!=null)
+		{
+			$("#sportSizeBox").show();
+			$("#colorBox").hide();
+			$("#colthSizeBox").hide();
+			$("#yearBox").hide();
+		}
+		else
+		{
+			$("#size").hide();
+		}
+	 });
+	  $("#changClothSize").click(function(){	
+			var val=$('input:radio[name="changSize"]:checked').val();
+			if(val!=null)
+			{
+				$("#colthSizeBox").show();
+				$("#sportSizeBox").hide();
+				$("#colorBox").hide();
+				$("#yearBox").hide();
+			}
+			else
+			{
+				$("#size").hide();
+			}
+		 });
+	  $("#changYear").click(function(){	
+			var val=$('input:radio[name="changSize"]:checked').val();
+			if(val!=null)
+			{
+				$("#colthSizeBox").hide();
+				$("#sportSizeBox").hide();
+				$("#colorBox").hide();
+				$("#yearBox").show();
+			}
+			else
+			{
+				$("#year").hide();
+			}
+		 });
+});
+	$(function() {
+		$("#tab").tabs();
+	});
+	
+function change_bubble_box(param){
+	if(param == 'yes'){
+		$('#bubble_box_number').attr('disabled','');
+		$('#bubble_box_number').val('1');
+	}else{
+		$('#bubble_box_number').attr('disabled','disabled');
+	}
+}
+
+function change_bubble_bag(param){
+	if(param == 'yes'){
+		$('#bubble_bag_number').attr('disabled','');
+		$('#bubble_bag_number').val('1');
+	}else{
+		$('#bubble_bag_number').attr('disabled','disabled');
+	}
+}
+function getBarcodeBySinri(){
+	var goods_id =$('#goods_id').val();
+	$.ajax({
+		type: "POST",
+		url: "goods_index.php?act=getNewBarCode&goods_id="+goods_id,
+		success: function(data){
+			if(data!='failed')
+			{
+				$('#code_state').val('1');
+				$('#sinri_try_create_barcode').val('再摇一次');
+				$('#barcode').val(data);
+			}else{
+				$('#code_state').val('0');
+				$('#sinri_try_create_barcode').val('运气不好,再摇一次！');
+			}
+		},
+		error: function(){
+			$('#sinri_try_create_barcode').val('运气不好明天再来！');
+		}
+	});	
+}
+
+/*一品多码*/
+function addBarCode(){
+	var str=prompt("请填写商品条码,比如:126423564512");
+    if(checkBarcode_1(str))
+    {
+        $("#barcode").val($("#barcode").val()+";"+str);
+    }
+}
+/*一品多码结束*/
+
+function AddConsumable(){
+	var goods_id =$('#goods_id').val();
+	var consumable_id =$('#consumable_id').val();
+	var consumable_count =$.trim($('#consumable_count').val());	
+	var reg_2 = /^[1-9][0-9]*$/;
+	if(!reg_2.test(consumable_count) || consumable_count=='' || consumable_id=='0')
+	{
+		alert('请检查"耗材编辑"输入！');
+		return false;
+	}
+	$.ajax({
+		type: "POST",
+		url: "goods_index.php?act=AddConsumable&goods_id=" +goods_id +"&consumable_id=" +consumable_id+"&consumable_count=" +consumable_count,
+		success: function(data){
+			if(data!='failed')
+			{
+				alert("添加成功！");
+				window.location.reload();
+			}else{
+				alert("添加失败！");
+			}
+		},
+		error: function(){
+			alert("添加失败！");
+		}
+	});	
+}
+
+function DelConsumable(){
+	var goods_id =$('#goods_id').val();
+	var consumable_id =$('#consumable_id').val();
+	 var info = "确认删除该条耗材记录吗？";
+	 
+	 if(consumable_id=='0') {
+			alert('请检查输入！');
+			return false;
+		}
+	 if (confirm(info)) {
+		 $.ajax({
+				type: "POST",
+				url: "goods_index.php?act=DelConsumable&goods_id=" +goods_id +"&consumable_id=" +consumable_id,
+				success: function(data){
+					if(data!='failed')
+					{
+						alert("删除成功！");
+						window.location.reload();
+					}else{
+						alert("不存在该种耗材，删除失败！");
+					}
+				},
+				error: function(){
+					alert("删除失败！");
+				}
+			});	
+	 } else {
+		 return false;
+	 }
+	
+}
+</script>
+{/literal}
+</body>
+</html>

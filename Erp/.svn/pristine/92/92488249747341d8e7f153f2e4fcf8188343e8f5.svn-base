@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>用户订购记录查询</title>
+
+<script type="text/javascript">
+	var WEB_ROOT = '{$WEB_ROOT}';
+	var cbt_id = '{$smarty.request.cbt_id}';
+</script>
+
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+
+<link href="misc/cbt/jquery-ui.css" rel="stylesheet" type="text/css" />
+<script src="misc/cbt/jquery.min.js"></script>
+<script src="misc/cbt/jquery-ui.min.js"></script>
+
+<style type="text/css">
+<!--{literal}-->
+#cbt_list_tbl th {
+	background-color: #F7F4F0;/*F0EBE2*/
+}
+#cbt_list_tbl td {
+	background-color: #FFFFFF;
+}
+body {
+	font-family: 'Microsoft YaHei', monospace;
+}
+<!--{/literal}-->
+</style>
+
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message"
+	style="border: #7F9F00 2px solid; padding: 5px; text-align: center;">
+{$message}</div>
+<!--{/if}-->
+
+
+<script type="text/javascript">
+	//{literal}
+	function search_user_order_info() {
+		if ($('#TAOBAO_USER_ID').val() == '') {
+			return false;
+		}
+		$('#TAOBAO_USER_ID_btn').attr('disabled','disabled');
+		var TAOBAO_USER_ID = $('#TAOBAO_USER_ID').val();
+		$
+				.ajax({
+					'type' : 'POST',
+					'url' : 'search_user_order_info.php',
+					'data' : 'request=ajax&act=search&TAOBAO_USER_ID='
+							+ TAOBAO_USER_ID,
+					'cache' : false,
+					'dataType' : 'json',
+					'success' : function(data) {
+						$('#TAOBAO_USER_ID_msg').html('');
+						$('#ajax_tbody').empty();
+						if (data.code == 0) {
+							$('#ajax_tbody').append(data.data);
+							$('#cbt_list_tbl').effect('bounce', {}, 90);
+						} else {
+							$('#TAOBAO_USER_ID_msg').html(data.data);
+						}
+						$('#TAOBAO_USER_ID_btn').attr('disabled','');
+					},
+					'error' : function(data) {
+						$('#TAOBAO_USER_ID_msg').html('通信失败或返回数据异常。');
+						$('#TAOBAO_USER_ID_btn').attr('disabled','');
+					}
+				});
+	}
+
+	var KEY = {
+		RETURN : 13, // 回车
+		CTRL : 17, // CTRL
+		TAB : 9
+	};
+
+	$(document).ready(function() {
+		$('#TAOBAO_USER_ID').bind('keyup', function(event) {
+			if (event.keyCode == KEY.RETURN) {
+				search_user_order_info();
+			}
+		})
+		$('#TAOBAO_USER_ID_btn').click(function() {
+			search_user_order_info();
+		})
+	});
+	//{/literal}
+</script>
+
+<fieldset
+	style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;">
+<legend><span
+	style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;用户订购记录查询&nbsp;</span></legend>
+<div style="text-align: left; margin-bottom: 6px;"><span style="float: right;">
+<button onclick="location.href = location.href;">刷新</button>
+</span> <span> 请输入淘宝用户ID：<input type="text" id="TAOBAO_USER_ID" value=""
+	size="32" />
+<button id="TAOBAO_USER_ID_btn">查询</button>
+</span><span id="TAOBAO_USER_ID_msg" style="color: red;"></span></div>
+<div style="clear: both;">
+
+<table id="cbt_list_tbl" class="bWindow">
+	<thead>
+		<tr>
+			<th nowrap="nowrap">编号</th>
+			<th nowrap="nowrap">订单号</th>
+			<th nowrap="nowrap">订购时间</th>
+			<th nowrap="nowrap">订单状态</th>
+			<th nowrap="nowrap">金额</th>
+			<th nowrap="nowrap">运费</th>
+			<th nowrap="nowrap">红包</th>
+			<th nowrap="nowrap">收货人</th>
+			<th nowrap="nowrap">收货地址</th>
+			<th nowrap="nowrap">商品</th>
+		</tr>
+	</thead>
+	<tbody id="ajax_tbody">
+	</tbody>
+</table>
+
+</div>
+
+</fieldset>
+<br>
+<fieldset
+	style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;">
+<legend><span
+	style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;使用帮助&nbsp;</span></legend>
+
+<ul>
+	<li>输入淘宝用户ID后直接回车或点击后面的“查询“按钮。
+	</li>
+</ul>
+</fieldset>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>PARTY管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  <link rel="stylesheet" type="text/css" href="misc/thickbox.css" />
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+  <!--{if $message}-->
+  <div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+  {$message}
+  </div>
+  <!--{/if}-->
+  
+  
+  <fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend>
+      <span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;PARTY管理&nbsp;</span>
+    </legend>
+    
+    <div style="clear:both;"> 
+      <h3 style="color:#09F;">添加PARTY</h3>
+ 	    <form method="post">
+        <table cellpadding="5" cellspacing="1">
+          <tr>
+            <td width="120">上级组织 <span class="require"> * </span></td>
+            <td>
+            	<select name="party[parent_party_id]">{html_options options=$party_options_list}</select>
+            </td>
+		      </tr>
+          <tr>
+      	    <td>组织名 <span class="require"> * </span></td>
+            <td>
+              <input type="text" name="party[name]" value="" />
+		        </td>
+		      </tr>
+          <tr>
+      	    <td>描述信息</td>
+            <td>
+              <input type="text" name="party[description]" value="" size="40" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <input type="submit" value="添加" />
+		        </td>
+		      </tr>
+        </table>
+    
+        <input type="hidden" name="act" value="insert" />
+      </form>
+    </div>
+    <br />
+    <div style="clear:both;">
+      <h3 style="color:#09F;">PARTY 归类</h3>
+      <form method="post">
+        <input type='hidden' name="act" value="update_relation">
+        <div>
+          PARTY: 
+          <select name="party_id">
+            <option value="">[未选择]</option>
+            {html_options options=$party_options_list}
+          </select>
+          &nbsp;&nbsp;
+          变更为从属于父PARTY: 
+          <select name="parent_party_id">
+            <option value="">[未选择]</option>
+            {html_options options=$party_options_list}
+          </select>
+          &nbsp;&nbsp;
+          <button>保存</button>
+        </div>
+      </form>
+    </div>
+    <br />
+    <div style="clear:both;">
+      <h3 style="color:#09F;">PARTY 分簇 修改</h3>
+      <form method="post">
+        <input type='hidden' name="act" value="update_cluster">
+        <div>
+          PARTY: 
+          <select name="party_id">
+            <option value="">[未选择]</option>
+            {html_options options=$party_options_list}
+          </select>
+          &nbsp;&nbsp;
+          该业务组的分簇值: 
+          <select name="party_group">
+            <option value="!">[不显示在分簇列表中]</option>
+            <option value="">[分簇显示空白]</option>
+            <option value="<!--1-->母婴">母婴</option>
+            <option value="<!--2-->食品 / 冲饮">食品 / 冲饮</option>
+            <option value="<!--3-->护肤 / 彩妆 / 洗护">护肤 / 彩妆 / 洗护</option>
+            <option value="<!--4-->数码">数码</option>
+            <option value="<!--5-->文具 / 保健品 / 非标">文具 / 保健品 / 非标</option>
+            <option value="<!--6-->跨境">跨境</option>
+            <option value="<!--7-->其它">其它</option>
+          </select>
+          &nbsp;&nbsp;
+          <button>保存</button>
+        </div>
+      </form>
+    </div>
+    <br />
+    <div style="clear:both;">
+      <h3 style="color:#09F;">PARTY列表</h3>
+        
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="30%">组织结构</th>
+          <th width="30%" >描述</th>
+          <th width="20%" >分簇</th>
+          <th width="20%">创建时间</th>
+        </tr>   
+
+        <!--{foreach from=$party_list item=party}-->
+        <tr align="center" bgcolor="#f9f9f9">
+          <td align="left" style="padding-left:10px;">&nbsp;&nbsp; {"——"|str_repeat:$party->depth} {$party->name}</td>
+          <td>{$party->description}</td>
+          <td>{$party->party_group}</td>
+          <td>{$party->createdStamp|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+        </tr>
+        <!--{/foreach}-->
+
+      </table> 
+    </div>
+    
+    <br />
+    <br />
+    
+  </fieldset>
+
+</body>
+</html>

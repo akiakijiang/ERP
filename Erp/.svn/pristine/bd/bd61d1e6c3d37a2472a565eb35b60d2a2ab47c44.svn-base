@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>韵达[yukiwenzi#宁波北仓]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+
+<div style="position:absolute;font-size:14pt;top:50px;left:80px;">顾石磊</div>
+<div style="position:absolute;font-size:14pt;top:130px;left:70px;">浙江              宁波市</div>
+<div style="position:absolute;font-size:14pt;top:170px;left:70px;">浙江省宁波市北仑区大碶清水倪家弄53号  310000</div>
+<div style="position:absolute;font-size:14pt;top:228px;left:76px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:30pt;top:260px;left:70px;">√</div>
+<div style="position:absolute;font-size:14pt;top:410px;left:210px;width:200px">食品</div>
+<div style="position:absolute;font-size:14pt;top:425px;left:335px;">顾石磊</div>
+<div style="position:absolute;font-size:16pt;top:385px;left:410px;">检查后再签收，破损请拒收，否则破损不负责</div>
+<div style="position:absolute;font-size:14pt;top:440px;left:170px">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+<div style="position:absolute;font-size:14pt;top:50px;left:470px;">{$order.city}</div>
+<div style="position:absolute;font-size:14pt;top:50px;left:780px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:14pt;top:130px;left:460px;width:400px;">{if $order.province != ''}{$order.province}{/if} {if $order.city != ''}{$order.city}{/if} {if $order.district != ''}{$order.district}{/if}{$order.address}    (订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:14pt;top:225px;left:500px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:14pt;top:230px;left:730px;">{$order.zipcode}</div>
+<div style="position:absolute;font-size:30pt;top:298px;left:640px;">√</div>
+
+<div style="position:absolute;font-size:14pt;top:340px;left:70px;"></div>
+<div style="position:absolute;font-size:14pt;top:360px;left:40px;"></div>
+
+</body>
+</html>

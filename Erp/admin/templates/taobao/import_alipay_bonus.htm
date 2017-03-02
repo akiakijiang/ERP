@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  <title>导入支付宝红包</title> 
+    <script type="text/javascript">
+    // <![CDATA[
+    // {literal}	
+      function showDiv(id) {
+          var disp = $('#'+id).attr('style');
+          if (disp == '' || disp == 'display:;') {
+              $('#'+id).attr('style', 'display:none;');
+          } else {
+              $('#'+id).attr('style', 'display:;');
+          }
+      }
+      $(document).ready(function(){
+		$('.expand').bind('click', function(){
+			$(this).next().toggle();
+		});
+		$('#button').attr('disabled', false);
+
+		$('#upload').bind('submit', function(){
+			$(':button, :submit').attr('disabled', true);												
+		});
+	});
+    // {/literal}
+    // ]]>
+    </script>
+</head>
+<body>
+
+
+<!--{if $smarty.request.message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 60000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$smarty.request.message}
+</div>
+<br />
+<!--{/if}-->
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;导入支付宝红包&nbsp;</span></legend>
+  
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">上传Excel文件</h3>
+    <form action="import_alipay_bonus.php" id="upload" method="post" enctype="multipart/form-data">
+      <table>
+      <tr>
+      <th>文件：</th><td>
+      <input type="file" name="excel" size="50" /> 
+      <div style="clear:both; margin-top:5px; color:#888;" >Excel文件中要包含有 [Sheet1] 这个Sheet<br />
+	  表头格式 ：序号,淘宝ID,支付宝账号,红包金额
+      </div>
+      </td>
+      </tr>
+      <tr>
+      <tr><td colspan="2">
+      <input type="submit" value="导入" />
+      <input type="hidden" name="act" value="upload" />
+      </td></tr>
+      </table>
+    </form>
+	</div>
+
+	<hr style="border:3 double #grey" width="100%" color=#grey SIZE=3>
+    <div style="clear:both;"> 
+		<h3 style="color:#09F;">导出所有红包csv</h3>
+    <form action="import_alipay_bonus.php" id="export" method="post" enctype="multipart/form-data">
+      <input type="submit" value="导出csv" />
+      <input type="hidden" name="act" value="export" />
+    </form>
+	</div>
+	<hr style="border:3 double #grey" width="100%" color=#grey SIZE=3>
+	
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">支付宝红包</h3>
+    <br />
+    <form action="import_alipay_bonus.php" name="stat" id="stat" method="get">
+      开始时间：
+      <input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+      结束时间：
+      <input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+      状态：
+      <select name="status" >
+        <option value="ALL" {if $smarty.request.status eq 'ALL'}selected{/if} >全部</option>
+        <option value="OK" {if $smarty.request.status eq 'OK'}selected{/if}>正常</option>
+        <option value="USED" {if $smarty.request.status eq 'USED'}selected{/if}>已使用</option>
+        <option value="OVERDUE" {if $smarty.request.status eq 'OVERDUE'}selected{/if}>过期</option>
+      </select>
+      搜索关键字：
+      <input name="search_text" value="{$smarty.request.search_text}" type="text" />
+      <input name="act" value="search" type="hidden" />
+      <input type="submit" value="查看" />
+    </form>
+    <div style="clear:both;">{$pager}</div>
+    <table class="bWindow">
+      <tr>
+        <th width="3%"></th>
+        <th width="3%">支付宝账户</th>
+        <th width="3%">红包金额</th>
+        <th width="5%">状态</th>
+        <th width="5%">创建时间</th>
+        <th width="5%">修改时间</th>
+		<th width="5%">操作</th>
+      </tr>
+      
+      <!--{foreach from=$alipay_bonus_list item=item name=bonus}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+	  <form method="POST">
+        <td>{$smarty.foreach.bonus.iteration}</td>
+        <td>{$item.buyer_alipay_no}</td>
+        <td>{$item.alipay_bonus}</td>
+        <td>
+		<select name="status">
+		{html_options options=$status_mapping selected=$item.status}
+		</select>
+		</td>
+        <td>{$item.created_time}</td>
+        <td>{$item.update_time}</td>
+        <td>
+		<input type="hidden" name="taobao_alipay_bonus_id" value="{$item.taobao_alipay_bonus_id}" />
+		<input type="hidden" name="act" value="save" />
+		<input type="submit" value="修改" /></td>
+	  </form>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center"><td colspan="20">无记录</td></tr>
+      <!--{/foreach}-->
+      
+    </table>
+    <div style="clear:both;">{$pager}</div>
+	</div>
+</fieldset>
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

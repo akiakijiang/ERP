@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>打印运货单</title>
+<script type="text/javascript">
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+function check(form) {
+	var types = ES("type");
+	var type_select = false;
+	for (var i = 0; i < types.length; i++) {
+		if (types[i].checked != '') {
+			type_select = true;
+			break;
+		}
+	}
+	if (!type_select) {
+		alert('请选择运单种类');
+		return false;
+	}
+	return true;
+}
+function selectAll(obj) {
+	var isCheck = obj.checked;
+	var checkboxes = document.getElementsByName("order_id[]");
+	for (i = 0; i < checkboxes.length; i++) {
+		checkboxes[i].checked = isCheck;
+	}
+}
+{/literal}
+</script>
+</head>
+
+<body>
+<form>
+快递公司：
+<select name="carrier_id">
+<option value="0">所有</option>
+{foreach from=$carriers item=carrier}
+<option value="{$carrier.carrier_id}" {if $smarty.request.carrier_id == $carrier.carrier_id}selected{/if}>{$carrier.name}</option>
+{/foreach}
+</select>
+<input type="submit" value="查找">
+</form>
+<form action="print_shipping_order2.php" onsubmit="return check(this)">
+<br>
+种类：
+<input type="radio" name="type" value="zjs" {if $smarty.request.carrier_id == 5}checked{/if}>宅基送
+<input type="radio" name="type" value="zjs-x" {if $smarty.request.carrier_id == 15}checked{/if}>宅基送（货到付款）
+<input type="radio" name="type" value="ems-x" {if $smarty.request.carrier_id == 9 || $smarty.request.carrier_id == 14}checked{/if} />EMS（货到付款）
+<input type="radio" name="type" value="fedex" {if $smarty.request.carrier_id == 6}checked{/if}>联邦快递
+<input type="radio" name="type" value="yto" {if $smarty.request.carrier_id == 3}checked{/if}>圆通
+<input type="radio" name="type" value="sf" {if $smarty.request.carrier_id == 10}checked{/if}>顺丰
+<input type="radio" name="type" value="sf-x" {if $smarty.request.carrier_id == 17}checked{/if}>顺丰（货到付款）
+<input type="radio" name="type" value="fh" {if $smarty.request.carrier_id == 13 || $smarty.request.carrier_id == 16}checked{/if} />风火
+<input type="radio" name="type" value="htky" {if $smarty.request.carrier_id == 28}checked{/if} />汇通
+<input type="radio" name="type" value="yunda" {if $smarty.request.carrier_id == 29}checked{/if} />韵达
+<input type="radio" name="type" value="sto-x" {if $smarty.request.carrier_id == 31}checked{/if} />申通（货到付款）
+<input type="submit" value="打印">
+<table class="bWindow">
+<caption><h2>订单打印</h2></caption>
+<tr>
+<th>操作<input type="checkbox" onclick="selectAll(this)"></th>
+<th>订单号</th>
+<th>订单时间</th>
+<th>收货人</th>
+<th>配送方式</th>
+<th>商品</th>
+</tr>
+<!--{foreach from=$orders item=order name=order}-->
+<tr align="center">
+<td><input type="checkbox" name="order_id[]" value="{$order.order_id}" {if $smarty.foreach.order.total == 1}checked{/if}></td>
+<td><a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+<td>
+	确认时间<br>
+	{$order.confirm_time}<br>
+	下单时间<br>
+	{$order.order_time}
+</td>
+<td>{$order.consignee}</td>
+<td>{$order.shipping_name}</td>
+<td>{"<br>"|join:$order.goods_names}</td>
+</tr>
+<!--{/foreach}-->
+<tr align="center">
+<td colspan="20">{$pager}</td>
+</tr>
+</table>
+</form>
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>超级工具</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+ 	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+ 	<!--{literal}-->
+  
+  <style type="text/css">
+	.tip{ color: #888; }
+	.require{ color: #F00; }
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	// ]]>
+	</script>
+  
+ 	<!--{/literal}-->
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+//  window.setTimeout(function(){
+//    $('#message').slideUp("slow");
+//  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;超级工具集&nbsp;</span></legend>
+	 
+  <div style="clear:both;"> 
+    <h4>|— 一键修复修改qoh和atp</h4>
+    <form action="toolkit.php?act=batch_modify_qoh_atp" method="post" >
+  	<table>
+        <tr>
+          <td>一键修复</td>
+		  <td><input type="submit" value="执行"/></td>
+        </tr>
+     </table>
+    </form>
+  </div>
+ <br />
+ 
+	<div style="clear:both;"> 
+	<h4>|— 修改订单状态新</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>订单状态 <span class="require"> * </span></td>
+        <td>
+        	order_status:<input type='text' name='order_status' value=''>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        	shipping_status:<input type='text' name='shipping_status' value=''>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            pay_status:<input type='text' name='pay_status' value=''>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>备注 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="action_note" size="60" />
+        </td>
+		</tr>
+       
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_order_status_new" />
+			<input type="submit" value="提交" />
+        </td>
+		</tr>
+        
+		</table>
+        </form>
+  </div>
+  <br />
+  
+	 <div style="clear:both;"> 
+	    <h4>|— 订单预定</h4>
+	    <form method="post">
+	  	<table cellpadding="5" cellspacing="1">
+	    	<tr>
+	      	<td width="120">订单号（order_sn）: </td>
+	        <td>
+				<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+			</td>
+			</tr>
+	        
+	    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="reserve_order_stock" />
+	        	<input type="submit" value="提交" />
+			</td>
+			</tr>    
+		</table>
+	    </form>
+	   </div>
+	   <br />
+	   
+	   <div style="clear:both;"> 
+		    <h4>|— -gt purchase_return_map没记录（原因：手工出新库存导致）</h4>
+		    <form method="post">
+		  	<table cellpadding="5" cellspacing="1">
+		    	<tr>
+		      	<td width="120">orderId: </td>
+		        <td>
+					<input type="text" name="order_id" value="{$smarty.request.order_id}" />
+				</td>
+				</tr>
+		        
+		    	<tr>
+		      	<td>&nbsp;</td>
+		        <td>
+		        	<input type="hidden" name="act" value="gt_return_map" />
+		        	<input type="submit" value="提交" />
+				</td>
+				</tr>    
+			</table>
+		    </form>
+		  </div>
+		 <br />
+		 
+		<div style="clear:both;"> 
+		    <h4>|— 新库存多出删除（原因：新库存多出; 修复： 删除记录）</h4>
+		    <form method="post">
+		  	<table cellpadding="5" cellspacing="1">
+		    	<tr>
+		      	<td width="120">inventoryItemDetailId: </td>
+		        <td>
+					<input type="text" name="inventory_item_detail_id" value="{$smarty.request.inventory_item_detail_id}" />
+				</td>
+				</tr>
+		        
+		    	<tr>
+		      	<td>&nbsp;</td>
+		        <td>
+		        	<input type="hidden" name="act" value="del_inv_item_detail" />
+		        	<input type="submit" value="提交" />
+				</td>
+				</tr>    
+			</table>
+		    </form>
+		  </div>
+		 <br />
+		<div style="clear:both;"> 
+		    <h4>|— 新老库存维护（原因：-t只退了老库存; 修复：继续退新库存） </h4>
+		    <form method="post">
+		  	<table cellpadding="5" cellspacing="1">
+		    	<tr>
+		      	<td width="120">订单号: </td>
+		        <td>
+					<input type="text" name="order_sn_t" value="{$smarty.request.order_sn_t}" />
+				</td>
+				</tr>
+				<tr>
+		      	<td width="120">rec_id: </td>
+		        <td>
+					<input type="text" name="rec_id_t" value="{$smarty.request.rec_id_t}" />
+				</td>
+				</tr>
+		        <tr>
+		      	<td width="120">product_id: </td>
+		        <td>
+					<input type="text" name="product_id_t" value="{$smarty.request.product_id_t}" />
+				</td>
+				</tr>
+				
+				<tr>
+		      	<td width="120">新旧</td>
+		        <td>
+		        	<select name="status_id_t">
+		            {html_options options=$status_id_list selected=$smarty.request.status_id_t}
+		            </select>
+				</td>
+				</tr>
+				
+		    	<tr>
+		      	<td>&nbsp;</td>
+		        <td>
+		        	<input type="hidden" name="act" value="edit_inventory_t_new" />
+		        	<input type="submit" value="提交" />
+				</td>
+				</tr>    
+			</table>
+		    </form>
+	    </div>
+	   <br />
+	   <div style="clear:both;"> 
+	    <h4>|— 删除老库存记录(原因：-T老库存有记录，新库存没有记录，准备新老库存重新入库)</h4>
+	    <form method="post">
+	  	<table cellpadding="5" cellspacing="1">
+	    	<tr>
+	      	<td width="120">订单号（order_id）: </td>
+	        <td>
+				<input type="text" name="order_id" value="{$smarty.request.order_id}" />
+			</td>
+			</tr>
+	        
+	    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="delete_oukoo_erp_record" />
+	        	<input type="submit" value="提交" />
+			</td>
+			</tr>    
+		</table>
+	    </form>
+	   </div>
+	   <br />
+	   
+	<div style="clear:both;"> 
+    <h4>|— 新老库存维护（原因：-t取消追回bug，新老库存均没入库（先数据修掉全部未入库再用工具改）; 修复：全部入库）</h4>
+    <form method="post">
+	  	<table cellpadding="5" cellspacing="1">
+	  	    <tr>
+	      	<td width="120">order_id: </td>
+	        <td>
+				<input type="text" name="t_order_id" value="{$smarty.request.t_order_id}" />
+			</td>
+			</tr>
+			
+	    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="edit_old_new_t" />
+	        	<input type="submit" value="提交" />
+			</td>
+			</tr>    
+		</table>
+	    </form>
+	  </div>
+	 <br />
+	 <div style="clear:both;"> 
+	    <h4>|— 新库存维护（原因：新库存少出或没出; 修复：新库存出库）</h4>
+	    <form method="post">
+	  	<table cellpadding="5" cellspacing="1">
+	    	<tr>
+	      	<td width="120">订单号（order_id）: </td>
+	        <td>
+				<input type="text" name="order_id" value="{$smarty.request.order_id}" />
+			</td>
+			</tr>
+	        
+	    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="repair_order_new_inventory" />
+	        	<input type="submit" value="提交" />
+			</td>
+			</tr>    
+		</table>
+	    </form>
+	  </div>
+	 <br />
+	<div style="clear:both;"> 
+	    <h4>|— 老库存维护（原因：老库存少出或没出; 修复：老库存出库）</h4>
+	    <form method="post">
+	  	<table cellpadding="5" cellspacing="1">
+	    	<tr>
+	      	<td width="120">订单号（order_id）: </td>
+	        <td>
+				<input type="text" name="order_id" value="{$smarty.request.order_id}" />
+			</td>
+			</tr>
+	        
+	    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="del_old_inv" />
+	        	<input type="submit" value="提交" />
+			</td>
+			</tr>    
+		</table>
+	    </form>
+	  </div>
+	 <br />
+	 
+	 <div style="clear:both;"> 
+	    <h4>|— 容器组织维护错误</h4>
+	    <form method="post">
+	  	<table cellpadding="5" cellspacing="1">
+	    	<tr>
+	      	<td width="120">location_barcode: </td>
+	        <td>
+				<input type="text" name="location_barcode" value="{$smarty.request.location_barcode}" />
+			</td>
+			<td width="120">目的party_id: </td>
+	        <td>
+				<input type="text" name="party_id" value="{$smarty.request.party_id}" />
+			</td>
+			</tr>
+	        
+	    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="update_location_party" />
+	        	<input type="submit" value="提交" />
+			</td>
+			</tr>    
+		</table>
+	    </form>
+	  </div>
+	 <br />
+	 
+	<div style="clear:both;"> 
+	<h4>|— 修改订单状态</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>订单状态 <span class="require"> * </span></td>
+        <td>
+        	<select name="order_status">
+            <option value="0">-N/A [订单状态]</option>
+            {html_options options=$order_status_list selected=$smarty.request.order_status}
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            
+        	<select name="pay_status">
+            <option value="0">-N/A [支付状态]</option>
+            {html_options options=$pay_status_list selected=$smarty.request.pay_status}
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            
+        	<select name="shipping_status">
+            <option value="0">-N/A [物流状态]</option>
+            {html_options options=$shipping_status_list selected=$smarty.request.shipping_status}
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        	<span class="tip">如果不选不会更改原来的状态</span>
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>备注 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="action_note" size="60" />
+        </td>
+		</tr>
+      
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_order_status" />
+			<input type="submit" value="提交" />
+        </td>
+		</tr>
+        
+		</table>
+        </form>
+  </div>
+  <br />
+
+
+	<div style="clear:both;"> 
+    <h4>|— 添加淘宝旺旺客服</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">选择店铺</td>
+        <td>
+        	<select name="taobao_shop_conf_id">
+            {html_options options=$taobao_shop_list selected=$smarty.request.taobao_shop_conf_id}
+            </select>
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>昵称</td>
+        <td>
+        	<input type="text" name="nickname" value="{$smarty.request.nickname}" size="30" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        	<span class="tip">如果该昵称存在则会更改状态，否则则添加记录</span>
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>状态</td>
+        <td>
+        	<select name="enabled">
+            	<option value="Y">开启</option>
+	           	<option value="N">禁用</option>
+			</select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        	<span class="tip">如果该昵称存在则会更改状态，否则则添加记录</span>
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_taobao_sales" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+ 	<div style="clear:both;"> 
+    <h4>|— 添加权限</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">权限组</td>
+        <td>
+        	<select name="parent_id">
+            {html_options options=$action_group_list selected=$smarty.request.parent_id}
+            </select>
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>权限代码</td>
+        <td>
+        	<input type="text" name="action_code" value="{$smarty.request.action_code}" size="30" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        	<span class="tip">请注意添加对应的语言包</span>
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>是否隐藏</td>
+        <td>
+        	<select name="is_shield">
+            	<option value="0">显示</option>
+	           	<option value="1">隐藏</option>
+			</select>
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_admin_action" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+  <!-- RPC关联，废除
+ 	<div style="clear:both;"> 
+    <h4>|— 添加SSO用户</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">用户名  <span class="require"> * </span></td>
+        <td>
+			<input type="text" name="username" value="{$smarty.request.username}" />
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>密码  <span class="require"> * </span></td>
+        <td>
+			<input type="text" name="password" value="{$smarty.request.password}" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>邮件地址  <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="email" value="{$smarty.request.email}" size="30" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>真实姓名  <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="realname" value="{$smarty.request.realname}" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="user_register" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  -->
+  
+  
+ 	<div style="clear:both;"> 
+    <h4>|— 修改发票抬头</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号</td>
+        <td>
+			<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>发票抬头</td>
+        <td>
+        	<input type="text" name="inv_payee" value="{$smarty.request.inv_payee}" size="30" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_inv_payee" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+    <div style="clear:both;"> 
+    <h4>|— 多美滋COD订单重新导入更新</h4>
+    <form method="post">
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">多美滋订单编号</td>
+        <td>
+            <input type="text" name="dumex_taobao_order_sn" value="{$smarty.request.dumex_taobao_order_sn}" />
+        </td>
+        </tr>
+      
+        <tr>
+        <td>备注</td>
+        <td>
+            <input type="text" name="dumex_action_note" value="{$smarty.request.dumex_action_note}" size="89" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        </tr>
+        
+        <tr>
+        <td>&nbsp;</td>
+        <td>
+            <input type="hidden" name="act" value="dumex_taobao_order_sn_update" />
+            <input type="submit" value="提交" />
+        </td>
+        </tr>    
+    </table>
+    </form>
+  </div>
+  <br />
+  
+  <div style="clear:both;"> 
+    <h4>|— 创建shipment</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号</td>
+        <td>
+			<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="create_shipment" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+  <div style="clear:both;"> 
+    <h4>|— 取消库存预定</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号</td>
+        <td>
+			<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="cancel_order" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+   <div style="clear:both;"> 
+    <h4>|— 取消拣选(订单参与批拣任务，操作分派面单后无法在ERP中取消拣选，且无法正常发货)</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号</td>
+        <td>
+			<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="cancel_picklist" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+   <div style="clear:both;"> 
+    <h4>|— 维护面单状态（合并订单shipment_cancelled->shipment_input） </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">发货单号(SHIPMENT_ID): </td>
+        <td>
+			<input type="text" name="shipment_id" value="{$smarty.request.shipment_id}" />
+		</td>
+		</tr>
+
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_shipment_status" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+    <div style="clear:both;"> 
+    <h4>|— 维护面单号（请谨慎使用） </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">发货单号(SHIPMENT_ID): </td>
+        <td>
+			<input type="text" name="shipment_id" value="{$smarty.request.shipment_id}" />
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>面单号(TRACKING_NUMBER): </td>
+        <td>
+        	<input type="text" name="tracking_number" value="{$smarty.request.tracking_number}" size="50" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_shipment_tracking" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+   <div style="clear:both;"> 
+    <h4>|— 维护商品条码 </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">商品ID(goods_id): </td>
+        <td>
+			<input type="text" name="goods_id" value="{$smarty.request.goods_id}" />
+		</td>
+		</tr>
+      
+    	<tr>
+      	<td>条码(barcode): </td>
+        <td>
+        	<input type="text" name="bar_code" value="{$smarty.request.bar_code}" size="50" />
+            &nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_goods_barcode" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+<!--    
+  <div style="clear:both;"> 
+    <h4>|— 订单调整项  </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">调整订单号 : </td>
+        <td>
+			<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		</td>
+		</tr>
+		
+		<tr>
+      	<td width="120">调整金额 : </td>
+        <td>
+			<input type="text" name="variance_amount" value="{$smarty.request.variance_amount}" />
+		</td>
+		</tr>
+		
+		<tr>
+      	<td width="120">调整原因 : </td>
+        <td>
+			<input type="text" name="variance_note" size="160" value="{$smarty.request.variance_note}" />
+		</td>
+		</tr>
+		
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="order_variance" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  
+  -->
+  <!--
+  <br />
+  
+   <div style="clear:both;"> 
+    <h4>|— 商品更新（romeo.product）  </h4>
+    <form method="post">
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">商品ID（goodsId） : </td>
+        <td>
+            <input type="text" name="product_goodsId" value="" />
+        </td>
+        </tr>
+        
+        <tr>
+        <td width="120">商品样式（styleId） : </td>
+        <td>
+            <input type="text" name="product_styleId" value="" />
+        </td>
+        </tr>
+        
+        <tr>
+        <td>&nbsp;</td>
+        <td>
+            <input type="hidden" name="act" value="modify_product_name" />
+            <input type="submit" value="提交" />
+        </td>
+        </tr>    
+    </table>
+    </form>
+  </div>
+  -->
+  
+
+    <br />
+  
+   <div style="clear:both;"> 
+    <h4>|— 零时调用新库存  </h4>
+    <form method="post">
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td>&nbsp;</td>
+        <td>
+            <input type="hidden" name="act" value="auto_comfirm_order" />
+            <input type="submit" value="开始确认 提交" />
+        </td>
+        </tr>    
+    </table>
+    </form>
+  </div>
+
+<div style="clear:both;"> 
+    <h4>|— 新老库存维护V5（原因：-gt只出了老库存；修复：此代码将出新库存） </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">-gt订单号: </td>
+        <td>
+			<input type="text" name="gt_new_sn" value="{$smarty.request.gt_new_sn}" />
+		</td>
+		<td width="120">出库数量: </td>
+		<td>
+			<input type="text" name="returnOrderAmount" value="{$smarty.request.returnOrderAmount}" />
+		</td>
+		
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="gt_new_outV5" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+    
+ <div style="clear:both;"> 
+    <h4>|— 新老库存维护（原因：老库存少出了一个；修复：在老库存中挑选一个未出库的串号出掉） </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">ERP号(想要改串号的erp_id): </td>
+        <td>
+			<input type="text" name="old_erp_id" value="{$smarty.request.old_erp_id}" />
+		</td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="edit_old_erp_little" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+ </div>
+ <br />
+  
+ <div style="clear:both;"> 
+    <h4>|— 新老库存维护（原因：-t只退了老库存; 修复：继续退新库存） 批量修复功能，慎用 </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+  	    <tr>
+      	<td width="120">修复个数: </td>
+        <td>
+			<input type="text" name="t_number" value="{$smarty.request.t_number}" />
+		</td>
+		</tr>
+		
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="batch_edit_inventory_t_new" />
+        	<input type="submit" value="提交" />
+		</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+ <br />
+ 
+  <div style="clear:both;"> 
+    <h4>|— 新库存出库，库存未出库；修复：老库存入库） </h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">订单号: </td>
+        <td>
+			<input type="text" name="order_id"/>
+			<input type="text" name="goods_id"/>
+			<input type="text" name="style_id"/>
+			<input type="text" name="facility_id"/>
+			<input type="text" name="serialNo"/>
+		</td>
+		</tr>
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+        	<input type="hidden" name="act" value="input_old_inventory" />
+        	<input type="submit" value="提交" />
+		</td>
+		<input type="text" name="result" value="{$smarty.request.result}" />
+		</tr>    
+	</table>
+    </form>
+  </div>
+ <br />
+ 
+ <div style="clear:both;">
+  <h4>|— 导出atp不等数据 </h4>
+  <form action="toolkit.php?act=export_atp_excel" id="export" enctype="multipart/form-data" method="post">
+     <table>
+        <tr>
+		  <td><input type="submit" value="导出atp不等式"/></td>
+        </tr>
+     </table>
+  </form>
+ </div>
+ 
+ <div style="clear:both;"> 
+    <h4>|— 订单状态由批拣中回退到待发货</h4>
+    <form action="toolkit.php?act=reset_order_status" enctype="multipart/form-data" method="post">
+  	<table>
+        <tr>
+          <td>订单号orderId:</td>
+		  <td><input type="text" name="order_id"/>
+		  <input type="submit" value="执行"/></td>
+        </tr>
+     </table>
+    </form>
+  </div>
+ <br />
+ <div>{$reset_order_status_message}</div>
+ 
+ <div style="clear:both;"> 
+    <h4>|— 根据barcode和location_barcode上架商品</h4>
+    <form action="toolkit.php?act=shelve_goods" enctype="multipart/form-data" method="post">
+  	<table>
+        <tr>
+          <td>业务组:</td>
+		  <td><input type="text" name="party_id" value="{$party_id}"/>
+		   <td>仓库:</td>
+		  <td><input type="text" name="facility_id" value="{$facility_id}"/>
+		   <td>条码:</td>
+		  <td><input type="text" name="barcode"/>
+		   <td>库位:</td>
+		  <td><input type="text" name="location_barcode"/>
+		  <input type="submit" value="执行"/></td>
+        </tr>
+     </table>
+    </form>
+  </div>
+ <br />
+ <div>{$shelve_goods_msg}</div>
+</fieldset>
+</body>
+</html>

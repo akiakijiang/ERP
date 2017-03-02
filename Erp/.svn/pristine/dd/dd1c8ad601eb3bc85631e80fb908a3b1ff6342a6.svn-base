@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>批拣单信息</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: center;
+	}
+	<!--{/literal}-->
+</style>
+</head>
+<body>
+<h2>批拣单信息</h2>
+批拣单号：{$smarty.request.BPSN}
+	<table class="bWindow" style="margin-top:10px;width:1200px;">
+		<TR>
+           <th>格子号码</th>
+           <th>发货单号</th>
+           <th>组织名称</th>
+           <th>发货单拣货状态</th>
+           <th>主订单</th>
+           <th>主订单发货状态</th>
+           <th>快递名称</th>
+           <th>面单号</th>
+       </TR>
+       <!--{foreach from=$BPSN_MAPPINGS item=BPSN_MAPPING}-->
+       <tr>
+			<td >{$BPSN_MAPPING.grid_id}</td>
+			<td >{$BPSN_MAPPING.shipment_id}</td>
+			<td >{$BPSN_MAPPING.PARTY_NAME}</td>
+			<td >{$BPSN_MAPPING.is_pick}</td>
+			<td ><a href="order_edit.php?order_id={$BPSN_MAPPING.ORDER_ID}" target="new">{$BPSN_MAPPING.order_sn}</td>
+			<td >{$BPSN_MAPPING.shipping_status_name}</td>
+			<td >{$BPSN_MAPPING.carrier}</td>
+			<td >{$BPSN_MAPPING.tracking_number}</td>
+		</tr>
+	  <!-- {/foreach} -->
+	</table>
+</body>
+</html>

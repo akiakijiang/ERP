@@ -1,0 +1,810 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>外包收货RF枪扫描</title>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <!-- RF枪键盘监听，页面跳转 -->
+  <script type="text/javascript" src="js/js_wms/rf_scan.js"></script>
+  
+  <!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<link rel="stylesheet" href="styles/rf_scan.css" />
+	
+ <!-- Calendar /-->  
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    <!--{/literal}-->
+  </style>
+  
+	<script type="text/javascript">
+	//{literal}
+	// <![CDATA[
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        
+        // 确定页面载入时鼠标焦点的定位
+        $('#from_location').focus();  // 定位到收货容器扫描框
+        
+        // 绑定收货容器扫描事件
+        $('#from_location').bind('keyup', scan);
+
+        // 绑定上架容器扫描事件
+        $('#to_location').bind('keyup', scan);
+  	 
+        // 绑定商品条码扫描事件
+        $('#goods_barcode').bind('keyup', scan);
+        
+        // 绑定商品串号扫描事件
+        $('#serial_number').bind('keyup', scan);
+        
+        // 绑定商品数量按键事件
+        $('#goods_number').bind('keyup', scan);
+        
+        // 绑定生产日期按键事件
+        $('#validity').bind('keyup', scan);
+
+ 　　     
+        data_init();
+
+        // 看商品的属性来展示
+
+    });
+
+   
+
+    // 订单号检测
+    var flag_from_location = true;
+    function from_location_scan(event,barcode,location_id)
+    {
+    	var batch_order_sn = barcode;
+    	// alert(KEY_MAP[event.keyCode]);
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_from_location) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_from_location = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+        //alert();
+
+        //检查订单号
+        var res_check = check_batch_order_sn(batch_order_sn,barcode);
+        
+        $note.removeClass('loading');
+        if(res_check){
+        	 $note.val('扫描成功哦');
+        }else{
+        	 $note.val('');
+        	 flag_from_location = true;
+             return false;
+        } 
+        
+        flag_from_location = true;
+        
+        // 增加仓库信息
+        get_batch_order_sn_info(batch_order_sn);
+        sub_mouse_down(location_id);
+    }
+    
+    //得到批次订单的基本信息
+    function get_batch_order_sn_info(batch_order_sn){
+    	 if(batch_order_sn ==''){
+    		 alert("得到批次订单的基本信息时批次订单号为空！");
+    		 return false;
+    	 }
+
+    	 var result = "";
+    	 $.ajax({
+             mode: 'abort',
+             async : false,
+             type: 'POST',
+             dataType: 'json',
+             url : 'ajax.php?act=get_batch_order_sn_info', 
+             data: 'batch_order_sn=' + batch_order_sn,
+             success: function(data) {
+	           	 if(data.success){
+	           		 result = data.success;
+	           		 $('#from_location_note').val('当前仓库：'+data.facility_name);
+	           	 }else{
+	           		 result = false;
+	           		 alert(data.error);
+	           	 } 
+             },
+             error: function() {
+                 result = false;
+             	 alert('get_batch_order_sn_info时ajax请求错误batch_order_sn:' + batch_order_sn); 
+             }
+         });
+    	 return result;
+    }
+    
+    //ajax 订单号检测
+    function check_batch_order_sn(batch_order_sn,barcode){
+    	 //alert('开始ajax请求');
+    	 if(batch_order_sn ==''){
+    		 alert("批次订单号为空！");
+    		 return false;
+    	 }
+    	 if(barcode ==''){
+    		 alert("上架容器条码为空！");
+    		 return false;
+    	 }
+    	 var result = "";
+    	 $.ajax({
+             mode: 'abort',
+             async : false,
+             type: 'POST',
+             dataType: 'json',
+             url : 'ajax.php?act=check_batch_order_sn', 
+             data: 'batch_order_sn=' + batch_order_sn+'&out_ship=1',
+             success: function(data) {
+	           	 if(data.success){
+	           		 result = data.success;
+	           	 }else{
+	           		 result = false;
+	           		 alert(data.error);
+	           	 } 
+             },
+             error: function() {
+                 result = false;
+             	 alert('ajax请求错误, 请重新扫描条码:' + barcode); 
+             }
+         });
+    	 return result;
+    }
+    // 上架容器检测
+    var flag_to_location = true;
+    function to_location_scan(event,location_barcode,location_id)
+    {
+    	var batch_order_sn = $("#from_location").val();
+    	var grouding_location_barcode = $("#to_location").val();
+
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_to_location) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_to_location = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+        
+        $note.removeClass('loading'); 
+        var result = Array();
+        var res_check = check_grouding_location_barcode_party(batch_order_sn,grouding_location_barcode,'IL_GROUDING');
+        if(res_check){
+        	$note.val('扫描成功哦');
+        }else{
+        	$note.val('');
+        	flag_to_location = true;
+        	return false;
+        }
+        
+        flag_to_location = true;
+        sub_mouse_down(location_id);
+    }
+    
+    // 商品条码检测
+    var flag_goods_barcode = true;
+    function goods_barcode_scan(event,goods_barcode,location_id)
+    {
+    	var batch_order_sn = $('#from_location').val();
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var note = $('#'+location_id+'_note');
+        if (!flag_goods_barcode) {
+            var tip = "当前操作还在进行...请稍等";
+            note.val(tip);
+            return; 
+        }
+        flag_goods_barcode = false;
+        var tip = "正在验证中...请稍等";
+        note.val(tip);
+        note.addClass('loading');
+        // 检查商品条码
+        var res_check = check_receive_goods_barcode(batch_order_sn,goods_barcode);
+        note.removeClass('loading');
+        //alert('error:'+res_check['error']+' success:'+res_check['success']+' is_serial:'+res_check['is_serial']+' ajax_error:'+res_check['ajax_error']);
+        
+        if(res_check['success']){
+        	note.val(res_check['goods_name']+' 扫描成功');
+        }else{
+        	note.val('');
+        	flag_goods_barcode = true;
+        	return false;
+        }
+        
+        // 判断是否显示串号
+        if(res_check['is_serial']) {
+        	sub_serial_number_show();
+        	$('#goods_number').val('0');
+        	$('#goods_number').attr('disabled',true);
+        	$('#goods_number_note').val('请扫该商品串号:'+res_check['goods_name']);
+        } else {
+        	sub_serial_number_hide();
+        	// 非串号，自动显示未入库的数量
+       		var res = get_goods_not_in_number(batch_order_sn,goods_barcode);
+       		if(res['success']) {
+       			var not_in_number = res['not_in_number'];
+               	if(not_in_number == 0) {
+               		alert('该商品已经入库完了,请检查！');
+               		$('#goods_barcode').val('');
+               		note.val('');
+           			flag_goods_barcode = true;
+           			return false;
+               	}
+               	
+       			$('#goods_number').attr('disabled',false);
+       			$('#goods_number').val(not_in_number);
+               	$('#goods_number_note').val(res_check['goods_name']+' 还未入库个数：'+not_in_number);
+       		} 
+       		else 
+       		{
+       			flag_goods_barcode = true;
+       			return false;
+       		}
+        }
+        
+        // 判断是否要显示生产日期
+        var party_id = get_party_by_batch_order_sn(batch_order_sn);
+        check_show_validity(party_id,goods_barcode);
+        flag_goods_barcode = true;
+        sub_mouse_down(location_id);
+    }
+    
+    // ajax 检查商品条码
+    function check_receive_goods_barcode(batch_order_sn,goods_barcode) {
+    	if(batch_order_sn ==''){
+    		alert("批次订单号为空！");
+    		return false;
+    	}
+    	if(goods_barcode == ''){
+    		alert("商品条码为空！");
+    		return false;
+    	}
+    	var result = Array();
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=check_receive_goods_barcode', 
+            data: 'batch_order_sn=' + batch_order_sn+'&goods_barcode=' + goods_barcode,
+            success: function(data) {
+            	if(data.success){
+            		result['success'] = data.success;
+            		result['goods_name'] = data.goods_name;
+                	result['is_serial'] = data.is_serial;
+            	}else{
+            		result['success'] =false;
+            		alert(data.error);
+            	}
+            },
+            error: function() {
+            	alert('ajax请求错误, 请重新扫描条码:' + goods_barcode);
+            	result['success'] = false;
+            }
+        });
+        return result;
+        
+    }
+    
+    /**
+    * ajax 得到商品未入库的个数
+    */
+     function get_goods_not_in_number(batch_order_sn,goods_barcode)
+     {
+    	 if(!batch_order_sn || !goods_barcode) {
+    		 alert('得到商品未入库的个数时订单号或商品条码为空');
+    		 return;
+    	 }
+    	 //alert('get_goods_not_in_number batch_order_sn:'+batch_order_sn+' goods_barcode:'+goods_barcode);
+         var result = Array();
+         $.ajax({
+             async : false,
+             type: 'POST',
+             dataType: 'json',
+             url : 'ajax.php?act=get_goods_not_in_number', 
+             data: 'batch_order_sn=' + batch_order_sn +'&goods_barcode=' + goods_barcode,
+             error: function() { alert("得到商品未入库的个数ajax请求错误goods_barcode:"+goods_barcode); result = false; },
+             success: function(data) {
+    	       if(data.success == true) {
+    	       	  result['not_in_number'] = data.not_in_number;
+    	       	  result['success'] = true;
+    	       } else {
+    	    	   alert(data.error);
+    	    	   result['success'] =  false;
+    	       }
+             }
+         }); 
+         return result;
+     }
+     /**
+	  * 根据批次订单号得到组织id
+	  */
+	  function get_party_by_batch_order_sn(batch_order_sn)
+	  {
+		  if(!batch_order_sn) {
+			  alert('根据批次订单号得到组织id时批次订单号为空！');
+			  return false;
+		  }
+	      var result = false;
+	      $.ajax({
+	          async : false,
+	          type: 'POST',
+	          dataType: 'json',
+	          url : 'ajax.php?act=get_party_by_batch_order_sn', 
+	          data: 'batch_order_sn=' + batch_order_sn,
+	          error: function() { 
+	        	  alert("根据批次订单号得到组织id ajax请求错误");
+	        	  result = false; 
+	          },
+	          success: function(data) {
+	        	  if(data.success) {
+	        		  result = data.res;
+	        	  }else{
+	        		  alert(data.error);
+	        		  result = false;
+	        	  }
+	          }
+	      }); 
+	      return result;
+	}
+
+	
+    // 商品串号检测
+    var flag_serial_number = true;
+    function serial_number_scan(event,goods_barcode,location_id)
+    {
+    	var serial_number = $('#serial_number').val();
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_serial_number) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_serial_number = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+        
+        //商品串号检测
+        res_check = check_receive_serial_number(serial_number);
+        $note.removeClass('loading');
+        if(res_check['success']){
+           flag_serial_number = true;
+           if(res_check['serial_has_in']) {
+              $note.val('该串号商品已经入库');
+              $('#goods_number').val('0');
+              $('#goods_number_note').val('该商品未入库数量为0');
+            } else {
+              $note.val('扫描成功哦');
+              $('#goods_number').val('1');
+              $('#goods_number_note').val('该商品未入库数量为1');
+            }
+        }else{
+        	$note.val('');
+          return false;
+        }
+    }
+    
+    //ajax 商品串号检测
+    function check_receive_serial_number(serial_number){
+    	if(serial_number == ''){
+    		alert("商品串号为空！");
+    		return false;
+    	}
+    	var result = Array();
+    	// 检查商品串号
+        $.ajax({
+           mode: 'abort',
+           async : false,
+           type: 'POST',
+           dataType: 'json',
+           url : 'ajax.php?act=check_receive_serial_number', 
+           data: 'serial_number=' + serial_number,
+           success: function(data) {
+               result['success'] = data.success;
+        	   if(data.success){
+               result['serial_has_in'] = data.serial_has_in;
+               if(data.serial_has_in)
+                alert(data.error);
+        	   }else{
+        		   alert(data.error);
+        	   }
+           },
+           error: function(data) {
+        	   result['success'] = false;
+	           alert('ajax请求错误, 请重新扫描串号:');
+           }
+       });
+       return result;
+    }
+    
+    // 商品数量检测
+    var flag_goods_number = true;
+    function goods_number_scan(event,input_number,location_id)
+    {
+    	var batch_order_sn = $('#from_location').val();
+    	var goods_barcode = $('#goods_barcode').val();
+    	// 不用ctrl触发，只是翻页特殊情况，所以还是自己获取比较好
+    	var input_number = $('#goods_number').val();
+    	
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_goods_number) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_goods_number = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+        
+        
+        // 数字格式检查
+        if(!check_input_number(input_number)) {
+            $note.removeClass('loading');
+        	flag_goods_number = true;
+        	$note.val('');
+        	return false;
+        }
+        
+        res_check = check_receive_goods_number(batch_order_sn,goods_barcode,input_number);
+        $note.removeClass('loading');
+        if(res_check){
+        	$note.val('扫描成功哦');
+        }else{
+        	flag_goods_number = true;
+        	$note.val('');
+        	return false;
+        }
+    	flag_goods_number = true;
+       
+        sub_mouse_down(location_id);
+    }
+    // ajax 商品数量检测
+    function check_receive_goods_number(batch_order_sn,goods_barcode,input_number){
+    	if(input_number == ''){
+    		alert("商品数量为空！");
+    		return false;
+    	}
+    	if(batch_order_sn == ''){
+    		alert("批次订单号为空！");
+    		return false;
+    	}
+    	if(goods_barcode == ''){
+    		alert("商品条码为空！");
+    		return false;
+    	}
+    	 var result = "";
+         $.ajax({
+             mode: 'abort',
+             async : false,
+             type: 'POST',
+             dataType: 'json',
+             url : 'ajax.php?act=check_receive_goods_number', 
+             data: 'batch_order_sn=' + batch_order_sn+'&goods_barcode=' + goods_barcode +'&input_number=' + input_number,
+             success: function(data) {
+            	if(data.success){
+            		result = data.success;
+            	}else{
+            		result = false;
+            		alert(data.error);
+            	}
+             },
+             error: function(data) {
+             	alert('ajax请求错误, 请重新扫描条码:' + barcode);
+             	result = false;
+             }
+         }); 
+         return result;
+    }
+    // 生产日期检测
+    var flag_validity = true;
+    function validity_scan(event,validity,location_id)
+    {
+    	// 判断扫描触发的按键
+    	if (KEY_MAP[event.keyCode] != RF_SCAN_KEY) {
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        // 检测合法性
+        if(!check_validity_format(validity)) {
+    		$('#'+location_id+'_note').val("请输入2013-08-08这种格式的日期!");
+        	return false;
+        } else {
+    		$('#'+location_id+'_note').val("输入ok!");
+        }
+        
+    	var batch_order_sn = $('#from_location').val();
+        //sub_mouse_down(location_id);
+    }
+	 
+     // 检测批次是否完全入库
+	 function check_receive_all_in(batch_order_sn)
+	 {
+    	 if(!batch_order_sn) {
+    		 alert('检测批次是否完全入库时批次订单号为空!');
+    		 return false;
+    	 }
+	     var result = "";
+	     $.ajax({
+	         async : false,
+	         type: 'POST',
+	         dataType: 'json',
+	         url : 'ajax.php?act=check_receive_all_in', 
+	         data: 'batch_order_sn=' + batch_order_sn,
+	         error: function() { alert("检测批次是否完全入库ajax请求错误！"); result = false; },
+	         success: function(data) {
+		       	if(data.success == true) {
+		       		alert("该批次采购订单已经全部入库！"+batch_order_sn);
+		       		result = true;
+		       	} else {
+		       		if(data.error) {
+		       			alert(data.error);
+		       			result = false;
+		       		}
+		       	}
+	         }
+	     }); 
+	     return result;
+	 }
+    
+     // 收货入库并且容器转换
+	 function purchase_accept_and_location_transaction()
+	 {
+	     var batch_order_sn = $('#from_location').val();
+	     var location_barcode = $('#to_location').val();
+    	 var goods_barcode = $('#goods_barcode').val();
+    	 var goods_number = $('#goods_number').val();
+    	 var serial_number = '';
+    	 var validity = $('#validity').val();
+    	 if(validity) {
+    		 validity = validity + ' 00:00:00';
+    	 } else{
+    	     validity = '1970-01-01 00:00:00';
+    	 }
+    	 validity = '1970-01-01 00:00:00';
+    	 //alert('batch_order_sn='+batch_order_sn+'location_barcode='+location_barcode+'goods_barcode='+goods_barcode+'goods_number='+goods_number+'validity='+validity);
+	   	 // 检查商品条,是否串号控制
+         var res_check = check_receive_goods_barcode(batch_order_sn,goods_barcode);
+         //alert('error:'+res_check['error']+' success:'+res_check['success']+' is_serial:'+res_check['is_serial']+' ajax_error:'+res_check['ajax_error']);
+         
+         if(res_check['success']){
+        	if(res_check['is_serial']){
+        	    var serial_number = $('#serial_number').val();
+   	    	    //alert(serial_number);
+        	}
+         }else{
+         	flag_goods_barcode = true;
+         	return false;
+         }
+	   	
+    	 //alert(' batch_order_sn:'+batch_order_sn+' location_barcode:'+location_barcode+' goods_barcode:'+goods_barcode+' serial_number:'+serial_number+' goods_number:'+goods_number+' validity:'+validity);
+    	 //return;
+	     var result = "";
+	     $.ajax({
+	         async : false,
+	         type: 'POST',
+	         dataType: 'json',
+	         url : 'ajax.php?act=purchase_accept_and_location_transaction', 
+	         data: 'batch_order_sn=' + batch_order_sn + '&location_barcode=' + location_barcode + '&goods_barcode=' + goods_barcode + '&goods_number='+goods_number+'&validity='+validity+'&serial_number='+serial_number,
+	         error: function() { alert("收货入库并且容器转换ajax请求错误！"); result = false; },
+	         success: function(data) {
+		       	if(data.success == true) {
+		       		alert("收货入库并且容器转换成功！"+batch_order_sn);
+		       		result = true;
+		       	} else {
+		       		if(data.error) {
+		       			alert(data.error);
+		       		}
+		       	}
+	         }
+	     }); 
+	     return result;
+	 }
+    
+	// ]]>
+	//{/literal}
+	</script>
+</head>
+
+<body>
+<form method="post" >
+
+<table class="bWindow">
+
+
+<tr id="tr_from_location" align="center">
+  <td style="width:30%">采购订单</td>
+  <td >
+		<input type="textview" style="width:90%" id="from_location" value="" >
+  </td>
+</tr>
+
+<tr id="tr_from_location_note" align="center">
+  <td style="width:30%">提示</td>
+  <td >
+  		<input type="text" style="width:90%" id="from_location_note"  readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_to_location" align="center">
+  <td style="width:30%">上架容器</td>
+  <td >
+		<input type="text" style="width:90%" id="to_location" value="" >
+  </td>
+</tr>
+
+<tr id="tr_to_location_note" align="center">
+  <td style="width:30%">提示</td>
+  <td >
+  		<input type="text" style="width:90%" id="to_location_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_cur_position" align="center">
+  <td style="width:30%">当前位置</td>
+  <td><textarea style="width:90%" rows="1" cols="100" id="cur_position" value="" ></textarea></td>
+</tr>
+
+<tr id="tr_goods_barcode" align="center">
+  <td style="width:30%">商品条码</td>
+  <td>
+		<input type="text" style="width:90%" id="goods_barcode" value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_barcode_note" align="center">
+  <td style="width:30%">提示</td>
+  <td>
+		<input type="text" style="width:90%" id="goods_barcode_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_serial_number" align="center">
+  <td style="width:30%">商品串号</td>
+  <td>
+		<input type="text" style="width:90%" id="serial_number" value="" >
+  </td>
+</tr>
+
+<tr id="tr_serial_number_note" align="center">
+  <td style="width:30%">提示</td>
+  <td>
+		<input type="text" style="width:90%" id="serial_number_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_number" align="center">
+  <td style="width:30%">数量</td>
+  <td>
+		<input type="text" style="width:90%" id="goods_number" value=""  onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
+  </td>
+</tr>
+
+<tr id="tr_goods_number_note" align="center">
+  <td style="width:30%">提示</td>
+  <td>
+		<input type="text" style="width:90%" id="goods_number_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<!-- TODO:从商品条码扫描时特殊判断 -->
+<tr id="tr_validity" align="center">
+  <td style="width:30%">生产日期</td>
+  <td>
+  		<input type="button" style="width:9%" id="validity_trigger" value="..." >
+		<input id="validity" style="width:70%" name="validity[]" value="">
+  </td>
+</tr>
+
+<tr id="tr_validity_note" align="center">
+  <td style="width:30%">提示</td>
+  <td>
+		<input type="text" style="width:90%" id="validity_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+
+<tr id="tr_current_page" align="center">
+  <td style="width:30%">提示</td>
+  <td>
+		<input type="hidden" id="current_page" value="" />当前页面
+  </td>
+</tr>
+<tr id="tr_current_func" align="center">
+  <td style="width:30%">提示</td>
+  <td>
+		<input type="hidden" id="current_func" value="receive" />当前功能
+  </td>
+</tr>
+
+</table>
+
+
+</br></br>
+<!-- 按钮暂时替换 -->
+<table class="bWindow" id= 'action_button'>
+<tr>
+  <td > 
+  <input type='button' id='btn_from_location_over' name='FROM_LOCATION_OVER' value='采购订单完结' onclick="btn_action(this)"></input>
+  </td>
+  <td > 
+  <input type='button' id='btn_to_location_over' name='TO_LOCATION_OVER' value='上架容器完结' onclick="btn_action(this)"></input>
+  </td>
+</tr>
+
+</br>
+<tr>
+  <td > 
+  <input type='button' id='btn_goods_over' name='GOODS_OVER' value='商品完结' onclick="btn_action(this)"></input>
+  </td>
+</tr>
+
+</br>
+<tr>
+  <td > 
+  <input type='button' id='btn_page_left' name='PAGE_LEFT' value='向左翻页' onclick="btn_action(this)"></input>
+  </td>
+  <td > 
+  <input type='button' id='btn_page_right' name='PAGE_RIGHT' value='向右翻页' onclick="btn_action(this)"></input>
+  </td>
+</tr>
+
+</table>
+
+</form>
+
+
+
+</body>
+</html>

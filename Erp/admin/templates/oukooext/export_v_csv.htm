@@ -1,0 +1,4 @@
+商品名称,新旧状态,订单号,订单类型,商品数量,出库数量,仓库名称,商品条码,订单时间
+{foreach from=$v_res item=v}
+"{$v.goods_name}","{$v.status_id}","{$v.order_sn}","{$v.order_type_id}","{$v.goods_number}","{$v.out_num}","{$v.facility_name}","{$v.barcode}","{$v.order_time}"
+{/foreach}

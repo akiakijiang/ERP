@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>预付款管理</title>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;预付款管理&nbsp;</span></legend>
+
+
+	<div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+    {if $type=='DISTRIBUTOR'}
+    <div class="active"><a href="#">分销商预付款</a></div>
+  	<div class="item"><a href="prepayment.php?type=SUPPLIER">供应商预付款</a></div>
+    {else}
+    <div class="item"><a href="prepayment.php?type=DISTRIBUTOR">分销商预付款</a></div>
+  	<div class="active"><a href="#">供应商预付款</a></div>
+    {/if}
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  <div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  	<form method="get">  
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="40">关键字</td>
+        <td>
+            <input type="text" name="keyword" value="{$smarty.request.keyword}" size="40" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="hidden" name="type" value="{$type}" />
+            <input type="hidden" name="act" value="search" />
+            <input type="submit" value="查询" />  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="prepayment_update.php?type={$type}">添加预付款</a>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="prepayment_withhold.php">抵扣预存款</a>
+        </td>
+        </tr>
+	</table>
+    </form>
+  </div>
+  
+  
+<!--{if $list}-->
+  <br />
+  <div style="clear:both;">
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="15%">账户类型</th>
+          <th width="25%">{if $type=='DISTRIBUTOR'}分销商{else}供应商{/if}</th>
+          <th width="15%">PARTNER_ID</th>
+          <th width="15%">预付可用金额</th>
+          <th width="10%">币种</th>
+          <th width="10%">详情</th>
+          <th width="10%">操作</th>
+        </tr>
+    
+        <!--{foreach from=$list item=item}-->
+        
+        <tr align="center" class="{cycle values="even,odd"}">
+            <td>{if $item->prepaymentAccountTypeId=='DISTRIBUTOR'}分销商{else}供应商{/if}</td>
+            <td>
+                {if check_admin_priv('check_provider')}
+                    {$item->partner->name}
+                {else}
+                    ××××××
+                {/if}
+            </td>
+            <td>{$item->supplierId}</td>
+            <td>{$item->amount|string_format:"%01.6f"}</td>
+            <td>{$item->currency}</td>
+            <td><a href="prepayment_transaction.php?type={$item->prepaymentAccountTypeId}&supplier_id={$item->supplierId}&keepThis=true&TB_iframe=true&height=500&width=900" class="thickbox" title="[交易明细] - {$item->partner->name}">交易明细</a></td>
+	        <td><a href="prepayment_update.php?type={$item->prepaymentAccountTypeId}&partner_id={$item->supplierId}">添加预付款</a></td>
+        </tr>
+
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br /><br />
+      {$pagination}
+      <br />
+  </div>
+<!--{/if}-->
+ 
+  <br /><br />
+  
+</fieldset>
+
+</body>
+</html>

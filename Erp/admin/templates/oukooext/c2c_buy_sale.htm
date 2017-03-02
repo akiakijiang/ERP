@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>财务查看</title>
+
+<!-- Loading Calendar JavaScript files -->
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+<script type="text/javascript">
+{if $smarty.request.info}alert('{$smarty.request.info}');{/if}
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+$(document).ready(function(){
+	$('#provider_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+		dataType : 'json',
+        minChars: 0,
+        mustMatch: true,
+        formatItem : function(row, i, max, value, term) {
+            return(row.provider_name);
+        },
+        formatResult : function(row) {
+            return(row.provider_name);
+        }
+    }).result(function(event, row, formatted) {
+        $('#provider_id').val(row.provider_id);
+        $('#order_type').val(row.provider_order_type);
+    });   
+});
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+function purchase_check() {
+	var prepayment_amount = ES("prepayment_amount")[0].value;
+	if (ES("paid_type")[0].value == '' || ES("paid_type")[0].value == 0) {
+		alert('请选择采购付款类型');
+		ES("paid_type")[0].focus();
+		return false;
+	}else if(ES("prepayment_currency")[0].value != ES("currency")[0].value && prepayment_amount != 0){
+		alert('币种与预存款币种不同,预存款币种为：'+ES("prepayment_currency")[0].value);
+		ES("currency")[0].focus();
+		return false;
+	}
+
+{/literal}
+	var total_paid = Number({$sum.purchase_paid_amount}) - Number(prepayment_amount);
+{literal}
+	return confirm('采购确认已付款' + (total_paid) + '元吗？');		
+}
+
+function check_params(){
+	var order_sn = ES("batch_order_sn")[0].value;
+	var order_goods_id = ES("batch_order_goods_id")[0].value;
+	if(order_sn == '' && order_goods_id == ''){
+		alert('没有填写订单号或者订单商品号');
+		return false;
+	}
+	E('search').disabled = true;
+}
+{/literal}
+</script>
+</head>
+<body>
+{if $message}
+	<div id='message' style='color:red;'>{$message}</div>
+{/if}
+<form method="post" onsubmit="return check_params()">
+供应商：
+ <input type="text" id="provider_select" name = "provider_select" value = "{$smarty.request.provider_select}" size="68"/>
+ <input type="hidden" id="provider_id" name="provider_id" value = "{$smarty.request.provider_id}"/> 
+订单类型:<input type="text" id="order_type" name="order_type" value = "{$smarty.request.order_type}" readonly />
+<br>
+<br>
+订单号：
+<textarea name="batch_order_sn">{$smarty.request.batch_order_sn}</textarea>
+订单商品号：
+<textarea name="batch_order_goods_id">{$smarty.request.batch_order_goods_id}</textarea>
+<input type="hidden" name="act" value="search" />
+<input type="submit"  id="search" value="搜索 "/>
+<input type="submit" name="csv" value="导出CSV"/>
+<br>
+<br>
+{if $is_purchase_not_paid}
+付款方式：
+<select name="paid_type">
+	<option value = 0></option>
+	<!--{foreach from=""|getPurchasePaidTypes item=type key=key}-->
+	<option {if $order.purchase_paid_type == $key}checked{/if} value="{$key}">{$type}</option>
+	<!--{/foreach}-->
+</select>
+采购付款时间：
+<input style="width:80px" name="purchase_paid_time" id="purchase_paid_time" value="{if $order.purchase_paid_time > 0}{$order.purchase_paid_time|date_format:"%Y-%m-%d"}{/if}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'" />
+使用预付金额{if $max_prepayment_amount}(可用预付款：{$max_prepayment_amount|string_format:"%01.2f"}){/if}
+<input name="prepayment_amount" style="width:80px" value="0.00" />
+币种：<select name="currency"> {html_options options=$currency_list selected="RMB"}</select>
+<input type="submit" name="submit" value="采购批量已付款"  onclick="return purchase_check();"/>
+{/if}
+<br>
+<input type="hidden" name="sum_purchase_paid_amount" value="{$sum.purchase_paid_amount}"/>
+<input type="hidden" name="prepayment_currency" value="{$currency}"/>
+</form>
+<br>
+<br>
+
+<table class="bWindow" cellpadding="0" cellspacing="0">
+<caption>
+<h2>内部{$smarty.request.order_type}结帐</h2>
+<a href='purchase_bill.php?order_type={$smarty.request.order_type}'>采购付款记录</a>&nbsp;&nbsp;
+<a href='c2c_buy_sale_bill.php?order_type={$smarty.request.order_type}'>财务付款记录</a>&nbsp;&nbsp;
+<a href='c2c_buy_sale_return_money.php'>C2C返现记录</a>
+<br><br>
+</caption>
+<tr>
+<th>订单号</th>
+<th>类型</th>
+<th>入库/出库时间</th>
+<th>采购付款时间</th>
+<th>财务付款时间</th>
+<th>付款批次</th>
+<th>商品名</th>
+<th>负责采购</th>
+<th>供应商</th>
+<th>供价</th>
+<th>售价</th>
+<th>发票类型</th>
+<th>财务是否付款</th>
+<th>采购是否付款</th>
+</tr>
+<tr>
+<th>汇总</th>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>{$sum.purchase_paid_amount|erp_price_format}</td>
+<td>{$sum.goods_price|erp_price_format}</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<!--{foreach from=$goods_list item=goods}-->
+<tr align="center">
+<td><a href="order_edit.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a> 
+{if $goods.dispatch_sn}<br />工单号：{$goods.dispatch_sn}{/if}
+{if $goods.order_type_id == 'SUPPLIER_SALE'}<br />（不扣原采购发票）{/if}
+{if $goods.order_type_id == 'SUPPLIER_RETURN'}<br />（扣原采购发票）{/if}
+</td>
+<td>{$goods.order_type}</td>
+<td>{$goods.in_time}</td>
+<td>{if $goods.is_finance_paid == "YES"}
+	{$goods.purchase_paid_time}
+	{else}
+            空
+	{/if}</td>
+<td>{$goods.finance_paid_time}</td>
+<td>{$goods.finance_bill_id}</td>
+<td>{$goods.goods_name}</td>
+<td>{$goods.purchaser}</td>
+<td>{if check_admin_priv('check_provider')}{$goods.provider_name}{else}××××××{/if}</td>
+<td>
+  {if view_provide_price($goods.category)}
+    {$goods.currency} {$goods.purchase_paid_amount}
+  {else}
+    N/A
+  {/if}
+</td>
+<td>
+  {if view_provide_price($goods.category)}
+	{$goods.goods_price}
+  {else}
+  N/A
+  {/if}
+</td>
+<td>{$goods.order_type}</td>
+<td>{if $goods.is_finance_paid == "YES"}是{else}否{/if}</td>
+<td>{if $goods.is_purchase_paid == "YES"}是{else}否{/if}</td>
+</tr>
+<!--{/foreach}-->
+<td colspan="10" align="center" style="border-right:0"><font color="red">内部C2C结帐</font>{$pager}</td>
+</table>
+</body>
+</html>

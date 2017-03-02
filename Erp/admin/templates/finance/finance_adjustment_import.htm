@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>财务调账</title> 
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;财务调账&nbsp;</span></legend>
+ 
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">导入</h3>
+    <form id="upload" method="post" enctype="multipart/form-data">
+      调账明细导入：<input type="file" name="excel" size="30" /> 
+      <!-- 调整时间：<input type="text" name="adjust_time" id="adjust_time" size="10" />
+      <input type="text" name="adjust_time" id="adjust_time" size="10" /> -->&nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="导入" />
+      <input type="hidden" name="act" value="upload" />
+    </form>
+	</div>
+
+	<form method="post" >
+		{if $adjust_list}
+		<br />
+		<div style="clear:both;"> 
+		<h3 style="color:#09F;">导入明细</h3> 
+	   	调整时间：<input type="text" name="adjust_time" id="adjust_time" size="10" />
+	   	<input type="submit" value="调账" onclick="check_form('{$null_order}')"/>
+      	<input type="hidden" name="act" value="insert" />
+      	<input type="hidden" name="adjust_string" value="{$adjust_string}"/><br /><br />
+	          共 {$len} 条记录&nbsp;&nbsp;&nbsp;&nbsp; 调整总金额为：{$amount}&nbsp;&nbsp;&nbsp;&nbsp;  {if $seccess_amount}本次调整金额为：{$seccess_amount}{/if}&nbsp;&nbsp;&nbsp;&nbsp; {if $order_sn}订单号({$order_sn})查询不到订单记录{/if}
+	    <br />
+	    <table class="bWindow">
+	      <tr>
+	        <th width="12%">order_id</th>
+	        <th width="12%">ERP订单号</th>
+	        <th width="10%">调整金额</th>
+	        <th width="20%">备注</th>
+	      </tr>
+	      
+	      <!--{foreach from=$adjust_list item=item}-->
+	      <tr align="center" class="{cycle values='even,odd'}">
+			<td>{$item.order_id}</td>
+	        <td>{$item.order_sn}</td>
+	        <td>{$item.adjust_amount}</td>
+	        <td>{$item.note}</td>
+	      </tr>
+	      
+	      <!--{foreachelse}-->
+	      <tr align="center"><td colspan="7">无记录</td></tr>
+	      
+	      <!--{/foreach}-->
+	      
+	    </table>      
+		</div>
+	  {/if}
+	</form>
+</fieldset>
+
+<script type="text/javascript">	
+//<![CDATA[
+//{literal}
+		function check_form(order_sn){			
+			if(order_sn != ''){
+				alert('订单不全，现在不能进行调账');
+				return false;
+			}
+			/* var adjust_list = $adjust_list; */
+			var adjust = "";
+			for ( var i = 0; i < adjust_list.length; i++) {
+				adjust += adjust_list[i]['order_id']+','+adjust_list[i]['order_sn']+','+adjust_list[i]['adjust_amount']+','+ajust_list[i]['note']+';';
+			}
+			alert(adjust_list);
+			return true;
+		}
+		/* Zapatec.Calendar.setup({
+			weekNumbers       : false,
+			electric          : false,
+			inputField        : "adjust_time",
+			ifFormat          : "%Y-%m-%d",
+			daFormat          : "%Y-%m-%d"
+		});  */
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

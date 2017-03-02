@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+</style>
+{/literal}
+<title>cps统计数据</title>
+</head>
+
+<body>
+<form>
+统计开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$start}"><input type="button" value="..." id="startTrigger">
+统计结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$end}"><input type="button" value="..." id="endTrigger">
+ cps
+<select name="cps">
+{html_options options=$cps_mapping selected=$smarty.request.cps}
+</select>
+ 订单状态
+<select name="order_status">
+{html_options options=$order_status_mapping selected=$smarty.request.order_status}
+</select>
+<input type="submit" name="go" value="查看" />
+</form>
+<h3>从{$start}到{$end} 的统计数据</h3>
+
+<table class="bWindow">
+<div style="font-weight:bold;margin:10px;">
+订单数量：{$cps_orders_count}
+订单金额总计：￥ {$order_amount_total}&nbsp;&nbsp;返现总额：￥ {$cps_amount_total} <br />其中 <br /> 
+{foreach from=$order_amount_cps key=cps_name item=cps_amount}
+{$cps_name}： 商品金额 ￥{$cps_amount.goods_amount}， 返现金额 ￥{$cps_amount.cps_amount} <br />
+{/foreach}
+</div>
+<tr><td>cps名称</td><td>订单号</td><td>订单时间</td><td>用户名</td><td>订单商品</td>
+    <td>商品金额（扣除红包）</td><td>订单金额</td><td>返现总计</td><td>商品分类 + 通过金额 + 额外</td><td>订单状态</td></tr>
+{foreach from=$cps_orders item=order}
+<tr>
+<td>{$order.cps_name}</td>
+<td><a href="order_edit.php?order_id={$order.order_id}">{$order.order_sn}</a></td>
+<td>{$order.order_time}</td>
+<td>{$order.user_name}</td>
+<td>
+{foreach from=$order.order_goods item=order_goods_item}
+{$order_goods_item.goods_name}, 单价：{$order_goods_item.goods_price|price_format},
+ {$order_goods_item.goods_number}件, 返现：{$order_goods_item.cps_rebate_by_goods|price_format}<br />
+{/foreach}
+</td>
+<td>{$order.goods_amount|price_format}</td>
+<td>{$order.order_amount|price_format}</td>
+<td><font color="Red">{$order.cps_amount}</font></td>
+<td>{$order.cps_rebate_by_goods|price_format} + {$order.cps_rebate_by_amount|price_format} + 
+{$order.extra.cps_rebate_by_extra|price_format}</td>
+<td>{$order.order_status|get_order_status}, {$order.pay_status|get_pay_status},
+ {$order.shipping_status|get_shipping_status}</td>
+</tr>
+{/foreach}
+</table>
+
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

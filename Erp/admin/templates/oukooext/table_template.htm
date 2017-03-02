@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<title>{$title}</title>
+</head>
+<body>
+<table class="bWindow">
+<caption><h2>{$caption}</h2><br></caption>
+<tr>
+	<!--{foreach from=$columns item=column}-->
+		<th>{$column}</th>
+	<!--{/foreach}-->
+</tr>
+<!--{foreach from=$all_data item=data}-->
+<tr align="center">
+	<!--{foreach from=$columns key=key item=column}-->
+	<td {$style[$key]}>{$data[$key]}</td>
+	<!--{/foreach}-->
+</tr>
+<!--{/foreach}-->
+<!--{if $pager != null}-->
+<tr align="center">
+	<td colspan="50">{$pager}</td>
+</tr>
+<!--{/if}-->
+</table>
+</body>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<req:ShipmentValidateRequestAP xmlns:req="http://www.dhl.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.dhl.com
+ship-val-req_AP.xsd">
+	<Request>
+		<ServiceHeader>
+			<MessageTime>{MessageTime}</MessageTime>
+			<MessageReference>1234567890123456789012345678901</MessageReference>
+			<SiteID>Readmob_CN</SiteID>
+			<Password>7HnP0732De5</Password>
+		</ServiceHeader>
+	</Request>
+	<LanguageCode>EN</LanguageCode>
+	<PiecesEnabled>Y</PiecesEnabled>
+	<Billing>
+		<ShipperAccountNumber>602067997</ShipperAccountNumber>
+		<ShippingPaymentType>S</ShippingPaymentType>
+		<DutyPaymentType>R</DutyPaymentType>
+	</Billing>
+	<!--
+	<Consignee>
+		<CompanyName>ABC INC</CompanyName>
+		<AddressLine>2711 St</AddressLine>
+		<City>Petaling Jaya</City>
+		<DivisionCode>SE</DivisionCode>
+		<PostalCode>47400</PostalCode>
+		<CountryCode>MY</CountryCode>
+		<CountryName>Malaysia</CountryName>
+		<Contact>
+			<PersonName>Ms Ellie Tan</PersonName>
+			<PhoneNumber>11234325423</PhoneNumber>
+			<PhoneExtension>45232</PhoneExtension>
+		</Contact>
+	</Consignee>
+	-->
+	
+	{Consignee}
+	
+	<Commodity>
+		<CommodityCode>1</CommodityCode>
+		<CommodityName>See invoice</CommodityName>
+	</Commodity>
+	
+	<Dutiable>
+		<DeclaredValue>50.00</DeclaredValue>
+		<DeclaredCurrency>USD</DeclaredCurrency>
+		<ShipperEIN>  </ShipperEIN>
+		<TermsOfTrade>DDU</TermsOfTrade>
+	</Dutiable>
+
+    <!-- 
+	<Reference>
+		<ReferenceID>String</ReferenceID>
+		<ReferenceType>St</ReferenceType>
+	</Reference>
+	-->
+	
+	<ShipmentDetails>
+		<NumberOfPieces>{pieces}</NumberOfPieces>
+		<CurrencyCode>USD</CurrencyCode>
+		<Pieces>
+			{piecesContent}
+		</Pieces>
+		<PackageType>YP</PackageType>
+		<Weight>0.5</Weight>
+		<DimensionUnit>C</DimensionUnit>
+		<WeightUnit>K</WeightUnit>
+		<GlobalProductCode>{GlobalProductCode}</GlobalProductCode>
+		<LocalProductCode>{LocalProductCode}</LocalProductCode>
+		<DoorTo>DD</DoorTo>
+		<Date>{Date}</Date>
+		<Contents>See invoice</Contents>
+	</ShipmentDetails>
+	
+	<Shipper>
+		<ShipperID>602067997</ShipperID>
+		<CompanyName>CHRIS GUAN</CompanyName>
+		<AddressLine>Unit152B,No.1355, Jinji Lake Avenue</AddressLine>
+		<AddressLine>Suzhou Industrial Park</AddressLine>
+		<City>SUZHOU</City>
+		<PostalCode>215021</PostalCode>
+		<CountryCode>CN</CountryCode>
+		<CountryName>CHINA, PEOPLE &apos; S REPUBLIC</CountryName>
+		<Contact>
+			<PersonName>Chris Guan</PersonName>
+			<PhoneNumber>+85281972796</PhoneNumber>
+		</Contact>
+	</Shipper>
+	
+	<!--
+	<SpecialService>
+		<SpecialServiceType>S</SpecialServiceType>
+		<ChargeValue>3.1</ChargeValue>
+		<CurrencyCode>USD</CurrencyCode>
+	</SpecialService>
+	-->
+
+</req:ShipmentValidateRequestAP>

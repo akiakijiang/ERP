@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>订单监控页 改二</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script type="text/javascript" src="misc/jquery.js"></script>
+        <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+        <!-- <link rel="stylesheet" href="styles/rf_scan.css" /> -->
+        <script src="js/jquery-1.3.2.js"></script>
+        <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+        <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+        <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+        <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+        <script type="text/javascript">
+          {literal}
+          function k(){
+            var kv=$('#kirigae').val()
+            if(kv=='nazo'){
+              $('#old_searcher').css('display',"none");
+              $('#new_searcher').css('display',"block");
+            }else{
+              $('#old_searcher').css('display',"block");
+              $('#new_searcher').css('display',"none");
+            }
+          }
+          {/literal}
+        </script>
+    </head>
+    <body>
+    <h1>订单监控页 改二</h1>
+    <p>
+      共费时{$cost_time}秒 ！(*^__^*) 
+      &nbsp;&nbsp;
+      查询模式
+      <select id="kirigae" onchange="k()">
+        <option value="nazo">Nazo Mode</option>
+        <option value="transitional">Transitional Mode</option>
+      </select> 
+    </p>
+
+    
+    <div id="old_searcher" style="display:none;">
+      <form action="order_check.php" method="GET">
+          <span>order_id:</span>
+          <span>
+          <input type="text" style="height:20px;width:100px" name="order_id" value="{$order_id}">
+          </span>
+          <span>或 order_sn:</span>
+          <span>
+          <input type="text" style="height:20px;width:100px" name="order_sn" value="{$order_sn}">
+          </span>
+          <input type="submit" value="确认提交"/>
+      </form>
+      <p>message: {$msg}</p>
+    </div>
+    <div id="new_searcher">
+      <form action="order_check.php" method="GET">
+          <span>Nazo Number</span>
+          <span>
+          <input type="text" style="height:20px;width:100px" name="nazo_number" value="{$nazo_number}">
+          </span>
+          <input type="submit" value="确认提交"/>
+          // Order ID, Order SN, Taobao Order SN Supported. 
+      </form>
+      {$code}
+    </div>
+
+    {if $order_result.order_id != ''}
+    <p>
+      打开<a href="order_edit.php?order_id={$order_result.order_id}" target="new_blank">详情页</a>
+      打开<a href="sale_support/postsale_order_info_box.php?order_id={$order_result.order_id}" target="new_blank">售后情报</a>
+    </p>
+    {/if}
+    <hr>订单预定情况</hr>
+   	<table border="1">
+   		<tr>
+   			<th colspan="8">order_info</th>
+   			<th colspan="2">order_inv_reserved</th>
+   		</tr>
+   		<tr>
+   			<th>order_id</th>
+   			<th>order_sn</th>
+        <th>TBSN</th>
+   			<th>业务组织</th>
+   			<th>所在仓库</th>
+   			<th>order_time</th>
+   			<th>order_status</th>
+   			<th>shipping_status</th>
+   			<th>预定状态</th>
+   			<th>预定时间</th>
+   		</tr>
+   		<tr>
+   		<td>{$order_result.order_id}</td>
+   		<td>{$order_result.order_sn}</td>
+      <td>{$order_result.taobao_order_sn}</td>
+   		<td>{$order_result.party_id}<br>{$order_result.name}</td>
+   		<td>{$order_result.facility_id}<br>{$order_result.FACILITY_NAME}</td>
+   		<td>{$order_result.order_time}</td>
+   		<td>{$order_result.order_status}</td>
+   		<td>{$order_result.shipping_status}</td>
+   		<td>{$order_result.STATUS}</td>
+   		<td>{$order_result.RESERVED_TIME}</td>
+   	</tr>
+   	</table>
+   	<br />
+   	
+    <hr>订单商品预定情况</hr>
+   	<table border="1">
+    		<tr>
+    			<th colspan="5">ecs_order_goods</th>
+    			<th colspan="4">order_inv_reserved_detail</th>
+    			<th colspan="2">inventory_summary</th>
+    		</tr>
+    		<tr>
+    			<th>rec_id</th>
+    			<th>goods_id</th>
+    			<th>商品名</th>
+    			<th>商品数量</th>
+    			<th>库存状态</th>
+    			<th>product_id</th>
+                <th>预定量</th>
+                <th>预定状态</th>
+                <th>预定时间</th>
+                <th>库存总量</th>
+                <th>可预订量</th>
+    		</tr>
+	    	{foreach from=$order_goods_result key=k item=goods}
+	    	<tr>
+	    		<td>{$goods.rec_id}</td>
+	    		<td>{$goods.goods_id}</td>
+	    		<td>{$goods.goods_name}</td>
+	    		<td>{$goods.goods_number}</td>
+	    		<td>{$goods.status_id}</td>
+	    		<td>{$goods.product_id}</td>
+	            <td>{$goods.reserved_quantity}</td>
+	            <td>{$goods.status}</td>
+	            <td>{$goods.RESERVED_TIME}</td>
+	            <td>{$goods.stock_quantity}</td>
+	            <td>{$goods.available_to_reserved}</td>
+	    	</tr>
+	    	{/foreach}
+   	</table>
+   	<br />
+   	
+    <hr>订单商品新库存出库情况</hr>
+   	<table border="1">
+    		<tr>
+    			<th colspan="5">ecs_order_goods</th>
+    			<th colspan="5">inventory_item_detail</th>
+    			<th colspan="9">inventory_item</th>
+    		</tr>
+    		<tr>
+    			<th>rec_id</th>
+    			<th>goods_id</th>
+    			<th>商品名</th>
+    			<th>商品数量</th>
+    			<th>库存状态</th>
+
+          <th>ID</th>
+    			<th>创建时间</th>
+    			<th>QOH_diff</th>
+                <th>ATP_diff</th>
+                <th>取消标记</th>
+                <th>串号</th>
+                <th>库存状态</th>
+                <th>商品采购来源</th>
+                <th>库存类型</th>
+                <th>仓库</th>
+                <th>QOH</th>
+                <th>ATP</th>
+                <th>QOH_total</th>
+                <th>ATP_total</th>
+    		</tr>
+	    	{foreach from=$order_goods_new_stock key=k item=new_stock}
+	    	<tr>
+	    		<td>{$new_stock.rec_id}</td>
+	    		<td>{$new_stock.goods_id}</td>
+	    		<td>{$new_stock.goods_name}</td>
+	    		<td>{$new_stock.goods_number}</td>
+	    		<td>{$new_stock.eog_status_id}</td>
+	    		<td>{$new_stock.inventory_item_detail_id}</td>
+          <td>{$new_stock.created_stamp}</td>
+          <td>{$new_stock.quantity_on_hand_diff}</td>
+          <td>{$new_stock.available_to_promise_diff}</td>
+          <td>{$new_stock.cancellation_flag}</td>
+
+          <td>{$new_stock.serial_number}</td>
+          <td>{$new_stock.status_id}</td>
+          <td>{$new_stock.inventory_item_acct_type_id}</td>
+          <td>{$new_stock.inventory_item_type_id}</td>
+          <td>{$new_stock.facility_name}[{$new_stock.facility_id}]</td>
+          <td>{$new_stock.quantity_on_hand}</td>
+          <td>{$new_stock.available_to_promise}</td>
+          <td>{$new_stock.quantity_on_hand_total}</td>
+          <td>{$new_stock.available_to_promise_total}</td>
+	    	</tr>
+	    	{/foreach}
+   	</table>
+   	<br />
+   	
+    </body>
+    {literal}
+{/literal}
+</html>

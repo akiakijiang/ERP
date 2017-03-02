@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库报表</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/tablesorter.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){		
+			// 提交禁用按钮
+			$(':button, :submit').find('enabled').attr('disabled', false);
+			
+			// 排序
+			$("#sortable").tablesorter({ 
+					headers: { 
+						0:{sorter: false}, 1:{sorter: false}, 4:{sorter: false}, 
+						6:{sorter: false}, 8:{sorter: false}, 10:{sorter: false}
+					} 
+			});
+	});
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;仓库报表&nbsp;</span></legend>
+  
+  
+  <div style="clear:both;">
+      <h3 style="color:#09F;">查看详情</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sortable">
+      	<thead>
+        <tr>
+          <th width="30">No.</th>
+          <th>订单号</th>
+          <th width="9.5%">下单时间</th>
+          <th width="9.5%">确认时间</th>
+          <th width="9.5%">确认操作人</th>
+          <th width="9.5%">配货时间</th>
+          <th width="9.5%">配货操作人</th>
+          <th width="9.5%">出库时间</th>
+          <th width="9.5%">出库操作人</th>
+          <th width="9.5%">发货时间</th>
+          <th width="9.5%">发货操作人</th>
+        </tr>
+        </thead>
+				
+        <tbody>
+				<!--{foreach from=$order_list item=order name="orderList"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.orderList.iteration}</td>
+        	<td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td>{$order.order_time}</td>
+          <td>{$order.order_confirm_time}</td>
+          <td>{$order.order_confirm_user}</td>
+          <td>{$order.order_pick_time}</td>
+          <td>{$order.order_pick_user}</td>
+          <td>{$order.order_delivery_time}</td>
+          <td>{$order.order_delivery_user}</td>
+          <td>{$order.order_shipping_time}</td>
+          <td>{$order.order_shipping_user}</td>
+        </tr>
+        
+        <!--{/foreach}-->
+        </tbody>
+        
+      </table>
+  </div>
+
+  <br /><br />
+  
+</fieldset>
+
+</body>
+</html>

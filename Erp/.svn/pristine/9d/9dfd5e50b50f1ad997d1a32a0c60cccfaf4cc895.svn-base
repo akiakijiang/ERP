@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>红包使用分析</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;红包使用统计&nbsp;</span></legend>
+  
+  <form method="get" id="form1" >
+	<div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      日期区间 ：<input type="text" id="start" name="start" value="{$smarty.request.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+      <input type="text" id="end" name="end" value="{$smarty.request.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" /> 
+      &nbsp;&nbsp; 搜索名称： <input type="text" name="search_name" value="{$smarty.request.search_name}" />
+      <!-- 红包类型 --><input type="hidden" name="bonus_type" value="PROMOTION" />
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" act="search" class="smt" value="查询" />
+        <input type="hidden" name="act" value="search" />
+
+  </div>
+  </form>
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">红包使用统计</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th width="50">红包类型</th>
+          <th>红包发放数量</th>
+          <th>实际被使用数量</th>
+          <th>产生的订单总金额</th>
+          <th>抵扣的总金额</th>
+          <th>相应的平均数</th>
+        </tr>
+        
+        <!--{foreach from=$bonus_info_list item=bonus_info name="bonusInfoList"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.bonusInfoList.iteration}</td>
+          <td>{$bonus_info.0.gtc_comment}</td>
+          <td>{$bonus_info.bonus_info.total}</td>
+          <td>{$bonus_info.bonus_info.used}</td>
+          <td>&yen; {$bonus_info.bonus_info.goods_amount|erp_price_format}</td>
+          <td>&yen; {$bonus_info.bonus_info.bonus_amount|erp_price_format}</td>
+          <td>&yen; {$bonus_info.bonus_info.ave|erp_price_format}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        
+      </table>
+      {$pager}
+      <br />
+  </div>
+  
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+{$smarty.request.purchase_invoice_request_id}
+欧酷 开票期间：{$purchase_invoice_request.START_TIME|date_format:"%Y%m%d"} - {$purchase_invoice_request.END_TIME|date_format:"%Y%m%d"}
+{$smarty.request.provider_id|get_provider_name}
+"商品代码","商品名称","单价","去税单价","数量","含税总金额","去税总金额"
+{foreach from=$added_item_list item=request_item_list}
+"{$request_item_list.goods_id}#{$request_item_list.ecs_style_id}","{$request_item_list.goods_name}{if $request_item_list.return_inventory_transaction_id != ''}(-gt订单){/if}","￥{$request_item_list.unit_cost|invoice_price_format}","￥{$request_item_list.unit_net_cost|invoice_price_format}","{$request_item_list.quantity}","￥{$request_item_list.unit_cost*$request_item_list.quantity|invoice_price_format}","￥{$request_item_list.unit_net_cost*$request_item_list.quantity|invoice_price_format}"
+{assign var=sum_cost value=$request_item_list.unit_cost*$request_item_list.quantity+$sum_cost}
+{assign var=sum_net_cost value=$request_item_list.unit_net_cost*$request_item_list.quantity+$sum_net_cost}
+{/foreach}
+"","","","","","{$sum_cost}","{$sum_net_cost}"

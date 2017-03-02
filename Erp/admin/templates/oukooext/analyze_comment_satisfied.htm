@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－留言满意度统计</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="统计"> 
+</form>
+
+<h3>从{$start}到{$end}的统计数据</h3>
+<table class="bWindow">
+<tr><td>日期</td>{foreach from=$bjtype_mapping item=type_name}<td>{$type_name}</td>{/foreach}<td>小计</td></tr>
+<tr>
+<td>不满意留言数</td>
+{assign var="unsatisfied_total" value=0}
+{foreach from=$bjtype_mapping key=type item=type_name}
+<td>{$unsatisfied_by_type.$type}{assign var="unsatisfied_total" value=$unsatisfied_total+$unsatisfied_by_type.$type}</td>
+{/foreach}
+<td>{$unsatisfied_total}</td></tr>
+<tr>
+<td>满意留言数</td>
+{assign var="satisfied_total" value=0}
+{foreach from=$bjtype_mapping key=type item=type_name}
+<td>{$satisfied_by_type.$type}{assign var="satisfied_total" value=$satisfied_total+$satisfied_by_type.$type}</td>
+{/foreach}
+<td>{$satisfied_total}</td>
+</tr>
+<tr>
+<td>没有选择是否满意的留言数</td>
+{assign var="no_rank_total" value=0}
+{foreach from=$bjtype_mapping key=type item=type_name}
+<td>{$no_rank_by_type.$type}{assign var="no_rank_total" value=$no_rank_total+$no_rank_by_type.$type}</td>
+{/foreach}
+<td>{$no_rank_total}</td>
+</tr>
+
+</table>
+<h3>不满意的用户</h3>
+<table class="bWindow">
+<tr><td>不满意的用户</td><td>该用户不满意的留言数</td></tr>
+{foreach from=$comment_unsatisfied_users item=users}
+<tr><td>{$users.user_name}</td><td>{$users.type_count}</td></tr>
+{/foreach}
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

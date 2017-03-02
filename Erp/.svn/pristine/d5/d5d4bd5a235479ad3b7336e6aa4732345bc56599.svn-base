@@ -1,0 +1,167 @@
+<!--
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    {literal}
+	<style type="text/css" media="all">
+	*{
+		margin:0;
+		padding:0;
+	}
+	h2{
+		font-size:12pt;
+		clear:both;
+		margin:10px 0;
+	}
+	h3{
+		font-size:10pt;
+		clear:both;
+		margin:8px 0;
+	}
+	ul{
+		list-style:none;
+		font-size:10pt;
+		width:49%;
+		float:left;
+	}
+	ul li{
+		height:40px;
+		line-height:40px;
+	}
+
+	table{
+		/*width:90%;*/
+		font-size:5pt;
+		/*font-family: '方正黑体_GBK';*/
+		/*font-family: '微软雅黑';*/
+		/*color: #77787b;*/
+		text-align:center;
+		/*border:0px solid #000;*/
+		border-collapse:collapse;
+		margin:20px 0 20px 2px;
+	}
+	table td{
+	    padding:5px 5px;
+	}
+	table td,table th{
+		/*border:0px solid #000;*/
+		height:15px;
+		line-height:15px;
+	}
+	p{
+		font-size:10pt;
+		clear:both;
+		text-align:center;
+	}
+	.left{
+		float:left;
+		margin-left:40px;
+		display:inline;
+	}
+	.right{
+		float:right;
+		margin-right:20px;
+	}
+	h1{
+		text-align:center;
+		font-size:15pt;
+	}
+	li.c{
+		clear:both;
+		width:100%;
+	}
+	.postscript {
+	    font-size:15px;
+	    font-family: "黑体";
+	    font-weight:bold;
+	}
+	.top{
+	    margin-top:140px;
+	    margin-left:0px;
+	}
+	</style>
+    {/literal}
+
+    <title>打印发货单</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+ {foreach from=$or_list item=shipment name=shipment}
+	 <div style="padding-top:80px;position:relative;padding-left:0px;height:120px;width:30%;text-align:right;float:left;">
+	   <img src="code_img.php?barcode={$shipment.shipmentId}&height=80&width=205&text=1" alt="BARCODE:{$shipment.shipmentId}" style="width:80%;height:40%;" />
+	      <div>[{$BPSN} : {$shipment.gridId}]</div>
+	  <div style="color:red;position:absolute;left:65px;width:800px;text-align:left;">
+	       {if $shipment_important_note}
+	                        重要备注：{$shipment_important_note}
+	       {/if}
+	  </div>
+	  </div>
+ 	<div style="height:110px;width:40%;text-align:right;float:left;font-size:8pt;">
+ 		{foreach from=$shipment.saleSetList item=saleSet}
+ 			{$saleSet.name}<br>
+ 		{/foreach}
+ 	</div>
+ 	<div style="clear: both;"></div>
+	<div style="min-height:105px;">
+		<center>
+			<table style="width:88%;">
+		 		{foreach from=$shipment.header key=sid item=order_header}
+			 		<tr>
+				 		<td style="width:17%;">　{$order_header.taobao_order_sn}　</td>
+				 		<td style="width:16%;">　{$order_header.order_sn}　</td>
+				 		<td style="width:17%;">　{$order_header.taobao_user_id}　</td>
+				 		<td style="width:15%;">{$order_header.consignee}</td>
+				 		<td style="width:17%;">　{$order_header.mobile}　</td>
+				 		<td style="width:18%;">{$order_header.order_amount}</td>
+			 		</tr>
+		 		{/foreach}
+		 	</table>
+	 	</center>
+	</div>
+	<div>
+		<center>
+			<table style="width:80%;">
+		 		{foreach from=$shipment.body key=bid item=order_body}
+			 		<tr>
+				 		<td style="width:4%; text-align: left;">{$bid}</td>
+				 		<td style="width:63%; vertical-align: middle;" >　{$order_body.goods_name}　</td>
+				 		<td style="width:7%;">{$order_body.goods_number}</td>
+				 		<td style="width:13%;">　{$order_body.product_code}　</td>
+				 		<td style="width:13%; text-align: right;">　
+				 		{$order_body.location_seq_id}
+				 		
+			 			 {if $order_body.validity_batch_sn}
+			 			 </br>
+						 (
+						 {foreach from=$order_body.validity_batch_sn item=validity_sn}				 
+							{if $validity_sn.batch_sn != ''} {$validity_sn.batch_sn}-{$validity_sn.quantity}, {/if}
+						 {/foreach}
+						 )
+						 {/if}
+				 		
+				 		</td>
+			 		</tr>
+			 	{/foreach}						 		
+		 	</table>
+	 	</center>
+	</div>
+ 	
+
+	{if !$smarty.foreach.shipment.last}
+		<div STYLE="page-break-after: always;">
+		</div>
+	{/if}
+
+{/foreach}
+
+
+{if $smarty.request.print != 1}
+	<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+	<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+
+</body>
+</html>

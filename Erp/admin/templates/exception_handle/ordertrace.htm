@@ -1,0 +1,549 @@
+﻿<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Leqee</title>
+<link rel="stylesheet"
+	href="../templates/exception_handle/bootstrap/css/bootstrap.min.css">
+<script type="text/javascript"
+	src="../templates/exception_handle/js/jquery.js"></script>
+<script language="javascript" type="text/javascript"
+	src="../templates/exception_handle/My97DatePicker/WdatePicker.js"></script>
+
+{literal}
+<style>
+table tr td, table tr th {
+	border: 1px solid #3697de;
+	text-align: center;
+}
+
+table {
+	font-family: "微软雅黑";
+	font-size: 14px;
+	margin: 20 5 20 5;
+}
+
+.button_btn button {
+	margin-top: 10px;
+	margin-left: 10px;
+}
+
+.checkbox {
+	margin-left: 20px;
+}
+
+.dropdown {
+	float: left;
+	margin-bottom: 10px;
+	margin-right: 10px;
+}
+
+.dropdown select, .dropdown input {
+	margin-top: 5px;
+	line-height: 30px;
+	height: 30px;
+	width: 160px;
+	line-height: 30px;
+}
+</style>
+{/literal}
+</head>
+<body style="background-color: rgb(255, 255, 255); font-family: 微软雅黑;">
+	<div style="width: 100%; height: 55px; background-color: #3697de;">
+		<img src="../templates/exception_handle/images/logo_white.png" />
+	</div>
+	
+	<form id="search_form" method="post" style="background-color:white;">
+			<div style="width: 100%; ">
+				<div class="col-lg-6" style="width: 60%; height: 70px;margin-top:15px;">
+					<div class="input-group">
+						<input type="text" class="form-control" name="tids" placeholder="请输入外部订单号,多个订单号以英文逗号分隔" style="height: 45px;"> <span class="input-group-btn">
+							<button class="btn btn-default" type="button" style="color: #3697de; height: 45px; font-family: 微软雅黑; font-weight: bold; font-size: 16px;">
+								查询</button>
+								<input type="hidden" name="act" value="search">
+						</span>
+					</div>
+					<!-- /input-group -->
+				</div>
+				<!-- /.col-lg-6 -->
+			</div>
+			</form>
+
+	<div
+		style="width: 100%; text_align: center; overflow-x: hidden; background-color: white;">
+		<div style="width: 100%; margin-bottom: 10px;" class="button_btn">
+			<button class="btn btn-info "
+				style="text-shadow: #3697de 5px 3px 3px;"
+				onclick="select_all('#form');">
+				<span class="glyphicon glyphicon-ok"></span> 全选
+			</button>
+			<button class="btn btn-info"
+				style="text-shadow: #3697de 5px 3px 3px;"
+				onclick="select_reverse('#form');">
+				<span class="glyphicon glyphicon-edit"></span> 反选
+			</button>
+			<button class="btn btn-info"
+				style="text-shadow: #3697de 5px 3px 3px;"
+				onclick="select_none('#form');">
+				<span class="glyphicon glyphicon-remove"></span> 清除
+			</button>
+			<span class="btn-lg"
+				style="text-align: center; color: #3697de; vertical-align: middle; padding-top: 15px;">{$batch_retro_order_msg}</span>
+
+			<div style="float: right; margin-right: 10px;">
+				<button type="button" class="btn btn-info"
+					style="text-shadow: #3697de 5px 3px 3px;"
+					onclick="check_submit('#form')">
+					<span class="glyphicon glyphicon-tasks"></span> 重新转化所有订单
+				</button>
+				<button type="button" class="btn btn-info"
+					style="text-shadow: #3697de 5px 3px 3px;"
+					onclick="javascript:history.go(0);">
+					<span class="glyphicon glyphicon-refresh"></span> Refresh
+				</button>
+
+			</div>
+		</div>
+		<form id="form" method="post">
+			<table class="table">
+				<tr>
+					<th class="cancel err_show">选择</th>
+					<th width="30">No.</th>
+					<th>商店名</th>
+					<th>淘宝订单号</th>
+					<th>状态</th>
+					<th>订单转换信息</th>
+					<th>修改时间</th>
+					<th>是否外包发货</th>
+					<th>操作建议</th>
+					<th class="cancel err_show">重新调度</th>
+
+				</tr>
+				<!--  {if $order_list != null} -->
+				<!-- {foreach from=$order_list item=order name="taobaoOrderList"} -->
+				<tr align="center" class="{cycle values='odd,even'} list" id="">
+					<!-- 选择 -->
+					<td>{if $order.transfer_status ==
+						'ERP_LESS_THAN_TAOBAO'||$order.transfer_status == 'ERROR' } <label
+						class="checkbox inline"> <input type="checkbox"
+							name="checked[]"
+							value="{$order.application_key},{$order.tid},{$order.modified}"
+							class="check" checked="true" /> {/if}
+					</label>
+					</td>
+					<td>{$smarty.foreach.taobaoOrderList.iteration}</td>
+					<td>{$order.title}</td>
+					<td>{$order.tid}</td>
+					<td>{$order.transfer_status}</td>
+					<td>{$order.transfer_note}</td>
+					<td>{$order.modified}</td>
+					<td>{$order.ship_type}</td>
+					<td style="color: red;">{$order.advice}</td>
+					<!-- 状态回退 -->
+					<td class="cancel err_show">{if $order.transfer_status ==
+						'ERP_LESS_THAN_TAOBAO'||$order.transfer_status == 'ERROR' } <input
+						type="button" class="btn btn-danger" value="重新转化"
+						onclick="status_back(this)"
+						id="{$order.application_key},{$order.tid},{$order.modified}"
+						class="button" /> {/if}
+					</td>
+				</tr>
+				<!-- {/foreach} -->
+
+				<!-- {else} -->
+				<tr>
+					<td colspan="12" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+			</table>
+
+			<div
+				style="width: 100%; text-align: right; padding-right: 10px; padding-top: 5px; padding-bottom: 0px;">
+				
+				<input type="hidden" name="act" value="batch_retro_order" />
+			</div>
+		</form>
+		<hr />
+
+		<div style="width: 90%; margin-left: 5%; height: 40px; display:none;">
+			<div class="dropdown">
+				业务组： <select class="party_select">
+					<option>---请选择业务组---</option> {foreach from=$result_party
+					item=party name="result_party"}
+					<option value="{$party.party_id}">{$party.name}</option> {/foreach}
+				</select>
+			</div>
+			<div class="dropdown">
+				店铺名称： <select class="shop_conf">
+
+				</select>
+			</div>
+			<div class="dropdown">
+				同步范围： <input type="text" placeholder="同步小时,如:10" class="sync_scope"
+					style="width: 130px;" />
+			</div>
+			<div class="dropdown">
+				结束时间：<input id="d11" type="text" onClick="WdatePicker()"
+					style="width: 85px;" /> <input type="text" class="time"
+					placeholder="13:11:45" style="width: 90px;" />
+
+			</div>
+
+			<div>
+				<button class="btn btn-info" onclick="sync_order_submit()"
+					style="text-shadow: #3697de 5px 3px 3px;">
+					<span class="glyphicon glyphicon-repeat"></span> 同步所有订单
+				</button>
+			</div>
+		</div>
+
+
+		<!-- 显示Jushita上面没有拉取到的订单，漏单的情况统计 -->
+		{if $jushita_exist_order!=null}
+		<div
+			style="width: 98%; height: auto; margin-left: 1%; border: 1px solid #3697de; margin-top: 25px; margin-bottom: 20px; padding: 5 5 20 5;">
+			<div
+				style="width: 80%; border-radius: 5px; position: relative; top: -18px; left: 10%; text-align: center; background-color: white; border: 1px solid #3697de; font-size: 16px; color: #3697de;">聚石塔存在ERP不存在订单列表</div>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>TID</th>
+						<th>Title</th>
+						<th>ApplicationKey</th>
+						<th>Modify_Date</th>
+						<th>Party_id</th>
+						<th>Num_IID</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					{foreach from=$jushita_exist_order item=jst_order
+					name="jushita_exist_order"}
+					<tr>
+						<td>{$jst_order->tid}</td>
+						<td>{$jst_order->title}</td>
+						<td>{$jst_order->application_key}</td>
+						<td>{$jst_order->modified}</td>
+						<td>{$jst_order->party_id}</td>
+						<td>{$jst_order->num_iid}</td>
+						<td>{$jst_order->status}</td>
+					</tr>
+					{/foreach}
+
+
+				</tbody>
+			</table>
+		</div>
+		{/if}
+		
+		<!-- 淘宝订单列表,聚石塔没有的订单 -->
+		{if $tids!=null}
+		<div style="width: 90%; margin-left: 5%; height: 40px;">
+			<div class="dropdown">
+				业务组： <select class="party_select">
+					 {foreach from=$default_party item=party name="default_party"}
+					<option value="{$party.party_id}">{$party.name}</option> {/foreach}
+					
+					 {foreach from=$result_party
+					item=party name="result_party"}
+					<option value="{$party.party_id}">{$party.name}</option> {/foreach}
+				</select>
+			</div>
+			<div class="dropdown">
+				店铺名称： <select class="shop_conf">
+				<option>---请选择店铺----</option>
+				{foreach from=$result_shop_confs item=party name="result_shop_confs"}
+					<option value="{$party.application_key}">{$party.nick}</option> {/foreach}
+				</select>
+			</div>
+			<div>
+				<button class="btn btn-info" onclick="check_not_sync_order()"
+					style="text-shadow: #3697de 5px 3px 3px;">
+					<span class="glyphicon glyphicon-repeat"></span> 查询未同步订单详情
+				</button>
+			</div>
+		</div>
+		
+		
+		<div
+			style="width: 98%; height: auto; margin-left: 1%; border: 1px solid #3697de; margin-top: 25px; margin-bottom: 20px; padding: 5 5 20 5;">
+			<div class="not_exist_order_tids">
+			<div
+				style="width: 80%; border-radius: 5px; position: relative; top: -18px; left: 10%; text-align: center; background-color: white; border: 1px solid #3697de; font-size: 16px; color: #3697de;">聚石塔不存在订单,淘宝平台获取订单</div>
+			{foreach from=$not_exist_order_tids item=order_tids
+			name="not_exist_order_tids"} <span class="btn btn-info"
+				style="padding: 5 5 5 5; background-color: #3697de; color: #fff;"
+				name="sync_order_tid" value="{$order_tids}">{$order_tids}</span>
+			{/foreach}
+			</div>
+			
+				<table class="table opentaobaotable" style="display:none;">
+				<thead>
+					<tr>
+					<th>tid</th>
+					<th>applicationKey</th>
+					<th>title</th>
+					<th>modified</th>
+					<th>status</th>
+					<th>NumIID</th>
+					</tr>
+				</thead>
+				<tbody class="opentaobaoinfos">
+				</tbody>
+				</table>
+		</div>
+		{/if}
+
+	</div>
+
+
+
+	<div class="loading"
+		style="display: none; width: 100%; height: 100%; background-color: #3697de; position: absolute; top: 0; left: 0; opacity: 0.7; text-align: center;">
+		<img src="../templates/exception_handle/images/jz.gif"
+			style="opacity: 1; margin-top: 200px;" />
+	</div>
+
+
+	<input type="hidden" class="party_id" value="{$party_id}"/>
+	<input type="hidden" class="shop_conf_appkey" />
+	<input type="hidden" class="sync_tids" value="{$tids}" />
+
+
+</body>
+<script type="text/javascript">
+
+var WEB_ROOT = '{$WEB_ROOT}';
+var bird_authority='{$bird_authority}';
+{literal}
+
+$(function(){
+	$(".btn-default").click(function(){
+		$('#search_form').submit();
+	});
+});
+
+function check_not_sync_order(){
+	if($(".sync_tids").val()==""){
+		alert("没有订单!");
+		return;
+	}
+	if($(".shop_conf_appkey").val()=="")
+		alert("请选择店铺!");
+	else{
+		$(".loading").show();
+		var url = WEB_ROOT +'admin/exception_handle/home.php?request=ajax&act=check_not_sync_order';
+		 $.ajax({
+	         type: 'post',
+	     	 url: url,  
+	         data: {
+	             shop_conf_appkey:$.trim($(".shop_conf_appkey").val()),
+	             sync_tids:$.trim($(".sync_tids").val()),
+	         },
+	     	 dataType:'json',
+	         success: function(data) { 
+	        	console.log(data);
+	        	if(data.length==0)
+	        		alert("查询失败!");
+	        	else
+		        	$.each(data,function(i,item){
+		        		$(".not_exist_order_tids").hide();
+		        		$(".opentaobaotable").show();
+		        		$(".opentaobaoinfos").append("<tr><td>"+item.tid+"</td><td>"+item.application_key+"</td><td>"+item.title+"</td><td>"+item.modified+"</td><td>"+item.status+"</td><td></td>"+item.num_iid+"</tr>");
+		        	});
+	        	$(".loading").hide();
+	         },
+			 error:function(data){
+				console.log(data);
+				alert("转化失败，请确认参数/重试!");
+				$(".loading").hide();
+			}
+		 })
+	}
+}
+
+function sync_order_submit(){
+	var url = WEB_ROOT +'admin/exception_handle/home.php?request=ajax&act=sync_order';
+	if(check()){
+		if(confirm("请请确认所有订单都在选择的时间段内,如果时间段太大,请分批调度!")){
+			$(".loading").show();
+		 $.ajax({
+	         type: 'post',
+	     	 url: url,  
+	         data: {
+	             party_id:$.trim($(".party_id").val()),
+	             shop_conf_appkey:$.trim($(".shop_conf_appkey").val()),
+	             end_date:$.trim($("#d11").val())+","+$.trim($(".time").val()),
+	             sync_tids:$.trim($(".sync_tids").val()),
+	             sync_scope:$.trim($(".sync_scope").val())
+	         },
+	     	 dataType:'json',
+	         success: function(data) { 
+	        	console.log(data);
+	        	alert('转化完成，请确认是否同步成功!');
+	            $(".loading").hide();
+	            location.reload();
+	         },
+			 error:function(data){
+				console.log(data);
+				alert("转化失败，请确认参数/重试!");
+				$(".loading").hide();
+			}
+	     });
+		}
+	     return false;
+		}
+	}
+
+function check(){
+	if($(".party_id").val()==""){
+		alert("请选择业务组!");
+		return false;
+	}else if($(".shop_conf_appkey").val()==""){
+		alert("请选店铺信息!");
+		return false;
+	}else if($("#d11").val()==""){
+		alert("请选择同步结束日期，并填写同步结束时间!");
+	}else if($(".time").val()==""){
+		$(".time").css("border","1px solid red");
+		alert("请填写具体时间!");
+		return false;
+	}else if($("#d11").val()!=""){
+		var argTime=/^[0-9]{4}-[0-1]?[0-9]{1}-[0-3]?[0-9]{1}[,]?([0-2][0-9]):([0-5][0-9]):([0-5][0-9])$/;
+		if(!argTime.test($.trim($("#d11").val())+","+$.trim($(".time").val()))){
+			alert("请完善时间,时间格式如：2015-12-12,12:12:12   "+$("#d11").val()+","+$(".time").val());
+			return false;
+		}
+	}else if($(".sync_scope").val()==""){
+		alert("请填写同步范围即同步的小时数!")
+	}
+	return true;
+}
+
+
+function select_all(node, type)
+{
+    node = node ? node : document ;
+    $(node).find("input[name='checked[]']:enabled").each(function(i){
+		this.checked = true;
+	});
+} 
+/**
+*清空
+*/
+function select_none(node, type)
+{
+    node = node ? node : document ;
+    $(node).find("input[name='checked[]']:enabled").each(function(i){
+		this.checked = false;
+	});
+} 
+/**
+ * 反选
+ */
+function select_reverse(node)
+{
+	node = node ? node : document ;
+	$(node).find("input[name='checked[]']:enabled").each(function(i){
+		this.checked = !this.checked;
+	});
+} 
+
+/**
+ * 单个提交订单状态回退
+ */
+function status_back(obj)
+{        
+	if(confirm("请按照操作建议，仔细核对后操作，转化有风险，操作需谨慎!!")){
+		$(".loading").show();
+	$(obj).attr("disabled",true);
+     var out_biz_code= $(obj).attr("id");
+     
+     var url = WEB_ROOT +'admin/exception_handle/home.php?request=ajax&act=retro_order';
+     $.ajax({
+         type: 'post',
+     	 url: url,  
+         data: {
+             'out_biz_code': out_biz_code,
+         },
+     	 dataType:'json',
+         success: function(data) { 
+            alert('转化完成，请确认是否转换成功!');
+            $(".loading").hide();
+            location.reload();
+     		//$(obj).closest('tr.list').remove();
+         },
+		 error:function(data){
+			console.log(data);
+			alert("转化失败，请确认操作建议是否成功!");
+			$(".loading").hide();
+			location.reload();
+		}
+          // $(this).resetForm(); // 提交后重置表单
+     });
+     return false;
+	}
+}
+
+/**
+ * 重新调度所有订单
+ */
+function check_submit(node)
+{
+	if(confirm("请按照操作建议，仔细核对后操作，转化有风险，操作需谨慎!!")){
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		console.log(item);
+		if (!item || item==undefined || item.length<1) {
+			alert('没有选中项');
+			return false;
+		}else{
+			$('#form').submit();
+			$(".loading").show();
+		}
+	}
+	//$('input[name="checked[]"]:checked').parent().parent().remove();
+}
+
+$(".shop_conf").on("change",function(){
+	$(".shop_conf_appkey").val($(this).val());
+});
+
+$(".sync_scope").blur(function(){
+	if(isNaN($(this).val())){
+		alert("请输入整数!");
+		$(this).focus();
+	}
+	else if($(this).val()>'50'){
+		alert("时间范围太大,请尽量输入50以内的整数");
+		$(this).focus();
+	}
+});
+
+$(".party_select").change(function(){
+	$(".party_id").val($(this).val());
+	var url=WEB_ROOT +'admin/exception_handle/home.php?request=ajax&act=party_select';
+	$.ajax({
+         type: 'post',
+     	 url: url,  
+         data: {
+        	 party_id:$(this).val(),
+         },
+     	 dataType:'json',
+         success: function(data) {
+        	 $(".shop_conf").empty();
+        	 $(".shop_conf").append("<option>---请选择店铺----</option>");
+        	 $.each(data,function(i,item){
+        		 $(".shop_conf").append("<option value='"+item.application_key+"'>"+item.nick+"</option>");
+        	 });
+         },
+		 error:function(data){
+			 alert("dfadfsdf");
+			console.log(data);
+		}
+     });
+     return false;
+});
+
+{/literal}
+</script>
+</html>

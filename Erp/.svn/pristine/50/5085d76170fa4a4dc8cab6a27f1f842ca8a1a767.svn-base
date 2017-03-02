@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+
+ <head>
+ <script type="text/javascript" src="misc/jquery.js"></script>
+ <link href="styles/default.css" rel="stylesheet" type="text/css" />
+ <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+ <!-- bootstrap 3.0.2 -->
+  <link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+  <!-- font Awesome -->
+  <link href="../css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+ 	<style type="text/css">
+ 	{literal}
+ 	.modal-wrap{
+    width:100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0,0,0,.5);
+    z-index: 999;
+    display: none;
+}
+.modal-content{
+    margin:40px auto 0 auto;
+    width: 70%;
+    max-height:400px;
+	overflow:scroll;
+    padding:20px 30px;
+    position: relative;
+}
+.modal-close {
+    font-size: 30px;
+    width: 36px;
+    height: 36px;
+    display: block;
+    position: fixed;
+    top:45px;
+    right:16%;
+    cursor: pointer;
+    z-index: 999;
+}
+ 	{/literal}
+ 		
+ 	</style>
+ <script type="text/javascript">
+ var sync_status = '{$smarty.request.sync_status}';
+ var database = '{$database}';
+ var feedback_status = '{$smarty.request.feedback_status}';
+ {literal}
+ 	$(document).ready(function(){
+ 		$("#sync_status").val(sync_status);
+ 		$("#database").val(database);
+ 		$("#feedback_status").val(feedback_status);
+ 		  
+ 		
+ 		Zapatec.Calendar.setup({
+ 	        weekNumbers       : false,
+ 	        electric          : false,
+ 	        inputField        : "start_time",
+ 	        button            : "start_time_button",
+ 	        ifFormat          : "%Y-%m-%d",
+ 	        daFormat          : "%Y-%m-%d"
+ 	      });
+ 	      Zapatec.Calendar.setup({
+ 	        weekNumbers       : false,
+ 	        electric          : false,
+ 	        inputField        : "end_time",
+ 	        button            : "end_time_button",
+ 	        ifFormat          : "%Y-%m-%d",
+ 	        daFormat          : "%Y-%m-%d"
+ 	      });
+ 	    $(".modal-close").click(function(){
+ 	        $(this).parents(".modal-wrap").hide();
+ 	    });
+ 	 	$(".modal-wrap").click(function(event){
+ 	        var target = $(event.target).attr("class");
+ 	        if (target == "modal-wrap") {
+ 	            $(".modal-wrap").hide();
+ 	        }
+ 	    });
+ 		
+ 	});
+ 	function find_goods(order_id){
+ 		data = 'order_id='+order_id+'&act=find_goods&method=ajax&database='+$("#database_1").val();
+ 		$.ajax({
+ 			type: 'POST',
+ 			url : 'brand_integration_monitor_65625.php',
+ 			data: data,
+ 			dataType : 'json',
+ 			success : function(data){
+ 				var html = '<table class="table"><thead><tr><th>序号</th><th>订单商品ID</th><th>商品名</th><th>商品编码</th><th>商品数量</th><th>商品单价</th></tr><thead>';
+ 				for(var i=0; i< data.length; i++){
+ 					var goods = data[i];
+ 					html += '<tr><td>'+(i+1)+'</td><td>'+goods.order_goods_id+'</td><td>'+goods.goods_name+'</td><td>'+goods.goods_sn+'</td>'+
+ 					'<td>'+goods.goods_number+'</td><td>'+goods.goods_price+'</td></tr>';
+ 					
+ 				}
+ 				html += '</table>';
+ 					
+ 			$('.modal-table-content').html(html).parents(".modal-wrap").fadeIn();
+ 			}
+ 		});
+ 	}
+ 	
+ 	function reset_status(order_id, node, name){
+ 		if(!confirm('确认修改状态？')) return;
+ 		jnode = $(node);
+ 		data = 'order_id='+order_id+'&motion='+name+'&act=reset_status&method=ajax&database='+$("#database_1").val();
+ 		$.ajax({
+ 			type: 'POST',
+ 			url : 'brand_integration_monitor_65625.php',
+ 			data: data,
+ 			dataType : 'json',
+ 			success : function(data){
+ 				if(data.status == 'SUCCESS'){
+ 					jnode.hide();
+ 					jnode.parent().parent().find('.'+name).html(data.feedback).css('color','black');
+ 				}
+ 				alert(data.message);
+ 			},
+ 			error : function(data){
+ 				alert('Ajax请求失败');
+ 			}
+ 		});
+ 	}
+ 	
+ {/literal}
+ </script>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>监控页面</title>
+ </head>
+ <body>
+ <fieldset style="-moz-border-radius:6px;padding:10px;">
+ 	<legend style="font-weight:bold; font-size:18px; color:#2A1FFF;">中粮数据监控</legend>
+ 	<br/>
+ 	<form method="POST">
+ 	<table class="bWindow">
+ 	<tr>
+ 		<td>订单号：</td> <td><input type="text" value = "{$smarty.request.order_sn}" name="order_sn"/></td>
+ 		<td>同步起始日期：</td> <td><input type="text" value = "{$smarty.request.start_time}" name="start_time" id="start_time"/>
+ 		<input type="button" id= "start_time_button" value=".."/></td>
+ 		<td>同步截止日期：</td> <td><input type="text" value = "{$smarty.request.end_time}" name="end_time" id="end_time"/>
+ 		<input type="button" id= "end_time_button" value=".."/></td></td>
+ 	</tr>
+	<tr>
+		<td>同步状态：</td><td><select name="sync_status" id="sync_status">
+		 	<option value="ALL">所有</option>
+		 	<option value="SUCCESS">成功</option>
+		 	<option value="FAILURE">失败</option>
+		 	<option value="NORMAL">未同步</option>
+ 		</select></td>
+ 		<td>反馈状态：</td><td><select name="feedback_status" id="feedback_status">
+		 	<option value="ALL">所有</option>
+		 	<option value="SUCCESS">成功</option>
+		 	<option value="FAILURE">失败</option>
+		 	<option value="NORMAL">未反馈</option>
+ 		</select></td>
+ 		<td>查询数据：</td> <td><select name="database" id="database">
+ 		<option value="zlshop">中粮商品</option>
+ 		<option value="cofco_dealer">喜宴卡</option>
+ 	</select></td>
+ 		<td><input type="hidden" name="act" value="search"/>
+ 	<input type="submit" value="搜索"  /></td>
+	</tr>
+ 	
+ 	</table>
+ </form>
+	<br/>
+	<br/>
+	<input type="hidden" id="database_1" value="{$database}"/>
+ 	<table class="table table-hover">
+ 		<thead>
+ 			<tr>
+ 				<th>序号</th>
+ 				<th>订单ID</th>
+ 				<th>订单号</th>
+ 				<th>订单包含商品</th>
+ 				<th>订单创建时间</th>
+ 				<th>订单同步时间</th>
+ 				<th>订单同步状态</th>
+ 				<th>订单同步信息</th>
+ 				<th>订单反馈状态</th>
+ 				<th>订单反馈信息</th>
+ 				<th>操作</th>
+ 			</tr>
+ 		</thead>
+ 		<tbody>
+ 			{foreach from=$sync_orders item = sync_order name= order}
+ 				<tr>
+ 					<td>{$smarty.foreach.order.iteration}</td>
+ 					<td>{$sync_order.order_id}</td>
+ 					<td>{$sync_order.order_sn}</td>
+ 					<td><a href="javascript:;" onclick="find_goods({$sync_order.order_id})">包含商品数：{$sync_order.goods_num}</a></td>
+ 					<td>{$sync_order.create_time}</td>
+ 					<td>{$sync_order.sync_time}</td>
+ 					<td class="sync_status" {if $sync_order.sync_status == 'FAILURE'}style="color:red;" {/if}>{$sync_order.sync_status}</td>
+ 					<td align="center">{$sync_order.sync_note}</td>
+ 					<td class="feedback_status" {if $sync_order.feedback_status == 'FAILURE'}style="color:red;" {/if}>{$sync_order.feedback_status}</td>
+ 					<td align="center">{$sync_order.feedback_note}</td>
+ 					<td>{if $sync_order.sync_status == 'FAILURE'}<input type="button" value="重置同步" onclick="reset_status({$sync_order.order_id},this,'sync_status')"/>{/if}
+ 						{if $sync_order.feedback_status == 'FAILURE'}<input type="button" value="重置反馈" onclick="reset_status({$sync_order.order_id},this,'feedback_status')"/>{/if}
+ 					
+ 					</td>
+ 				</tr>
+ 			{/foreach}
+ 		</tbody>
+ 	</table>
+ </fieldset>
+   <div class="modal-wrap">
+            <div class="modal-content">
+                <div class="modal-close">
+                    <i class="fa fa-times"></i>
+                </div>
+                <div class="modal-table-content">
+                </div>
+            </div>
+        </div>
+   		
+   </div>
+ </body>
+</html>

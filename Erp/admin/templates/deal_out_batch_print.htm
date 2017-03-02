@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>打印批拣面单</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+		<script type="text/javascript" src="misc/jquery.js"></script>
+		<style type="text/css" media="all">
+		{literal}
+			h2{
+				font-size:12pt;
+				clear:both;
+				margin:10px 0;
+			}
+			h3{
+				font-size:10pt;
+				clear:both;
+				margin:8px 0;
+			}
+			ul{
+				list-style:none;
+				font-size:10pt;
+				width:49%;
+				float:left;
+			}
+			ul li{
+				height:40px;
+				line-height:40px;
+			}
+			
+			table{
+				font-size:10pt;
+				text-align:center;
+				border:1px solid #000;
+				border-collapse:collapse;
+				margin:20px 0 20px 2px;
+			}
+			table td{
+			    padding:5px 10px;
+			}
+			table td,table th{
+				border:1px solid #000;
+				height:25px;
+				line-height:25px;
+			}
+			p{
+				font-size:10pt;
+				clear:both;
+				-- text-align:center;
+			}
+		{/literal}
+		</style>
+		<script type="text/javascript">
+		// <![CDATA[
+        //{literal}
+		
+			// 
+	        function print_batch(){
+	            $('#button').attr("disabled","true");
+	        	document.getElementById('mainact').value='batch_print';
+			    document.mainform.submit();
+			    $("#button").removeAttr("disabled");
+	        }
+			
+	        //单个打印之前检查运单号合法性
+	        function print_single(oid){
+				document.getElementById('mainact').value='print';
+				document.getElementById('selected_order_id').value= oid;
+				document.mainform.submit();
+	        }
+	    //{/literal}
+        //]]>
+		</script>
+</head>
+<body>
+<div>
+	<h1>批量拣货单{$BPSN}批量打印快递单</h1>
+	<p>{$message}</p>
+	<p>{if $isAllBound}热敏面单号绑定调度已经完成，可以打印。{else}尚未完成热敏面单号绑定调度，请等待。如果长时间无法自动绑定，请联系ERP。{/if}</p>
+	<hr>
+	<div>
+        <form name="mainform" action="deal_out_batch_print.php" method="POST">
+		<tr>	
+			<td colspan=6>
+				<input type="hidden" name="BPSN" value="{$BPSN}">
+				<input type="hidden" id="mainact" name="act" value="batch_print">
+				<input type="hidden" id="selected_order_id" name="selected_order_id" value="">
+				Let's go to print them all! <input type="button" id="button"  value="批量打印" onclick="print_batch();" {if !$isAllBound}disabled='disabled'{/if}>
+			</td>
+		</tr>			 
+		{if $shipmentsNum}
+		<table>
+					<tr>
+						<th>序号</th>
+						<th>发货单号</th>
+						<th>主订单号</th>
+						<th>快递名称</th>
+						<th>快递面单号</th>
+						<th>操作</th>
+					</tr>
+		{foreach from=$shipments key=k item=shipment}
+              <tr>
+                <td><span>{$k+1}</span></td>
+                <td><span>{$shipment.shipment_id}</span></td>
+                <td><span>{$shipment.order_id}</span></td>
+                <td><span>{$shipment.carrier_name}</span></td>
+                <td><span>{$shipment.tracking_number}</span></td>
+                <td>{if $isPrint !=0} <input type="button" value="单个打印"  onclick="print_single({$shipment.order_id});">{/if} </td>
+              </tr>
+        {/foreach}
+		</table>
+		{else}
+			<td>没有能打的面单</td>
+		{/if}
+	</form>
+  </div>
+</div>
+        {if $order_ids}
+        	<div style="display: none;">
+        		<form name="KyrieEleison" id="KyrieEleison" action="print_shipping_orders_arata.php" method='POST' target="print_frame">
+					<input type="hidden" name="print" value="1">
+					<input type="hidden" name="arata" value="1">
+					<input type="hidden" name="batch_pick_sn" value="{$BPSN}">
+					<input type="hidden" name="is_out_facility" value="1">
+					<textarea name='order_id'>{$order_ids}</textarea>
+					<input type="submit">
+				</form>
+			</div>
+			<iframe name="print_frame" width="100%" height="100%" frameborder="1" src="" >
+			</iframe>
+			{if $isAllBound}
+			<script type="text/javascript">
+			   document.KyrieEleison.submit();
+			</script>
+			{/if}
+	    {/if}
+	</body>
+</html>

@@ -1,0 +1,11 @@
+订单日期,订单号,商品名称,数量,单价,金额,开票金额
+{foreach from=$sales_invoice_list item=invoices}
+{foreach from=$invoices.items item=goods name=order_goods}
+{$goods.order_time}{/foreach},{*
+*}{foreach from=$invoices.items item=goods name=order_goods}{$goods.order_sn}{/foreach},{*
+*}{foreach from=$invoices.items item=goods name=order_goods}{$goods.item_name};{/foreach},{*
+*}{foreach from=$invoices.items item=goods name=order_goods}{$goods.quantity}个;{/foreach},{*
+*}{foreach from=$invoices.items item=goods name=order_goods}{$goods.unit_price}元;{/foreach},{*
+*}{foreach from=$invoices.items item=goods name=order_goods}{$goods.order_amount}元{/foreach},{*
+*}{$invoices.total_amount}元
+{/foreach}

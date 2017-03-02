@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>跨境购订单拆分</title>
+  	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+  	<!-- <link rel="stylesheet" type="text/css" href="styles/order_split_haiwai.css"> -->
+  	<script type="text/javascript" src="misc/jquery.js"></script>
+  	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+  	  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+			color: #888;
+		}
+	.require {
+			color: #F00;
+		}
+	.loading {
+			background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+		}
+	.strik {
+	        background-color: #ECEE9F;
+	    }
+	.cal{
+	 	border: 1px solid gray;
+	 	color: white;
+
+	 }
+	 .search{
+	 	border: 1px solid ;
+
+
+	 }
+	 .time{
+	 	width: 89px;
+	 }
+	 .sel{
+	 	width: 132px;
+	 }
+	 .list:nth-child(2n+1){
+	 	background-color: rgba(192,192,192,0.3);
+	 }
+/*	 a{
+	 	color: red;
+	 }
+	 a:visited{
+	 	color: black;
+	 }
+*/	<!--{/literal}-->
+	</style>	
+	<script type="text/javascript">
+	// <![CDATA[
+	var WEB_ROOT = '{$WEB_ROOT}';
+	// {literal}
+	/**
+	 * 提交检查
+	 */
+	function check_submit(node)
+	{
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		console.log(item);
+		if (!item || item==undefined || item.length<1) {
+			alert('没有选中项');
+			return false;
+		}
+		$('#form').submit();
+		$('input[name="checked[]"]:checked').parent().parent().remove();
+
+	}
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = true;
+		});
+	}
+	/**
+	*清空
+	*/
+	function select_none(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = false;
+		});
+	}
+	/**
+	 * 反选
+	 */
+	function select_reverse(node)
+	{
+		node = node ? node : document ;
+		$(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+	/**
+	 * 搜索栏 
+	 */
+	$(function(){ 
+		//  区分已拆分订单和未拆分订单
+	 var flag= $('#opt').attr('value');
+		        if (flag=='yichaifen'|| flag=="yiquxiao") {
+		        	$('.button').attr("disabled",true); 
+		        	$('.check').attr("disabled",true);
+		        	$('.cancel').hide();
+		        };
+	}); 
+	/**
+	 * 单个提交拆分订单
+	 */
+	function split(obj)
+	{           
+				$(obj).attr("disabled",true);
+				// console.log(event.target);
+		        var order_sn= $(obj).closest('tr.list').find('.check').attr('value');
+		        $.ajax({
+		            type: 'post',
+	         	   	url: WEB_ROOT +'admin/order_split_haiwai.php?act=split_order',  
+		            data: {
+		                'one_order': order_sn,
+		            },
+		            success: function(data) { 
+		                alert('拆单成功！');
+		        		$(obj).closest('tr.list').remove();
+		            },
+					error:function(data){
+						alert("拆单失败！");
+					}
+		             // $(this).resetForm(); // 提交后重置表单
+		        });
+		        return false;
+	}
+	/**
+	 * 取消拆分订单
+	 */
+	function cancel(obj)
+	{           
+				$(obj).attr("disabled",true);
+				// console.log(event.target);
+		        var order_sn= $(obj).closest('tr.list').find('.check').attr('value');
+		        console.log(order_sn);
+		        $.ajax({
+		            type: 'post',
+	         	   	url: WEB_ROOT +'admin/order_split_haiwai.php?act=cancel',  
+		            data: {
+		                'one_order': order_sn,
+		            },
+		            success: function(data) { 
+		                alert('取消成功！');
+		        		$(obj).closest('tr.list').remove();
+		            },
+					error:function(data){
+						alert("取消失败！");
+					}
+		             // $(this).resetForm(); // 提交后重置表单
+		        });
+		        return false;
+	}
+
+	/**
+	 * 时间判断
+	 */
+	function formsubmit(){
+      	var start_time= $("#start").val();
+            if(''==start_time || null==start_time ){
+              alert('开始时间还未选择。。。');
+              return false;
+            }
+            if(!checkDateTime(start_time)){
+              alert('输入开始时间格式要正确。。。');
+              return false;
+            }
+         // s_time = s_time.replace(/[-,:,\s]/g, '');
+         // e_time =  e_time.replace(/[-,:,\s]/g, '');
+    }
+        //时间格式检查
+    function checkDateTime(str){
+      var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})$/);
+      if(r == null){
+        return false;
+      }else{
+        return true;
+      }
+    }
+
+ function padZero(number) {
+    if (number < 10) {
+        number = "0" + number;
+    }
+    return number;
+}
+function unixtime2YYMMDD(unixtime) {
+    var milliseconds = unixtime * 1000,
+        dateObject = new Date(milliseconds),
+        temp = [];
+    temp.push(dateObject.getUTCFullYear().toString().slice(0));
+    temp.push(padZero(dateObject.getUTCMonth() + 1));
+    temp.push(padZero(dateObject.getUTCDate()));
+
+    return temp.join("-");
+}
+
+
+
+	// {/literal}
+	// ]]>
+	</script>
+	
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend>
+		<span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;跨境购订单拆分管理&nbsp;</span>
+	</legend> 
+	<div style="clear:both;"> 
+	    <h3 style="color:#09F;">查询</h3> 
+		<form method="get" onsubmit="return formsubmit()">
+		  	<table>
+		        <tr>
+		        	<td>&nbsp;&nbsp;订单号:</td>
+		          	<td>
+		          		<input type="text" name="order_sn" value="{$smarty.request.order_sn}" id="order_sn"/>
+		          	</td>
+		          	<td>&nbsp;&nbsp;拆分状态:</td>
+		          	<td>
+		          		<select name="flag" id="opt" class="sel">
+			            	{html_options options=$flag_list selected=$smarty.request.flag}
+			            </select> 
+		          </td>
+		          <td>&nbsp;&nbsp;直分销：</td>
+		          <td>
+		            <select name="distributor_type" id="distributor_type">
+		            {html_options options=$distributor_type_list selected=$smarty.request.distributor_type}
+		            </select> 
+		          </td>
+		          <td>&nbsp;&nbsp;是否天猫：</td>
+		          <td>
+		            <select name="tmall" id="tmall">
+		            {html_options options=$tmall_list selected=$smarty.request.tmall}
+		            </select> 
+		          </td>
+		      	</tr>
+		        <tr>
+		          	<td width="100">&nbsp;&nbsp;开始时间:</td>
+		          	<td>
+		              	<input type="text" id="start" name="start" value="{$smarty.request.start}" size="10" class="time"/>
+		              	<input type="button" id="startTrigger" value="日历" class="cal" /> 
+		          	</td>
+		           	<td width="100">&nbsp;&nbsp;结束时间:</td>
+		          	<td>
+		              	<input type="text" id="end" name="ended" value="{$smarty.request.ended}" size="10" class="time"/>
+		              	<input type="button" id="endTrigger" value="日历" class="cal" />
+		          	</td>
+		          	<td width="100px">&nbsp;&nbsp;店铺名称:</td>
+	                <td>
+	               		<select id="distributor_id" name="distributor_id">
+	                       {if $smarty.request.distributor_id}
+	                       <option value="{$available_distributor[$smarty.request.distributor_id]}">{$available_distributor[$smarty.request.distributor_id]}
+	                       </option>  
+	                       {/if}
+	                      <option value="" id="shop_name">所有店铺</option> 
+	                      {html_options  options=$available_distributor selected=$smarty.request.available_distributor}
+	                  </select>
+	                </td>
+		          	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		          		<input type="submit" value="查询" class="search"/>
+			            <input type="hidden" name="act" value="search" />
+		          	</td>  
+		        </tr>
+			</table>
+		</form>
+	</div>
+ <div>
+	 <form method="post" id="form">
+	  	<h3 style="color:#09F;">拆分列表</h3>
+      	<!-- <span class="tip">请选择要拆分的发货订单然后操作拆分，已拆分发货的订单不会出现在该列表中</span> -->
+      	<input type="button" value="全选" onclick="select_all('#form');" /> &nbsp;&nbsp; 
+      	<input type="button" value="清空" onclick="select_none('#form');" /> &nbsp;&nbsp;
+      	<input type="button" value="反选" onclick="select_reverse('#form');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      	<table class="bWindow" style="margin-top:10px;">
+	        <tr style="background-color:#999999;color:white">          
+				<th class="cancel">选择</th>
+	            <th>订单号</th>
+	            <th>订单时间</th>
+	            <th>店铺名称</th>
+				<th>商品详情</th>
+	            <th>拆分详情</th>
+	            <th>拆分税费</th>
+	            <th>拆分个数</th>
+	            <th>订单总额</th>
+	            <th class="cancel">拆分</th>
+	            <th class="cancel">取消拆分</th>
+	        </tr> 
+	        
+	        {foreach from=$result  item= order name=bigloop}
+	        {if $smarty.foreach.bigloop.iteration == $smarty.foreach.bigloop.total}
+			{php}break;{/php}
+			{/if}
+			<tr align="center" class="list">
+					<!-- 选择 -->
+					<td class="goods_table cancel">
+						<input type="checkbox" name="checked[]" value="{$order.order_sn}" class="check"/>
+					</td>
+					<!-- 订单号 -->
+					<td><a href="order_edit.php?order_id={$order.order_id}" class="order_sn" target="_blank">{$order.order_sn}</a></td>
+					<!-- 订单时间 -->
+					<td >{if $order.order_time}{$order.order_time}{else}-{/if}</td>
+					<!-- 店铺名称 -->
+					<td class="shop_name">{if $order.name}{$order.name}{else}-{/if}</td>
+					<!-- 商品详情 -->
+					<td >
+						{if $order.goods_list}
+							<table class="bWindow" style="margin-top:10px;">
+								<tr>
+									<th>商品名称</th>
+						            <th>价格</th>
+						            <th>数量</th>
+								</tr>
+								{foreach from=$order.goods_list item= goods}
+								<tr>
+									<td>{$goods.goods_name}</td>
+									<td class="price">{$goods.goods_price}</td>
+									<td>{$goods.goods_number}</td>
+								</tr>
+								{/foreach}
+							</table>
+							{else}-{/if}
+					</td>
+	            	<!-- 拆分详情 -->
+	            	<td >
+	            		{if $order.goods_split_list}
+							<table class="bWindow" style="margin-top:10px;">
+								{if $order.goods_split_list.goods_boxnum == 0}
+				            	<tr align="center">-</tr>
+								{else}
+								<tr>
+									<th>编号</th>
+	            					<th>拆分商品</th>
+	            					<th>订单金额</th>
+								</tr>
+								{foreach from=$order.goods_split_list  item=split_goods name=split}
+				            	<tr>
+				            		<td>订单{$smarty.foreach.split.iteration}</td>
+				            		<td>
+				            		{foreach from=$split_goods.split_result  item= goods_detail}
+										{$goods_detail.goods_name}&nbsp;&nbsp; ￥{$goods_detail.goods_price}  *{$goods_detail.goods_number}<br/>
+									{/foreach}
+				            		</td>
+				            		<td class="price">{$split_goods.split_order_price}</td>
+				            	</tr>
+				            	{if $smarty.foreach.split.iteration eq $order.goods_split_list.goods_boxnum}
+						  		{php}break;{/php}
+								{/if}
+				            	{/foreach}
+				            	{/if}
+							</table>
+						{else}-{/if}
+					</td>
+				  	<!-- 拆分税费 -->
+				  	<td >{if $order.goods_split_list.total_tax_fee}{$order.goods_split_list.total_tax_fee}{else}-{/if}</td>
+				  	<!-- 拆分个数 -->
+				  	<td >{if $order.goods_split_list.goods_boxnum}{$order.goods_split_list.goods_boxnum}{else}-{/if}</td> 
+				  	<!-- 订单总额 -->
+				  	<td class="price">{$order.goods_amount}</td>
+				  	<!-- 拆分 -->
+				  	<td class="cancel">
+			            <input type="button" value="拆分" onclick="split(this)" class="button"/>
+				  	</td> 
+				  	<!-- 取消拆分 -->
+				  	<td class="cancel">
+			            <input type="button" value="取消拆分" onclick="cancel(this)" class="button" />
+				  	</td> 
+			</tr>
+			{/foreach}
+			<tr>
+        		<td colspan="10" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        	</tr>
+      	</table>
+      	<br/>
+      	<div style="margin-top:10px; clear:both;"> 
+        	<input type="button" value="拆分选中订单" onclick="check_submit('#form')" />
+        	<input type="hidden" name="act" value="order_shipment_merge" />
+      	</div>
+    </form>
+  </div>
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+var nowtime = Date.parse(new Date());
+var oldtime = nowtime/1000-604800;//一周前
+var start_time=unixtime2YYMMDD(oldtime);
+if ($('#start').val()==null||$('#start').val()=='') {
+$('#start').val(start_time);
+};
+
+
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

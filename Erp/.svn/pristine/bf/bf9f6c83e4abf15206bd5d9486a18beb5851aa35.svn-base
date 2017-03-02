@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>淘宝订单同步手动调用界面</title>
+
+</head>
+<body>
+
+<h1 align="center" >淘宝订单同步手动调用 </h1>
+<div style="clear:both;color:red;align:center;font-size:18px" >
+输入参数
+</div>
+<form  method="post">
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th colspan="2">参数列表</th>
+
+</tr>
+
+<tr >
+<td align="right" >
+  method:  
+</td>
+<td>
+  <select name="method"   >
+    {foreach from=$method_arr item=method}
+  	<option value='{$method}' >{$method}</option>
+	{/foreach} 
+  </select>
+</td>
+</tr>
+<tr >
+<td align="right" >
+  appkey:  
+</td>
+<td>
+  <input name="appkey" type="text"  size="50"  />
+</td>
+</tr>
+<tr >
+<td align="right" >
+  hours:  
+</td>
+<td>
+  <input name="hours" type="text"  size="50"   />
+</td>
+</tr>
+<tr >
+<td align="right">
+  days:   
+</td>
+<td>
+  <input name="days" type="text"   size="50"  />
+</td>
+</tr>
+<tr >
+<td align="right">
+  endDate: 
+</td>
+<td>
+  <input name="endDate" type="text"  size="50"   />
+</td>
+</tr>
+<tr >
+<td align="right" >
+  orderId: 
+</td>
+<td>
+  <input name="orderId" type="text"  size="50"   />
+</td>
+</tr>
+<tr >
+<td align="right" >
+  group: 
+</td>
+<td>
+  <input name="group" type="text"   size="50"  />
+</td>
+</tr>
+<tr >
+<td align="right" >
+  other:  
+</td>
+<td>
+  <input name="other" type="text"  size="50"   />
+</td>
+</tr>
+
+<tr> 
+ <td colspan="2" align="center" >
+ 	<input type="submit" value="调度"  /> 
+ </td>
+</tr>
+
+</table>
+</form>
+
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+调用结果反馈
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>返回结果</th>
+<th>备用</th>
+
+</tr>
+
+<tr align="center">
+<td>{$response_msg}</td>
+<td></td>
+
+
+</tr>
+
+</table>
+
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+方法参数列表
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>淘宝同步方法参数列表</th>
+
+</tr>
+<tr >
+    <td>void TaobaoOrderTransfer(@WebParam(name = "applicationKey") String applicationKey, @WebParam(name = "days") int days)</td>
+</tr>
+<tr >
+	<td>void SyncTaobaoItemStockFromJushita(@WebParam(name = "applicationKey")String applicationKey)</td>
+</tr>
+<tr >
+    <td>void SyncFinishedOrder(@WebParam(name = "applicationKey") String applicationKey, @WebParam(name = "hours") float hours, @WebParam(name = "endDate") String endDate)</td>
+</tr>
+<tr >
+	<td>List[OptimalShipping] FindBestShipping( @WebParam(name = "orderId") int orderId )</td>
+</tr>
+<tr >
+	<td>List[EcsOrderGoods] FindGiftOrderGoodsList(  @WebParam(name = "orderId") int orderId , @WebParam(name = "updateLimitNumber") boolean  updateLimitNumber  )</td>
+</tr>
+<tr >
+	<td>void SyncTaobaoItem(@WebParam(name = "applicationKey") String applicationKey)</td>
+</tr>
+<tr >
+	<td>void SyncTaobaoOrder( @WebParam(name = "applicationKey") String applicationKey, @WebParam(name = "hours") float hours, @WebParam(name = "endDate") String endDate)</td>
+</tr>
+
+
+</table>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>京东同步方法参数列表</th>
+
+</tr>
+<tr >
+    <td>void SyncJdGoodsStock(@WebParam(name = "applicationKey")String applicationKey)</td>
+</tr>
+<tr >
+	<td>void SyncJdProduct(@WebParam(name = "hours")int hours, @WebParam(name = "applicationKey")String applicationKey)</td>
+</tr>
+<tr >
+    <td>void SyncJdOrder(@WebParam(name = "applicationKey") String applicationKey, @WebParam(name = "hours") int hours)</td>
+</tr>
+<tr >
+	<td>void JdOrderTransfer(@WebParam(name = "applicationKey") String applicationKey, @WebParam(name = "days") int days)</td>
+</tr>
+
+</table>
+
+
+
+
+</body>
+</html>

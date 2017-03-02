@@ -1,0 +1,696 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>留言统计</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/tablesorter.js"></script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <script type="text/javascript">
+	{literal}
+	// <![CDATA[
+	$(document).ready(function(){
+			// 没有激活的tab默认隐藏
+			$('#tab').find('.item,.active').each(function(i, n){
+					t = $(n);
+					if (t.attr('class') != 'active') {
+							div = t.children('a').attr('href');
+							$(div).hide();
+					}
+			});
+			// 绑定点击切换tab事件
+			$('#tab').find('.item,.active').bind('click', function(event){
+					event.preventDefault();
+					$this = $(this);
+					
+					if ($this.attr('class') == 'item') {
+						$('#tab').find('.item,.active').each(function(i, n){
+							t = $(n);
+							if (t.attr('class') == 'active') {
+								t.removeClass('active').addClass('item');
+							}
+
+							div = t.children('a').attr('href');
+							$(div).hide();
+						});
+						
+						$this.removeClass('item').addClass('active');
+						div = $this.children('a').attr('href');
+						$(div).show();
+					}
+			});
+	});
+	// ]]>
+	{/literal}
+	</script>
+
+  <style type="text/css">
+	{literal}
+	a {
+		text-decoration:none;
+	}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+</head>
+<body>
+
+
+
+<fieldset style="-moz-border-radius:6px;padding:10px; min-width:700px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;留言统计&nbsp;</span></legend>
+
+ 	<form method="get" id="stat">
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  时间区间 ： &nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="start" name="start" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+  <input type="text" id="end" name="end" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <select name="repliedby">{html_options options=$repliers selected=$filter.repliedby}</select>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="act" value="查询" /> &nbsp;&nbsp; <input type="submit" name="act" value="导出" />
+  </div>
+  </form>
+  
+  
+<!--{if 1}-->  {* 有记录才显示 *}
+
+
+	<br />
+	<div class="menu-tab" id="tab">
+  	<div class="right-edge">&nbsp;</div>
+    <div class="item"><a href="#tab5">售后订单</a></div>
+    <div class="item"><a href="#tab4">售后留言</a></div>
+    <div class="item"><a href="#tab3">售中留言</a></div>
+    <div class="item"><a href="#tab2">售前留言</a></div>
+  	<div class="active"><a href="#tab1">留言转换率</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  
+  <!-- Tab1 留言转换率和确认订单平均时间 -->
+  <div style="clear:both;" id="tab1">
+      <br />
+      <h3 style="color:#09F;">留言转换率/确认订单平均时间</h3>
+	    <br />
+
+    	<h4>|— 留言转换率</h4>
+      <table class="bWindow" style="margin-top:10px;">
+        <tr align="center" class="odd">
+          <td width="26%">留言转换率</td>
+          <td colspan="3">{$c_to_o_stat.rate}</td>
+        </tr>
+        <tr align="center" class="even">
+          <td>留言转换订单数</td>
+          <td colspan="3">{$c_to_o_stat.count}</td>
+        </tr>
+			  <tr>
+        	<td colspan="4" align="center"><a href="javascript:void(0);" onclick="$('#comment_to_order_info').toggle();"><strong>-- 订单详情 --</strong></a></td>
+				</tr>
+      </table>
+      
+      
+      {if $c_to_o_stat.orders} 
+      <br />
+
+      <table class="bWindow" id="comment_to_order_info" style="display:none;">
+      	<thead>
+        <tr style="background-color:#F6F6F6">
+        	<th>留言回复ID</th>
+          <th>回复时间</th>
+          <th>订单号</th>
+          <th>订单类型</th>
+          <th>订单金额</th>
+          <th>订单状态</th>
+          <th>商品</th>
+          <th>数量</th>
+          <th>金额</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr align="center">
+          <td colspan="9">
+          <form action="analyze_commentV2.php" method="get">
+          <input type="hidden" name="start" value="{$filter.start}" />
+          <input type="hidden" name="end" value="{$filter.end}" />
+          <input type="hidden" name="repliedby" value="{$filter.repliedby}" />
+          <input type="submit" name="act" value="导出留言转换率详情" />
+          </form>
+          </td>
+        </tr>
+        {foreach from=$c_to_o_stat.orders item=order name="comment_to_order"}
+        {foreach from=$order.goods item=goods name="order_goods"}
+        <tr align="center">
+          <!--{if $smarty.foreach.order_goods.first}-->
+          <td rowspan="{$order.goods|@count}">{$order.replied_nick}</td>
+          <td rowspan="{$order.goods|@count}">{$order.replied_point}</td>
+          <td rowspan="{$order.goods|@count}"><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td rowspan="{$order.goods|@count}">{$order.category}</td>
+          <td rowspan="{$order.goods|@count}">&yen; {$order.order_amount}</td>
+          <td rowspan="{$order.goods|@count}">{$order.order_status|get_order_status}，{$order.pay_status|get_pay_status}，{$order.shipping_status|get_shipping_status}</td>
+          <!--{/if}-->
+          <td>{$goods.goods_name}</td>
+          <td>{$goods.goods_number}</td>
+          <td>&yen; {$goods.total_price}</td>
+        </tr>
+        {/foreach}
+        {/foreach}  
+        </tbody>
+      </table>
+      {/if}
+
+      <br />
+
+
+    	<h4>|— 订单确认平均时间</h4>
+      <table class="bWindow" style="margin-top:10px;">
+        <tr align="center" class="odd">
+          <td>确认订单平均时间</td>
+          <td colspan="3">{$order_confirm_time_stat.rate} 分钟</td>
+        </tr>
+        <tr align="center" class="even">
+          <td width="26%">确认订单数</td>
+          <td colspan="3">{$order_confirm_time_stat.count}</td>
+        </tr>
+			  <tr>
+        	<td colspan="4" align="center"><a href="javascript:void(0);" onclick="$('#order_confirm_time_info').toggle();"><strong>-- 订单详情 --</strong></a></td>
+				</tr>
+      </table>
+      
+      <br />
+
+      <table id="order_confirm_time_info" class="bWindow" style="display:none;">
+      	<thead>
+        <tr style="background-color:#F6F6F6">
+          <th width="26%">订单号</th>
+          <th width="28%">下单时间</th>
+          <th width="28%">确认时间</th>
+          <th width="18%">处理间隔</th>
+				</tr>
+        </thead>
+        
+        <tbody>
+        {foreach from=$order_confirm_time_stat.orders item=order name="order_confirm_time_stat"}
+        <tr align="center">
+          <td width="26%">
+	          <a href="{$WEB_ROOT}admin/order_edit.php?order_id={$order.order_id}" target="_blank" {if $order.ignore == 1}style="text-decoration: line-through;"{/if}>
+          	{$order.order_sn}
+            </a>
+					</td>
+          <td width="28%">{$order.order_time}</td>
+          <td width="28%">{$order.confirm_time}</td>
+          <td width="18%">{$order.formated_confirm_dist}</td>
+        </tr>
+        {/foreach}  
+        </tbody>
+      </table>
+  </div>
+  
+  
+  
+  
+	<!-- Tab2 售前留言回复统计-->
+  <div style="clear:both; display:none;" id="tab2">
+		  <br />
+      <h3 style="color:#09F;">售前留言回复统计</h3>
+    
+    	<h4>|— 回复数量（条）</h4>
+      <table class="bWindow" style="margin-top:10px;">
+        <thead>
+        <tr align="center">
+          <th width="20%">时间段</th>
+          {foreach from=$comment_types item=name}
+          <th width="16%">{$name}</th>
+          {/foreach}
+        </tr>
+        </thead>
+        
+        <tbody>
+        <tr class="even" align="center">
+          <td>工作时间</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{$comment_stat.$id.total_worktime}</td>
+          {/foreach}
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>非工作时间</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{$comment_stat.$id.total_outworktime}</td>
+          {/foreach}
+        </tr>
+        
+        <tr class="even" align="center">
+          <td>小结</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{$comment_stat.$id.total}</td>
+          {/foreach}
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>共计回复数</td>
+          <td colspan="{math equation="x + 1" x=$comment_types|@count}">{$comment_total}</td>
+        </tr>
+       
+        <tr>
+          <td colspan="{math equation="x + 1" x=$comment_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+        </tr> 
+        
+        {foreach from=$comment_timeslice key=timeslice item=item}
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$timeslice}</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{$item.$id.num}</td>
+          {/foreach}
+        </tr>
+        {/foreach}  
+      
+        </tbody>
+      </table>
+
+      
+      <br />
+
+			<h4>|— 回复响应时间 (从留言到回复期间的时间间隔) 平均时间 / 总时间 (分钟)</h4>
+      <table class="bWindow">
+        <thead>
+        <tr align="center">
+          <th width="20%">时间段</th>
+          {foreach from=$comment_types item=name}
+          <th width="16%">{$name}</th>
+          {/foreach}
+        </tr>
+        </thead>
+        
+        <tbody>
+        <tr class="even" align="center">
+          <td>工作时间</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{if $comment_stat.$id.time_worktime}{$comment_stat.$id.avg_worktime} / {$comment_stat.$id.time_worktime} {/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>非工作时间</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{if $comment_stat.$id.time_outworktime} {$comment_stat.$id.avg_outworktime} / {$comment_stat.$id.time_outworktime}{/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="even" align="center">
+          <td>小结</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{if $comment_stat.$id.time_total} {$comment_stat.$id.avg_total} / {$comment_stat.$id.time_total} {/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>共计回复时间</td>
+          <td colspan="{math equation="x + 1" x=$comment_types|@count}">{$comment_avg} / {$comment_time}</td>
+        </tr>
+       
+        <tr>
+          <td colspan="{math equation="x + 1" x=$comment_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+        </tr> 
+        
+        {foreach from=$comment_timeslice key=timeslice item=item}
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$timeslice}</td>
+          {foreach from=$comment_types key=id item=name}
+          <td>{if $item.$id.time}{$item.$id.avg} / {$item.$id.time}{/if}</td>
+          {/foreach}
+        </tr>
+        {/foreach}  
+      
+        </tbody>
+      </table>
+  </div>
+  
+
+
+
+	<!-- Tab3 售中留言回复统计 -->
+  <div style="clear:both; display:none;" id="tab3">
+  		<br />
+      <h3 style="color:#09F;">售中留言回复统计</h3>
+    
+    
+			<h4>|— 回复数量（条）</h4>
+      <table class="bWindow" style="margin-top:10px;" id="sortable3">
+      <thead>
+      <tr align="center">
+        <th width="14%">时间段</th>
+        {foreach from=$order_comment_types item=name}
+        <th width="14%">{$name}</th>
+        {/foreach}
+      </tr>
+      </thead>
+      
+      <tbody>
+      <tr class="even" align="center">
+        <td>工作时间</td>
+        {foreach from=$order_comment_types key=id item=name}
+        <td>{$order_comment_stat.$id.total_worktime}</td>
+        {/foreach}
+      </tr>
+      
+      <tr class="odd" align="center">
+        <td>非工作时间</td>
+        {foreach from=$order_comment_types key=id item=name}
+        <td>{$order_comment_stat.$id.total_outworktime}</td>
+        {/foreach}
+      </tr>
+      
+      <tr class="even" align="center">
+        <td>小结</td>
+        {foreach from=$order_comment_types key=id item=name}
+        <td>{$order_comment_stat.$id.total}</td>
+        {/foreach}
+      </tr>
+      
+      <tr class="odd" align="center">
+        <td>共计回复数</td>
+        <td colspan="{math equation="x + 1" x=$order_comment_types|@count}">{$order_comment_total}</td>
+      </tr>
+     
+      <tr>
+        <td colspan="{math equation="x + 1" x=$order_comment_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+      </tr> 
+      
+      {foreach from=$order_comment_timeslice key=timeslice item=item}
+      <tr align="center" class="{cycle values="odd,even"}">
+        <td>{$timeslice}</td>
+        {foreach from=$order_comment_types key=id item=name}
+        <td>{$item.$id.num}</td>
+        {/foreach}
+      </tr>
+      {/foreach}  
+    
+      </tbody>        
+      </table>
+      
+      
+      <br />
+      <h4>|— 回复响应时间（从留言到回复期间的时间间隔） 平均时间 / 总时间（分钟）</h4>
+      <table class="bWindow">
+        <thead>
+        <tr align="center">
+          <th width="14%">时间段</th>
+          {foreach from=$order_comment_types item=name}
+          <th width="14%">{$name}</th>
+          {/foreach}
+        </tr>
+        </thead>
+        
+        <tbody>
+        <tr class="even" align="center">
+          <td>工作时间</td>
+          {foreach from=$order_comment_types key=id item=name}
+          <td>{if $order_comment_stat.$id.time_worktime}{$order_comment_stat.$id.avg_worktime} / {$order_comment_stat.$id.time_worktime} {/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>非工作时间</td>
+          {foreach from=$order_comment_types key=id item=name}
+          <td>{if $order_comment_stat.$id.time_outworktime} {$order_comment_stat.$id.avg_outworktime} / {$order_comment_stat.$id.time_outworktime}{/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="even" align="center">
+          <td>小结</td>
+          {foreach from=$order_comment_types key=id item=name}
+          <td>{if $order_comment_stat.$id.time_total} {$order_comment_stat.$id.avg_total} / {$order_comment_stat.$id.time_total} {/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>共计回复时间</td>
+          <td colspan="{math equation="x + 1" x=$order_comment_types|@count}">{$order_comment_avg} / {$order_comment_time}</td>
+        </tr>
+       
+        <tr>
+          <td colspan="{math equation="x + 1" x=$order_comment_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+        </tr> 
+        
+        {foreach from=$order_comment_timeslice key=timeslice item=item}
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$timeslice}</td>
+          {foreach from=$order_comment_types key=id item=name}
+          <td>{if $item.$id.time}{$item.$id.avg} / {$item.$id.time}{/if}</td>
+          {/foreach}
+        </tr>
+        {/foreach}  
+      
+        </tbody>
+      </table>
+      
+  </div>
+  
+  
+  
+  
+	<!-- Tab4 售后留言回复统计-->
+  <div style="clear:both; display:none;" id="tab4">
+  		<br />
+      <h3 style="color:#09F;">售后留言回复情况统计</h3>
+    
+      <h4>|— 回复数量（条）</h4>
+      <table class="bWindow">
+        <thead>
+        <tr align="center">
+          <th width="16%">时间段</th>
+          {foreach from=$service_types item=name}
+          <th width="12%">{$name}</th>
+          {/foreach}
+        </tr>
+        </thead>
+        
+        <tbody>
+        <tr class="even" align="center">
+          <td>工作时间</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{$service_stat.$id.total_worktime}</td>
+          {/foreach}
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>非工作时间</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{$service_stat.$id.total_outworktime}</td>
+          {/foreach}
+        </tr>
+        
+        <tr class="even" align="center">
+          <td>小结</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{$service_stat.$id.total}</td>
+          {/foreach}
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>共计回复数</td>
+          <td colspan="{math equation="x + 1" x=$service_types|@count}">{$service_total}</td>
+        </tr>
+       
+        <tr>
+          <td colspan="{math equation="x + 1" x=$service_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+        </tr> 
+        
+        {foreach from=$service_timeslice key=timeslice item=item}
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$timeslice}</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{$item.$id.num}</td>
+          {/foreach}
+        </tr>
+        {/foreach}  
+      
+        </tbody>
+      </table>
+
+
+			<br />
+      <h4>|— 回复响应时间（从留言到回复期间的时间间隔） 平均时间 / 总时间（分钟）</h4>
+      <table class="bWindow">
+        <thead>
+        <tr align="center">
+          <th width="16%">时间段</th>
+          {foreach from=$service_types item=name}
+          <th width="12%">{$name}</th>
+          {/foreach}
+        </tr>
+        </thead>
+        
+        <tbody>
+        <tr class="even" align="center">
+          <td>工作时间</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{if $service_stat.$id.time_worktime}{$service_stat.$id.avg_worktime} / {$service_stat.$id.time_worktime} {/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>非工作时间</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{if $service_stat.$id.time_outworktime} {$service_stat.$id.avg_outworktime} / {$service_stat.$id.time_outworktime}{/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="even" align="center">
+          <td>小结</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{if $service_stat.$id.time_total} {$service_stat.$id.avg_total} / {$service_stat.$id.time_total} {/if}</td>
+          {/foreach}   
+        </tr>
+        
+        <tr class="odd" align="center">
+          <td>共计回复时间</td>
+          <td colspan="{math equation="x + 1" x=$service_types|@count}">{$service_avg} / {$service_time} (不计入售后评价)</td>
+        </tr>
+       
+        <tr>
+          <td colspan="{math equation="x + 1" x=$service_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+        </tr> 
+        
+        {foreach from=$service_timeslice key=timeslice item=item}
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$timeslice}</td>
+          {foreach from=$service_types key=id item=name}
+          <td>{if $item.$id.time}{$item.$id.avg} / {$item.$id.time}{/if}</td>
+          {/foreach}
+        </tr>
+        {/foreach}
+        
+        </tbody>
+      </table>
+  </div>
+  
+  
+  
+  
+	<!-- Tab5 售后处理的订单情况统计-->
+  <div style="clear:both; display:none;" id="tab5">
+  		<br />
+      <h3 style="color:#09F;">售后处理的订单情况统计</h3>
+    
+      <h4>|— 处理的订单（条）</h4>
+      <table class="bWindow">
+      <thead>
+      <tr align="center">
+        <th>时间段</th>
+        {foreach from=$service_order_types item=name}
+        <th>{$name}</th>
+        {/foreach}
+      </tr>
+      </thead>
+      
+      <tbody>
+      <tr class="even" align="center">
+        <td>工作时间</td>
+        {foreach from=$service_order_types key=id item=name}
+        <td>{$service_order_stat.$id.order_worktime}</td>
+        {/foreach}
+      </tr>
+      
+      <tr class="odd" align="center">
+        <td>非工作时间</td>
+        {foreach from=$service_order_types key=id item=name}
+        <td>{$service_order_stat.$id.order_outworktime}</td>
+        {/foreach}
+      </tr>
+      
+      <tr class="even" align="center">
+        <td>小结</td>
+        {foreach from=$service_order_types key=id item=name}
+        <td>{$service_order_stat.$id.order_total}</td>
+        {/foreach}
+      </tr>
+      
+      <tr class="odd" align="center">
+        <td>共计处理订单数</td>
+        <td colspan="{math equation="x + 1" x=$service_order_types|@count}">{$service_order_total}</td>
+      </tr>
+     
+      <tr>
+        <td colspan="{math equation="x + 1" x=$service_order_types|@count}" align="center"><strong>-- 详细分布 --</strong></td>
+      </tr> 
+      
+      {foreach from=$service_order_timeslice key=timeslice item=item}
+      <tr align="center" class="{cycle values="odd,even"}">
+        <td>{$timeslice}</td>
+        {foreach from=$service_order_types key=id item=name}
+        <td>{$item.$id.order_num}</td>
+        {/foreach}
+      </tr>
+      {/foreach}  
+    
+      </tbody>
+			</table>
+	</div>
+        
+<!--{/if}-->
+
+  <br /><br />
+  
+</fieldset>
+
+
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

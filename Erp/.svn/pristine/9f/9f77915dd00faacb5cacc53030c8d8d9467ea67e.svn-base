@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+ <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>喜宴套餐映射</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;录入套餐映射&nbsp;</span>
+		</legend>
+		<div style="clear: both;">
+			<form method="post"  id="add_tc_erp">
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				ERP套餐编号：<input type="text" name ="tc_code_insert" id="tc_code_insert"/>&nbsp;&nbsp;
+				喜宴套餐编号：<input type="text" name="cofco_code_insert" id="cofco_code_insert"/>&nbsp;&nbsp;
+				<input type="hidden" name="act" value="insert"/>
+				<input type="button" value="添加" onclick="checkHeinzErp()"/>&nbsp;&nbsp;
+				{if $message}<font color="RED">{$message}</font>{/if}
+			</form>
+		</div>
+		<br />
+	</fieldset>
+
+<br /><br />
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;喜宴套餐查询&nbsp;</span>
+		</legend>
+		<div style="clear: both;">
+            <br />
+			<form method="post" id="conditionForm">
+				<table>
+					<tr>
+						<td>ERP套餐编号：<input type="text" name="tc_code" id="tc_code" value="{$tc_code}" />&nbsp;&nbsp;</td>
+						<td>喜宴套餐编号：<input type="text" name="cofco_code" id="cofco_code" value="{$cofco_code}" />&nbsp;&nbsp;</td>
+						<td>开始时间：<input type="text" id="start" name="startTime"  size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />&nbsp;&nbsp;</td>
+						<td>结束时间：<input type="text" id="end" name="endTime"  size="10" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />&nbsp;&nbsp;</td>
+
+						<td>
+							<input type="hidden" name="act" id="act" value="search" />
+						 	<input	type="submit" value="搜索"  />
+						 </td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<br />
+		<div style="clear: both;">
+			<h3 style="color: #09F;">喜宴套餐查询</h3>
+			<table class="bWindow" style="margin-top: 10px;"id="tc_list_table">
+				<tr>
+					<th width="30">No.</th>
+					<th>套餐ID</th>
+					<th>ERP套餐编号</th>
+					<th>喜宴套餐编号</th>
+					<th>创建时间</th>
+					<th>创建人</th>
+					<th>修改时间</th>
+					<th>修改人</th>
+				</tr>
+				<!--  {if $tclists != null} -->
+				<!-- {foreach from=$tclists item=tc name="tc_lists"} -->
+				<tr align="center" class="{cycle values='odd,even'}">
+					<td>{$smarty.foreach.tc_lists.iteration}</td>
+					<td>{$tc.tc_mapping_id}</td>
+					<td>{$tc.tc_code}</td>
+					<td>{$tc.cofco_code}</td>
+					<td>{$tc.create_time}</td>
+					<td>{$tc.create_user}</td>
+					<td>{$tc.update_time}</td>
+					<td>{$tc.update_user}</td>
+					
+				</tr>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="10" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+			</table>
+			<br />
+		</div>
+	</fieldset>
+	
+	<script type="text/javascript">
+	{literal}
+	
+	function checkHeinzErp(){
+		var cofco_code_insert = $('#cofco_code_insert').val();
+		var tc_code_insert = $('#tc_code_insert').val();
+		if( cofco_code_insert== '' || cofco_code_insert == ''){
+			alert('喜宴套餐编号和ERP套餐编号不能有为空的');
+		}else{
+			if(confirm( "ERP套餐编号： " +tc_code_insert + "\n喜宴套餐编号：" + cofco_code_insert)){
+				$('#add_tc_erp').submit();
+			}
+		}
+	}
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "start",
+		button            : "startTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "end",
+		button            : "endTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	{/literal}
+	</script>
+</body>
+</html>

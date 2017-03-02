@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link href="styles/default.css" rel="stylesheet" type="text/css">
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>FRESTA业务组发货订单报表</title>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;FRESTA业务组发货订单报表&nbsp;</span></legend>
+  
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  	<form method="get">  
+  	<table cellpadding="5" cellspacing="1">
+      	<td>时间区间</td>
+        <td>
+            <input type="text" id="start" name="start" value="{$filter.start}" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> 
+            &nbsp; 到 &nbsp;
+            <input type="text" id="end" name="end" value="{$filter.end}" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" name="act" value="导出" />
+        </td>
+        </tr>
+      
+		</table>
+    </form>
+  </div>
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+  	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S",
+	showsTime         :true
+});
+
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+  	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S",
+	showsTime         :true
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

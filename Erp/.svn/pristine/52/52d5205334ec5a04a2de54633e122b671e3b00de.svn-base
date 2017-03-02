@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+
+ <head>
+<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+ 
+ <script type="text/javascript">
+ {literal}
+ function check_unique(){
+	 
+	 var shipping_codes = document.getElementsByName('shipping_code[]');
+	 var array = new Array();
+	 for(var i=0;i<shipping_codes.length;i++){
+		 var value = shipping_codes[i].value.trim();
+		 if(value == ''){
+			 alert('第'+(i+1)+'行为空');
+			 return false;
+		 }
+		 array.push(value);
+	 }
+	 array.sort();
+	 for(var i=0; i<array.length-1;i++){
+		 if(array[i] == array[i+1]){
+			 alert('有重复数据'+array[i]+'，请去重');
+			 return false;
+		 }
+	 }
+	 return can_recheck_pass($('#shipment_id').val());
+ }
+ 
+ function check_shipping_code(event, index){
+	 if( event.keyCode == 17|| event.keyCode == 13){
+		 var data = "shipping_code="+event.target.value+"&act=ajax";
+		 $.ajax({
+			 data : data,
+			 dataType : "json",
+			 type : "POST",
+		 	 error : function(data){
+		 		 alert('请求AJAX失败，联系ERP');
+		 	 },
+		 	 success : function(data){
+		 		 if(data.success){
+		 			 $("#goods_"+(index+1)).focus();
+		 		 }
+		 		 else{
+		 			 alert(data.message);
+		 		 }
+		 	 }
+		 });
+	 }
+ }
+ 
+ /*
+  * 提交复核之前再判断订单状态
+  */
+  function can_recheck_pass(shipment_id){
+ 	 var result = false;
+      $.ajax({
+          mode: 'abort',
+          async : false,
+          type: 'POST',
+          dataType: 'json',
+          url : 'ajax.php?act=can_recheck_pass', 
+          data: 'shipment_id=' + shipment_id,
+          error: function() {
+              alert('判断订单状态ajax请求错误, shipment_id:' + shipment_id); 
+              $('#pick').attr('disabled', false);
+          },
+          success: function(data) {
+          	if(data.success) {
+          		result = true;
+          	}
+          },
+      }); 
+      return result;
+ }
+ 
+ {/literal}
+ </script>
+  <title></title>
+ </head>
+ <body>
+ 	{if $message}
+ 		<div align="center" style=" color:red">{$message}</div>
+ 	{/if}
+ 	<form method="post" name="form1">
+ 	<table class="table table-hover">
+ 		<thead>
+ 			<tr>
+ 				<th>No.</th>
+ 				<th align="center">商品名</th>
+ 				<th>亨氏商品号</th>
+ 				<th>物流编号</th>
+ 			</tr>
+ 		</thead>
+ 		{foreach from =$order_goods item= order_good name=goods_index}
+ 		<tr>
+ 			<td>{$smarty.foreach.goods_index.iteration}</td>
+ 			<td>{$order_good.goods_name}</td>
+ 			<td>{$order_good.heinz_goods_sn}</td>
+ 			<td><input type="text" name="shipping_code[]" id="goods_{$smarty.foreach.goods_index.iteration}" onkeyup="check_shipping_code(event,{$smarty.foreach.goods_index.iteration})"/>
+ 			<input type="hidden" name="product_id[]" value="{$order_good.product_id}"/>
+ 			<input type="hidden" name="order_id[]" value="{$order_good.order_id}"/>
+ 			</td>
+ 		</tr>
+ 		{/foreach}
+ 		<tr>
+ 			<td colspan="4" align="center"><input type="button" value="提交" onclick="if(check_unique()) form1.submit()"/>
+ 			<input type="hidden" id="shipment_id" name="shipment_id" value="{$shipment_id}"/>
+ 			<input type="hidden" name="act" value="submit"/>
+ 			</td>
+ 		</tr>
+ 	</table>
+ 	
+ 	</form>
+ </body>
+</html>

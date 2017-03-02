@@ -1,0 +1,4 @@
+仓库,快递,省,市,区,首重,首重费,续重费,面单费,操作费,过磅费,中转费,最低中转费,时效权重,售后权重,可达性权重
+{foreach from=$region_list  item=region}
+"{$region.facility_name}","{$region.shipping_name}","{$region.province_name}","{$region.city_name}","{$region.district_name}","{$region.first_weight}","{$region.first_fee}","{$region.continued_fee}","{$region.tracking_fee}","{$region.operation_fee}","{$region.weighing_fee}","{$region.transit_fee}","{$region.lowest_transit_fee}","{$region.time_arrived_weight}","{$region.service_weight}","{$region.arrived_weight}"
+{/foreach}

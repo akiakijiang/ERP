@@ -1,0 +1,690 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>调整单</title>
+{insert_scripts files="../../js/utils.js,../../js/transport.js"}
+{literal}
+<style type="text/css">
+	
+	body{font-size:12px;font-family:"宋体";}
+	ul,ul li{list-style:none;font-size:12px;margin:0;padding:0;background:#fff;}
+	.who_get_goods{position:relative;margin:20px 0;}
+	.who_get_goods ul{position:absolute;top:20px;left:54px;border:1px solid #7f9db9;width:100px;}
+	.who_get_goods li{padding:3px;}
+	.goods_list{ border-collapse:collapse;border:1px solid #999;}
+	.goods_list td,.goods_list th{border:1px solid #999;padding:5px;}
+	.goods_list input[type="text"]{height:16px;padding-top:3px;}
+	.goods_list ul{position:absolute;top:23px;border:1px solid #7f9db9;width:202px;padding:5px 0;}
+	.goods_list li{padding:5px;}
+</style>
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="../js/js/jquery.js"></script>
+<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+{/literal}
+</head>
+<body >
+
+<h3 style="margin-top:30px;">添加调整单商品   数量：输入负数为盘亏 正数为盘盈</h3>
+<p>
+目前所处组织：{$user_current_party_name}   
+</p>
+<table cellpadding=0 cellspacing=0 class="goods_list" width="1100">
+	<tr>
+		<th width="250">商品名</th>
+		<th width="100">颜色</th>
+		<th width="50">数量</th>
+		<th width="200">库存状态</th>
+		<th width="200">仓库</th>
+		<th width="200">备注</th>
+		<th width="50">操作</th>
+	</tr>
+	<tr>
+		<td>
+			<div style="position:relative;z-index:9;">
+				<input type="text" value="" id="goods" style="width:200px;" onkeyup="select_ele('goods',event)" onblur="leave_ele('goods');fill_style_list();"/>
+				<input type="hidden" value="" id="goods_hidden" />
+				<!-- ajax调出的商品列表 -->
+				<ul id="goods_list" style="display:none;">
+					<li gid="-">请选择</li>
+				</ul>
+			</div>
+		</td>
+		<td>
+			<div style="position:relative">
+				<input type="text" value="" id="style" style="width:80px" onkeyup="select_ele('style',event)" onblur="leave_ele('style');"/>
+				<input type="hidden" value="" id="style_hidden" />
+				<!-- ajax调出的颜色列表 -->
+				<ul id="style_list" style="display:none;width:62px;z-index:9;">
+					<li gid="0">请选择商品</li>
+				</ul>
+			</div>
+		</td>
+		<td>
+			<input type="text" value="" style="width:30px;" id="goods_number" />
+		</td>
+	   <td>
+			<div style="position:relative;z-index:9;">
+				<input type="text" value="" id="status_id" style="width:120px;" onkeyup="select_ele('status_id',event)" onblur="leave_ele('status_id');getbarcode();" />
+				<input type="hidden" value="" id="status_id_hidden" />
+				<ul id="status_id_list" style="display:none;width:150px;">
+					<li gid="INV_STTS_AVAILABLE">正式库</li>
+					<li gid="INV_STTS_USED">二手库</li>
+				</ul>
+			</div>
+		</td>
+		
+		<td>
+			<div style="position:relative;z-index:9;">
+				 <select id ="facility_id" name="facility_id">
+                    {html_options options=$available_facility }
+                 </select>
+			</div>
+		</td>
+		
+		<td>
+			<div style="position:relative;z-index:9;">
+				<textarea name="comment" id="comment" style="width:300px;height:30px;"></textarea> 
+			</div>
+		</td>
+		
+		<td>
+		    <input type="hidden" value="" id="barcode_hidden" />
+			<input type="button" value="添加" id="add_goods" onclick="add_goods()" />
+		</td>
+	</tr>
+</table>
+
+<form action="physical_inventory_apply_order.php" id="form3" method="post" >
+<h3 style="margin-top:30px;">待调整商品</h3>
+ <p>
+   <input type="file" id="fileToUpload" name="fileToUpload"/>
+   <input type="button" value="批量导入调整商品"  onclick=" return batch_adjust();"   />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+   <input type="submit" name="act"  value="批量导入模板下载" /> 
+   </p>	
+</form>
+ 
+<form action="physical_inventory_apply_order.php" id="form1" method="post" >
+	<table cellpadding=0 cellspacing=0 class="goods_list" width="1100" style="margin-top:10px;" >
+	  <thead>
+	    <tr >
+		  <th width="200">商品名</th>
+		  <th width="100">商品条码</th>
+		  <th width="100">颜色</th>
+		  <th width="100">数量</th>
+		  <th width="150">库存状态</th>
+		  <th width="100">仓库</th>
+		  <th width="100">备注</th>
+		  <th width="50">操作</th>
+	    </tr>
+	 </thead>
+	 <tbody id="added_goods"></tbody>
+  </table>
+
+  <p>
+     <!-- 所在分仓：
+    <select name="facility_id">
+     {html_options options=$available_facility }
+    </select>
+     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+    调整原因：<textarea name="comment" id="comment" style="width:300px;height:50px;">{$comment}</textarea>--> 
+    <input type="hidden" value="create" name="act" />
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+   <input type="button" value="生成调整单" onclick=" return check_added_goods_list(this);" />
+   </p>  
+</form>
+
+  
+<form action="physical_inventory_apply_order.php" id="form4" method="post" >
+<h3 style="margin-top:30px;">已经申请的调整单商品列表：</h3>
+<p>
+筛选条件：     
+       分仓：
+    <select name="facility_id">
+    <option value="-1">所有</option>
+    {html_options options=$available_facility selected = $smarty.request.facility_id }
+    </select>
+    &nbsp;
+    商品名(模糊搜索)：
+	<input type="text" value="{$smarty.request.goods_select_name}" name="goods_select_name"  style="width:140px;" />
+	&nbsp;
+	商品条码：
+	<input type="text" value="{$smarty.request.goods_select_barcode}" style="width:100px;" name="goods_select_barcode" />
+    &nbsp; &nbsp; 
+    <input  type="submit" name ='act' value="搜索"/>
+    &nbsp; &nbsp; 
+    <input type="submit" name="act"  value="导出已申请调整商品" /> </p>
+<table cellpadding=0 cellspacing=0 class="goods_list" width="1100" >
+	<tr >
+		<th width="200">商品名</th>
+		<th width="100">商品条码</th>
+		<th width="100">库存状态</th>
+		<th width="50">仓库</th>
+		<th width="50">申请调整数量</th>
+		<th width="50">商品单价</th>
+		<th width="50">申请时间</th>
+		<th width="50">订单号</th>
+		<th width="50">类型</th>
+		<th width="50">出库数量</th>
+		<th width="50">出库时间</th>
+		<th width="50">预定状态</th>
+		<th width="50">操作</th>
+	</tr>
+	<!--{if $already_apply_goods}-->
+<!--{foreach from=$already_apply_goods item=item}-->
+	<tr>
+		<td>{$item.goods_name}</td>
+		<td>{$item.barcode}</td>
+		<td>{if $item.status_id eq 'INV_STTS_USED'}二手库{else}正式库{/if}</td>
+		<td>{$item.facility_name}</td>
+		<td>{$item.goods_number}</td>
+		<td>{$item.unit_cost}</td>
+		<td>{$item.order_time}</td>
+		<td>{$item.order_sn}</td>
+		<td>{if $item.order_type_id eq 'VARIANCE_ADD'}盘盈{else}盘亏{/if}</td>
+	    <td>{$item.out_num}</td>
+	    <td>{$item.out_time}</td>
+	    <td>{$item.reserve_status}</td>
+	    <td>	    
+		  <input type="button"  value="删除"  onclick = " remove_apply_order(this,{$item.order_goods_id})" />
+		</td>
+	</tr>
+<!--{/foreach}-->
+<!--{/if}-->
+</table>
+</form>
+<div type="hidden" id="keycode"></div>
+<script type="text/javascript">
+{literal}
+var process_request = '';
+var oldkeyword = '';
+var last_goods;
+var is_calling = false;
+var added_goods_list = new Array();
+var need_check_style = false;
+var last_style;
+var batch_goods_list = new Array();
+var contrl = {
+    tmp : '', //  input里的值默认值
+    num : -1, //  li的所在的列数
+}
+function E(id) {
+    return document.getElementById(id);
+}
+
+function check_added_goods_list(obj) {
+    var trs = E('added_goods').getElementsByTagName('tr');
+    if(trs.length == 0) {
+        alert('没有添加要调整的商品');
+        return false;
+    }
+    
+ //   if (E('comment').value == '') {
+ //       alert('请填写调整单的原因');
+ //       return false;
+ //   }
+    
+    obj.disabled = true;
+    E('form1').submit();
+}
+
+function check_batch_added_goods_list(obj) {
+    var trs = E('batch_added_goods').getElementsByTagName('tr');
+    if(trs.length == 0) {
+        alert('没有批量添加要调整的商品');
+        return false;
+    }
+    
+    obj.disabled = true;
+    E('form2').submit();
+}
+
+function getbarcode(){
+	var goods_id = E('goods_hidden').value;
+	var style_id = E('style_hidden').value;
+	 $.ajax({
+         type: "GET",
+         url: "physical_inventory_apply_order.php?act=search&goods_id="+goods_id+"&style_id="+style_id,
+         dataType: "json",
+         success: function(data){
+          $('#barcode_hidden').val(data.content); 
+         },
+         error:function(){
+        	 alert("方法调用错误，请联系ERP组");
+         }
+     });
+}
+
+
+function init_table() {
+
+	var order_type = E('order_type').value;
+	E('status_id_hidden').value = ''; 
+	E('status_id').value = '';
+    E('goods').value = '';
+    E('goods_hidden').value = '';
+    E('style').value = '';
+    E('style_hidden').value = '';
+    E('barcode_hidden').value = '';
+    E('goods_number').value = '1';
+    E('cat_name').value = '';
+	    if(order_type == 'DX'){
+		    E('purchase_paid_amount').value = '0';
+	    }else{
+	    	E('purchase_paid_amount').value = '';
+	    }
+}
+
+function add_goods() {
+    if(!/^(\d+)$/.test(E('goods_hidden').value)) {
+        E('goods').focus();
+        alert('请选择商品');
+        return false;
+    }
+    if(!/^(-)?(\d+)$/.test(E('goods_number').value)) {
+        E('goods_number').focus();
+        alert('请输入正确的商品数量');
+        return false;
+    }
+
+    if(!last_style || !last_style.in_array(E('style_hidden').value)) {
+        alert('请选择正确的商品颜色');
+        E('style').focus();
+        return false;
+    }
+        
+    var status_id = E('status_id').value;
+    if(status_id == '') {
+        E('status_id').focus();
+        alert('请选择商品所处的状态');
+        return false;
+    }
+    
+    var facility_name = $("#facility_id").find("option:selected").text();
+    
+    var facility_id = E('facility_id').value;
+    if(facility_id == '') {
+        alert('请选择仓库');
+        return false;
+    }
+    
+    var comment = E('comment').value;
+    if(comment == '') {
+        alert('请请填写调整原因');
+        return false;
+    }
+    
+    var added_goods = new Array();
+    
+    added_goods[0] = E('goods').value;
+    added_goods[1] = E('goods_hidden').value;
+    
+    added_goods[2] = E('style').value;
+    added_goods[3] = E('style_hidden').value;
+   
+    added_goods[4] = E('goods_number').value;
+    
+    added_goods[5] = E('barcode_hidden').value;
+ 
+    added_goods[7] = status_id;
+    
+    added_goods[8] = E('status_id_hidden').value;
+    
+    added_goods[9] = facility_id;
+    
+    added_goods[10] = comment;
+    
+    added_goods[11] = facility_name;
+
+    added_goods_list.push(added_goods);
+    redraw_table();
+    E('status_id_hidden').value = ''; 
+	E('status_id').value = '';
+    E('goods').value = '';
+    E('goods_hidden').value = '';
+    E('style').value = '';
+    E('style_hidden').value = '';
+    E('barcode_hidden').value = '';
+    E('goods_number').value = '';
+    E('goods').focus();E('goods').select();
+    E('comment').value = '';
+}
+
+function redraw_table() {
+    var i = 0;
+    var html = '';
+    var total = 0;
+    for(i = 0; i < added_goods_list.length; i++) {
+        added_goods = added_goods_list[i];
+        //	    alert(added_goods);
+        html += "<tr ><td>" + added_goods[0] + "</td>"; //goods_name
+        html += "<td>" + added_goods[5] + "</td>"; //barcode
+        html += "<td>" + added_goods[2] + "</td>"; //style_id
+        html += "<td>" + added_goods[4] + "</td>"; //goods_number
+        html += '<td>' + added_goods[7] + '<input type="hidden" name="goods_id[]" value="'+ added_goods[1] +'" /> ';
+        html += '<input type="hidden" name="style_id[]" value="'+ added_goods[3] +'" />';
+        html += '<input type="hidden" name="goods_number[]" value="' + added_goods[4] + '" />';
+        html += '<input type="hidden" name="status_id[]" value="' + added_goods[8] + '" />';
+        html += '<input type="hidden" name="facility_id[]" value="' + added_goods[9] + '" />';
+        html += '<input type="hidden" name="comments[]" value="' + added_goods[10] + '" />';
+        html += '<input type="hidden" name="barcode[]" value="' + added_goods[5] + '" /></td>';
+        html += "<td>" + added_goods[11] + "</td>";
+        html += "<td>" + added_goods[10] + "</td>"; 
+        html += '<td><input type="button" value="删除" onclick="remove_added_goods(' + i + ')" /></td>	</tr>';
+    }
+    E('added_goods').innerHTML = html;
+}
+
+
+function remove_added_goods(i) {
+    added_goods_list.remove(i);
+    redraw_table();
+}
+
+
+function select_radio(radio_name) {
+    var radio = document.getElementsByName(radio_name);
+    for(var i=0;i<radio.length;i++) {
+        if (radio[i].checked) {
+            return(radio[i].value);
+            break;
+        }
+    }
+    return null;
+}
+
+Array.prototype.remove=function(dx)
+{
+    if(isNaN(dx)||dx>this.length){return false;}
+    for(var i=0,n=0;i<this.length;i++)
+    {
+        if(this[i]!=this[dx])
+        {
+            this[n++]=this[i]
+        }
+    }
+    this.length-=1
+}
+Array.prototype.in_array=function(ele)
+{
+    for(var i=0,n=0;i<this.length;i++) {
+        if(this[i] == ele) {
+            return true;
+            break;
+        }
+    }
+    return false;
+}
+
+function select_ele(id,e){
+    var evt = e || window.event;
+    E(id+'_list').style.display = '';
+    var oli = E(id+'_list').getElementsByTagName('li');
+    if (oli.length > 0) {
+        if (evt.keyCode == 40){
+            if (contrl.num < oli.length){
+                contrl.num++;
+            }
+            if( contrl.num == oli.length){
+                contrl.num = 0;
+                oli[oli.length-1].style.background = '#fff';
+                oli[oli.length-1].style.color = '#000';
+            }
+
+            if (contrl.num >=0 && contrl.num < oli.length){
+                if (contrl.num !=0 ){
+                    oli[contrl.num-1].style.background = '#fff';
+                    oli[contrl.num-1].style.color = '#000';
+                }
+
+                oli[contrl.num].style.background = '#36c';
+                oli[contrl.num].style.color = '#fff';
+                contrl.tmp = E(id).value = oli[contrl.num].innerHTML;
+            }
+        }else if(evt.keyCode == 38){
+            if(contrl.num >= 0){
+                contrl.num--;
+            }
+            if(contrl.num == -1){
+                contrl.num = oli.length-1;
+                oli[0].style.background = '#fff';
+                oli[0].style.color = '#000';
+            }
+            if(contrl.num < oli.length-1){
+                oli[contrl.num+1].style.background = '#fff';
+                oli[contrl.num+1].style.color = '#000';
+            }
+            if(contrl.num >= 0){
+                oli[contrl.num].style.background = '#36c';
+                oli[contrl.num].style.color = '#fff';
+                contrl.tmp = E(id).value = oli[contrl.num].innerHTML;
+            }
+
+        }
+
+        if(contrl.num >= 0 && contrl.num < oli.length){
+            E(id+'_hidden').value = oli[contrl.num].attributes['gid'].value;
+        }
+    }
+}
+
+function leave_ele(id) {
+    contrl.num = -1;
+    contrl.tmp = '';
+    E(id+'_list').style.display = 'none';
+}
+function key_event(e,code,fuc){
+    var evt = e || window.event;
+    //E('keycode').innerHTML = e.keyCode;
+    if(evt.ctrlKey && evt.shiftKey && evt.keyCode == code){
+        fuc();
+    }
+}
+
+var go_style = function(){
+    E('style').focus();
+}
+
+function fill_goods_list() {
+    var keyword = E("goods").value;
+    E('oldkeyword').innerHTML = ("keyword:" + keyword + " oldword: " + oldkeyword + keyword.indexOf(oldkeyword) + ' ' );
+    if (keyword != '') {
+        if( last_goods && keyword.toUpperCase().indexOf(oldkeyword.toUpperCase()) != -1 ) { // 如果新输入的关键词包含老的关键词，那么不需要ajax call了
+            var html = '';
+            //        E('oldkeyword').innerHTML += 'inin9i ';
+            var goodsCnt = last_goods.length;
+            for (var i = 0; i < goodsCnt; i++)
+            {
+                if(last_goods[i].name.toUpperCase().indexOf(keyword.toUpperCase()) != -1) { // 如果商品名中有新的关键词，那么就留下
+                    html += '<li gid="' + last_goods[i].goods_id + '">' + last_goods[i].name + '</li>';
+                }
+            }
+            E('goods_list').innerHTML = html;
+        } else {
+            setTimeout(searchGoods, 500);
+        }
+    }
+}
+
+
+function searchGoods() {
+    if(!is_calling) {
+        is_calling = true;
+        var keyword = E("goods").value;
+        if (keyword != '' && keyword != oldkeyword) {
+            Ajax.call('../order.php?act=search_goods&extend=include_not_on_sale&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+            oldkeyword = keyword;
+        } else {
+            is_calling = false;
+        }
+    }
+}
+
+function searchGoodsResponse(result)
+{
+    is_calling = false;
+    if (result.message.length > 0)
+    {
+        alert(result.message);
+    }
+    if (result.error == 0)
+    {
+        var html = '';
+        var arr = result.goodslist;
+        var goodsCnt = arr.length;
+        if (goodsCnt > 0)
+        {
+            for (var i = 0; i < goodsCnt; i++)
+            {
+                html += '<li gid="' + arr[i].goods_id + '">' + arr[i].name + '</li>';
+            }
+            last_goods = arr;
+            E('goods_list').innerHTML = html;
+        }
+    }
+}
+
+function fill_style_list() {
+    searchGoodsStyle();
+}
+function searchGoodsStyle() {
+    var goods_id = E('goods_hidden').value;
+    if (goods_id != '') {
+        Ajax.call('../order.php?act=search_goods_style&no_storage_info=true&goods_id=' + goods_id , '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+}
+
+function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0) {
+        alert(result.message);
+    }
+    if (result.error == 0) {
+        var html = '';
+        var arr = result.goods_style_list;
+        var style_length = arr.length;
+        if (style_length > 0) {
+            last_style = new Array();
+            for (var i = 0; i < style_length; i++) {
+                last_style.push(arr[i].style_id);
+                html += '<li gid="' + arr[i].style_id + '">' + arr[i].color + '</li>';
+            }
+            E('style_list').innerHTML = html;
+            //        need_check_style = true;
+        } else {
+            last_style = new Array();
+            last_style.push(0);
+            E('style_list').innerHTML = '<li gid="0">无颜色</li>';
+            E('style').value = '无颜色';
+            E('style_hidden').value = 0;
+            //        need_check_style = false;
+        }
+    }
+}
+
+function fill_provider_list() {
+    var provider = E('provider').value;
+    var html = '';
+    var provider_name = '';
+    for(var i = 0; i < providers.length; i++) {
+        provider_name = providers[i][2];
+        if(providers[i][1].toUpperCase().indexOf(provider.toUpperCase()) != -1 || provider_name.toUpperCase().indexOf(provider.toUpperCase()) != -1)
+        html += '<li gid="' + providers[i][0] + '">' + provider_name + '</li>'
+    }
+    E('provider_list').innerHTML = html;
+}
+
+function changeProvider() {
+    var provider = E('provider').value;
+    var pid = E('provider_hidden').value;
+    if (pid == '') {
+        E('order_type_text').innerHTML='请选择供应商';
+    } else {
+        E('order_type').value = order_type[pid];
+        E('order_type_text').innerHTML= ' 订单类型：' + order_type[pid];
+    }
+}
+
+function fill_purchasers() {
+    var purchaser = E('purchaser').value;
+    var html = '';
+    var matched = 0;
+    var matched_i = 0;
+    for(var i = 0; i < purchasers.length; i++) {
+        if(purchasers[i].toUpperCase().indexOf(purchaser.toUpperCase()) != -1 || purchaser == '') {
+            html += '<li gid="' + purchasers[i] + '">' + purchasers[i] + '</li>';
+            matched++;
+            matched_i = i;
+        }
+    }
+    if(matched == 1) { E('purchaser_hidden').value = purchasers[matched_i];  }
+    E('purchaser_list').innerHTML = html;
+}
+
+//批量导入处理调整单 
+function batch_adjust() {
+ 
+   $.ajaxFileUpload({
+	   url:'batch_adjust.php',
+	   secureuri:false,
+	   fileElementId:'fileToUpload',
+	   dataType: 'json',
+	   success: function (data){   
+		
+		  if(data.message == "")
+		  {
+			  batch_goods_list = data.data;
+			  for(var j = 0; j < batch_goods_list.length; j++) {
+			     added_goods_list.push(batch_goods_list[j]);
+			  }
+			        
+			  redraw_table();
+			
+		  }else{
+				alert(data.message);
+		  }
+		},
+		error: function (data, status, e){
+			alert("方法调用错误，请联系ERP组");
+		}
+   });
+}
+
+function remove_apply_order(obj,orderGoodsId){
+	 $.ajax({
+         type: "GET",
+         url: "physical_inventory_apply_order.php?act=del&orderGoodsId="+orderGoodsId,
+         dataType: "json",
+         success: function(data){
+          if(data.message){
+        	 alert("删除成功！");
+             $(obj).parent("td").parent("tr").remove(); 
+          }else{
+        	  alert("删除失败！");
+          }
+         },
+         error:function(){
+        	alert("方法调用错误，请联系ERP组");
+         }
+     });
+}
+
+
+E('goods').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) { E('style').focus(); fill_style_list(); } else {/* fill_goods_list();*/ } }, false); // 13 enter
+E('goods').addEventListener('keyup', function(e){var evt = e || window.event; if(evt.keyCode != 40 && evt.keyCode != 38)  fill_goods_list();  }, false); // 13 enter
+//	E('goods').addEventListener('onchange', function(e){var evt = e || window.event;if(evt.keyCode != 13) E('goods_list').innerHTML = '<li>asdfas111</li><li>asdfas222</li>'; }, false);
+E('style').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) { E('goods_number').focus(); E('goods_number').select(); }  }, false); // 13 enter
+E('goods_number').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) { E('status_id').focus();  } }, false);
+E('status_id').addEventListener('keydown', function(e){var evt = e || window.event;if(evt.keyCode == 13) leave_ele('create'); }, false);
+
+window.addEventListener('keydown', function(e){key_event(e,49,go_style)}, false); // 49 1
+
+
+{/literal}
+</script>
+<div id="oldkeyword"></div>
+
+
+</body>
+</html>

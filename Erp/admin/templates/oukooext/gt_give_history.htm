@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <title>抵用券领取记录</title>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;抵用券领取记录&nbsp;</span></legend>
+  
+	<!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}	
+		window.setTimeout(function(){
+			$('#message').slideUp("slow");
+		}, 4000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+  
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">查询</h3>
+    
+  	<form method="post">  
+  	<table cellpadding="5" cellspacing="1">
+      <tr>
+      	<td>&nbsp;每页记录数：</td>
+        <td><select name="size">{html_options options=$page_size_list selected=$filter.size}</select></td>
+      </tr>
+      
+      <tr>
+      	<td>
+        	<select style="border:0;" name="time_field">
+          	<option value="give_time" {if $filter.time_field=='give_time'}selected="selected"{/if}>发放时间</option>
+            <option value="gt_ctime" {if $filter.time_field=='gt_ctime'}selected="selected"{/if}>生成时间</option>
+					</select>：
+				</td>
+        <td>
+          <input type="text" id="start" name="start" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+          <input type="text" id="end" name="end" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+			</tr>
+      
+      <tr>
+      	<td>&nbsp;状态：</td>
+      	<td>
+        	<select name="status"><option value="">- 不限</option>{html_options options=$bonus_status_list selected=$filter.status}</select>
+				</td>
+      </tr>
+      
+    	<tr>
+      	<td width="120" valign="top">&nbsp;用户：</td>
+        <td>
+        	<textarea name="user" rows="4" cols="50" >{$filter.user}</textarea>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="submit" value="查询">
+		      <input type="hidden" name="act" value="search" />
+        </td>
+			</tr>
+		</table>
+    </form>
+    
+	</div>
+
+
+	{if $gts}
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">用户红包列表</h3>
+    <br />
+    
+    <table class="bWindow">
+      <tr>
+        <th>红包代码</th>
+        <th>金额</th>
+        <th>用户</th>
+        <th>状态</th>
+        <th>时限</th>
+        <th>类型</th>
+        <th>发放时间</th>
+        <th>发放人</th>
+        <th>详细</th>
+      </tr>
+      
+      <!--{foreach from=$gts item=gt}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+        <td>{$gt.gt_code}</td>
+        <td>{$gt.gtc_value}</td>
+        <td><a href="gt_give_history_byuser.php?user_name={$gt.user_name}">{$gt.user_name}</a></td>
+        <td>{$bonus_status_list[$gt.gt_state]} {if $gt.gt_state==4}{if $gt.order_id}[ <a href="order_edit.php?order_id={$gt.user_order_id}" target="_blank">查看订单</a> ]{/if}{/if}</td>
+        <td>{if $gt.gt_state == 3}无时间限制{elseif $gt.gt_state == 2}{$gt.gtc_stime|date_format:"%Y-%m-%d"}至{$gt.gtc_etime|date_format:"%Y-%m-%d"}{/if}</td>
+        <td>{$bonus_type_list[$gt.gtc_type_id]}</td>
+        <td>{$gt.give_time|date_format:"%Y-%m-%d"}</td>
+        <td>{$gt.give_user|getUserName}</td>
+        <td><a href="gt_give_history_detail.php?give_time={$gt.give_time}">查看</a></td>
+      </tr>
+      <!--{/foreach}-->
+    </table>
+    
+    
+    <br />
+		{$pagination}
+      
+	</div>
+  <br />
+  {/if}
+  
+
+  <br /><br />
+
+
+</fieldset>
+
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

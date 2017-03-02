@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- Created by cywang, 20130806 -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>入库订单列表</title>
+<!-- Autocomplete -->
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+<!-- Autocomplete /-->
+<!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+
+	<script type="text/javascript">
+	{literal}
+	// <![CDATA[
+	$(document).ready(function(){
+	
+		/**
+		 * 商品分类
+		 */
+		// 数据
+		var categorys = [
+			{'id' : '',              'result' : '全部' },
+			{'id' : 'mobile',        'result' : '手机' },
+			{'id' : 'fittings',      'result' : '手机配件' },
+			{'id' : 'dvd',           'result' : 'DVD' },
+			{'id' : 'education',     'result' : '电教产品' }
+		];
+		// 自动完成
+		$('#autocomplete_cagetory').autocomplete(categorys, {
+			minChars: 0,
+			mustMatch: true,
+			formatItem : function(row, i, max, value, term) {
+				return(row.result);
+			},
+			formatResult : function(row) {
+				return(row.result);
+			}
+		}).result(function(event, row, formatted) {
+			// 将隐藏域提供分类id
+			$('#goods_cagetory').val(row.id);
+			$('#autocomplete_goods').flushCache().setOptions({
+				extraParams : {'category':row.id}
+			});
+		}).focus();
+		
+		/**
+		 * 商品搜索
+		 */
+		$('#autocomplete_goods').autocomplete('ajax.php?act=search_goods', {
+			dataType : 'json',
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		});
+		// 如果选择了商品分类，为商品搜索缩小范围
+		var cat = $('#goods_cagetory').val();
+		if (cat) {
+			$('#autocomplete_goods').setOptions({
+				extraParams : {'category':cat}
+			});
+		}
+
+		/**
+		 * 供应商
+		 */
+		$('#autocomplete_provider').autocomplete('ajax.php?act=get_provider', {
+			minChars: 0,
+			mustMatch: true,
+			dataType : 'json',
+			formatItem : function(row, i, max, value, term) {
+				return(row.provider_name);
+			},
+			formatResult : function(row) {
+				return(row.provider_name);
+			}
+		}).result(function(event, row, formatted) {
+			// 将隐藏域的值设为供应商的id
+			$('#provider_id').val(row.provider_id);
+		});
+		
+	});
+	// ]]>
+	{/literal}
+	</script>
+	
+<script type="text/javascript">
+{literal}
+function ShowSearchType(num){
+	document.getElementById('s' + num).style.display = '';
+	document.getElementById('s' + (1 - num)).style.display = 'none';
+	
+	document.getElementById('st_id').value = num;
+	
+	document.getElementById('st'+num).style.background = 'url(images/order_lion.gif)  0 5px no-repeat';
+	document.getElementById('st'+ (1 - num)).style.background = 'url(images/order_liBg_1.gif)  0 5px no-repeat';
+}
+function OnOrderTypeChoose(flag)
+{
+	//采购入库
+	var name = 'purchase';
+	if({/literal}{if $search_option->order_type_info_.purchase->admin_priv_} true {else} false{/if}{literal})
+		document.getElementById('order_type_'+name).checked = flag;
+	//退换货入库
+	name = 'returned_exchange';
+	if({/literal}{if $search_option->order_type_info_.returned_exchange->admin_priv_} true {else} false{/if}{literal})
+		document.getElementById('order_type_'+name).checked = flag;
+	//供应商换货入库
+	name = 'gh';
+	if({/literal}{if $search_option->order_type_info_.gh->admin_priv_} true {else} false{/if}{literal})
+		document.getElementById('order_type_'+name).checked = flag;
+	//还机入库
+	name = 'borrow';
+	if({/literal}{if $search_option->order_type_info_.borrow->admin_priv_} true {else} false{/if}{literal})
+		document.getElementById('order_type_'+name).checked = flag;
+	//追回入库
+	name = 'callback';
+	if({/literal}{if $search_option->order_type_info_.callback->admin_priv_} true {else} false{/if}{literal})
+		document.getElementById('order_type_'+name).checked = flag;
+}
+function CheckOrderTypeCondition()
+{
+	//采购入库
+	var name = 'purchase';
+	var result = document.getElementById('order_type_'+name).checked;
+	//退换货入库
+	name = "returned_exchange";
+	result += document.getElementById('order_type_'+name).checked;
+	//供应商换货入库
+	name = "gh";
+	result += document.getElementById('order_type_'+name).checked;
+	//还机入库
+	name = "borrow";
+	result += document.getElementById('order_type_'+name).checked;
+	//追回入库
+	name = "callback";
+	result += document.getElementById('order_type_'+name).checked;
+	
+	if(result)
+		return true;
+	else
+	{
+		alert('至少选择一种订单类型');
+		return false;
+	}
+}
+	
+function CheckTypeSearchCondition()
+{
+	return (document.getElementById('st_id').value=='2') && CheckOrderTypeCondition();
+}
+function CheckOrderSn()
+{
+	if(document.getElementById('order_sn').value == '')
+	{
+		alert('订单号不能为空');
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+function CheckOrderSnSearchCondition()
+{
+	return (document.getElementById('st_id').value=='1') && CheckOrderSn();
+}
+
+function OnSearchFormSubmitting()
+{
+	if(document.getElementById('st_id').value=='0')
+		return CheckOrderSn();
+	else if(document.getElementById('st_id').value=='1')
+		return CheckOrderTypeCondition();
+	else
+		return false;
+}
+
+{/literal}
+</script>
+
+</head>
+
+<body>
+
+<h2 align="center">入库订单列表</h2>
+
+<form method="post" action="display_instorage_order_listV5.php?act=search" onsubmit="return OnSearchFormSubmitting()">
+<div>
+  <div name = "search_tab" style = "margin-bottom:-1px;margin-top:20px;">
+        <div id = "st0" style="width:110px;height:21px;padding-top:11px;
+			background:{if $search_option->search_tab_id_ == '0'}url(images/order_lion.gif){else}url(images/order_liBg_1.gif){/if} 0 5px no-repeat;
+			float:left;text-align:center;margin-left:-1px;cursor:pointer;list-style:none;" onclick="ShowSearchType(0)">按订单号搜索</div>
+        <div id = "st1" style="width:110px;height:21px;padding-top:11px;
+			background:{if $search_option->search_tab_id_ == '1'}url(images/order_lion.gif){else}url(images/order_liBg_1.gif){/if} 0 5px no-repeat;
+			float:left;text-align:center;margin-left:-1px;cursor:pointer;list-style:none;" onclick="ShowSearchType(1)">按其他条件搜索</div>
+  </div>
+  <input id = "st_id" name = "search_tab_id" type="hidden" value = {$search_option->search_tab_id_}>
+  <div style="clear:both;padding:11px;border:#b2b2b2 1px solid">
+	<div id="s0" {if $search_option->search_tab_id_ == '1'}style = "display:none"{/if}>
+		订单号：<input id="order_sn" name="order_sn" value="{$search_option->order_sn_}" />
+	</div>
+ 	<div id="s1" {if $search_option->search_tab_id_ == '0'}style = "display:none"{/if}>
+		<table>
+			<tr><td>入库状态</td>
+				<td><input type="radio" name="storage_status" value="todo" 
+						{if $search_option->storage_status_=="todo"} {php}echo "checked = 'true'";{/php}{/if}
+						/>未入库
+					<input type="radio" name="storage_status" value="party"
+						{if $search_option->storage_status_=="party"} {php}echo "checked = 'true'";{/php}{/if}
+						/>部分入库
+					<input type="radio" name="storage_status" value="done"
+						{if $search_option->storage_status_=="done"} {php}echo "checked = 'true'";{/php}{/if}
+						/>已入库
+					<input type="radio" name="storage_status" value="all"
+						{if $search_option->storage_status_=="all"} {php}echo "checked = 'true'";{/php}{/if}
+						/>所有订单</td>
+			</tr>
+			<tr><td>订单类型</td>
+				<td><input id="order_type_purchase" type="checkbox" name="order_type_purchase" 
+						{if $search_option->order_type_info_.purchase->choosen_} {php}echo "checked = 'true'";{/php}{/if}
+						{if !$search_option->order_type_info_.purchase->admin_priv_} {php}echo "disabled = 'true'";{/php}{/if}
+						/>采购订单
+					<input id="order_type_returned_exchange" type="checkbox" name="order_type_returned_exchange"
+						{if $search_option->order_type_info_.returned_exchange->choosen_} {php}echo "checked = 'true'";{/php}{/if}
+						{if !$search_option->order_type_info_.returned_exchange->admin_priv_} {php}echo "disabled = 'true'";{/php}{/if}
+						/>退换货订单
+					<input id="order_type_gh" type="checkbox" name="order_type_gh" 
+						{if $search_option->order_type_info_.gh->choosen_} {php}echo "checked = 'true'";{/php}{/if}
+						{if !$search_option->order_type_info_.gh->admin_priv_} {php}echo "disabled = 'true'";{/php}{/if}
+						/>供应商换货订单
+					<input id="order_type_borrow" type="checkbox" name="order_type_borrow" 
+						{if $search_option->order_type_info_.borrow->choosen_} {php}echo "checked = 'true'";{/php}{/if}
+						{if !$search_option->order_type_info_.borrow->admin_priv_} {php}echo "disabled = 'true'";{/php}{/if}
+						/>还机订单
+					<input id="order_type_callback" type="checkbox" name="order_type_callback" 
+						{if $search_option->order_type_info_.callback->choosen_} {php}echo "checked = 'true'";{/php}{/if}
+						{if !$search_option->order_type_info_.callback->admin_priv_} {php}echo "disabled = 'true'";{/php}{/if}
+						/>追回订单
+					<input id="order_type_all" type="button" onclick="OnOrderTypeChoose(true)" value="全选" />
+					<input id="order_type_none" type="button" onclick="OnOrderTypeChoose(false)" value="清空" /></td>
+			</tr>
+			<tr><td>商品类别</td>
+				<td><input id="autocomplete_cagetory" name="cagetory_name" value="{$search_option->cagetory_name_}" size="10" />
+					<input type="hidden" id="goods_cagetory" name="goods_cagetory" value="{$search_option->goods_cagetory_}" /></td>
+			</tr>
+			<tr><td>商品名</td>
+				<td><input id="autocomplete_goods" name="goods_name" value="{$search_option->goods_name_}" size="40" /></td>
+			</tr>
+			<tr><td>商品条码</td>
+				<td><input id="goods_barcode" name="goods_barcode" value="{$search_option->goods_barcode_}" size="30" /></td>
+			</tr>
+			<tr><td>供应商</td>
+				<td><input id="autocomplete_provider" name="provider_name" value="{$search_option->provider_}" size="45" /><input type="hidden" id="provider_id" name="provider_id" value="{$smarty.session.in_storage.provider_id}" /></td>
+			</tr>
+			<tr><td>仓库</td>
+				<td><select name="facility_id" id="facility_id">{html_options options=$facility_id_list selected=$search_option->facility_id_}</select></td>
+			</tr>
+			<tr><td>下单时间</td>
+				<td><input 	style="width:80px" name="start_time" id="search_start_time" value="{$search_option->start_time_}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+					<input type="button" id="start_time_trigger" value="..." > - 
+					<input style="width:80px" name="end_time" id="search_end_time" value="{$search_option->end_time_}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+				<input type="button" id="end_time_trigger" value="..." ></td>
+			</tr>
+		</table>
+ 	 </div>
+  </div>
+</div>
+</br>
+<input type="submit"  value="搜索">
+</form>
+
+<div align='center'><br><font color='red'>{$info}</font></div>
+
+<table class="bWindow" style="margin-top:20px">
+<caption>
+	<h2>{if $smarty.request.act != 'search'}今日{else}搜索{/if}的入库订单
+		<form method = "post"><input type="submit" name="csv" value="csv导出"></form>
+	</h2>
+</caption>
+<tr>
+<th>入库状态</th>
+<th>订单号</th>
+<th>订单条码</th>
+<th>订单类型</th>
+<th>组织</th>
+<th>订单时间</th>
+<th>收货仓库</th>
+</tr>
+{assign var=total_goods_number value=0}
+{foreach from=$search_orders item=search_order}
+{if !$search_order.canceled}
+<tr align="center">
+<td>$search_order.is_in_storage</td>
+<td><a href="order_statistics.php?order_sn={$search_order.order_sn}">{$search_order.order_sn}</a></td>
+<td><img src="code_img.php?barcode={$search_order.order_sn}&height=60" /></td>
+<td>$search_order.type</td>
+<td>{$search_order.party_name}</td>
+<td>{$search_order.order_time}</td>
+<td>{$search_order.facility_name}</td>
+</tr>
+{/if}
+{/foreach}
+</table>
+
+
+<script type="text/javascript">//<![CDATA[
+	{literal}
+	   $(document).ready(function(){
+			Zapatec.Calendar.setup({
+		          weekNumbers       : false,
+		          electric          : false,
+		          inputField        : "search_start_time",
+		          button            : "start_time_trigger",
+		          ifFormat          : "%Y-%m-%d",
+		          daFormat          : "%Y-%m-%d"
+		        });
+			Zapatec.Calendar.setup({
+		          weekNumbers       : false,
+		          electric          : false,
+		          inputField        : "search_end_time",
+		          button            : "end_time_trigger",
+		          ifFormat          : "%Y-%m-%d",
+		          daFormat          : "%Y-%m-%d"
+		        });
+    	});
+   {/literal}
+</script>
+</body>
+</html>

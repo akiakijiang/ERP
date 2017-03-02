@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>类别树信息</title>
+{literal}
+<link href="./styles/treeView.css" rel="stylesheet" type="text/css" />
+{/literal}
+{literal}
+<script src="./js/js/jquery.js" type="text/javascript"></script>
+<script src="./js/jquery.treeview.js" type="text/javascript"></script>
+<script type="text/javascript">
+		$(document).ready(function(){
+			$("#browser").treeview({
+				collapsed: true,
+				animated: "medium",
+				persist: "location"
+			});	
+		});
+</script>
+{/literal}
+</head>
+<body>
+<div id="tree">
+<h4>产品目录 {if $is_edit eq 1}<a href='category_index.php?act=edit' target='edit_content'>添加顶级分类</a>{/if}</h4>
+<ul id='browser' class='filetree'>
+{$categoryTree}
+</ul>
+</div>
+</body>
+</html>

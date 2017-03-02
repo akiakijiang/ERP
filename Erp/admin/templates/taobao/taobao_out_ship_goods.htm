@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>淘宝外包发货管理</title>
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  
+
+	<script type="text/javascript">
+	// <![CDATA[
+							
+	var WEB_ROOT = '{$WEB_ROOT}';
+	//初始化两个用来存储用户作出的修改，用以显示
+	{literal}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit(){
+		var flag = true;
+		// 判断是否选择了分销店铺 
+		var nick =$("#application_nicks").find("option:selected").text();
+		if(nick == '未选'){
+			flag = false;
+			alert('请选择店铺');
+			return;
+		}
+		
+		//判断是否输入了商家编码 
+		var outer_id = $('#outer_id').val();
+		if (!outer_id) {
+			flag = false;
+			alert('请先输入商家编码 ');
+			return;
+		}else{
+			$.ajax({
+				type: 'POST',
+				url: 'taobao_out_ship_goods.php?request=ajax&act=check',
+				data: 'outer_id=' + outer_id,
+				dataType: 'json',
+				async: false,
+				success:function(data){
+					flag=data;
+					if(!flag)alert("商家编码不存在，请查询后再试");
+				},
+				error: function() { 
+					alert("商家编码查询异常，请稍后重试");
+				}
+			});
+		}
+		
+		//判断是否输入了外包数量
+		var num = $('#out_number').val();
+		if (num == '' || !/^\d+$/.test(num) || num < 1) {
+			flag = false;
+			alert('请输入正确的商品数量');
+			return;
+		}
+		// 取得外包时限 
+		var start = $('#start_time').val();
+		var end = $('#end_time').val();
+		if(start == '' || end == ''){
+			flag = false;
+			alert('输入起始与截止日期');
+			return;
+		}else if(start >= end){
+			flag = false;
+			alert('起始时间不能晚于截止时间');
+			return;
+		}
+		//取得配送方式
+		var shipping = $('#out_ship_id').val();
+		if(shipping == 0){
+			flag = false;
+			alert('请选择配送方式');
+			return;
+		}
+		if(flag){
+			$('#update').attr('disabled',false);
+			$('#create').attr('disabled',false);
+			$('#group_detail_form').submit();
+			
+		}else{
+			alert('无法创建成功');
+		}	
+		
+	}
+	{/literal}
+	// ]]>
+		
+	</script>
+
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<div style="margin:20px auto;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;外包管理&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+      
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand" style="font-size: 15px;background-color: green;">&nbsp;商品列表&nbsp;</legend>
+  <div>
+<!--{if $group_list}-->  {* 如果有列表数据 *}
+
+      <table class="inner" id="group_table">
+      
+        <tr align="center" class="th" style="font-size: 15px;">
+          <th width="23%">分销店铺</th>
+          <th width="15%">商家编码</th>
+          <th width="8%">数量</th>
+          <th width="6%">已售</th>
+          <th width="15%">起始时间</th>
+          <th width="15%">截止时间</th>
+          <th width="12%">配送方式</th>
+          <th width="8%">操作</th>
+        </tr>
+        
+        <!--{foreach from=$group_list item=group name="groupList"}-->
+	    <tr align="center" class="{cycle values='odd,even'}" out_ship_goods_id="{$group.out_ship_goods_id}" 
+	    style="font-size:15px;">
+		  <td>{$group.nick}</td>
+          <td>{$group.outer_id}</td>
+		  <td>{$group.out_number}</td>
+		  <td>{$group.transfer_num}</td>
+          <td>{$group.start_time}</td>
+          <td>{$group.end_time}</td>
+          <td>{$group.shipping_name}</td>
+	      <td>
+            <a href="taobao_out_ship_goods.php?id={$group.out_ship_goods_id}#update">编辑</a>
+           <!-- <a href="taobao_out_ship_goods.php?id={$group.out_ship_goods_id}&work=delete">删除</a>-->
+           <!--  <a href="javascript:void(0);" onclick="group_remove(this);">删除</a>-->
+		  </td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+	  {$pagination}
+
+<!--{else}-->
+
+	  <div style="text-align:center"><h4>无相关数据</h4></div>
+      
+<!--{/if}-->
+
+  </div>    
+  </fieldset>
+
+	<br />
+	<br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand" style="font-size: 15px;background-color:green;">&nbsp;商品管理&nbsp;</legend>
+  
+  <div> <a name="update"></a>
+	<form method="post" id="group_detail_form">
+      <table class="inner">
+        <tr>
+          <td width="120">分销店铺</td>
+          <td>
+	          <select name="item[application_key]" id="application_nicks">
+					<option value="ALL" >未选</option> {html_options options=$application_list selected=$update.application_key }
+			</select>
+		</td>
+        </tr>
+        
+        <tr>
+          <td>商家编码</td>
+          <td>
+            <input type="text" name="item[outer_id]" value="{$update.outer_id}" id="outer_id" maxlength="128" size="30"/>
+          </td>
+        </tr>
+        
+        
+        <tr>
+          <td>数量</td>
+          <td>
+            <input name="item[out_number]" type="text" id="out_number" value="{$update.out_number}" maxlength="128"/>
+          </td>
+        </tr>
+        
+
+        <tr>
+          <td>有效时间</td>
+          <td>
+            <input type="text" name="item[start_time]" value="{$update.start_time}" size="21" id="start_time" />
+            <input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />&nbsp;&nbsp;---&nbsp;&nbsp;
+			<input type="text" name="item[end_time]" value="{$update.end_time}" size="21" id="end_time"/>
+            <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+          </td>
+        </tr>
+        
+
+        <tr>
+          <td>配送方式</td>
+          <td>
+        	<select name="item[out_ship_id]" id="out_ship_id">
+             		<option value="0">-请选择-</option>
+                    <optgroup label="款到发货">
+                    {foreach from=$get_shippings item=shipping key=shipping_id}
+                    	{if $shipping.support_no_cod == 1 && $shipping.support_cod == 0}
+                        	<option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $update.out_ship_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                   	 	{/if}
+                    {/foreach}
+                    </optgroup>
+          
+                    <optgroup label="货到付款">
+          				{foreach from=$get_shippings item=shipping key=shipping_id}
+                    	{if $shipping.support_no_cod == 0 && $shipping.support_cod == 1}
+                        	<option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $update.out_ship_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    	{/if}
+                   	 {/foreach}
+                    </optgroup>    
+          
+                    <optgroup label="上门自提">
+                    {foreach from=$get_shippings item=shipping key=shipping_id}
+                   	 	{if $shipping.support_no_cod == 1 && $shipping.support_cod == 1}
+              				<option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $update.out_ship_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    	{/if}
+          			{/foreach}
+                    </optgroup>                                                
+             </select>
+          </td>
+        </tr> 
+
+      </table>
+
+      <br />
+      {if $update.out_ship_goods_id}
+      <div style="text-align:center"><input type="button" value="更新" onclick="apply_submit(this);" id="update"/></div>
+      <input type="hidden" name="item[out_ship_goods_id]" value="{$update.out_ship_goods_id}" />
+      <input type="hidden" name="act" value="update" />
+      <input type="hidden" name="comment" id="comment" value="更新"/>
+      {else}
+      <div style="text-align:center"><input type="button" value="创建" onclick="apply_submit(this);" id="create"/></div>
+      <input type="hidden" name="act" value="add" />
+      <input type="hidden" name="comment" id="comment" value="创建"/>
+      {/if}
+  </form>
+	</div>
+	</fieldset>
+        
+  
+<br />
+</div>
+</fieldset>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+{literal}
+Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "start_time",
+		button            : "startTrigger",
+		ifFormat          : "%Y-%m-%d %H:%M:%S",
+		daFormat          : "%Y-%m-%d %H:%M:%S",
+		showsTime         :true
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "end_time",
+		button            : "endTrigger",
+		ifFormat          : "%Y-%m-%d %H:%M:%S",
+		daFormat          : "%Y-%m-%d %H:%M:%S",
+		showsTime         :true
+	});
+	{/literal}
+		// ]]>
+		</script>
+
+</script>
+</body>
+</html>

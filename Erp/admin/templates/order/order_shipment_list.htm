@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>合并发货查看</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    .strik {
+        background-color: #ECEE9F;
+    }
+    <!--{/literal}-->
+    </style>
+  
+    <script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+    /**
+     * 提交检查
+     */
+    function check_submit(node)
+    {
+        node = node ? node : document ;
+        item = $(node).find(':checkbox:checked');
+        if (!item || item==undefined || item.length<2) {
+            alert('没有选中项');
+            return;
+        }
+        $('#form').submit();
+    }
+    // {/literal}
+    // ]]>
+    </script>
+    
+    <!-- Loading Calendar JavaScript files -->
+    <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+    <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;合并发货查看&nbsp;</span></legend> 
+
+  <div class="menu-tab">
+    <div class="right-edge">&nbsp;</div>
+    <div class="active"><a href="order_shipment_list.php">合并发货查看</a></div>
+    <div class="item"><a href="order_shipment.php">合并发货操作</a></div>
+    <!-- 
+    <div class="item"><a href="order_search.php">查找订单</a></div>
+    <div class="item"><a href="order_list.php">订单列表</a></div>
+     -->
+    <div class="left-edge">&nbsp;</div>
+  </div>
+  
+   <div style="clear:both;"> 
+    <h3 style="color:#09F;">查询</h3>
+    <form method="get">
+    <table cellpadding="5" cellspacing="1" >
+        <tr><td>每页显示</td>　　
+          <td>  <select name="size" id="size">{html_options options=$page_size_list}</select>条记录</td>
+         </tr>
+        <tr>
+          <td width="120">下单时间</td>
+          <td>
+              <input type="text" id="start" name="start" value="{$start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+              <input type="text" id="end" name="ended" value="{$ended}" size="10" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <input type="submit" value="查询" />
+          </td>
+        </tr>
+    </table>
+    </form>
+   </div>
+   
+
+      <h3 style="color:#09F;">合并发货列表</h3>
+   
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+        <tr bgcolor="#f9f9f9">   
+            <th>发货单号</th> 
+            <th>订单号</th>
+            <th>淘宝订单号</th>
+            <th>订单金额</th>
+            <th>订单总金额</th>  
+        </tr>   
+         <!--{foreach from=$order_list item=order_item name="orderList" key="id"}-->
+         <!--{foreach from=$order_item item=order name="goods" key="key"}-->
+         <!--{if $key neq "total_amount"}-->
+           <tr align="center" {if $smarty.foreach.orderList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+            <!--{if $smarty.foreach.goods.first}-->
+            <td rowspan="{math equation='x - y' x=$order_item|@count y=1}">{$order.shipment_id}</td>
+            <!--{/if}-->
+            <td ><a href="order_edit.php?order_id={$key}" target="_blank">{$order.order_sn}</a></td>
+            <td >{$order.taobao_order_sn}</td>
+            <td >{$order.order_amount}</td>
+            <!--{if $smarty.foreach.goods.first}-->
+            <td rowspan="{math equation='x - y' x=$order_item|@count y=1}">{$order_item.total_amount}</td>
+            <!--{/if}-->
+         </tr>     
+        <!--{/if}-->
+        <!--{/foreach}-->
+        <!--{/foreach}-->
+        <tr>
+        <td colspan="9" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        </tr>
+      </table>
+            <br/>
+  </fieldset>
+  
+  <script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "start",
+    button            : "startTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "end",
+    button            : "endTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+  
+</body>
+</html>

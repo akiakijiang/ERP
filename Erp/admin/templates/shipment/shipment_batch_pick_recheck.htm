@@ -1,0 +1,458 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>批次号复核</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    table.tracking_number_table {
+      border-collapse: collapse;
+      border: 1px solid #b7b7b7;
+      font-size: 14px;
+        width: 470px;
+    text-align: center;
+    }
+    table.tracking_number_table td {
+      border-collapse: collapse;
+      border: 1px solid #b7b7b7;
+      font-size: 12px;
+        height: 30px;
+    }
+    <!--{/literal}-->
+  </style>
+  
+  <script type="text/javascript">
+    // <![CDATA[
+    
+    var ORDER_SN   = '{foreach from=$order_list item=order_item name=order_list1}{$order_item.order_sn}{if !$smarty.foreach.order_list1.last},{/if}{/foreach}';  // 查询条码
+    var alert_message = '{$alert_message}';
+    var SHOW_SCAN_TRACKING_NUMBER = '{$show_scan_tracking_number}';
+
+
+    // {literal}
+
+    
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        
+        // 绑定加载发货单事件
+        $('#load_batch_pick_sn').bind('click', load_batch_pick_sn);
+        $('#batch_pick_sn').bind('keyup', listen_batch_pick_sn).focus();
+        
+        // 绑定加载面单事件
+        $('#load_tracking_number').bind('click', load_tracking_number);
+        $('#tracking_number').bind('keyup', listen_tracking_number).focus();
+
+        // // 确定页面载入时鼠标焦点的定位
+        // if(SHOW_SCAN_GOODS_BAECODE) {
+        //     $('#scan').focus();
+        // } else if(SHOW_SCAN_TRACKING_NUMBER) {
+        //     $('#trackings_number').focus();
+        // } else {
+        //     $('#shipment_id').focus();
+        // }
+        
+        // 绑定扫描面单事件
+        $('#tracking_number').bind('keyup', tracking_number);
+
+        // 复核提交
+        $('#pick').bind('click', check);
+        
+        //{/literal}
+
+        {if $orders}
+            var shipment_ids = new Array();
+            {foreach from=$orders item=order_item}
+                shipment_ids.push("{$order_item.tracking_number}");                   
+            {/foreach}
+        {/if}
+        // {literal}
+
+
+    });
+
+    
+    var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+
+
+    function tracking_number(event)
+    {
+        if (event.keyCode != KEY.CTRL && event.keyCode != KEY.RETURN) return;
+        var $i = $(this);
+        var tracking_number = $.trim($i.val());
+        if (tracking_number != '') {
+            validate(tracking_number);
+            $i.val('').select();
+        }
+    }
+
+    function validate(tracking_number)
+    {
+        var length = $(".tracking_number_table").find("tr").length-1; 
+        //var first_tracking_number= $(".tracking_number_table").find('td').eq(2).attr('value');
+        var first_tracking_number = $(".tracking_number_table").find('tr').eq(1).find('td').eq(0).attr('value');
+        var first_tracking_number_pick_status = $(".tracking_number_table").find('tr').eq(1).find('td').eq(1).attr('value');
+        var last_tracking_number = $(".tracking_number_table").find('tr').eq(length).find('td').eq(0).attr('value');        
+        if(first_tracking_number_pick_status == "no" && tracking_number == first_tracking_number){                     
+            if(length == 1){
+                $(".tracking_number_table").find('tr').eq(1).find('td').eq(1)
+                .attr('value', 'yes')
+                .text('已扫描')
+                .css('background-color', '#E4E4E4');
+                $("#pick").removeAttr("disabled");
+            }else{
+                for (var i = 1; i < length; i++) {
+                    $(".tracking_number_table").find('tr').eq(i).find('td').eq(1)
+                    .attr('value', 'yes')
+                    .text('已扫描')
+                    .css('background-color', '#E4E4E4');
+                };
+                $(".tip").text('请在此扫描该批次的最后一个面单号');
+            }
+        }else if(first_tracking_number_pick_status == "yes" && tracking_number == last_tracking_number){
+            $(".tracking_number_table").find('tr').eq(length).find('td').eq(1)
+                .attr('value', 'yes')
+                .text('已扫描')
+                .css('background-color', '#E4E4E4');
+                $("#pick").removeAttr("disabled");
+        }else if(first_tracking_number_pick_status == "no" && tracking_number != first_tracking_number){
+            alert('面单号错误，请扫描该批次号第一个面单');
+        }
+        else if(first_tracking_number_pick_status == "yes" && tracking_number != last_tracking_number){
+            alert('面单号错误，请扫描该批次号最后一个面单');
+        }
+        else{
+            alert('面单号错误，请扫描该批次号第一个面单');
+        }
+        
+   }
+    /**
+     * 批次号监听
+     */
+    function listen_batch_pick_sn(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load_batch_pick_sn();
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    /**
+     * 面单监听
+     */
+    function listen_tracking_number(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load_tracking_number();
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    
+    /**
+     * 载入批次号信息
+     */
+    function load_batch_pick_sn() 
+    {
+        var batch_pick_sn = $.trim($('#batch_pick_sn').val());
+        if (batch_pick_sn == '') {
+            alert('请先输入批次号');
+            return; 
+        }
+        
+        location.href = "shipment_batch_pick_recheck.php?batch_pick_sn="+batch_pick_sn;
+    }
+    
+    /**
+     * 载入面单列表
+     */
+    function load_tracking_number() 
+    {
+        var tracking_number = $.trim($('#tracking_number').val());
+        if (tracking_number == '') {
+            alert('请先扫描面单号');
+            return; 
+        }
+    }
+    
+    /**
+     * 验证发货单和面单是否绑定
+     */
+    function check_shipment_id_tracking_number(shipment_id,tracking_number)
+    {
+        var result = false;
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=check_shipment_id_tracking_number', 
+            data: 'shipment_id=' + shipment_id + '&tracking_number=' + tracking_number,
+            error: function() {
+                alert('ajax请求错误, 请重新扫描面单号:' + tracking_number); 
+            },
+            success: function(data) {
+                if(data.success) {
+                    result = true;
+                }
+            },
+        }); 
+        return result;
+    }
+
+    
+    // 检测输入的数字
+    function check_number_format(number) {
+        var reg = /(^\d+$)/;
+        if(!number.match(reg)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function check(event)
+    {
+        var message="批次号复核订单数据量大，请确保所有复核的面单信息";        
+        if (confirm(message)) {
+            // 复核后更新发货状态
+            //获取页面上所有的发货单信息 
+            var shipment_ids = new Array();
+            var length = $(".tracking_number_table").find("tr").length-1;
+            for (var i = 1; i <= length; i++) {
+                var shipment_id= $(".tracking_number_table").find('tr').eq(i).find('td').eq(0).attr('shipment_id');
+                shipment_ids.push(shipment_id);
+            };
+            //获取页面上所有的订单信息 
+            var order_ids = new Array();
+            var length = $(".tracking_number_table").find("tr").length-1;
+            for (var i = 1; i <= length; i++) {
+                var order_id= $(".tracking_number_table").find('tr').eq(i).find('td').eq(0).attr('order_id');
+                order_ids.push(order_id);
+            };
+
+            var recheck = can_batch_recheck_pass(shipment_ids); 
+            if(!recheck){
+                alert("发货单对应订单状态修改，复核失败！！");
+                location.href = "shipment_batch_pick_recheck.php";
+                return;
+            }
+            var result = recheck_update_batch_shipping_status(shipment_ids);
+            if(!result) {
+                alert('复核提交失败！');
+                location.href = "shipment_batch_pick_recheck.php";
+                return;
+            }else{
+                alert('复核提交成功！');
+                location.href = "shipment_batch_pick_recheck.php";
+            }     
+        };
+            
+    }
+    /*
+     * 提交复核之前批量再判断订单状态
+     */
+     function can_batch_recheck_pass(shipment_ids){
+         var result = false;
+         //console.log(shipment_ids);
+         $.ajax({
+             mode: 'abort',
+             async : false,
+             type: 'POST',
+             dataType: 'json',
+             url : 'ajax.php?act=can_batch_recheck_pass', 
+             data: 'shipment_ids=' + shipment_ids,
+             error: function() {
+                 alert('判断订单状态ajax请求错误'); 
+                 $('#pick').attr('disabled', false);
+             },
+             success: function(data) {
+                if(data.success) {
+                    result = true;
+                }else{
+                    if(data.error){
+                        alert(data.error);
+                    }
+                }
+             },
+         }); 
+         return result;
+    }
+    
+    /**
+     * 批量更新发货状态
+     */
+    function recheck_update_batch_shipping_status(shipment_ids)
+    {
+        var result = false;
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=recheck_update_batch_shipping_status', 
+            data: 'shipment_ids=' + shipment_ids,
+            error: function() {
+                alert('更新发货状态ajax请求错误'); 
+                $('#pick').removeAttr("disabled");
+            },
+            success: function(data) {
+                //console.log(data);
+                if(data.success) {
+                    result = true;
+                }
+                else{
+                    if(data.error){
+                        alert(data.error);
+                    }
+                }
+            },
+        }); 
+        return result;
+    }
+
+    
+    // 判断是否存在警告
+    if(alert_message && !confirm(alert_message)) {
+        history.go(-1);
+    }
+    // {/literal}
+    // ]]>
+  </script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;批次号复核&nbsp;</span></legend>
+<form method="post" id="form"> 
+
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">配送信息</h3>
+
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">扫描批次号</td>
+        <td>
+            <input type="text" id="batch_pick_sn" value="{$batch_pick_sn}" size="39" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" id="load_batch_pick_sn" value="加载" />
+        </td>
+        </tr>
+        
+        <!--{if $order}-->
+        <!-- <tr>
+          <td>发货仓库</td>
+          <td>{$order.facility_id|facility_mapping}</td>
+        </tr>
+        
+        <tr>
+          <td ><font   color   =   "red" size="2px">配送方式</font></td>
+          <td><font   color   =   "red" size="2px">{$order.shipping_name}</font></td>
+        </tr>
+        
+        <tr>
+          <td>收货人</td>
+          <td>{$order.consignee}</td>
+        </tr>
+        
+        <tr>
+          <td>收货地址</td>
+          <td>
+            {if check_admin_priv('check_user_address')}
+            {if $order.province != 0}[{$order.province|get_region_names}]{/if}{if $order.city != 0}[{$order.city|get_region_names}]{/if}{if $order.district != 0}[{$order.district|get_region_names}]{/if}{$order.address}
+            {else}
+            ××××××
+            {/if}
+          </td>
+        </tr>
+        
+        {if $order.important_day}
+        <tr>
+          <td>用户婚期</td>
+          <td>{$order.important_day}</td>
+        </tr>
+        {/if} -->
+        
+        <!--{/if}-->
+        
+    </table>
+  </div>
+  
+  <!--{if $show_scan_tracking_number}-->
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">配送信息</h3>
+
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">扫描面单号</td>
+        <td>
+            <input type="text" id="tracking_number" value="{$tracking_number}" size="39" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" id="load_tracking_number" value="加载" />
+
+        </td>
+        <td> &nbsp;&nbsp;&nbsp;&nbsp;<span class="tip">请在此扫描该批次的第一个面单号，系统会为您自动扫描出除最后一个所有的面单&nbsp;&nbsp;<strong>请用半角输入法</strong></span></td>
+        </tr>       
+    </table>
+  </div>
+   
+   <div style="clear:both; width:470px;">
+      <table class="tracking_number_table">
+        <tr align="center" bgcolor="#f9f9f9">
+          <td >发单号</td>
+          <td>扫描状态</td>        
+        </tr>
+        <!--{foreach from=$orders item=item }-->
+        <tr >
+          <td value="{$item.tracking_number}" shipment_id="{$item.shipment_id}" order_id="{$item.order_id}">{$item.shipment_id}</td>
+          <td value="no">未扫描</td>        
+        </tr>
+        <!--{/foreach}-->
+    </table >
+  </br>
+    <div style="text-align:center"><input type="button" id="pick" value="复核提交" disabled/></div>
+</div>
+<!--{/if}-->
+  <input type="hidden" name="act" />
+  <input type="hidden" name="batch_pick_sn" value="{$batch_pick_sn}" />
+  
+</form>
+
+<br /><br />
+
+</fieldset>
+</body>
+</html>

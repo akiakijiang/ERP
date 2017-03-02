@@ -1,0 +1,5 @@
+业务组织,仓库名称,商品名称,商品条码,库位,状态,ERP库存  
+{foreach from=$consumer_goods_list item=goods_list}
+{$goods_list.name},{$goods_list.facility_name},{$goods_list.goods_name},{$goods_list.barcode},{$goods_list.location_barcode},{$goods_list.status_id},{$goods_list.total_number}
+{/foreach}
+

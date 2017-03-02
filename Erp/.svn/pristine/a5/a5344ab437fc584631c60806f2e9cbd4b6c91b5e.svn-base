@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库库位管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;仓库库位管理&nbsp;</span></legend>
+
+  <div style="float:right;clear:both;"><a href="facility_location_manage.php?facility_id={$filter.facility_id}">库位列表</a></div>
+    
+  <div style="clear:both;"> 
+	<h3 style="color:#09F;">添加/更新</h3>
+ 	<form method="post" id="form" action="facility_location_update.php">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      		<td width="120">仓库 <span class="require"> * </span></td>
+	        <td>
+            	{if $facility_location}
+            	<select disabled="disabled">{html_options options=$facility_list selected=$facility_location->facilityId}</select>
+				<input type="hidden" name="facility_location[facilityId]" value="{$facility_location->facilityId}" />
+                {else}
+            	<select name="facility_location[facilityId]"><option value="0">-- 选择</option>{html_options options=$facility_list selected=$filter.facility_id}</select>
+                {/if}
+            </td>
+		</tr>
+        
+    	<tr>
+      		<td width="120">标识 <span class="require"> * </span></td>
+	        <td>
+            	{if $facility_location}
+                <input type="text" disabled="disabled" size="30" value="{$facility_location->locationSeqId}" /> 
+                <input type="hidden" name="facility_location[locationSeqId]" value="{$facility_location->locationSeqId}" /> 
+                {else}
+                <input type="text" name="facility_location[locationSeqId]" size="30" value="{if $filter.location_seq_id}{$filter.location_seq_id}{/if}" /> 
+                &nbsp;&nbsp; <span class="tip">(可以是字母和数组的组合，请确保一个仓库内唯一， 创建后不能修改)</span>
+                {/if}
+            </td>
+		</tr>
+        <!--
+    	<tr>
+      		<td width="120"></td>
+	        <td>
+				--
+            </td>
+		</tr>
+      
+    	<tr>
+      	    <td>区域标识</td>
+            <td>
+              <input type="text" name="facility_location[areaId]" size="30" value="{$facility_location->areaId}" />
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>过道标识</td>
+            <td>
+              <input type="text" name="facility_location[aisleId]" size="30" value="{$facility_location->aisleId}" />
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>仓间标识</td>
+            <td>
+              <input type="text" name="facility_location[sectionId]" size="30" value="{$facility_location->sectionId}" />
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>层次标识</td>
+            <td>
+              <input type="text" name="facility_location[levelId]" size="30" value="{$facility_location->levelId}" />
+		    </td>
+		</tr>
+        
+    	<tr>
+      	    <td>位置名称</td>
+            <td>
+              <input type="text" name="facility_location[positionId]" size="30" value="{$facility_location->positionId}" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		    </td>
+		</tr>
+        -->
+    	<tr>
+      	    <td>&nbsp;</td>
+            <td>
+				<input type="submit" value="保存" />
+		    </td>
+		</tr>
+                	  
+        
+	</table>
+    
+    <input type="hidden" name="act" value="update" />
+    </form>
+  </div>
+  
+  <br />
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

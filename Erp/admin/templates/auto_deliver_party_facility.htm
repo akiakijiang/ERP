@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>管理1</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" >
+  {literal}
+  function passAction(obj){
+  	var facility_id = obj.id ;
+  	var party_id = $('#party_id').val();
+  	location.href = 'auto_deliver_party_facility.php?act=add&facility_id=' + facility_id +"&party_id="+party_id;
+  }
+  function denyAction(obj){
+  	var facility_id = obj.id ;
+  	var party_id = $('#party_id').val();
+  	location.href = 'auto_deliver_party_facility.php?act=del&facility_id=' + facility_id +"&party_id="+party_id;
+  }
+  {/literal}
+  </script>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<input type="hidden" id="party_id" value="{$party_id}"/>
+{if $message}<div style="color: red;font-size: 20px;">{$message}</div>{/if}
+   <table style="width: 35%; border: 1px solid #333;" class="bWindow">
+      <tr>
+         <td>仓库名</td>
+         <td>状态</td>
+         <td>操作人</td>
+         <td>操作时间</td>
+         <td>修改状态</td>
+      </tr>
+      {foreach from=$party_facility_list item=req name="partyFacilityList"}
+      <tr>
+         <td>{$req.facility_name}</td>
+         <td>{if $req.is_delete == '1'}废弃{elseif $req.is_delete == '0'}已启用    {else}未使用过{/if}</td>
+         <td>{$req.action_user}</td>
+         <td>{$req.last_update_stamp}</td>
+         <td>{if $req.is_delete == '1'}
+         	 <a id='{$req.facility_id}' href='#' onclick="javascript:passAction(this);">启用</a>
+         	 {elseif $req.is_delete == '0'}
+         	 <a id='{$req.facility_id}' href='#' onclick="javascript:denyAction(this);">废弃</a>
+             {else}
+             <a id='{$req.facility_id}' href='#' onclick="javascript:passAction(this);">启用</a>
+             {/if}
+         </td>
+      </tr>
+      {/foreach}
+   </table>
+</fieldset>
+</body>
+</html>

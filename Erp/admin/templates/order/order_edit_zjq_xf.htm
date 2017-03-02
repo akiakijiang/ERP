@@ -1,0 +1,573 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>{$order_header->order_sn_}（{$order_header->party_name_}）新订单详情页</title>
+  <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="styles/orderNew2.css?t=201410101011.css"/>
+  <link rel="stylesheet" type="text/css" href="styles/pikaday.css"/>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+   <!-- {literal} -->
+  <style type="text/css">
+
+
+
+
+  </style>
+   <!-- {/literal} -->
+  <script type="text/javascript">
+      // <![CDATA[
+
+
+      //]]>
+      </script>
+</head>
+<body>
+
+  <div id="disable-mask"><img src="images/preloader.gif" alt='busy'></div>
+  <div id="mainContent">
+   <div id='mainWrap'>
+    <div id='header'>
+
+      <p class="orderId" >订单号：<span>{$order_header->order_sn_}（{$order_header->party_name_}）（<a href="best_shipping_analysis.php?order_id={$order_header->order_id_}" target="_blank">最优快递</a>）</span></p>
+      <input type="hidden" id="order_sn" value="{$order_header->order_sn_}"/>
+      <input type="hidden" id="is_baoda" value="{$is_baoda}" />
+      <ul id='stateList'>
+        <li>订单状态:</li>
+        {foreach from = $order_header->status_list_ item=status}
+        <li><span>{$status}</span></li>
+        {/foreach}
+        <li>
+         {if $order_header->refund_apply_enabled_} {* 允许退款申请 *}
+         <a href="refund_apply_unshipping.php?order_id={$order_header->order_id_}" target="_blank">退款申请</a>
+         {/if}
+       </li>
+     </ul>
+
+     <ul id='actList' style="float:right;width:280px;">
+      {foreach from = $order_header->allowed_action_list_ key=action_id item=action_name }
+      <li><span id='{$action_id}'>{$action_name}</span></li>
+      {/foreach}
+    </ul>
+             <!-- <p class='saleSupport' align='center' style='color:red;width:150px;float:right;'>
+                <a href="sale_support/sale_support.php?order_id={$order_header->order_id_}" target="_blank">售后沟通</a>
+              </p> -->
+              <div style="clear:both;"></div>
+              <p class='reservedTime' align='center' style='color:red;width:200px;float:right;margin-top:8px;margin-right:10px;'><span></span></p>
+
+              <p id='uniOrder'>
+                {if $order_header->merge_info_->can_edit_}
+                <span class='addUniOrder'>添加合并订单</span>
+                {/if}
+                <div class='merged_order_ids_wrap' style='{if $order_header->merge_info_->merged_order_ids_} display:block;{/if}'>
+                  {if $order_header->merge_info_->canForceDivorce}
+                  <span class='disUniOrder_force'>[强行拆分]</span>
+                  {/if}
+                  <span class='disUniOrder'>拆分</span>
+                  <span>已合并的订单：</span>
+                  <span class='orderSnWrap'>
+                    {foreach from = $order_header->merge_info_->merged_order_ids_ key=k item=value }
+                    <span class='existUniOrderId'><a href="order_edit.php?order_id={$value.order_id}" target="_blank">{$value.order_sn}</a>,</span>
+                    {/foreach}
+                  </span>
+                </div>
+              </p>
+              <p class="trans_status">
+                <ul id='stateList'>
+                  {if $is_kjg == ture}
+                  <li>流转状态:</li>
+                  <li><span>{$apply_status}</span></li>
+                  <li><span>{$shipping_status}</span></li>
+                  <li><span>{$tracking_number}</span></li>
+                  <li>
+                  {/if}
+                  {if $liuzhuan_status == 'success'}
+                    <li>菜鸟仓流转状态:</li>
+	                  <li id="status"><span>{$liuzhuan_indicate_status}</span>{if $liuzhuan_indicate_status=='推送失败'}<div  id="err" style="display:none">{$liuzhuan_err_message}</div>{/if}</li>
+	                  <li><span>{$liuzhuan_logistics_status}</span></li>
+                  {/if}
+                  {if $liuzhuan_status == 'not_send'}
+                    <li>菜鸟仓流转状态:</li>
+	                  <li><span>未推送菜鸟仓</li>
+	                  <li><span>未发货</span></li>
+                  {/if}
+                  {if $liuzhuan_status == 'erp_send'}
+                    <li>菜鸟仓流转状态:</li>
+	                  <li><span>由erp发货不推送菜鸟仓</li>
+                  {/if}
+                   {if $liuzhuan_status == 'cancel_erp_send'}
+                    <li>菜鸟仓流转状态:</li>
+	                  <li><span>推送成功后转回ERP发货</li>
+                  {/if}
+                  {if $liuzhuan_status == 'cancel_'}
+                    <li>菜鸟仓流转状态:</li>
+	                  <li><span>推送成功后取消成功</li>
+                  {/if}
+                  {if $liuzhuan_status == 'send_fail'}
+                    <li>菜鸟仓流转状态:</li>
+	                  <li><span>推送失败</li>
+                  {/if}
+                    {if $order_header->refund_apply_enabled_} {* 允许退款申请 *}
+                    <a href="refund_apply_unshipping.php?order_id={$order_header->order_id_}" target="_blank">退款申请</a>
+                    {/if}
+                  </li>
+                </ul>
+              </p>
+              <div class='inputUniOrder'>
+                <img src='images/topArrow.png' />
+                <select>
+                  <option value='taobao'>淘宝订单号</option>
+                  <option value='erp'>ERP订单号</option>
+                </select>
+                <input type='text' placeholder='请输入合并的订单号' />
+                <input type='button' class='subUniOrder' value='合并订单'/><br/>
+              </div>
+              <div id='actListTab' class='add_note'>
+                <img src='images/close.png' id='closeActTab'/>
+                <img src='images/topArrow.png' id='topArrofActTab'/>
+                <span>添加备注：</span>
+                <textarea class='noteText'style='resize:none;vertical-align:top'/>
+              </textarea><br/>
+              <span>重要备注：</span>
+              <input type="checkbox" id='isShippingNote' name='isShippingNote' value=2 />
+              {if $order_header->pick_list_status_ == 'printed'}
+              <span style="color:green;font-weight:bold;">发货单已打印，请当面沟通</span>
+              {/if}
+              <br/><br/>
+              <label for='datepicker'>仓库可操作时间：</label>
+              <input type='text' id='datepicker'/><br/>
+              <input type='button' class='subActBtn' value='提交'/>
+            </div>
+            <div class="clear"></div>
+          </div>
+          <div id='detailWrap'>
+            <ul>
+             <!--  <li id='plate_info'>平台信息</li> -->
+             <li id='source_order_info' class="detailShown">订单详细信息</li>
+             <!-- <li id='pay_info'>付款信息</li> -->
+             <li id='logistic_info'>物流信息</li>
+             <li id='service_records'>售后记录<span>{$order_header->service_count_}</span></li>
+             <!-- <li id='action_records'>操作信息<span>{$order_header->action_count_}</span></li> -->
+             <!--<li id='status_history_records'>历史记录<span>{$order_header->history_count_}</span></li>-->
+             <li id='sale_support_message'>售后沟通</li>
+             {* {if $order_header->party_id_ == '65638'} *}
+             {if $order_header->facility_id_ == '149849262' || $is_baoda }
+             <li id="trans_status" class="status_history_records">流转状态</li>
+             {/if}
+           </ul>
+           <img src="images/preloader.gif" title='loadingajax' id='loadimg'/>
+           <div id='detailContent'>
+            <div class='info' id='orderDetail' style="display:block;">
+              <div id='platformWrap' class='orderDetailChild1'>
+                <div class='custgrid1'>
+                 <h2 class="h2_online" style="padding-left:5px;">平台信息</h2>
+                 <form act='' id='plateForm'>
+                  <label for='OUTER_TYPE'>平台：</label>
+                  <select name="OUTER_TYPE" id='OUTER_TYPE'>
+                    <option value="-1">无</option>
+                    {html_options options=$order_header->platform_info_->platform_list_ selected=$order_header->platform_info_->id_}
+                  </select>
+                  <label for='taobao_order_sn'>订单号：</label>
+                  <input type='text' value='{$order_header->platform_info_->order_sn_}' name='taobao_order_sn' id='taobao_order_sn' readonly='readonly' />
+                  <label for='TAOBAO_USER_ID'>用户id：</label>
+                  <input type='text' value='{$order_header->platform_info_->user_id_}' name='TAOBAO_USER_ID' id='TAOBAO_USER_ID' readonly='readonly' />
+                  <label for='TAOBAO_POINT_FEE' style="width:70px;">使用积分：</label>
+                  <input type='text' value='{$order_header->platform_info_->point_fee_}' style='width:40px' name='TAOBAO_POINT_FEE' id='TAOBAO_POINT_FEE' readonly='readonly'/><br/>
+                  <label for='distributor_id' style="padding-left:95px;" >分销商：</label>
+
+                  <select id='distributor_id' name='distributor_id' style="width:300px;">
+                    <option value='{$order_header->platform_info_->distributor_}'>{$order_header->platform_info_->distributor_}</option>
+                  </select>
+                  <span style="padding-left:30px;">要求：若48小时无货，则</span><span class='custReq'></span>
+
+
+                  {if $order_header->platform_info_->can_edit_}
+                  <!--
+		  <span class='editBtn'>修改</span>
+                  <input type='button' value='提交修改' class='submitPlate' style="margin:5px 0 5px 400px;"/>
+                  -->
+		  {/if}
+
+                </form>
+              </div>
+            </div>
+            <div id='custDetail' class='orderDetailChild'>
+              {* {if $order_header->party_id_ == '65638'} *}
+              {if $order_header->facility_id == '149849262' }
+              <div class='custgrid'>
+                <h2 class="h2_online">清关信息</h2>
+                <form id='qingguanForm'>
+                  <label for='name'>姓名：</label>
+                  <span id='name'>{$order_line_bw.name}</span>
+                  <label for='IDcard' style="width:70px;margin-left: 180px;">身份证号：</label>
+                  <span id='IDcard'>{$order_line_bw.mibun_number}</span>
+                </form>
+              </div>
+              {/if}
+              <div class='custgrid'>
+                <form id='custInfoForm'>
+                  <h2 class="h2_online" style="padding-left:5px;">收货人信息</h2>
+                  <label for='user_name'>用户名：</label>
+                  <input type='text' value='' name='user_name' id='user_name' />
+                  <span class='editBtn'>修改</span>
+                  <label for='consignee'>姓名：</label>
+                  <input type='text' value='' name='consignee' id='consignee' />
+                  <label for='sex'>性别：</label>
+                  <select name='sex' id='sex'>
+                    <option selected='selected' value='unknown'>未知</option>
+                    <option value='male'>男士</option>
+                    <option value='female'>女士</option>
+                  </select>
+
+                  {if $order_header->consigne_info_->is_maintain_birthday_}
+                  <p style='margin-left:90px;'>
+                   <label for='birthday'>宝宝出生日期：</label>
+                   <input type='text' value='{$order_header->consigne_info_->birthday_}' name='birthday' id='birthday' />
+                 </p>
+                 {else}
+                 <p style='margin-left:90px;'>
+                   <label for='birthday'>无需维护宝宝出生日期</label>
+                   <input type='hidden' value='0000-00-00' name='birthday' id='birthday' />
+                 </p>
+                 {/if}
+
+                 <p style='margin-left:90px;color:red'>顾客留言：<span  class='custPost'></span></p>
+                 <p style='margin-left:90px;color:red'>小二留言：<span  class='custSellerPost'></span></p>
+                 <input type='button' value='提交修改' class='consignee' style="margin:5px 0 5px 400px;" />
+               </form>
+             </div>
+
+             <div class='custgrid' id='addressInfoBox'>
+              <h2 class="h2_online">地址信息</h2>
+              <form id='addressForm'>
+                <span class='editBtn'>修改</span>
+                <label for='zipcode'>邮编：</label>
+                <input type='text' value='' name='zipcode' id='zipcode' style="width:50px;"/>
+                <label for='province'>地址：</label>
+                <select name='province' id='province'>
+                </select>省
+                <select name='city' id='city'>
+                </select>市
+                <select name='district' id='district'>
+                </select>区
+                <input type='text' name='address' id='address'/><br/><span style="padding-left:90px;">(地址中不能含有#&等字样)</span><br/>
+                <label for='buyer_detail_info' style="width:70px;margin-left:84px;">详细信息：</label>
+                <span name='buyer_detail_info' id = 'buyer_detail_info'></span>
+                <input type='button' value='提交修改' class='consignee' style="margin:5px 0 5px 400px;"/>
+              </form>
+            </div>
+
+            <div class='custgrid'>
+              <h2 class="h2_online">联系方式</h2>
+              <form id='contactForm'>
+                <span class='editBtn'>修改</span>
+                <label for='tel'>固话：</label>
+                <input type='text' value='' name='tel' id='tel'/>
+                <label for='mobile'>手机：</label>
+                <input type='text' value='' name='mobile' id='mobile'/>
+                <input type='button' value='提交修改' class='consignee' style="margin:5px 0 5px 400px;"/>
+              </form>
+            </div>
+
+            <div class='custgrid'>
+              <h2 class="h2_online" style="padding-right:0;">支付方式</h2>
+              <form id='payForm'>
+                <span class='editBtn'>修改</span>
+                <label for='pay_id' style="width:70px;">支付方式：</label>
+                <select name='pay_id' id='pay_id'></select>
+                关键字搜索:
+                <input type="text" name="order_pay_id_select"  id="order_pay_id_select" size="40" />
+                <br/>
+                <div id='invoiceInfo' style="padding-left:90px;">
+                </div>
+	            {if $is_baoda }
+	            <label for='pay_number' style="width:70px;padding-left:85px;">支付单号：</label>
+	            <input type="text" name="pay_number"  id="pay_number" size="40" />  
+	            <br />
+	            <label for='kjg_pay_id' style="width:140px;padding-left:65px;">申报系统支付方式：</label>
+	            <select name='kjg_pay_id' id='kjg_pay_id'></select>         
+				{/if}                
+                <input type='hidden' id='force_update' name='force_update' value='0' />
+                <input type='button' value='提交修改' class='payment' style="margin:5px 0 5px 400px;"/>
+              </form>
+            </div>
+
+
+            <div class='custgrid'>
+              <h2 class="h2_online">配送仓</h2>
+              <!-- <a href = "taobao_shop_conf.htm?keepThis=true&TB_iframe=true&height=550&width=800" class="thickbox" title="提交" style="color:#000000;">彈出框</a> -->
+              <div id="pop" style="display:none">
+                <p>是否取消已推送菜鸟的订单再转仓？</p>
+                <input type="hidden" id="get_facility_id">
+                <button onclick="boxajax()">是</button>
+                <button onclick="boxhidden()">否</button>
+              </div>
+              <form id='facilityForm' >
+                <span class='editBtn'>修改</span>
+                <label for='facility_id'>仓库：</label>
+                <select name='facility_id' id='facility_id'></select>
+                <span id='facility_best_info' style='font-size: 6px;'></span>
+                <input type='button' value='提交修改' class='facility' style="margin:5px 0 5px 400px;"/>
+              </form>
+            </div>
+            <div style="display: none;">
+              <input type='hidden' id='sinri_facility_express_check_result' value='0'>
+            </div>
+            <div class='custgrid'>
+              <h2 class="h2_online">快递方式</h2>
+              <form id='shipForm'>
+                <span class='editBtn'>修改</span>
+                <label for='shipping_id'>快递：</label>
+                <select name='shipping_id' id='shipping_id'><select>（<span id='kedaxing'></span>）
+                 关键字搜索:
+                 <input type="text" name="order_shipping_id_select"  id="order_shipping_id_select" size="40" />
+               </br >
+               <label style="width:70px;padding-left:85px;">基本运费：</label>
+               <input type='text' id='shipping_basic_fee' name='shipping_basic_fee' value=''/>
+               <label>手续费：</label>
+               <input type='text' id='shipping_proxy_fee' name='shipping_proxy_fee' value=''/>
+               <input type='button' value='提交修改' class='express' style="margin:5px 0 5px 400px;"/>
+             </form>
+             <div style="clear:both;"></div>
+             <h2 style="padding-left:18px;margin-bottom:5px;">最优快递</h2>
+
+             <div id='bestExp'>
+             </div>
+           </div>
+
+           <div class='clear'></div>
+         </div>
+         <div  id='giftReminds' ><p style="margin-left:20px;color:red;align:center"></p></div>
+         <div id='goods' class='orderDetailChild'>
+          <table></table>
+          <p class='goodsTotalPrice' style='text-align:right;padding-right:20px;'>商品金额总和：<span></span>元</p>
+          <div  id='payInfo' style="position:relative;">
+
+            {if $order.bonus_id}
+            <p>
+              红包ID：<span>{$order.bonus_id}</span>
+            </p>
+            {else}
+            <!-- <p id='useBonusBtn' type="hidden">使用红包</p> -->
+            <div class='useBonusBox'>
+
+              <img src='images/topArrow.png' id='topArrofBonus'/> <label
+              for='bonus_id'>红包代码：</label> <input type='text' id='bonus_id'
+              name='bonus_id'/> <input type='button' value='查询'
+              id='testBonus'/><br/> <span>添加备注：</span> <textarea
+              class='noteText' style='resize: none; vertical-align: top;'>
+            </textarea><br/> <input type='button' value='提交' id='subBonus'/>
+          </div>
+          {/if}
+          <div id='payInfoBox'>
+           <div class='payInfoChild'></div>
+           <form id='payInfoForm'>
+             <span class='editBtn'>修改</span><input type='button' value='提交修改' class='subPaySubmit' />
+           </form>
+         </div>
+
+       </div>
+
+       <!--  <p class='goodsTotalPrice'>订单商品总金额：<span>data.goods_list_.total_price_</span>元</p>-->
+       <div class='custgrid' style="border-top:1px solid #c7c7c7" >
+        <h2>增加商品</h2>
+        <input type='hidden' id='searchGoodsId' value=''/>
+        <label for='searchName'>商品名：</label>
+        <input  name='searchName' id='searchName' value=''/>
+        <div class='goodsNameList'></div>
+        <input type='button' id='searchNameBtn' name='searchNameBtn' value='搜索' style="display:inline-block;"/>
+        <label for='searchStyleList'>样式：</label>
+        <select id='searchStyleList'>
+          <option>请选择</option>
+        </select>
+        <label for='searchGoodsPrice'>单价：</label>
+        <input id='searchGoodsPrice' style='width:50px;'/>
+        <label for='searchGoodsNumber'>数量：</label>
+        <input id='searchGoodsNumber' style='width:50px;'/>
+        <span class='addGoodsBtn'>添加</span>
+      </div>
+
+      <div class='custgrid' style="border-top:1px solid #c7c7c7;">
+        <h2>增加套餐</h2>
+        <input type='hidden' id='searchGroupGoodsId' value=''/>
+        <label for='searchGroupGoodsName'>套餐名：</label>
+        <input name='searchGroupGoodsName' id='searchGroupGoodsName' value='' />
+        <div class='groupGoodsNameList'></div>
+        <input type='button' id='searchGroupGoodsNameBtn' name='searchGroupGoodsNameBtn' value='搜索' style="display:inline-block;"/>
+        <span class='addGroupGoodsBtn'>添加</span>
+      </div>
+    </div>
+
+  </div>
+  <div class='info' id='logisticsInfo'>
+    <h2>基本信息</h2>
+    <p>发货仓库：<span class='facility'></span></p>
+    <p>中转地址：<span class='midAddr'></span></p>
+    <div id='shipList'></div>
+    <!-- <div id='transitList'></div> -->
+    <div id='estWeight'>
+      <h2>预估重量</h2>
+      <p>商品重量：<span class='egw'></span>g</p>
+      <p>耗材重量：<span class='pew'></span>g（以该耗材重量为准）</p>
+      <p>总重量：<span class='tew'></span>g</p>
+    </div>
+
+    <div id='otherExp'>
+    </div>
+  </div>
+  <div class='info' id='customRecord'>
+   <table>
+   </table>
+   <div class='recordDetailBox'>
+   </div>
+ </div>
+
+ <!--<div class='info' id='statusHistoryBox'>
+  <p style="color:red">
+    @deprecated
+    <br>
+    自2015年12月下旬起，订单历史记录信息逐渐停止更新等待撤除，其中记录的信息可能不全。
+    为了避免引起判断上的问题，请使用右侧订单操作信息和打印日志等功能替代。
+  </p>
+  <table></table>
+</div>-->
+<div class='info'>
+  <iframe width=900 height=900 frameborder=0 scrolling=auto src="sale_support/sale_support.php?order_id={$order_header->order_id_}"></iframe>
+</div>
+{* {if $order_header->party_id_ == '65638'} *}
+{if $is_baoda }
+<div class="info" id="trans_status_show">
+  <table>
+    <tr><th>流转状态</th><th>操作时间</th></tr>
+    {foreach from=$history item=history}
+    <tr><td>{$history.Status}</td><td>{$history.CreateTime}</td></tr>
+    {/foreach}
+  </table>
+</div>
+{/if}
+{if  $order_header->facility_id_ == '222187982'}
+<div class="info" id="trans_status_show">
+  <table  class="statusTable">
+    <tr>
+    <th>申报单号</th>
+    <th>外部订单号</th>
+    <th>流转状态</th>
+    <th>备注</th>
+    <th>操作时间</th>
+    </tr>
+    {foreach from=$haiguan_history item=history}
+    <tr>
+    <td>{$history.mft_no}</td>
+    <td>{$history.taobao_order_sn}</td>
+    <td>{$history.status}</td>
+    <td>{$history.status_dis}</td>
+    <td>{$history.status_create_time}</td>
+    </tr>
+    {/foreach}
+  </table>
+</div>
+{/if}
+</div>
+</div>
+
+</div>
+<div id='actHistoryBox' >
+ <div class="reserve_error" ><p style='color:red'>{$order_header->reserve_error_}</p></div>
+
+ <h2 class="actHistoryTitle">操作信息<span>{$order_header->action_count_}</span></h2>
+ <table  style="table-layout:fixed">
+ </table>
+</div>
+</div>
+<script type="text/javascript" src='js/jquery.min.js'></script>
+<script type="text/javascript" src='js/pikaday.min.js'></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+
+
+
+<script>
+      //{literal}
+       $(function(){
+          $('#status').hover(function(){
+          $('#err').toggle(500);
+         });
+       });
+      function boxajax(){
+       facility_id=$('#get_facility_id').val();
+       order_id=$order_id;
+       taobao_order_sn=$taobao_order_sn;
+       order_sn=$order_sn;
+       console.log(facility_id);
+       console.log(order_id);
+       console.log(taobao_order_sn);
+       console.log(order_sn);
+       console.log('YYYY');
+
+        $.ajax({
+               type:'post',
+               dataType:'json',
+               data:{
+                 'order_id':order_id,
+                 'taobao_order_sn':taobao_order_sn,
+                 'order_sn':order_sn,
+                 'facility_id':facility_id
+               },
+               url:'order_edit.php?act=bird_cancel',
+               success:function(data){
+                   console.log('成功');
+                   if(data.flag =='SUCCESS'){
+	               		can_cancel = true;
+	               		alert('取消成功');
+	               		 $('#pop').hide();
+	               	}else if(data.flag =='ERROR'){
+	               		alert("取消订单失败！"+data.message);
+	               		$("#closeActTab").trigger("click");
+	               	}
+               },
+               error:function(){
+                   console.log('失敗');
+               }
+             });
+
+      };
+      function boxhidden(){
+       $('#pop').hide();
+      }
+
+
+
+      var picker = new Pikaday(
+          {//时间控件初始化
+            field: document.getElementById('birthday'),
+            firstDay: 1,
+            minDate: new Date('1996-01-01'),
+            maxDate: new Date('2020-12-31'),
+            yearRange: [1996,2020]
+          });
+      var picker = new Pikaday(
+          {//时间控件初始化
+            field: document.getElementById('datepicker'),
+            firstDay: 1,
+            minDate: new Date('1996-01-01'),
+            maxDate: new Date('2020-12-31'),
+            yearRange: [1996,2020]
+          });
+      //{/literal}
+      </script>
+      <script type="text/javascript">
+      // <![CDATA[
+      var $order_id = {$order_header->order_id_};
+      var $party_id = {$order_header->party_id_};
+      var $taobao_order_sn='{$order_header->platform_info_->order_sn_}';
+      var $order_sn='{$order_header->order_sn_}';
+      var $warning_for_bwshop_order = '{$warning_for_bwshop_order}';
+      // console.log($order_id+'order_id');
+      // console.log($party_id+"party_id");
+      // console.log($taobao_order_sn+'taobao_order_sn');
+      // console.log($order_sn+"order_sn");
+
+      //]]>
+      </script>
+      <script type="text/javascript" src="js/order_edit.js"></script>
+    </body>
+    </html>

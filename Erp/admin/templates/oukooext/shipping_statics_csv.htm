@@ -1,0 +1,19 @@
+{if $contain_goods}
+订单号,商品名称,{if $smarty.request.red_notice != 4}确认订单时间{else}已出库待发货时间{/if},备注
+{foreach from=$orders item=order}
+{foreach from=$order.goods_list item=goods name=goods}
+{if $goods.erp_id == 0}
+{assign var=count value=$goods.goods_number}
+{else}
+{assign var=count value=1}
+{/if}
+{$order.order_sn},{$goods.goods_name},{if $smarty.request.red_notice != 4}{$order.confirm_time}{else}{$order.chuku_time}{/if},{foreach from=$order.shipping_action item=action name=action}备注：{$action.action_note} 操作人：{$action.action_user} 时间：{$action.action_time}{/foreach}
+
+{/foreach}
+{/foreach}
+{else}
+订单号,商品名称,确认订单时间,备注
+{foreach from=$orders item=order}
+{$order.order_time},{$order.order_sn},{$order.order_status_name},{$order.consignee},{$order.pay_name},{$order.shipping_status_name},{$order.shipping_name},{$carriers[$order.carrier_id].name},{$order.bill_no},{$order.real_shipping_fee}
+{/foreach}
+{/if}

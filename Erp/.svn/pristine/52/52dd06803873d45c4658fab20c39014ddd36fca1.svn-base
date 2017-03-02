@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>退款申请列表</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <script type="text/javascript" src="js/overlib.js"></script>
+	
+  
+
+
+	<style type="text/css">
+	{literal}
+	.navigation span.options {
+		padding: 1px;
+	}
+	.navigation span.options a:hover {
+		background-color:#FF6600;
+		color:#FFFFFF;
+		padding:1px;
+	}
+	.navigation span.actived {
+		background-color:#FF6600;
+		color: #FFFFFF;
+		padding:1px;
+	}
+	.navigation span.actived a{
+		color: #FFFFFF;
+	}
+	.remind{
+		float:left;
+		border:#D4FF55 1px solid;
+		padding:0 5px;
+		color:#FFFFFF;
+		background-color:#008000;
+	}	
+	{/literal}
+	</style>
+
+	<script type="text/javascript">
+	var view = '{$search.view}';
+	{literal}
+	// <![CDATA[
+	$(document).ready(function(){
+	
+			var $checkbox = $('#auto_refresh_list');
+			if ($checkbox.attr('checked')) {
+				setTimer(true);	
+			}
+			$checkbox.bind('change', function(){
+				if ($checkbox.attr('checked')) {
+					setTimer(true);	
+				} else {
+					setTimer(false);
+				}
+			});
+	});
+			
+	
+	/**
+	 * 设置定时器
+	 */
+	var iID;
+	function setTimer(enable)
+	{
+			if (enable)
+			{
+				iID = window.setInterval("refresh_list()", 180000) // 3分钟一次
+			} else {
+				if (iID)
+					clearInterval(iID);
+			}
+	}
+
+	/**
+	 * 自动刷新列表
+	 */	
+	var timestamp;
+	function refresh_list()
+	{
+		var options = {
+			type: 'POST',
+			url: 'refund_list.php?request=ajax',
+			data: 'act=list&view=' + view,
+			dataType: 'json',
+			success: callback
+		};
+		$.ajax(options);
+		
+		function callback(data) {
+			var t = parseInt(data.timestamp);
+			if (timestamp == null || !timestamp) {
+				timestamp = t;
+			} else {
+				if (t > timestamp) { notice(); }
+				timestamp = t;
+			}
+		}
+		
+		function notice() {
+			location.href = 'refund_list.php?act=list&auto_refresh=1&view=' + view;
+			// $('#notice').text('有新的待处理数据，您需要重新刷新页面').show('slow');
+		}
+		
+	}
+	
+	/**
+	 * 表单提交
+	 */
+	function formSubmit(act)
+	{
+		var $form = $('#form');
+		switch (act)
+		{
+			case 'search' :
+			$form.find(':hidden[name="request"]').val('');
+			$form.find(':hidden[name="act"]').val('search');
+			break;
+			
+			case 'export' : 
+			$form.find(':hidden[name="request"]').val(act);
+			$form.find(':hidden[name="act"]').val('search');
+			break;
+			
+			case 'import' : 
+			$form.find(':hidden[name="request"]').val(act);
+			break;
+		} 
+		
+		if(act == 'search' || act == 'export'){
+			var start_time = $('#startCalendar').val();
+			var end_time = $('#endCalendar').val();
+			start_time = new Date(start_time.replace(/-/g,"/")).getTime();
+			end_time = new Date(end_time.replace(/-/g,"/")).getTime();
+			if(end_time - start_time >= 93 * 24 * 3600 * 1000){
+				alert("选择的时间段太长，只能选择三个月的时间");
+			}else{
+				$form.submit();
+			}
+		}else{
+			$form.submit();
+		}
+	}
+	
+	// ]]>
+	{/literal}
+	</script>
+</head>
+<body>
+<div style="margin-top:20px;" align="left">
+<form method="post" id="form" name="form" enctype="multipart/form-data">
+<table class="bWindow" style="margin-top:20px; width:960px;">
+<tr align="center">
+  <th>订单号</th>
+  <th>外部订单号</th>
+  <th>客户姓名</th>
+  <th>退款方式</th>
+  <th>状态</th>
+  <th>时间段</th>
+  <th>&nbsp;</th>
+  <th colspan="3">操作</th>
+</tr>
+<tr align="center">
+  <td><input name="search[order_id]" type="text" value="{$search.order_id}" /></td>
+  <td><input name="search[taobao_order_sn]" type="text" value="{$search.taobao_order_sn}"/></td>
+  <td><input name="search[user_id]" type="text" value="{$search.user_id}" /></td>
+  <td><select name="search[refund_payment_type_id]"> <option value="">不限</option> <!--{foreach from=$refund_payment_type_list item=item key=key}--><option value="{$key}" {if $key==$search.refund_payment_type_id}selected="selected"{/if}>{$item.1}</option><!--{/foreach}--> </select></td>
+	<td><select name="search[status]"> <option value="">不限</option>{html_options options=$refund_status_list selected=$search.status_orig} </select></td>
+  <td><input style="width:80px" id="startCalendar" name="search[start]" {if $search.start}value="{$search.start}"{else}value="{$start}"{/if}><input type="button" value=".." id="startTrigger"></td>
+  <td><input style="width:80px" id="endCalendar" name="search[end]" {if $search.end}value="{$search.end}"{else}value="{$end}"{/if}><input type="button" value=".." id="endTrigger"></td>
+  <td><input type="button" value="查询" onclick="formSubmit('search');" /></td>
+  <!--{if $search.view==1 || $search.view==3}-->
+  <td><input type="button" value="导出" onclick="formSubmit('export')" /></td>
+  <!--{/if}-->
+  <!--{if $search.view==3}-->
+	<td><input type="file" name="file" /><br /> <input type="button" value="导入财务退款记账时间" onclick="formSubmit('import')" /></td>
+  <!--{/if}-->
+</tr>
+</table>
+
+<input type="hidden" name="act" value="{$search.act}" />
+<input type="hidden" name="request" value="" />
+<input type="hidden" name="search[view]" value="{$search.view}" />
+</form>
+</div>
+
+
+{if $message}
+<div style="clear:both; border:#7F9F00 2px solid; margin-top:20px; padding:5px; text-align:center;">
+{$message}
+</div>
+{/if}
+
+<div id="notice" style="clear:both; border:#7F9F00 2px solid; margin-top:20px; padding:5px; text-align:center; display:none;"></div>
+  
+
+<div style="margin-top:20px;" align="left">
+<table class="bWindow" style="margin-top:20px;">
+<caption>
+  <h2>退款申请列表(请使用新界面)</h2>
+  
+  <div style="float:left;">
+    <div style="float:left;"><label for="auto_refresh_list"><input type="checkbox" id="auto_refresh_list" value="1" {if $smarty.request.auto_refresh==1}checked="checked"{/if} />自动检查待处理的 </label></div>
+    <div style="float:left; margin-left:50px;" class="navigation">状态:&nbsp;&nbsp;&nbsp;
+    	<span {if $search.act=='list'}class="actived"{else}class="options"{/if}><a href="refund_list.php?act=list&view={$search.view}{if $smarty.request.auto_refresh==1}&auto_refresh=1{/if} ">待{if $search.view==1}客服{elseif $search.view==2}物流{elseif $search.view==3}财务{/if}审核</a></span>&nbsp;&nbsp;
+      <span {if $search.act=='today'}class="actived"{else}class="options"{/if}><a href="refund_list.php?act=today&view={$search.view}{if $smarty.request.auto_refresh==1}&auto_refresh=1{/if} ">今日退款申请</a></span>
+		</div>
+  </div>
+</caption>
+
+
+<!--{if $search.act=='list'}--> {* 待处理的退款申请 *}
+
+<thead>
+<tr align="center">
+	<th width="210">申请时间</th>
+	<th>外部订单号</th>
+	<th>订单号</th>
+	<th>退款单号</th>
+  <th>退款单状态</th>
+  <th>退款类型</th>
+  <th>客户账号</th>
+  <th>客户姓名</th>
+  <th>支付方式</th>
+  <th>申请退款金额</th>
+  <th>组织</th>
+<!--   <th>查看</th> -->
+  <th colspan="2">操作</th>
+</tr>
+</thead>
+
+<tbody>
+<!--{foreach from=$list item=item}-->
+<tr align="center" class="{cycle values='even,odd'}"{if $item->totalAmount > 200} style="background-color:yellow"{/if}>
+  <td>{if $item->timeDescription}<div class="remind">{$item->timeDescription}</div>{/if}{$item->createdStamp|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+  	<td>{$item->orderInfo->taobao_order_sn}</td>
+	<td>
+		<a href="./order_edit.php?order_id={$item->orderInfo->order_id}" target="new_blank">{$item->orderInfo->order_sn}</a>
+	</td>
+	<td>{$item->refundId}</td>
+
+	{if $item->status == 'RFND_STTS_INIT' &&  $item->checkDate2 !="" }
+		<td>
+			<div style="width:50px; height: 20px">
+				<a href="javascript:void(0);" 
+				style="color: black;text-decoration:none" onmouseout="nd();" 
+				onmouseover="
+					return overlib('{$item->giveUpRemark}', 
+					CLOSECLICK, 
+					WIDTH, 200,
+					DONOTHING
+					)" 
+				>财务弃审</a>
+			</div>
+		</td>
+  	{else} 
+		<td>{$item->statusName}</td> 
+    {/if}
+
+  <td>{$item->refundTypeName}</td>
+  <td>{$item->orderInfo->user_name}</td>
+  <td>{if $item->customerUserName}{$item->customerUserName}{else}{$item->orderInfo->consignee}{/if}</td>
+  <td>{$item->orderInfo->order_pay_name}</td>
+  <td>{$item->currency} {$item->totalAmount|string_format:"%01.2f"}</td>
+  <td>{$item->partyId|party_mapping}</td>
+<!--   <td><a href="refund_view.php?refund_id={$item->refundId}" target="_blank">查看</a></td> -->
+  <td width="65">
+  	<a href="refund_view.php?refund_id={$item->refundId}" target="_blank">查看</a>
+  	{if $item->status == 'RFND_STTS_INIT' || $item->status == 'RFND_STTS_IN_CHECK' }
+  	<a href="refund_check.php?refund_id={$item->refundId}" target="_blank">/审核</a>
+    {/if}
+  </td>
+  <td width="45">
+    {if $item->status == 'RFND_STTS_INIT'} {* 只有刚创建状态能编辑 *}
+		<a href="refund_edit.php?refund_id={$item->refundId}" target="_blank">编辑</a>
+    {/if}
+  </td>
+</tr>
+<!--{/foreach}-->
+</tbody>
+
+
+
+<!--{else}--> {* else 今日退款申请，查询出的退款申请 *}
+
+<thead>
+<tr align="center">
+	<th width="210">申请时间</th>
+	<th>外部订单号</th>
+	<th>订单号</th>
+	<th>退款单号</th>
+  <th>退款单状态</th>
+  <th>退款类型</th>
+  <th>支付方式</th>
+  <th>退款金额</th>
+	<th>客服审核人</th>
+  <th>客服审核时间</th>
+  <th>物流审核人</th>
+  <th>物流审核时间</th>
+  <th>财务审核人</th>
+  <th>财务审核时间</th>
+  <th>组织</th>
+<!--   <th>查看</th> -->
+  <th colspan="2">操作</th>
+</tr>
+</thead>
+
+<tbody>
+<!--{foreach from=$list item=item}-->
+
+<tr align="center" class="{cycle values='even,odd'}"{if $item->totalAmount > 200} style="background-color:yellow"{/if}>
+  <td>{if $item->timeDescription}<div class="remind">{$item->timeDescription}</div>{/if}{$item->createdStamp|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+  <td>{$item->orderInfo->taobao_order_sn}</td>
+	<td>
+		<a href="./order_edit.php?order_id={$item->orderInfo->order_id}" target="new_blank">{$item->orderInfo->order_sn}</a>
+	</td>
+	<td>{$item->refundId}</td>
+
+	{if $item->status == 'RFND_STTS_INIT' &&  $item->checkDate2 !="" }
+		<td>
+			<div style="width:50px; height: 20px">
+				<a href="javascript:void(0);" 
+				style="color: black;text-decoration:none" onmouseout="nd();" 
+				onmouseover="
+					return overlib('{$item->giveUpRemark}', 
+					CLOSECLICK,
+					DONOTHING
+					)" 
+				>财务弃审</a>
+			</div>
+		</td>
+  	{else} 
+		<td>{$item->statusName}</td> 
+    {/if}
+  
+  <td>{$item->refundTypeName}</td>
+  <td>{$item->orderInfo->order_pay_name}</td>
+  <td>{$item->currency} {$item->totalAmount|string_format:"%01.2f"}</td>
+  <td>{$item->checkUserLogin1}</td>
+  <td>{$item->checkDate1|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+  <td>{$item->checkUserLogin2}</td>
+  <td>{$item->checkDate2|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+  <td>{$item->checkUserLogin3}</td>
+  <td>{$item->checkDate3|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+  <td>{$item->partyId|party_mapping}</td>
+  <!-- <td><a href="refund_view.php?refund_id={$item->refundId}" target="_blank">查看</a></td> -->
+  <td width="65">
+  	<a href="refund_view.php?refund_id={$item->refundId}" target="_blank">查看</a>
+  	{if $item->status == 'RFND_STTS_INIT' || 
+  	    $item->status == 'RFND_STTS_IN_CHECK' ||
+  	    $item->status == 'RFND_STTS_CHECK_OK' }
+  	<a href="refund_check.php?refund_id={$item->refundId}" target="_blank">/审核</a>
+    {/if}
+  </td>
+  <td width="45">
+    {if $item->status == 'RFND_STTS_INIT'} {* 只有刚创建状态能编辑 *}
+		<a href="refund_edit.php?refund_id={$item->refundId}" target="_blank">编辑</a>
+    {/if}
+  </td>
+</tr>
+<!--{/foreach}-->
+</tbody>
+
+<!--{/if}--> {* endif *}
+
+</table>
+
+</div>
+
+
+<script type="text/javascript">
+{literal}
+//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+{/literal}
+</script>
+</body>
+</html>

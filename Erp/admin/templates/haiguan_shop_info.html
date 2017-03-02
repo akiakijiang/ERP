@@ -1,0 +1,470 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<meta charset=utf-8>
+	<title>申报系统店铺维护</title>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="misc/autocomplete.js"></script>
+	  
+	<script type="text/javascript" src="js/json2.js"></script>
+	<script type="text/javascript" src="js/v3.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<style type="text/css">
+	{literal}
+	body{
+		font-size: 14px;
+	}
+	table{
+		font-size: 13px;
+		width: 95%;
+		margin:0px auto
+	}
+	table th,table td{
+	    font-weight: normal;
+	    text-align: center;
+	    border:1px solid #62B4E8;
+	}
+	table td{
+	    padding:3px 0;
+	}
+
+	table th{
+	    padding:10px 0;
+	    background: #62B4E8;
+	    color:#fff;
+	}
+	h1{
+		font-size: 1.5em;
+		color:#333;
+		text-align: center;
+		margin:10px 0;
+	}
+	.button{
+				border:none;
+				outline: none;
+			    display: block;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 3px !important;
+			    color: #fff !important;
+			    width: 50px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	.submit{
+				border:none;
+				outline: none;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 2px !important;
+			    color: #fff !important;
+			    width: 80px;
+			    height:30px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	
+	.simpEditBtn{
+		width: auto;
+		margin:3px;
+	}
+	
+	.simpNewBtn{
+		width: auto;
+		margin:3px;
+	}
+	
+	.simpDelBtn{
+		width: auto;
+		margin:3px;
+	}
+	.simpCloseBtn{
+		width: auto;
+		margin:2px;
+	}
+	
+	.simpOpenBtn{
+		width: auto;
+		margin:2px;
+	}
+	
+	.button:hover { 
+	                background: #3da1d1;
+	                transition:all .2s;
+	                -o-transition:all .2s;
+	                }
+	                
+	.button:active {
+	                position: relative;
+	                top:1px;
+	                }
+	input[type="text"]{
+                display: inline-block;
+                height: 28px;
+                line-height: 32px;
+                color: #333;
+                border-radius: 3px;
+                -o-border-radius: 3px;
+                border:1px solid #b1b1b1;
+                outline: none; /* for chorme & safari's default effect */
+                margin: 0 5;
+            }
+    .msg{
+        width: 80%;
+    	padding:5px 0 5px 40px;
+    	margin:10px auto;
+    	display: none;
+    	
+    }
+    .msg-success{
+    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+    	background-position: 10px center;
+        border-color: #9adf8f;
+        color: #556652;
+        
+    }
+    .msg-error{
+    	background: url('img/cross_circle.png') #ffcece no-repeat;
+    	background-position: 10px center;
+        border-color: #df8f8f;
+        color: #665252;
+    }
+    .redtr{
+    	background-color: #ffcece;
+    }
+    .importantNote{
+        color:red;
+        font-size:16px;
+        padding:5px 0 5px 40px;
+    }
+    select.shop_flag {
+	  height: 28px;
+	  margin: 0 5;
+	  border: 1px solid #b1b1b1;
+	  border-radius: 3px;
+	}
+    {/literal}
+	</style>
+</head>
+<body>
+	<h1>跨境购店铺信息维护</h1>
+	<p class="msg msg-success">{$message_success}</p>
+	<p class="msg msg-error">{$message_error}</p>
+	<p class="importantNote">写在前面:1.新建店铺名称必须是已存在的店铺 &nbsp&nbsp &nbsp&nbsp2.新建店铺新建需要appkey/appsecret/uin正确字段信息</p>
+	<form>
+	<table>
+	<tr>
+		<td>
+			 <span>店铺名称：
+			    <input id="searchnick" style="width:100px" size="50" name="searchnick" value="{$smarty.request.nick}">
+			 </span>			
+			 <span style="margin-top:13px;margin-left:100px;width:90px;height:20px;">查询起始时间：
+			 <input  style="width:100px;height:20px" id="start_time" name="start_time" value="{$smarty.request.start_time}"></span>
+			 <span style="margin-top:13px;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" /></span>
+			
+			 <span style="margin-top:10px;margin-left:23px;width:110px">查询结束时间：
+			 <input style="width:100px;height:20px" id="end_time" name="end_time" value="{$smarty.request.end_time}"></span>
+			 <span style="margin-top:13px;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" /></span>
+		</td>
+		<td>
+			 <input type="submit" class="submit" value="搜索" style='font-size:10px'>&nbsp;
+			 <input type="submit" class="submit" name="type" value="店铺导出CSV" style='font-size:10px' >
+			 <input type="submit" class="submit" name="type" value="批量打开同步">
+			 <input type="submit" class="submit" name="type" value="批量关闭同步">
+			 <input type="hidden" name="act" value="search">
+		</td>
+	</tr>
+	</table>
+    </form>
+    
+	<form action="kuajinggou_order_info.php" method="post">
+		<table>
+			<thead>
+				<tr>
+					<th>店铺名称</th>
+					<th>application_key</th>
+					<th>app_key</th>
+					<th>app_secret</th>
+					<th>店铺代码</th>
+					<th>店铺类型</th>
+					<th>创建时间</th>
+					<th>同步是否打开</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tr>
+			
+				<td>
+				 	<input type="text" style="width:150px" name="shopnick"  id="shop_id_select" /> 
+		         	<input type="hidden" name="shopapplication_key" class="shopapplication_key" value=""/> 
+		         	<!-- <input type="text" name="shop_nick[]" class="shop_nick"> -->
+		        </td>
+				<td></td>
+				<td><input type="text"  name="shop_key[]" class="shop_key"></td>
+				<td><input type="text"  name="shop_secret[]" class="shop_secret"></td>
+				<td><input type="text"  name="shop_uin[]" class="shop_uin"></td>
+				<td>
+					<select name="shop_flag[]" class="shop_flag">
+			            {html_options options=$shop_flag_list selected=$smarty.request.shop_flag}
+					</select>
+				</td>
+				<td></td>
+				<td>
+					<select name="shop_status[]" class="shop_status">
+						<option value="0">否</option>
+						<option value="1">是</option>
+					</select>
+				</td>
+				<td><input type="button" value="新建" class="button simpNewBtn"></td>
+			</tr>
+			{foreach from=$shop_list key=k item=shop}
+			<tr>
+				<td><input type="hidden" name="nick" class="nick" value="{$shop.nick}">{$shop.nick}</td>
+				<td><input type="hidden" name="key" class="key" value="{$shop.application_key}">{$shop.application_key}</td>
+				<td><input type="text" name="appkey[]" class="appkey" value="{$shop.app_key}"></td>
+				<td><input type="text" name="appsecret[]" class="appsecret" value="{$shop.app_secret}"></td>
+				<td><input type="text" name="uin[]" class="uin" value="{$shop.uin}"></td>
+				<td class="shop_flag">
+					
+					{if $shop.platform == -1}所有
+					{elseif $shop.platform == "0001"}淘宝网  
+					{elseif $shop.platform == "0002"}天猫
+					{elseif $shop.platform == "0003"}天猫国际
+					{elseif $shop.platform == "0006"}苏宁易购
+					{elseif $shop.platform == "0018"}京东全球购
+					{elseif $shop.platform == "1050"}蜜芽宝贝
+					{elseif $shop.platform == "1058"}云猴网
+					{elseif $shop.platform == "1134"}拼多多
+					{elseif $shop.platform == "1128"}海带之家
+					{elseif $shop.platform == "1081"}母婴之家
+					{elseif $shop.platform == "0008"}洋码头
+					{elseif $shop.platform == "0000"}电商自有平台
+					{/if}
+				</td>
+				<td>{$shop.created_stamp}</td>
+				<td>
+				{if $shop.status == 1}是
+				{else}否
+				{/if}
+				</td>				
+				<td>
+					<input type="button" value="修改" class="button simpEditBtn">
+					<input type="button" value="删除" class="button simpDelBtn">
+					{if $shop.status == 1}
+					<input type="button" value="关闭同步" class="button simpCloseBtn">
+					{else}
+					<input type="button" value="打开同步" class="button simpOpenBtn">
+					{/if}
+				</td>
+			</tr>
+			{/foreach}
+			<tr>
+        		<td colspan="10" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        	</tr>
+		</table>
+	</form>
+<script>
+// <![CDATA[
+    var message_success = "{$message_success}";
+    var message_error = "{$message_error}";
+//{literal}
+$(document).ready(function(){
+	var msg_success = $(".msg-success");
+	var msg_error = $(".msg-error");
+	if(message_success != ""){
+		msg_success.fadeIn("normal");
+		msg_error.hide();
+	}
+	if(message_error != ""){
+		msg_error.fadeIn("normal");
+		msg_success.hide();
+	}
+	
+	
+	
+	var simpEditBtn = $(".simpEditBtn");
+	var simpNewBtn = $(".simpNewBtn");
+	var simpDelBtn = $(".simpDelBtn");
+	var simpCloseBtn = $(".simpCloseBtn");
+	var simpOpenBtn = $(".simpOpenBtn");
+	
+	simpEditBtn.click(function(){
+		var that = $(this);
+		var simp_key = that.parent().parent().find(".key").val();
+		var simp_appkey = that.parent().parent().find(".appkey").val();
+		var simp_appsecret = that.parent().parent().find(".appsecret").val();
+		var simp_uin = that.parent().parent().find(".uin").val();
+		var data = "application_key=" + simp_key + "&app_key=" + simp_appkey +"&app_secret="+simp_appsecret+"&uin="+simp_uin;
+		if( simp_appkey == "" || simp_appsecret == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=update_kjg_shop',
+				success:function(data){
+					alert("修改成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("修改失败");
+				}
+			});
+		}
+	});
+	simpDelBtn.click(function(){
+		var that = $(this);
+		var simp_key = that.parent().parent().find(".key").val();
+		var data = "application_key=" + simp_key ;
+		if( simp_key == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=delete_kjg_shop',
+				success:function(data){
+					alert("删除成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("删除失败");
+				}
+			});
+		}
+	});
+	simpCloseBtn.click(function(){
+		var that = $(this);
+		var simp_key = that.parent().parent().find(".key").val();
+		var data = "application_key=" + simp_key ;
+		if( simp_key == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=close_kjg_shop',
+				success:function(data){
+					alert("关闭同步成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("关闭失败");
+				}
+			});
+		}
+	});
+	simpOpenBtn.click(function(){
+		var that = $(this);
+		var simp_key = that.parent().parent().find(".key").val();
+		var data = "application_key=" + simp_key ;
+		if( simp_key == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=open_kjg_shop',
+				success:function(data){
+					alert("打开同步成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("打开失败");
+				}
+			});
+		}
+	});
+	
+	simpNewBtn.click(function(){
+		var simp_nick=document.getElementById("shop_id_select").value; 
+		var that = $(this);
+		var simp_appkey = that.parent().parent().find(".shop_key").val();
+		var simp_application_key = that.parent().parent().find(".shopapplication_key").val();
+		var simp_appsecret = that.parent().parent().find(".shop_secret").val();
+		var simp_uin = that.parent().parent().find(".shop_uin").val();
+		var shop_flag = that.parent().parent().find(".shop_flag").val();
+		var shop_status = that.parent().parent().find(".shop_status").val();
+		var data = "nick=" + simp_nick + "&app_key=" + simp_appkey +"&app_secret="+simp_appsecret+"&uin="+simp_uin+"&shop_flag="+shop_flag+"&shop_status="+shop_status+"&application_key="+simp_application_key;
+		if( simp_appkey == "" || simp_appsecret == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=insert_kjg_shop',
+				success:function(data){
+					alert("新建成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("新建失败");
+				}
+			});
+		}
+	});
+	
+	
+	/*商店搜索*/
+	$('#shop_id_select').autocomplete('haiguan_shop_info.php?request=ajax&act=get_select_shop', {
+		dataType : 'json',
+		minChars: 0,
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.nick);
+		},
+		formatResult : function(row) {
+			return(row.nick);
+		}
+	}).result(function(event, row, formatted) {
+		$(':input[name="shopnick"]').val(row.nick);
+		$(':input[name="shopapplication_key"]').val(row.application_key);
+	});
+	
+});
+//{/literal}
+// ]]>
+</script>
+	
+</body>
+
+{literal}
+	<script type="text/javascript">
+      $(function(){
+    	  Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "start_time",
+	        button            : "startTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+	      Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "end_time",
+	        button            : "endTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+      });
+</script>
+{/literal}
+</html>

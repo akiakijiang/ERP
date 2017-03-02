@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>订单-编辑发货单</title>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script src="js/jquery-1.3.2.js"></script>
+ <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<style type="text/css">
+    <!--{literal}-->
+    table, tr, td {
+        border:1px solid #cccccc;   
+        border-collapse:collapse; 
+    	text-align:center;  
+    }
+    td {
+	    height:30px;
+    }
+    a {
+	    text-decoration:none;
+    }
+    <!--{/literal}-->
+</style>
+
+</head>
+<body>
+<div style="margin: 20px auto;" align="left">
+<h4 style="color:red;">请选择与订单对应的组织（订单发货状态为已发货，收货确认或拒收退回才能编辑）。</h4>
+<form method="post" enctype="multipart/form-data">
+          订单号：<input type="text" name="order_sn" value="{$smarty.request.order_sn}"/>
+          <input type="submit" name="" value="搜索">
+          <input type="hidden" name="act" value="search"/>
+</form><br />
+{if $flag != ''}
+<a href="dispatch_edit.php?act=edit&add=add&order_id={$order_id}" >追加快递单号</a>
+{/if}
+{if $flag == 'search' }
+<table width="80%" >
+    <tr>
+        <td>订单号</td>
+        <td>运单号</td>
+        <td>订单状态</td>
+        <td>发货状态</td>
+        <td>支付状态</td>
+        <td>快递公司</td>
+        <td>快递单类型</td>
+        <td>关联订单号</td>
+        <td>操作</td>
+    </tr>
+    <!-- {foreach from=$order_lists item=item} -->
+    <tr>
+        <td><a href="order_edit.php?order_id={$item.order_id}" target="_blank" >{$item.order_sn}</a></td>
+        <td>{$item.tracking_number}</td>
+        <td>{$item.order_status_name}</td>
+        <td>{$item.shipping_status_name}</td>
+        <td>{$item.pay_status_name}</td>
+        <td>{$item.shipping_name}</td>
+        <td>{$item.type_name}</td>
+        <td><!-- {foreach from=$order_sn_relation item=order_sn key=order_id} -->
+            <a href="order_edit.php?order_id={$order_id}" target="_blank" >{$order_sn}&nbsp;&nbsp;</a>
+             <!-- {/foreach} --></td>
+        <td><a href="dispatch_edit.php?act=edit&order_id={$item.order_id}&shipment_id={$item.shipment_id}&shipping_status={$item.shipping_status}">编辑</a></td>
+    </tr>
+    <!-- {/foreach} -->
+</table>
+{elseif $flag == 'edit' || $flag == 'add_edit'}
+<form action="#" method="post" id ="form" >
+<table margin-left="50px;" text-align="center" width="40%">
+    <tr>
+        <td>订单号：</td><td><input type="text" name="order_sn" value="{$order_list.order_sn}" readonly></input></td>
+    </tr>
+    <tr>
+        <td>订单状态：</td><td><input type="text" name="order_status_name" value="{$order_list.order_status_name}" readonly></input></td>
+    </tr>
+    <tr>
+        <td>发货状态：</td><td>
+        <select name="shipping_status_name" disabled="disabled">
+        <!--{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}-->
+        <option value="{$key}" {if $key == $order_list.shipping_status}selected{/if} {if $flag == 'add_edit'}readonly{/if}>{$shipping_status}&nbsp;&nbsp;</option>
+        <!--{/foreach}-->
+        </select>
+    </tr>
+    <tr>
+        <td>支付状态：</td>
+        <td>
+        <select name="pay_status_name" disabled="disabled">
+        <!--{foreach from=$_CFG.adminvars.pay_status key=key item=pay_status}-->
+        <option value="{$key}" {if $key == $order_list.pay_status}selected{/if} >{$pay_status}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+        <!--{/foreach}-->
+        </select>
+        </td>
+    </tr>
+    <tr>
+        <td>快递公司：</td>
+        <td>
+        <select id="shipping1" name="shipping_name" {if $flag == 'add_edit'}disabled="disabled"{/if}>
+        <!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+         <option value="{$shipping_list.shipping_id}" {if $shipping_list.shipping_id == $order_list.shipment_type_id }selected{/if} >{$shipping_list.shipping_name}</option> 
+        <!--{/foreach}-->
+        </select>
+        </td>
+    </tr>
+    <tr>
+        <td>运单号：</td><td><input class="inputTrackingNumber" type="text" name="tracking_number" value="{$order_list.tracking_number}" {if $flag == 'add_edit'}readonly="readonly"{/if}></input></td>
+    </tr>
+    <tr>
+        <td>快递单类型：</td>
+        <td>
+        <select name="type" {if $flag == 'edit'}disabled="disabled"{/if}>
+        <!-- 去除补寄发票的类型 需要客服操作补寄发票，财务操作补寄发票的运单号 -->
+        <option value="SHIPPING_SEND">正常补寄的运单&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+        <option value="SHIPPING_RETURN">返区件的运单&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+        </select>
+        </td>
+    </tr>
+    <!--{if $flag == 'add_edit'}-->
+    <tr>
+        <td>追加快递公司：</td>
+        <td>
+        <select id="shipping2" name="add_shipping_name">
+        <!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+         <option value="{$shipping_list.shipping_id}" {if $shipping_list.shipping_id == $order_list.shipment_type_id }selected{/if}>{$shipping_list.shipping_name}</option> 
+        <!--{/foreach}-->
+        </select>
+        </td>
+    </tr>
+    <tr>
+        <td >追加快递单号：</td>
+        <td><input class="inputTrackingNumber" name="add_tracking_number" value=""></input></td>
+    </tr>
+    <tr>
+        <td>备注</td>
+        <td><input type="text" name="shipping_note" value=""></input></td>
+    </tr>
+    <!--{/if}-->
+    <tr>
+       
+        <td colspan=2>
+            {if $flag == 'edit'}
+            <input type="button" name="edit_order" value="更新" class="form" onclick="check_tracking_number();"></input>
+            <input type="hidden" name="old_tracking_num" value="{$order_list.tracking_number}"></input>
+            <input type="hidden" name="act" value="update"></input>
+            {else}
+            <input type="button" name="add_edit" value="追加" class="form" onclick="check_tracking_number();"></input>
+            <input type="hidden" name="act" value="add_insert"></input>
+            {/if}
+            <input class="carrierId" type="hidden" name="carrier_id" value="{$order_list.default_carrier_id}"></input>
+            <input type="hidden" name="shipment_id" value="{$order_list.shipment_id}"></input>
+            <input type="hidden" name="order_id" value="{$order_list.order_id}"></input>
+            <input type="hidden" name="carrier_bill_id" value="{$order_list.carrier_bill_id}"></input>
+            
+        </td>
+    </tr>
+</table>
+</form>
+{/if}
+</div>
+</body>
+</html>
+
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+
+/**
+ * 扫描面单
+ 顺丰快递：都是以021开头 {021xxxxxxxxx} 共12位数字  
+ 万象物流：都是以1900开头{1900xxxxxx} 共10位数字
+ 邮政先款后货：都是由EG/EH/EX开头{EG/EH/EXxxxxxxxxxCN} 共13位字母加数字组成  其中字母都是大写
+ 邮政代收货款：都是以EC开头{ECxxxxxxxxxCN} 共13位字母加数字组成  其中字母都是大写
+
+ // {{{ 2010.12.18 by Zandy
+ 承运商   面单规则 
+ 顺丰    12位数字
+ EMS   以E开头长度13位
+ 圆通    10位数字或一个字母+10为数字
+ // }}}
+ */
+function check_tracking_number(){
+	if ($(".form").attr("disabled")) {
+		$(".form").removeAttr("disabled");
+	}
+    var tracking_number = $.trim($('.inputTrackingNumber[readonly!=readonly]').val());
+    if (tracking_number == '') {
+	    alert('请输入面单号');
+	    return;
+    }
+	var shipping1 = $('#shipping1').children('option:selected').val();
+	var shipping2 = $('#shipping2').children('option:selected').val();
+    if (shipping2 == undefined) {
+    	get_carrier_id(shipping1, tracking_number);
+    } else {
+    	get_carrier_id(shipping2, tracking_number);
+    }
+    var carrier_id;
+	function get_carrier_id(shipping, tracking_number){
+        $.ajax({
+	        url: 'dispatch_edit.php?act=ajax',
+	        data: "shipping_id="+shipping+"&tracking_number="+tracking_number,
+	        dataType: 'json',
+	        type: 'POST',
+	        success: function(data) {
+	        	carrier_id = data.carrier_id;
+	        	if (data.shipment_id == null) {
+	                if(!check_tracking_number_rule (carrier_id,tracking_number)) {
+	                    alert('提醒：运单号和发货的类型不匹配！请检查');
+	                    return false;
+	                } else {
+	                    $("#form").submit();
+	                }
+
+	        	} else {
+	        		alert("运单号已存在");
+	        	}
+	        },
+	        error: function() {
+	            alert('查询订单信息出错');
+	        }
+	    }); 
+    }
+}
+
+ // 检查运单号规则 
+ function check_tracking_number_rule (carrier_id,tracking_number) {
+     var result = false;
+     $.ajax({
+         async:false,
+         type: 'POST',
+         url: 'ajax.php?act=check_tracking_number',
+         data: 'carrier_id=' + carrier_id + '&tracking_number=' + tracking_number,
+         dataType: 'json',
+         error: function() {
+             alert('ajax请求错误,检查面单号规则失败:' + tracking_number); 
+         },
+         success: function(data) {
+             if(data['error']) {
+                 alert(data['error']);
+             } else if(data == true) {
+                 result = true;
+             } 
+         }
+     });
+     return result;
+ }
+
+
+
+// {/literal}
+// ]]>
+</script>

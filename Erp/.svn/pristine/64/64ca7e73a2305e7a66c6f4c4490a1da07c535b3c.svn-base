@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>订单调价金额查询</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />   
+<link href="misc/thickbox.css" rel="stylesheet" type="text/css"> 
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="styles/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/thickbox.js"></script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;订单调价查询&nbsp;</span></legend>
+  
+  <form method="get">
+  <div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      <table cellpadding="5" cellspacing="1">
+        <tr>
+          <td>每页显示</td>
+          <td>
+          	<select name="size">
+          	{html_options options=$page_size_list selected=$filter.size}
+            </select> 条记录
+          </td>
+        </tr>
+        
+        <tr>
+          <td>分销商</td>
+          <td>
+			<select name="main_distributor_id"><option value="0">--</option>{html_options options=$main_distributor_list selected=$filter.main_distributor_id}</select>
+          </td>
+        </tr>
+                  
+        <tr>
+          <td>订单号</td>
+          <td>
+			<input type="text" name="keyword" value="{$filter.keyword}" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>时间段</td>
+          <td>
+			<input type="text" name="start" value="{$filter.start}" /> - <input type="text" name="end" value="{$filter.end}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" value="查询" />
+          </td>
+        </tr>
+         
+      </table>  
+  </div>
+  
+  <input type="hidden" name="act" value="search" />
+  </form>
+  
+  
+  {if $total > 0}
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">订单调价列表</h3>
+      <div style="float:right;"> 共有 <strong>{$total}</strong> 条记录 &nbsp;&nbsp;</div>
+      
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+          <th width="30">No.</th>
+		  <th>分销商</th>
+          <th>订单号</th>
+          <th>发货时间</th>
+          <th>操作</th>
+          <th>类型</th>
+          <th>商品</th>
+          <th>数量</th>
+          <th>金额</th>
+          <th>订单状态</th>
+        </tr>
+        
+        <!--{foreach from=$list item=order name="orderList"}-->
+        <!--{foreach from=$order.goods_list item=goods name="goodsList"}-->
+        <tr align="center" {if $smarty.foreach.orderList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+        
+		  <!--{if $smarty.foreach.goodsList.first}-->
+          <td rowspan="{$order.goods_list|@count}">{$smarty.foreach.orderList.iteration}</td>
+		  <td rowspan="{$order.goods_list|@count}">{$order.distributor_name}</td>
+          <td rowspan="{$order.goods_list|@count}"><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td rowspan="{$order.goods_list|@count}">{$order.shipping_time|date_format:"%Y-%m-%d %H:%M"}</td>
+          <td rowspan="{$order.goods_list|@count}"><a href="discribution_order_adjustment_return.php?order_id={$order.order_id}&keepThis=true&TB_iframe=true&height=400&width=800" class="thickbox" title="返还预付款,订单号 [{$order.order_sn}]">返还预付款</a></td>
+          <!--{/if}-->
+          
+          <td>{if $goods.type=='SHIPPING_ADJUSTMENT'}运费调整{else}商品调整{/if}</td>
+          <td>{if $goods.group_id}{$goods.group_name}{else}{$goods.goods_name}{/if}</td>
+          <td>{$goods.num}</td>
+          <td>{$goods.amount}</td>
+          <td>{if $order.status == 'CONSUMED'}已付款{elseif $order.status == 'INIT'}未付款{elseif $order.status == 'RETURNED'}已退款{/if}</td>
+        </tr>
+        <!--{/foreach}-->
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+      
+	  {$pagination}
+  
+  </div>
+  <br />
+  
+  {else}
+  <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录</h4></div>
+  <br /><br />
+  {/if}
+
+  
+  <br /><br />
+</fieldset>
+
+</body>
+</html>

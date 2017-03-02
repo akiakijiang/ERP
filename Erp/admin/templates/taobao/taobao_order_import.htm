@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <title>淘宝订单导入</title> 
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝订单导入&nbsp;</span></legend>
+  
+
+  
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">选择Excel文件</h3>
+    <form id="upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="excel" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="导入" />
+      <input type="hidden" name="act" value="upload" />
+      <div style="clear:both; margin-top:5px; color:#888;" >Excel文件中要包含有 [订单信息] 、[宝贝] 两个Sheet</div>
+    </form>
+	</div>
+
+
+	{if $import_report}
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">导入报告</h3>
+    <br />
+    <h4>成功的: </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="14%">淘宝订单号</th>
+        <th width="14%">订单号</th>
+        <th width="12%">应收金额</th>
+        <th width="12%">实收金额</th>
+      </tr>
+      
+      <!--{foreach from=$import_report.successed item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+        <td>{$item.taobao_order_sn}</td>
+ 				<td><a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+        <td>{$item.order_amount}</td>
+        <td>{$item.real_paid}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center"><td colspan="4">无记录</td></tr>
+      
+      <!--{/foreach}-->
+      
+    </table>
+    
+    
+    <br />
+    <br />
+    <h4>失败的: </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="14%">订单号</th>
+        <th width="14%">淘宝订单号</th>
+        <th width="12%">应收金额</th>
+        <th width="12%">实收金额</th>
+        <th width="48%">错误原因</th>
+      </tr>
+      
+      <!--{foreach from=$import_report.failed item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+				<td>{$item.order_sn}</td>
+        <td>{$item.taobao_order_sn}</td>
+        <td>{$item.order_amount}</td>
+        <td>{$item.real_paid}</td>
+        <td align="left">&nbsp;{$item.errmsg}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="5">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->
+    </table>
+    
+      
+	</div>
+  {/if}
+  
+
+  <br /><br />
+
+
+</fieldset>
+
+
+
+
+<!--
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+-->
+
+</body>
+</html>

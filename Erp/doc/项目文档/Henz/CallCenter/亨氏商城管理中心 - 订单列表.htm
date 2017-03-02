@@ -1,0 +1,948 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0054)http://shop.heinz.com.cn/callcenter/order.php?act=list -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title>亨氏商城管理中心 - 订单列表 </title>
+<meta name="robots" content="noindex, nofollow">
+
+<link href="./亨氏商城管理中心 - 订单列表_files/general.css" rel="stylesheet" type="text/css">
+<link href="./亨氏商城管理中心 - 订单列表_files/main.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="./亨氏商城管理中心 - 订单列表_files/transport.js"></script><script type="text/javascript" src="./亨氏商城管理中心 - 订单列表_files/common.js"></script><script type="text/javascript" src="./亨氏商城管理中心 - 订单列表_files/jquery.js"></script>	 
+<script language="JavaScript">
+<!--
+// 这里把JS用到的所有语言都赋值到这里
+var process_request = "正在处理您的请求...";
+var todolist_caption = "记事本";
+var todolist_autosave = "自动保存";
+var todolist_save = "保存";
+var todolist_clear = "清除";
+var todolist_confirm_save = "是否将更改保存到记事本？";
+var todolist_confirm_clear = "是否清空内容？";
+var remove_confirm = "删除订单将清除该订单的所有信息。您确定要这么做吗？";
+var confirm_merge = "您确实要合并这两个订单吗？";
+var input_price = "自定义价格";
+var pls_search_user = "请搜索并选择会员";
+var confirm_drop = "确认要删除该商品吗？";
+var invalid_goods_number = "商品数量不正确";
+var pls_search_goods = "请搜索并选择商品";
+var pls_select_area = "请完整选择所在地区";
+var pls_select_shipping = "请选择配送方式";
+var pls_select_payment = "请选择支付方式";
+var pls_select_pack = "请选择包装";
+var pls_select_card = "请选择贺卡";
+var pls_input_note = "请您填写备注！";
+var pls_input_cancel = "请您填写取消原因！";
+var pls_select_refund = "请选择退款方式！";
+var pls_select_agency = "请选择办事处！";
+var pls_select_other_agency = "该订单现在就属于这个办事处，请选择其他办事处！";
+var loading = "加载中...";
+//-->
+</script>
+			<style>
+			h1 .action-span {padding-left: 80px;}
+			h1 .action-span a {margin-top:8px;}
+			h1 .action-span1  {margin-top:10px;}
+		</style>
+	</head>
+<body>
+
+<h1 style="*height:100px;height:100px \9;">
+
+
+	<span class="action-span"><a href="http://shop.heinz.com.cn/callcenter/user.php">创建手机号用户</a>&nbsp;&nbsp;</span>
+	<span class="action-span"><a href="./亨氏商城管理中心 - 订单列表_files/亨氏商城管理中心 - 订单列表.htm">订单列表</a>&nbsp;&nbsp;</span>
+	<span class="action-span"><a href="http://shop.heinz.com.cn/callcenter/order.php?act=checkout">结算中心</a>&nbsp;&nbsp;</span>
+	<span class="action-span"><a href="http://shop.heinz.com.cn/callcenter/goods.php?act=list">商品列表</a>&nbsp;&nbsp;</span>
+	<span class="action-span"><a href="http://shop.heinz.com.cn/callcenter/notice.php?act=show">促销公告</a>&nbsp;&nbsp;</span>
+	<span class="action-span1"><a href="http://shop.heinz.com.cn/callcenter/index.php?act=main">CallCenter管理中心 </a> </span><span id="search_id" class="action-span1"> - 订单列表 </span>
+	<div style="clear:both">当前操作者：杜映延&nbsp;&nbsp;&nbsp;&nbsp;员工ID：3934&nbsp;&nbsp;&nbsp;&nbsp;员工工号：HNS10047&nbsp;&nbsp;&nbsp;&nbsp;角色：管理员&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://shop.heinz.com.cn/callcenter/logout.php" style="text-decoration: underline;">注销</a>
+ 			<!-- <span style="color:blue;margin-left: 20px;">温馨提示：如有疑问，请致电：4006-302181，或联系客服QQ：1732981999。</span> -->
+	</div>
+	<div>
+			<span style="color:red;float:right;">本月赠送益生菌已送0件。</span>
+			<span style="color:red;float:left;">温馨提示：5月1日起，用户当前账号上的亨氏金币将由系统自动乘以10倍升级为亨币。亨币新升级，兑换更实惠！礼品种类更丰富，兑换途径更多！最新亨币获得及兑换详情请访问<a href="http://www.heinz.com.cn/hb" target="_blank">http://www.heinz.com.cn/hb</a>查看。</span>
+	</div>
+	<script>
+//window.onbeforeunload = function()  
+//{  
+//    var n = window.event.screenX - window.screenLeft;  
+//    var b = n > document.documentElement.scrollWidth - 20;  
+//    if (b && window.event.clientY < 0 || window.event.altKey)  
+//    {  
+//			 jQuery.ajax({
+//					url: "clear_session.php",
+//					async: false
+//			 }); 
+//        alert('close');  	return false;
+//    }  
+//    else  
+//    {  
+//         alert('refresh');  return false;
+//    }  
+//}  
+	</script>
+</h1>
+<script>
+	function parseurl(nedtype){
+			if(String(document.location).lastIndexOf('&nedtype=')!='-1'){
+					location.href=String(document.location).replace(/nedtype=\d/, 'nedtype='+nedtype)	; 
+			}else{
+				if (String(document.location).indexOf('?') > -1){
+					location.href=String(document.location)+'&nedtype='+nedtype	; 
+				}else{
+					location.href=String(document.location)+'?nedtype='+nedtype	;
+				}
+			}
+
+	}
+</script>
+<script type="text/javascript" src="./亨氏商城管理中心 - 订单列表_files/utils.js"></script><script type="text/javascript" src="./亨氏商城管理中心 - 订单列表_files/listtable.js"></script><!-- 订单搜索 -->
+
+<div class="form-div">
+  <form action="javascript:searchOrder()" name="searchForm">
+    <img src="./亨氏商城管理中心 - 订单列表_files/icon_search.gif" width="26" height="22" border="0" alt="SEARCH">
+    订单号:<input name="order_sn" type="text" id="order_sn" size="15">		&nbsp;&nbsp;
+    收货人手机号:<input name="mobile" type="text" id="mobile_phone" size="15">	&nbsp;&nbsp;
+    收货人姓名:<input name="consignee" type="text" id="consignee" size="15"> &nbsp;&nbsp;
+          员工姓名:<input name="StaffName" type="text" id="StaffName" size="15">	&nbsp;&nbsp;      订单状态:
+    <select name="status" id="status">
+      <option value="-1">请选择...</option>
+      <option value="0">未确认</option><option value="105">已确认</option><option value="100">未付款</option><option value="103">已付款</option><option value="101">未发货</option><option value="107">已发货</option><option value="104">已发货已签收</option><option value="108">已发货未签收</option><option value="106">未确认未付款未发货</option><option value="4">退货</option><option value="2">取消</option><option value="3">无效</option>    </select>	 &nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="submit" value=" 搜索 " class="button">
+   				<a href="http://shop.heinz.com.cn/callcenter/order.php?act=list&composite_status=444" style="float:right;color:red;position:relative;right:197px;top:0px;">未发送E店宝订单统计 </a> 
+			<a href="http://shop.heinz.com.cn/callcenter/order.php?act=list&composite_status=222" style="float:right;color:red;position:relative;right:-90px;top:0px;">已发送E店宝但未发货订单统计</a>
+		  </form>	<br>
+	<form action="javascript:;" id="rsend" method="get">
+    <input type="text" value="请输入订单号" name="renew_ordersn" id="renew_ordersn" onfocus="if(this.value==&#39;请输入订单号&#39;) this.value=&#39;&#39;">
+    <input type="button" value="重新发送" class="button" onclick="resend();">
+
+
+	 <a href="http://shop.heinz.com.cn/callcenter/order.php?act=edb_orderlist">同步发货订单</a> |<!-- <a href="order.php?act=shippingstatus_edb">同步收货订单</a> |--> <a href="http://shop.heinz.com.cn/callcenter/order.php?act=tuiorder">同步退货订单</a>
+	</form>
+</div>
+
+<script language="javaScript"> 
+	function resend(){
+			var renew_ordersn = document.getElementById('renew_ordersn').value;
+			var a = document.getElementById('rsend');
+			if(renew_ordersn=='' || renew_ordersn=='请输入订单号'){
+				 alert('请输入订单号！');
+				 return false;
+			}
+			if (confirm('您确定要重新发送该订单吗？')) location.href='order.php?act=operate&order_id='+renew_ordersn+'&send_order=1';
+	}
+	//document.all.status.value   =   "-1"; 
+</script> 
+<!-- 订单列表 -->
+<form method="post" action="http://shop.heinz.com.cn/callcenter/order.php?act=operate" name="listForm" onsubmit="return check()">
+  <div class="list-div" id="listDiv">
+	 <a href="http://shop.heinz.com.cn/callcenter/order.php?act=export&order_sn=&consignee=&CardNO=&address=&zipcode=&tel=&mobile=0&country=0&province=0&city=0&district=0&shipping_id=0&pay_id=0&order_status=-1&shipping_status=-1&pay_status=-1&user_id=0&user_name=&composite_status=-1&group_buy_id=0&ad_id=0&region=&onlyregion=" style="float: right; color: red;margin-right:22px;">导出搜索的结果成excel表格</a>
+<table cellpadding="3" cellspacing="1">
+  <tbody><tr>
+	  	 <th width="80">制单人工号 </th>
+	     <th>
+      <input onclick="listTable.selectAll(this, &quot;checkboxes&quot;)" type="checkbox"><a href="javascript:listTable.sort('order_sn', 'DESC'); ">订单号</a>    </th>
+    <th width="90"><a href="javascript:listTable.sort('add_time', 'DESC'); ">下单时间</a><img src="./亨氏商城管理中心 - 订单列表_files/sort_desc.gif"></th>
+    <th width="90"><a href="javascript:listTable.sort('pay_time', 'DESC'); ">支付时间</a></th>
+    <th width="90"><a href="javascript:listTable.sort('shipping_time', 'DESC'); ">配送时间</a></th>
+    <th><a href="javascript:listTable.sort('consignee', 'DESC'); " title="点击对列表排序">收货人</a></th>
+    <th><a href="javascript:listTable.sort('total_fee', 'DESC'); ">总金额</a></th>
+    <th><a href="javascript:listTable.sort('order_amount', 'DESC'); ">应付金额</a></th>
+    <th>订单状态</th>
+    <th>操作</th>
+  </tr><tr>								
+    </tr><tr>
+	      <td align="center" style="background-color: rgb(244, 250, 251); ">  HNS10051</td>
+		    <td nowrap="nowrap" align="center" style="background-color: rgb(244, 250, 251); "><input type="checkbox" name="checkboxes" value="2012090625088">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18704">2012090625088</a></td>
+    <td style="background-color: rgb(244, 250, 251); ">13973660500<br>09-06 10:56</td>
+    <td style="background-color: rgb(244, 250, 251); "><br></td>
+    <td style="background-color: rgb(244, 250, 251); "><br></td>
+    <td align="left" valign="top" style="background-color: rgb(244, 250, 251); "><a href="mailto:"> 潘孩玉</a> <br>德泰花园新五村</td>
+    <td align="right" valign="top" nowrap="nowrap" style="background-color: rgb(244, 250, 251); ">￥19.00</td>
+    <td align="right" valign="top" nowrap="nowrap" style="background-color: rgb(244, 250, 251); ">￥19.00</td>
+    <td align="center" valign="top" nowrap="nowrap" style="background-color: rgb(244, 250, 251); ">未确认,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap" style="background-color: rgb(244, 250, 251); ">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18704">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090625088"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center" style="background-color: rgb(255, 255, 255); ">  HNS50019</td>
+		    <td nowrap="nowrap" align="center" style="background-color: rgb(255, 255, 255); "><input type="checkbox" name="checkboxes" value="2012090695315">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18703">2012090695315</a></td>
+    <td style="background-color: rgb(255, 255, 255); ">callcenter<br>09-06 10:27</td>
+    <td style="background-color: rgb(255, 255, 255); "><br></td>
+    <td style="background-color: rgb(255, 255, 255); "><br></td>
+    <td align="left" valign="top" style="background-color: rgb(255, 255, 255); "><a href="mailto:"> 陈日英</a> [TEL: 15107751282] <br>人民中路337号（松下电器）</td>
+    <td align="right" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">￥916.00</td>
+    <td align="right" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">￥916.00</td>
+    <td align="center" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">未确认,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18703">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090695315"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center" style="background-color: rgb(255, 255, 255); ">  140372</td>
+		    <td nowrap="nowrap" align="center" style="background-color: rgb(255, 255, 255); "><input type="checkbox" name="checkboxes" value="2012090534035">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18694">2012090534035</a></td>
+    <td style="background-color: rgb(255, 255, 255); ">18755124333<br>09-05 19:33</td>
+    <td style="background-color: rgb(255, 255, 255); "><br></td>
+    <td style="background-color: rgb(255, 255, 255); "><br></td>
+    <td align="left" valign="top" style="background-color: rgb(255, 255, 255); "><a href="mailto:"> 卡布奇诺(技术部育铭测试)</a> [TEL: 18665083328] <br>广州海珠区琶洲江海大道中(不理会这单！技术部测试)</td>
+    <td align="right" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">￥9.00</td>
+    <td align="right" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">￥0.00</td>
+    <td align="center" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); "><font color="red"> 取消</font>,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap" style="background-color: rgb(255, 255, 255); ">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18694">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090534035"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  140372</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090535177">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18693">2012090535177</a></td>
+    <td>18755124333<br>09-05 19:28</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 卡布奇诺(技术部育铭测试)</a> [TEL: 18665083328] <br>广州海珠区琶洲江海大道中(不理会这单！技术部测试)</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥0.00</td>
+    <td align="center" valign="top" nowrap="nowrap"><font color="red"> 取消</font>,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18693">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090535177"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  140372</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090528951">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18692">2012090528951</a></td>
+    <td>18755124333<br>09-05 19:24</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 卡布奇诺(技术部育铭测试)</a> [TEL: 18665083328] <br>广州海珠区琶洲江海大道中(不理会这单！技术部测试)</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥0.00</td>
+    <td align="center" valign="top" nowrap="nowrap"><font color="red"> 取消</font>,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18692">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090528951"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  140372</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090581219">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18691">2012090581219</a></td>
+    <td>18755124333<br>09-05 19:09</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 卡布奇诺(技术部育铭测试)</a> [TEL: 18665083328] <br>广州海珠区琶洲江海大道中(不理会这单！技术部测试)</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥0.00</td>
+    <td align="center" valign="top" nowrap="nowrap"><font color="red"> 取消</font>,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18691">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090581219"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS10051</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090589406">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18690">2012090589406</a></td>
+    <td>13534129921<br>09-05 17:32</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 刘波</a> [TEL: 13686413345] <br>东岗洪桥头乔山尾工业区6号</td>
+    <td align="right" valign="top" nowrap="nowrap">￥16.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥16.00</td>
+    <td align="center" valign="top" nowrap="nowrap">未确认,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18690">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090589406"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS50002</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090556993">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18687">2012090556993</a></td>
+    <td>13787110049<br>09-05 17:15</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 刘娇蕾</a> <br>樃梨镇长沙县第七中学</td>
+    <td align="right" valign="top" nowrap="nowrap">￥458.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥458.00</td>
+    <td align="center" valign="top" nowrap="nowrap">未确认,未付款,未发货		 未发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18687">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090556993"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS50008</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090575336">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18686">2012090575336</a></td>
+    <td>13711546313<br>09-05 16:41</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 谢丽芳</a> [TEL: 13682292213] <br>太和镇石湖村独松西巷8号</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18686">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090575336"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS50008</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090559588">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18685">2012090559588</a></td>
+    <td>zhengzhen<br>09-05 16:27</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 郑真</a> [TEL: 38738708] <br>珠江新城珠江西路高德置地广场C座10楼广发信用卡中心人力资源处</td>
+    <td align="right" valign="top" nowrap="nowrap">￥229.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥229.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18685">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090559588"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS50008</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090545715">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18684">2012090545715</a></td>
+    <td>13533894603<br>09-05 15:50</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 刘小姐</a> <br>黄埔区南岗东兴批发市场粮油区104号</td>
+    <td align="right" valign="top" nowrap="nowrap">￥458.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥458.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18684">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090545715"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS50002</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090539301">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18680">2012090539301</a></td>
+    <td>13886231938<br>09-05 14:55</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 刘春生</a> <br>潭溪路省计局家属院门口</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥9.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18680">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090539301"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  DWX90012</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090543898">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18678">2012090543898</a></td>
+    <td>callcenter<br>09-05 14:06</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 叶维</a> <br>九亭镇涞亭北路99弄120号301房</td>
+    <td align="right" valign="top" nowrap="nowrap">￥229.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥229.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18678">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090543898"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS50019</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090502561">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18676">2012090502561</a></td>
+    <td>15197374225<br>09-05 13:42</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 陈峰</a> [TEL: 13207332907] <br>大丰工业园锦丰机车配件厂</td>
+    <td align="right" valign="top" nowrap="nowrap">￥35.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥35.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18676">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090502561"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+    <tr>
+	      <td align="center">  HNS10051</td>
+		    <td nowrap="nowrap" align="center"><input type="checkbox" name="checkboxes" value="2012090532210">
+		<a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18670">2012090532210</a></td>
+    <td>13135221691<br>09-05 12:38</td>
+    <td><br></td>
+    <td><br></td>
+    <td align="left" valign="top"><a href="mailto:"> 罗密斯</a> [TEL: 18974607530] <br>滨江花园C8栋</td>
+    <td align="right" valign="top" nowrap="nowrap">￥51.00</td>
+    <td align="right" valign="top" nowrap="nowrap">￥51.00</td>
+    <td align="center" valign="top" nowrap="nowrap">已确认,未付款,未发货		已发送 		,
+				   未同步   
+				</td>					
+    <td align="center" valign="top" nowrap="nowrap">
+     <a href="http://shop.heinz.com.cn/callcenter/order.php?act=info&order_id=18670">查看</a>
+     	<br>
+		 <!-- <a href="order.php?act=operate&send_order=1&order_id=2012090532210"> <font color='red'>发送订单 </font></a>	 -->
+    </td>
+  </tr>
+  </tbody></table>
+
+<!-- 分页 -->
+<table id="page-table" cellspacing="0">
+  <tbody><tr>
+    <td align="right" nowrap="true">
+          <!-- $Id: page.htm 14216 2008-03-10 02:27:21Z testyang $ -->
+            <div id="turn-page">
+        总计  <span id="totalRecords">3021</span>
+        个记录分为 <span id="totalPages">202</span>
+        页当前第 <span id="pageCurrent">1</span>
+        页，每页 <input type="text" size="3" id="pageSize" value="15" onkeypress="return listTable.changePageSize(event)">
+        <span id="page-link">
+          <a href="javascript:listTable.gotoPageFirst()">第一页</a>
+          <a href="javascript:listTable.gotoPagePrev()">上一页</a>
+          <a href="javascript:listTable.gotoPageNext()">下一页</a>
+          <a href="javascript:listTable.gotoPageLast()">最末页</a>
+          <select id="gotoPage" onchange="listTable.gotoPage(this.value)">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="202">202</option>          </select>
+        </span>
+      </div>
+    </td>
+  </tr>
+</tbody></table>
+
+  </div>
+  <div>
+    <input name="confirm" type="submit" id="btnSubmit" value="确认" class="button" disabled="true" onclick="this.form.target = &#39;_self&#39;">
+    <input name="invalid" type="submit" id="btnSubmit1" value="无效" class="button" disabled="true" onclick="this.form.target = &#39;_self&#39;">
+    <input name="cancel" type="submit" id="btnSubmit2" value="取消" class="button" disabled="true" onclick="this.form.target = &#39;_self&#39;">
+    <input name="remove" type="submit" id="btnSubmit3" value="移除" class="button" disabled="true" onclick="this.form.target = &#39;_self&#39;">
+    <input name="print" type="submit" id="btnSubmit4" value="打印订单" class="button" disabled="true" onclick="this.form.target = &#39;_blank&#39;">
+    <input name="send_order" type="submit" id="btnSubmit5" value="批量发送订单" class="button" disabled="true" onclick="this.form.target = &#39;_self&#39;">
+    <input name="batch" type="hidden" value="1">
+    <input name="order_id" type="hidden" value="">
+  </div>
+</form>
+<script language="JavaScript">
+listTable.recordCount = 3021;
+listTable.pageCount = 202;
+
+listTable.filter.order_sn = '';
+listTable.filter.mobile_phone = '';
+listTable.filter.consignee = '';
+listTable.filter.StaffName = '';
+listTable.filter.email = '';
+listTable.filter.address = '';
+listTable.filter.zipcode = '';
+listTable.filter.tel = '';
+listTable.filter.mobile = '0';
+listTable.filter.country = '0';
+listTable.filter.province = '0';
+listTable.filter.city = '0';
+listTable.filter.district = '0';
+listTable.filter.shipping_id = '0';
+listTable.filter.pay_id = '0';
+listTable.filter.order_status = '-1';
+listTable.filter.shipping_status = '-1';
+listTable.filter.pay_status = '-1';
+listTable.filter.user_id = '0';
+listTable.filter.user_name = '';
+listTable.filter.composite_status = '-1';
+listTable.filter.group_buy_id = '0';
+listTable.filter.ad_id = '0';
+listTable.filter.sort_by = 'add_time';
+listTable.filter.sort_order = 'DESC';
+listTable.filter.start_time = '';
+listTable.filter.end_time = '';
+listTable.filter.page = '1';
+listTable.filter.page_size = '15';
+listTable.filter.record_count = '3021';
+listTable.filter.page_count = '202';
+
+
+    onload = function()
+    {
+        // 开始检查订单
+        //startCheckOrder();
+    }
+
+    /**
+     * 搜索订单
+     */
+    function searchOrder()
+    {
+        listTable.filter['order_sn'] = Utils.trim(document.forms['searchForm'].elements['order_sn'].value);
+        listTable.filter['consignee'] = Utils.trim(document.forms['searchForm'].elements['consignee'].value);
+//        listTable.filter['user_name'] = Utils.trim(document.forms['searchForm'].elements['user_name'].value);
+        listTable.filter['StaffName'] = Utils.trim(document.forms['searchForm'].elements['StaffName'].value);
+        listTable.filter['mobile'] = Utils.trim(document.forms['searchForm'].elements['mobile'].value);
+        listTable.filter['composite_status'] = document.forms['searchForm'].elements['status'].value;
+        listTable.filter['page'] = 1;
+        listTable.loadList();
+    }
+
+    function check()
+    {
+      var snArray = new Array();
+      var eles = document.forms['listForm'].elements;
+      for (var i=0; i<eles.length; i++)
+      {
+        if (eles[i].tagName == 'INPUT' && eles[i].type == 'checkbox' && eles[i].checked && eles[i].value != 'on')
+        {
+          snArray.push(eles[i].value);
+        }
+      }
+      if (snArray.length == 0)
+      {
+        return false;
+      }
+      else
+      {
+        eles['order_id'].value = snArray.toString();
+        return true;
+      }
+    }
+    /**
+     * 显示订单商品及缩图
+     */
+    var show_goods_layer = 'order_goods_layer';
+    var goods_hash_table = new Object;
+    var timer = new Object;
+
+    /**
+     * 绑定订单号事件
+     *
+     * @return void
+     */
+    function bind_order_event()
+    {
+        var order_seq = 0;
+        while(true)
+        {
+            var order_sn = Utils.$('order_'+order_seq);
+            if (order_sn)
+            {
+                order_sn.onmouseover = function(e)
+                {
+                    try
+                    {
+                        window.clearTimeout(timer);
+                    }
+                    catch(e)
+                    {
+                    }
+                    var order_id = Utils.request(this.href, 'order_id');
+                    show_order_goods(e, order_id, show_goods_layer);
+                }
+                order_sn.onmouseout = function(e)
+                {
+                    hide_order_goods(show_goods_layer)
+                }
+                order_seq++;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+    listTable.listCallback = function(result, txt) 
+    {
+        if (result.error > 0) 
+        {
+            alert(result.message);
+        }
+        else 
+        {
+            try 
+            {
+                document.getElementById('listDiv').innerHTML = result.content;
+                bind_order_event();
+                if (typeof result.filter == "object") 
+                {
+                    listTable.filter = result.filter;
+                }
+                listTable.pageCount = result.page_count;
+            }
+            catch(e)
+            {
+                alert(e.message);
+            }
+        }
+    }
+    /**
+     * 浏览器兼容式绑定Onload事件
+     *
+     */
+//    if (Browser.isIE)
+//    {
+//        window.attachEvent("onload", bind_order_event);
+//    }
+//    else
+//    {
+//        window.addEventListener("load", bind_order_event, false);
+//    }
+
+    /**
+     * 建立订单商品显示层
+     *
+     * @return void
+     */
+    function create_goods_layer(id)
+    {
+        if (!Utils.$(id))
+        {
+            var n_div = document.createElement('DIV');
+            n_div.id = id;
+            n_div.className = 'order-goods';
+            document.body.appendChild(n_div);
+            Utils.$(id).onmouseover = function()
+            {
+                window.clearTimeout(window.timer);
+            }
+            Utils.$(id).onmouseout = function()
+            {
+                hide_order_goods(id);
+            }
+        }
+        else
+        {
+            Utils.$(id).style.display = '';
+        }
+    }
+
+    /**
+     * 显示订单商品数据
+     *
+     * @return void
+     */
+    function show_order_goods(e, order_id, layer_id)
+    {
+        create_goods_layer(layer_id);
+        $layer_id = Utils.$(layer_id);
+        $layer_id.style.top = (Utils.y(e) + 12) + 'px';
+        $layer_id.style.left = (Utils.x(e) + 12) + 'px';
+        if (typeof(goods_hash_table[order_id]) == 'object')
+        {
+            response_goods_info(goods_hash_table[order_id]);
+        }
+        else
+        {
+            $layer_id.innerHTML = loading;
+            Ajax.call('order.php?is_ajax=1&act=get_goods_info&order_id='+order_id, '', response_goods_info , 'POST', 'JSON');
+        }
+    }
+
+    /**
+     * 隐藏订单商品
+     *
+     * @return void
+     */
+    function hide_order_goods(layer_id)
+    {
+        $layer_id = Utils.$(layer_id);
+        window.timer = window.setTimeout('$layer_id.style.display = "none"', 500);
+    }
+
+    /**
+     * 处理订单商品的Callback
+     *
+     * @return void
+     */
+    function response_goods_info(result)
+    {
+        if (result.error > 0)
+        {
+            alert(result.message);
+            hide_order_goods(show_goods_layer);
+            return;
+        }
+        if (typeof(goods_hash_table[result.content[0].order_id]) == 'undefined')
+        {
+            goods_hash_table[result.content[0].order_id] = result;
+        }
+        Utils.$(show_goods_layer).innerHTML = result.content[0].str;
+    }
+</script>
+
+
+
+<div id="footer">
+共执行 8 个查询，用时 0.044813 秒，Gzip 已禁用，内存占用 5.657 MB<br>
+COPYRIGHT &#169; 2011 HEINZ ALL RIGHT RESERVED</div>
+<!-- 新订单提示信息 -->
+<div id="popMsg">
+  <table cellspacing="0" cellpadding="0" width="100%" bgcolor="#cfdef4" border="0">
+  <tbody><tr>
+    <td style="color: #0f2c8c" width="30" height="24"></td>
+    <td style="font-weight: normal; color: #1f336b; padding-top: 4px;padding-left: 4px" valign="center" width="100%"> 新订单通知</td>
+    <td style="padding-top: 2px;padding-right:2px" valign="center" align="right" width="19"><span title="关闭" style="cursor: hand;cursor:pointer;color:red;font-size:12px;font-weight:bold;margin-right:4px;" onclick="Message.close()">×</span><!-- <img title=关闭 style="cursor: hand" onclick=closediv() hspace=3 src="msgclose.jpg"> --></td>
+  </tr>
+  <tr>
+    <td style="padding-right: 1px; padding-bottom: 1px" colspan="3" height="70">
+    <div id="popMsgContent">
+      <p>您有 <strong style="color:#ff0000" id="spanNewOrder">1</strong> 个新订单以及       <strong style="color:#ff0000" id="spanNewPaid">0</strong> 个新付款的订单</p>
+      <p align="center" style="word-break:break-all"><a href="./亨氏商城管理中心 - 订单列表_files/亨氏商城管理中心 - 订单列表.htm"><span style="color:#ff0000">点击查看新订单</span></a></p>
+    </div>
+    </td>
+  </tr>
+  </tbody></table>
+</div>
+
+<!--
+<embed src="images/online.wav" width="0" height="0" autostart="false" name="msgBeep" id="msgBeep" enablejavascript="true"/>
+-->
+<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://active.macromedia.com/flash2/cabs/swflash.cab#version=4,0,0,0" id="msgBeep" width="0" height="0">
+  <param name="movie" value="images/online.swf">
+  <param name="quality" value="high">
+  <embed src="images/online.swf" name="msgBeep" id="msgBeep" quality="high" width="0" height="0" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?p1_prod_version=shockwaveflash">
+  
+</object>
+
+<script language="JavaScript">
+document.onmousemove=function(e)
+{
+  var obj = Utils.srcElement(e);
+  if (typeof(obj.onclick) == 'function' && obj.onclick.toString().indexOf('listTable.edit') != -1)
+  {
+    obj.title = '点击修改内容';
+    obj.style.cssText = 'background: #278296;';
+    obj.onmouseout = function(e)
+    {
+      this.style.cssText = '';
+    }
+  }
+  else if (typeof(obj.href) != 'undefined' && obj.href.indexOf('listTable.sort') != -1)
+  {
+    obj.title = '点击对列表排序';
+  }
+}
+<!--
+
+
+var MyTodolist;
+function showTodoList(adminid)
+{
+  if(!MyTodolist)
+  {
+    var global = $import("../js/global.js","js");
+    global.onload = global.onreadystatechange= function()
+    {
+      if(this.readyState && this.readyState=="loading")return;
+      var md5 = $import("js/md5.js","js");
+      md5.onload = md5.onreadystatechange= function()
+      {
+        if(this.readyState && this.readyState=="loading")return;
+        var todolist = $import("js/todolist.js","js");
+        todolist.onload = todolist.onreadystatechange = function()
+        {
+          if(this.readyState && this.readyState=="loading")return;
+          MyTodolist = new Todolist();
+          MyTodolist.show();
+        }
+      }
+    }
+  }
+  else
+  {
+    if(MyTodolist.visibility)
+    {
+      MyTodolist.hide();
+    }
+    else
+    {
+      MyTodolist.show();
+    }
+  }
+}
+
+if (Browser.isIE)
+{
+  onscroll = function()
+  {
+    //document.getElementById('calculator').style.top = document.body.scrollTop;
+    document.getElementById('popMsg').style.top = (document.body.scrollTop + document.body.clientHeight - document.getElementById('popMsg').offsetHeight) + "px";
+  }
+}
+
+if (document.getElementById("listDiv"))
+{
+  document.getElementById("listDiv").onmouseover = function(e)
+  {
+    obj = Utils.srcElement(e);
+
+    if (obj)
+    {
+      if (obj.parentNode.tagName.toLowerCase() == "tr") row = obj.parentNode;
+      else if (obj.parentNode.parentNode.tagName.toLowerCase() == "tr") row = obj.parentNode.parentNode;
+      else return;
+
+      for (i = 0; i < row.cells.length; i++)
+      {
+        if (row.cells[i].tagName != "TH") row.cells[i].style.backgroundColor = '#F4FAFB';
+      }
+    }
+
+  }
+
+  document.getElementById("listDiv").onmouseout = function(e)
+  {
+    obj = Utils.srcElement(e);
+
+    if (obj)
+    {
+      if (obj.parentNode.tagName.toLowerCase() == "tr") row = obj.parentNode;
+      else if (obj.parentNode.parentNode.tagName.toLowerCase() == "tr") row = obj.parentNode.parentNode;
+      else return;
+
+      for (i = 0; i < row.cells.length; i++)
+      {
+          if (row.cells[i].tagName != "TH") row.cells[i].style.backgroundColor = '#FFF';
+      }
+    }
+  }
+
+  document.getElementById("listDiv").onclick = function(e)
+  {
+    var obj = Utils.srcElement(e);
+
+    if (obj.tagName == "INPUT" && obj.type == "checkbox")
+    {
+      if (!document.forms['listForm'])
+      {
+        return;
+      }
+      var nodes = document.forms['listForm'].elements;
+      var checked = false;
+
+      for (i = 0; i < nodes.length; i++)
+      {
+        if (nodes[i].checked)
+        {
+           checked = true;
+           break;
+         }
+      }
+
+      if(document.getElementById("btnSubmit"))
+      {
+        document.getElementById("btnSubmit").disabled = !checked;
+      }
+      for (i = 1; i <= 10; i++)
+      {
+        if (document.getElementById("btnSubmit" + i))
+        {
+          document.getElementById("btnSubmit" + i).disabled = !checked;
+        }
+      }
+    }
+  }
+
+}
+
+//-->
+</script>
+
+
+<script language="JavaScript">
+function ChangeCounty(form,theProvinceID,theCountyID){
+	var aryChinaProvinceCounty=new Array(7);
+	aryChinaProvinceCounty[0]=[["","城市"]];			
+	//华北
+	aryChinaProvinceCounty[1]=[[0,'城市'],[52,"北京"],[258,"呼和浩特"],[27,"天津"],[138,"石家庄"],[300,"太原"],[284,"青岛"],[297,'烟台'],[283,'济南'],];
+	//华西													
+	aryChinaProvinceCounty[2]=[[0,'城市'],[322,'成都'],[339,	'宜宾'],[323,	'绵阳'],[394,	'重庆'],[367,	'昆明'],[111,	'贵阳'],[120,	'海口'],[97,	'南宁'],[110,	'玉林'],[93,	'湛江'],[85,	'茂名']];
+	//华南											
+	aryChinaProvinceCounty[3]=[[0,'城市'],[76,	'广州'],[80,	'佛山'],[77,	'深圳'],[95,	'中山'],[79,	'东莞'],[82,	'惠州']];
+	//华东										 
+	aryChinaProvinceCounty[4]=[[0,'城市'],[321,	'上海'],[149,	'郑州'],[3401,	'合肥'],[49,	'芜湖'],[220,	'南京'],[221,	'苏州'],[222,	'无锡'],[229,	'徐州'],[383,	'杭州'],[391,	'温州'],[385,	'嘉兴']];
+	//华中										 
+	aryChinaProvinceCounty[5]=[[0,'城市'],[180,	'武汉'],[195,	'宜昌'],[193,	'襄樊'],[233,	'南昌'],[235,	'赣州'],[197,	'长沙'],[201,	'衡阳'],[199,	'常德'],[53,	'福州'],[60,	'厦门'],[311, '西安'],[62,	'兰州'],[351,	'乌鲁木齐']];	 
+	//东北
+	aryChinaProvinceCounty[6]=[[0,'城市'],[244,	'沈阳'],[245,	'大连'],[167,	'哈尔滨'],[211,	'长春']];
+	
+	theCounty=form.county;
+	if(!isNaN(theProvinceID)){
+		var theCountyIDName=aryChinaProvinceCounty[theProvinceID];
+		theCounty.length=theCountyIDName.length;
+		for(i=0;i<theCounty.length;i++){
+			theCounty.options[i].value=theCountyIDName[i][0];
+			theCounty.options[i].text=theCountyIDName[i][1];
+			theCounty.options[i].selected=theCountyID==theCountyIDName[i][0];
+		}
+	}
+}
+
+function checked_onlyregion(form,index){
+	var onlyregion=form.onlyregion;
+	for(var i=0;i<onlyregion.length;i++){
+				if(i==index){
+						onlyregion[i].checked=true; 
+						break;
+				}
+	}
+}
+function GetRadioValue(RadioName){
+    var obj;    
+    obj=document.getElementsByName(RadioName);
+    if(obj!=null){
+        var i;
+        for(i=0;i<obj.length;i++){
+            if(obj[i].checked){
+                return obj[i].value;            
+            }
+        }
+    }
+    return null;
+}
+</script>
+</body></html>

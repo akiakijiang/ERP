@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  {literal}
+  <style type="text/css">
+  dl{font-size:12px;}
+  dd{margin-left:10px;font-weight:bold;}
+  </style>
+  {/literal}
+  <link rel="stylesheet" href="../misc/tablesorter.css" />
+	<title>CALL-CENTER屏蔽电话数据</title>
+</head>
+
+<body>
+<h3>从{$start}到{$end}的屏蔽电话数据</h3>
+<form action="list_mask_phone.php" name="stat" id="stat" method="get">
+  开始时间：
+  <input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+  结束时间：
+  <input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+  状态：
+  <select name="no_status" >
+    <option value="ALL" {if $smarty.request.no_status eq 'ALL'}selected{/if} >全部</option>
+    <option value="A" {if $smarty.request.no_status eq 'A'}selected{/if}>有效</option>
+    <option value="S" {if $smarty.request.no_status eq 'S'}selected{/if}>暂停</option>
+    <option value="P" {if $smarty.request.no_status eq 'P'}selected{/if}>未启用</option>
+  </select>
+  快递状态：
+  <select name="shipping_status" >
+    <option value="fahuo" {if $smarty.request.shipping_status eq 'fahuo'}selected{/if}>已发货</option>
+    <option value="weifahuo" {if $smarty.request.shipping_status eq 'weifahuo'}selected{/if}>未发货</option>
+    <option value="shouhuo" {if $smarty.request.shipping_status eq 'shouhuo'}selected{/if}>收货</option>
+    <option value="ALL" {if $smarty.request.shipping_status eq 'ALL'}selected{/if} >全部</option>
+  </select>
+  是否通话：
+  <select name="call_status" >
+    <option value="ALL" {if $smarty.request.call_status eq 'ALL'}selected{/if} >全部</option>
+    <option value="Y" {if $smarty.request.call_status eq 'Y'}selected{/if}>是</option>
+    <option value="N" {if $smarty.request.call_status eq 'N'}selected{/if}>否</option>
+  </select>
+  搜索关键字：
+  <input name="search_text" value="{$smarty.request.search_text}" type="text" />
+  <input name="act" value="search" type="hidden" />
+  <input type="submit" value="查看" />
+</form>
+<br />
+
+<table class="bWindow">
+<div style="clear:both;">{$pager}</div>
+<tr>
+    <td>订单</td>
+    <td width="50">快递状态</td>
+    <td width="60">屏蔽电话</td>
+    <td>用户电话</td>
+    <td>生效时间</td>
+    <td width="40">状态</td>
+    <td width="40">查看快递</td>
+    <td>通话记录(呼入号码，呼入开始时间，呼入结束时间)</td>
+</tr>
+{foreach from=$mask_phones item=mask_phone}
+{foreach from=$mask_phone item=phone name=mask_phone}
+<tr>
+{if $smarty.foreach.mask_phone.first}
+    <td rowspan="2">
+        <a href="{$WEB_ROOT}admin/detail_info.php?order_id={$phone.order_id}" target="_blank">
+        {$phone.order_sn}</a>
+    </td>
+    <td rowspan="2">
+        {if $phone.shipping_status eq 1}
+        已发货
+        {elseif $phone.shipping_status eq 2}
+        收货确认
+        {else}
+        未发货
+        {/if}
+    </td>
+{/if}
+    <td>{$phone.mask_phone_no}</td>
+    <td>{if check_admin_priv('check_user_tel')}{$phone.cus_phone_no}{else}权限限制{/if}</td>
+    <td>{$phone.actived_time}</td>
+    <td>{if $phone.no_status eq 'A'}有效
+        {elseif $phone.no_status eq 'S'}暂停
+        {elseif $phone.no_status eq 'P'}未启用{/if}</td>
+    <td><a target="_blank" href="{$WEB_ROOT}admin/catch_carrier_info.php?bill_no={$phone.bill_no}&carrier_id={$phone.carrier_id}">
+        {$phone.shipping_name}:{$phone.bill_no}</a></td>
+    <td>{foreach from=$phone.talk_history item=talk_history}
+        {*这里固定访问地址为 http://58.168.1.10:83 *}
+        {if $talk_history.record_file_url}
+            <a href="http://58.168.1.10:83/{$talk_history.record_file_url|replace:"Record/":""}"  >下载</a>&nbsp;
+        {/if}
+            {$talk_history.carrier_phone_no}, {$talk_history.in_begin_time}, {$talk_history.in_end_time}<br />
+        {foreachelse}
+            无
+        {/foreach}</td>
+</tr>
+{/foreach}
+{foreachelse}
+<tr>
+    <td colspan="10">
+    无屏蔽号码数据
+    </td>
+</tr>
+{/foreach}
+</table>
+<div style="clear:both;">{$pager}</div>
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

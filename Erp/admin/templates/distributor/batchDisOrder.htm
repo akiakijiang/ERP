@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>下分销订单</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css"></link>
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+ <script type="text/javascript" src="misc/thickbox.js"></script>
+	<script type="text/javascript">
+	var WEB_ROOT = '{$WEB_ROOT}';
+	{literal}
+		
+	
+		/**
+		 * 改变地域的下拉框
+		 */
+		var Region = {
+			/** 
+			 * WEB控件ID
+			 */	
+			regions : [
+					{name: 'order[province]', data:{type:2} }, // 省
+					{name: 'order[city]',     data:{type:3} }, // 市
+					{name: 'order[district]'}                  // 区
+			],
+			
+			expr : ':select[name="#"]',
+				
+			/**
+			 * 初始化，即绑定事件
+			 */
+			init : function() 
+			{
+				$(this.expr.replace('#', this.regions[0].name)).bind('change', this.regions[0].data, this.change_region_list);	
+				$(this.expr.replace('#', this.regions[1].name)).bind('change', this.regions[1].data, this.change_region_list);	
+			},
+			
+			/**
+			 * 改变下拉框
+			 */
+			change_region_list : function(event) 
+			{
+					var $p = $(this);  // 父级元素
+					var pn = $p.attr('name');
+					var ln = Region.regions.length;
+					var last = false;
+					var next = 0;
+					
+					// 如果到了最后一级则返回
+					for (var i=0; i<ln; i++) {
+						if (pn == Region.regions[i].name) {
+							next = i + 1;
+							if (i == ln -1) { last = true; }
+						}
+					}
+					
+					if (!last) {
+						$c = $(Region.expr.replace('#', Region.regions[next].name));	 // 子级元素
+						
+						for (var i=next; i<ln; i++) {
+							$(Region.expr.replace('#', Region.regions[i].name)).hide();	
+						}
+					}
+				
+					$c.unbind();
+					$.ajax({
+						type: 'POST',
+						url: WEB_ROOT + 'admin/ajax.php?act=get_regions',  // 查询地址
+						data: 'type=' + event.data.type + '&parent=' + $p.val(),
+						dataType: 'json',
+						error: function() {alert('查询地域失败'); },
+						success: function(data) {
+							if (data.regions && data.regions != '') {
+								r = data.regions;
+								var list = '<option value="0">-请选择-</option>';
+								for (var i = 0; i < r.length; i++) {
+									list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+								}
+								$c.html(list).fadeIn();
+								if (next + 1 < ln) {
+									$c.bind('change', Region.regions[next].data, Region.change_region_list);
+								}
+							}
+						}
+					});	
+			}
+			
+		};
+	
+	
+		function add_shipment_info(){
+			$('#add_shipment_info').empty();
+			var shippingName = $.trim($('#shipping_name').val());
+			if(shippingName == ''){
+				alert("模糊查询需输入配送方式");
+				return false;
+			}
+	 	   $.ajax({
+				type: 'POST',
+				url : 'download_model.php?act=add_shipment_info', 
+				data: 'shipping_name='+shippingName,
+				dataType: 'json',
+				async : true,
+				success:function(data){
+					if(data.error){
+						alert(data.error);
+						return;
+					}
+					var tdc = "<table><tr><td width='50px;'>编号</td><td>配送方式</td></tr>";
+		   			for(j = 0; j<data.length;j++){
+		   				tdc += "<tr><td>"+data[j].shipping_id+"</td><td>"+data[j].shipping_name+"</td></tr>";
+		   			}
+		   			tdc += "</table> ";
+		   			$('#add_shipment_info').append(tdc);
+				},
+	            error: function() {
+	                alert('ajax请求错误, 请稍后重试'); 
+	            },
+	        }); 
+	    }
+		
+		function showFacilityId(){
+			var facility_id = $('#facility_id').val();
+			$('#show_facility_id').val(facility_id);
+		}
+		
+		function add_payment_info(){
+			$('#add_payment_info').empty();
+			var payName = $.trim($('#pay_name').val());
+			if(payName == ''){
+				alert("模糊查询需输入支付方式");
+				return false;
+			}
+	 	   $.ajax({
+				type: 'POST',
+				url : 'download_model.php?act=add_payment_info', 
+				data: 'pay_name='+payName,
+				dataType: 'json',
+				async : true,
+				success:function(data){
+					if(data.error){
+						alert(data.error);
+						return;
+					}
+					var tdc = "<table><tr><td width='50px;'>编号</td><td>支付方式</td></tr>";
+		   			for(j = 0; j<data.length;j++){
+		   				tdc += "<tr><td>"+data[j].pay_id+"</td><td>"+data[j].pay_name+"</td></tr>";
+		   			}
+		   			tdc += "</table> ";
+		   			$('#add_payment_info').append(tdc);
+				},
+	            error: function() {
+	                alert('ajax请求错误, 请稍后重试'); 
+	            },
+	        }); 
+	    }		
+		function check_form(){
+			var pay_id = $('#pay_id').val();
+			var facility_id = $('#facility_id').val();
+			
+			if(pay_id == 0){
+				alert('请选择支付方式');
+				return false;
+			}
+			if(pay_id == 0){
+				alert('请选择仓库');
+				return false;
+			}
+			$('#upload_btn').attr('disabled',true);
+			return true;
+		}
+		
+		$(document).ready(function(){			
+
+			// 绑定 选择省会改变地区的事件
+			Region.init();
+			
+
+	});
+		{/literal}
+	</script>
+</head>
+
+<body>
+<!--{if $message}-->
+	<div style="border:rgba(220,220,220,.8) 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:rgba(220,220,220,.8) 2px solid;"><legend
+	class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;分销订单导入&nbsp;</legend>	
+	<form id="upload" method="post" enctype="multipart/form-data" action="batchDisOrder.php" onsubmit="return check_form()">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="upload" />
+    </form>
+    <br />
+    <div>
+    <table>
+   		<tr>
+		  <td>配送方式模糊查询编号：</td>
+		  <td>
+		  <input type="text" id='shipping_name'/>
+	   	  <input type='button' onclick="add_shipment_info()" value='提交' />
+	   	  </td>
+	    </tr>
+	    <tr id='add_shipment_info'></tr>
+	    <tr>
+	    	<td>支付方式模糊查询：</td>
+	    	<td>
+	    	<input type="text" id='pay_name'/>
+	   	  	<input type='button' onclick="add_payment_info()" value='提交' />
+	    	</td> 
+	    </tr>
+	    <tr id='add_payment_info'></tr>
+	    <tr>
+	    	<td>发货仓库ID查询：</td>
+	    	<td>
+	    	<select id="facility_id" name="facility_id" onchange="showFacilityId()"><option value="0">-请选择-</option>{html_options options=$available_facility}</select>
+	    	&nbsp;<input id="show_facility_id" readonly=true style="border:none; width:80px;" />
+	    	</td>
+	    </tr> 
+
+	    <tr>
+           <td>省市区参考：</td>
+           <td>
+           <select name="order[province]"><option value="">-请选择 -</option><!--{foreach from=$province_list item=item}--><option value="{$item.region_id}">{$item.region_name}</option> <!--{/foreach}--></select>省 &nbsp;&nbsp;
+           <select name="order[city]" style="display:none"><option>-请选择-</option></select> &nbsp;&nbsp;
+           <select name="order[district]" style="display:none"><option>-请选择-</option></select>
+           </td>
+       </tr>
+
+	</table>    
+	    
+	    <div style="float: right; margin-right: 100px;">
+	    <form method="post" enctype="multipart/form-data" action="download_model.php?act=download_model_order">
+	        <div style='color:red'>模板已更新，请下载后解压</div>
+	    	<!-- <input type="submit" value="批量导入模板下载"/> -->
+	    	<a href="template_batchDisOrder.rar">批量导入模板下载</a>
+	    </form>
+	    </div>
+	</div>
+    <br/>
+    <br/>
+    <div style="border:1px solid red;padding:10px;border-radius:5px;margin-top: 10px;">
+    <p>注意事项:</p>
+	<p style="color:red">1、外部订单号格式＝原外部订单号加上"－１"。</p>
+	<p>2、黄色部分为必填字段；绿色部分为二选一字段。</p>
+	<p>3、【省】不必以“省”字结尾，省下面的【市】不必以“市”字结尾，市下面的【区】则必须以“区”字结尾，必填。北京、天津、重庆、上海请填在【省】这一列，该地区下面的区则填在【市】这一列，以“区”字结尾，【区】这一列不必填。</p>
+	<p>4、若出现地址错误，则查询【省市区参考】后，再修改。</p>
+	<p>5、外部订单类型分类为：淘宝，京东，亚马逊，微信；若无外部订单类型则填写无</p>
+</div>
+</fieldset> 
+</div>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>对账运费明细</title>
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript">
+//<![CDATA[
+  // {literal}
+  function check_data_export_f () {
+	  //var facility = $.trim($('#facility_export_f').val());
+	  //if (facility == '-1') {
+	  //    alert('请选择仓库');
+	  //    return false;
+	  //}
+	  var shipping = $.trim($('#shipping_export_f').val());
+	  if (shipping == '-1') {
+		  alert('请选择快递方式');
+		  return false;
+	  }
+	  var fileInput = $.trim($('#fileInput_export_f').val());
+	  if (fileInput == "") {
+		  alert('请选择要上传的excel');
+		  return false;
+	  }
+	  $('#export-f').submit();
+  }
+  function check_data_upload () {
+      //var facility = $.trim($('#facility_upload').val());
+      //if (facility == '-1') {
+      //    alert('请选择仓库');
+      //    return false;
+      //}
+      var shipping = $.trim($('#shipping_upload').val());
+      if (shipping == '-1') {
+          alert('请选择快递方式');
+          return false;
+      }
+      var type = $.trim($('#type_upload').val());
+      if (type == '-1') {
+          alert('请选择excel类型');
+          return false;
+      }
+      var fileInput = $.trim($('#fileInput_upload').val());
+      if (fileInput == "") {
+          alert('请选择要上传的excel');
+          return false;
+      }
+      $('#f_upload').submit();
+  }
+  function check_data_export () {
+      //var facility = $.trim($('#facility').val());
+      //if (facility == '-1') {
+      //    alert('请选择仓库');
+      //    return false;
+      //}
+      var shipping = $.trim($('#shipping').val());
+      if (shipping == '-1') {
+          alert('请选择快递方式');
+          return false;
+      }
+      var type = $.trim($('#type').val());
+      if (type == '-1') {
+          alert('请选择excel类型');
+          return false;
+      }
+      var fileInput = $.trim($('#fileInput').val());
+      if (fileInput == "") {
+          alert('请选择要上传的excel');
+          return false;
+      }
+      $('#upload').submit();
+  }
+  
+  // {/literal}
+  // ]]>
+  </script>
+</head>
+<body>
+<div style="margin: 20px auto; width: 960px;" align="left">
+<fieldset style="border: #D43FAA 2px solid;"><legend><span
+	style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;对账信息导入&nbsp;</span></legend>
+<div style="width: 96%; margin: auto;">
+<fieldset style="border: #FF7FFF 1px dashed;"><legend
+	class="expand">&nbsp;返回运单号导入ERP&nbsp;</legend>
+<div>
+<form id="export-f" method="post" enctype="multipart/form-data">
+<table class="inner">
+<!--  
+	<tr>
+		<td align="center">请选择仓库</td>
+		<td><select name="facility" id="facility_export_f">
+			<option value="-1">请选择仓库</option>    -->
+			<!--{foreach from=$available_facility item=item key=facility_id}-->
+			<!-- <option value="{$facility_id}">{$item}</option>   -->
+			<!--{/foreach}-->
+	<!-- 	</select></td>
+	</tr>
+    -->
+	<tr>
+		<td align="center">请选择快递方式</td>
+		<td><select name="shipping" id="shipping_export_f">
+			<option value="-1">请选择快递方式</option>
+			<!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+			<option value="{$shipping_list.shipping_id}">{$shipping_list.shipping_name}</option>
+			<!--{/foreach}-->
+		</select></td>
+	</tr>
+	<tr>
+		<td align="center">请选择要导入的excel文件</td>
+		<td><input type="file" name="excel" size="50" id="fileInput_export_f" />
+		&nbsp;&nbsp;&nbsp;&nbsp; <input type="button" value="导入" onclick="check_data_export_f()"/> <input
+			type="hidden" name="act" value="export-f" /></td>
+	</tr>
+</table>
+</form>
+</div>
+</fieldset>
+<br />
+<br />
+
+<fieldset style="border: #FF7FFF 1px dashed;"><legend
+	class="expand">&nbsp;运费账单与ERP核对&nbsp;</legend>
+<div>
+<form id="f_upload" method="post" enctype="multipart/form-data" >
+<table class="inner">
+<!-- 	<tr>
+		<td align="center">请选择仓库</td>
+		<td><select name="facility" id="facility_upload">
+			<option value="-1">请选择仓库</option> -->
+			<!--{foreach from=$available_facility item=item key=facility_id}-->
+			<!--<option value="{$facility_id}">{$item}</option> -->
+			<!--{/foreach}-->
+		<!--</select></td>
+	</tr>-->
+	<tr>
+		<td align="center">请选择快递方式</td>
+		<td><select name="shipping" id="shipping_upload">
+			<option value="-1">请选择快递方式</option>
+			<!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+			<option value="{$shipping_list.shipping_id}">{$shipping_list.shipping_name}</option>
+			<!--{/foreach}-->
+		</select></td>
+	</tr>
+    <tr>
+        <td align="center">请选择导入excel类型</td>
+        <td>
+            <select name="type" id="type_upload">
+                <option value="-1">--请选择--</option>
+                <option value="1">导入手续费明细</option>
+                <option value="2">导入快递费明细</option>
+            </select>
+        </td>
+    </tr>
+	<tr>
+		<td align="center">请选择要导入的excel文件</td>
+		<td><input type="file" name="excel" size="50" id="fileInput_upload" />
+		&nbsp;&nbsp;&nbsp;&nbsp; <input type="button" value="测试" onclick="check_data_upload()"/> <input
+			type="hidden" name="act" value="upload" /></td>
+	</tr>
+</table>
+</form>
+</div>
+</fieldset>
+<br />
+<br />
+<fieldset style="border: #FF7FFF 1px dashed;display: none;"><legend
+	class="expand">&nbsp; 最终运费导入ERP&nbsp;</legend>
+
+<div>
+<form id="upload" method="post" enctype="multipart/form-data">
+<table class="inner">
+	<!--<tr>
+		<td align="center">请选择仓库</td>
+		<td><select name="facility" id="facility">
+			<option value="-1">请选择仓库</option>-->
+			<!--{foreach from=$available_facility item=item key=facility_id}-->
+			<!--<option value="{$facility_id}">{$item}</option>
+			<!--{/foreach}-->
+		<!--</select></td>
+	</tr>-->
+	<tr>
+		<td align="center">请选择快递方式</td>
+		<td><select name="shipping" id="shipping">
+			<option value="-1">请选择快递方式</option>
+			<!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+			<option value="{$shipping_list.shipping_id}">{$shipping_list.shipping_name}</option>
+			<!--{/foreach}-->
+		</select></td>
+	</tr>
+    <tr>
+        <td align="center">请选择导入excel类型</td>
+        <td>
+            <select name="type" id="type">
+                <option value="-1">--请选择--</option>
+                <option value="1">导入手续费明细</option>
+                <option value="2">导入快递费明细</option>
+            </select>
+        </td>
+    </tr>
+	<tr>
+		<td align="center">请选择要导入的excel文件</td>
+		<td><input type="file" name="excel" size="50" id="fileInput" />
+		&nbsp;&nbsp;&nbsp;&nbsp; <input id="export" type="button" value="导入" onclick="check_data_export()"/>
+		<input type="hidden" name="act" value="export" /> 
+		</td>
+	</tr>
+</table>
+</form>
+</div>
+</fieldset>
+<p align="center">{$message}</p>
+<script type="text/javascript"><!--
+// <![CDATA[
+// {literal}
+
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "start",
+    button            : "startTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "end",
+    button            : "endTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+--></script>
+</body>
+</html>

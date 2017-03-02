@@ -1,0 +1,124 @@
+<HTML>
+	<!--
+		All Hail Sinri Edogawa!
+
+		@AUTHOR ljni@i9i8.com
+		@UPDATED 20130810
+
+		天国的批量打印条码君：
+			我是你的模板，只要给我以下参数，就能打印一大堆条码。
+			barcodes, 类似123,456,789的字符串，每个条码值用comma隔开。
+			type,目前除了grouding神马都不认。
+			sugu_print，如果为1就直接跳出打印对话框。
+			不久我也会来追随你的。
+					地狱的批量打印条码模板。
+	-->
+	<head>
+		<TITLE>
+			Print Barcodes - All Hail Sinri Edogawa
+		</TITLE>
+		{literal}
+		<script type="text/javascript">
+		 	function changeSize(i) {
+		        var imgs = i.contentWindow.document.getElementsByTagName('img');
+		        for(var i=0;i<imgs.length;i++){
+		        	imgs[i].width='287';
+		        	imgs[i].height='160';
+		        }
+
+		    }
+
+			// window.onload=function(){
+			// 	document.frames['mt_iframe'].document.styleSheets[0].addRule("img","width:350px");
+			// }
+		</script>
+		{/literal}
+
+	</head>
+	<body  {if $smarty.request.sugu_print == 1}onload="window.print()"{/if}>
+		
+		<div style="display:none;">
+			Here to test!<br>
+			BARCODES:{$barcodes}<br>
+			TYPE:{$type}<br>
+			SUGU_PRINT:{$sugu_print}<br>
+			{foreach from=$barcodes item=f key=k}
+				{$k}:{$f}<br>
+			{/foreach}
+		</div>
+		
+		<!-- Here put print codes -->
+		{if $type=='tray'}
+			{php}$is_first=true;{/php}
+			<DIV >
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME id="mt" onload="changeSize(this)" name="mt_iframe" style="margin:0px;padding:0px;width:305;height:160;"
+					frameborder='0' src="barcodegen1Dv5/sinri_barcode_code128c.php?sinri_content={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+		
+		{if $type=='scan_barcode'}
+			{php}$is_first=true;{/php}
+			<DIV style="width: 10cm;">
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME onload="changeSize(this)" id="mt" name="mt_iframe" style="margin:0px;padding:0px;width:20cm;height:10cm;"
+					 frameborder='0' src="barcodegen1Dv5/sinri_barcode_code128c.php?sinri_content={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+		
+		{if $type=='grouding'}
+			{php}$is_first=true;{/php}
+			<DIV style="width: 10cm;">
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME style="margin:0px;padding:0px;width:11cm;height:4cm;"
+					 frameborder='0' src="print_barcode.php?sugu_print=2&type=grouding&barcode={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+		{if $type=='goods'}
+			{php}$is_first=true;{/php}
+			<DIV style="width: 10cm;">
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME style="margin:0px;padding:0px;width:11cm;height:4cm;"
+					 frameborder='0' src="print_barcode.php?sugu_print=2&type=goods&barcode={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+		{if $type=='sn'}
+			{php}$is_first=true;{/php}
+			<DIV style="width: 10cm;">
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME style="margin:0px;padding:0px;width:11cm;height:4cm;"
+					 frameborder='0' src="print_barcode.php?sugu_print=2&type=sn&barcode={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+		{if $type=='location'}
+			{php}$is_first=true;{/php}
+			<DIV style="width: 10cm;">
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME style="margin:0px;padding:0px;width:11cm;height:4cm;"
+					 frameborder='0' src="print_barcode.php?sugu_print=2&type=location&barcode={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+		{if $type=='locations'}
+			{php}$is_first=true;{/php}
+			<DIV style="width: 10cm;">
+				{foreach from=$barcodes item=f key=k}
+					{php}if (!$is_first) echo '<div STYLE="page-break-after: always;"></div>'; $is_first=false; {/php}
+					<IFRAME style="margin:0px;padding:0px;width:11cm;height:4cm;"
+					 frameborder='0' src="print_barcode.php?sugu_print=2&type=location&barcode={$f}"></IFRAME>
+				{/foreach}
+			</DIV>
+		{/if}
+	</body>
+</HTML>

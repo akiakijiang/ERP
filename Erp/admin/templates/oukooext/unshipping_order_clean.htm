@@ -1,0 +1,72 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="misc/jquery.js"></script>
+<title>出入库操作记录页面</title>
+<script type="text/javascript">
+	var WEB_ROOT = '{$WEB_ROOT}';
+</script>
+</head>
+
+<body>
+	<fieldset>
+		<legend>检索/导出</legend>
+		<ul class="sType">
+			<form method="POST">
+				仓库：<select id="facility" name="facility" > {html_options options=$facility_list selected=$facility} </select>
+				发货状态：<select name="shipping_status" id="shipping_status"> {html_options options=$shipping_status_list selected=$shipping_status} </select>&nbsp;&nbsp;
+				<!-- 快递方式：<select name="carrier" id="carrier"> {html_options option=$carrier_list} </select> -->
+				<input type="submit" name="search" value="  搜索   " onclick="$('#act').val('search');" /> &nbsp;&nbsp;
+				<input type="submit" name="export" value="导出excel" onclick="$('#act').val('export');" />
+				<input type="hidden" name="act" id="act" value="search" />
+			</form>
+		</ul>
+	</fieldset>
+	<h2 align="center">已预订未发货订单列表</h2>
+	<h3>
+		<span style="color: red;">一共搜索出 {$count} 条记录</span><span style="float:right"><!-- <input type="button" value="打印批拣单" onclick="check_print_shippings()"/></span> -->
+	</h3>
+	<form method="post" action="Deal_Batch_Pick.php" id='form_print_shipments'>
+		<table class="bWindow">
+		<thead>
+			<th>业务组</th>
+			<th>订单号</th>
+			<th>订单状态</th>
+			<th>下单时间</th>
+			<th>预定时间</th>
+			<th>顾客名字</th>
+			<th>运单号</th>
+			<th>仓库名</th>
+		</thead>
+		<tbody>
+			<!--  {if $orders != null} -->
+				<!-- {foreach from=$orders item=order} -->
+				<tr align="center">
+					<td>{$order.pName}</td>
+					<td>{$order.order_sn}</td>
+					<td>{$order.status}</td>
+					<td>{$order.order_time}</td>
+					<td>{$order.RESERVED_TIME}</td>
+					<td>{$order.consignee}</td>
+					<td>{$order.tracking_number}</td>
+					<td>{$order.facility_name}</td>
+				</tr>
+				<!-- {/foreach} -->
+			<!-- {/if} -->
+		</tbody>
+	</table>
+	</form>
+	<script type="text/javascript">
+	//{literal}
+		function check_print_shippings(){
+			var shipping_status = $('#shipping_status').val();
+			if(shipping_status != 0){
+				alert('因订单状态不对,您现在不能打印批拣单');
+				return ;
+			}
+		}
+	//{/literal}
+	</script>
+</body>
+</html>

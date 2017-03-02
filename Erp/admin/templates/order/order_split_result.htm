@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>拆分订单</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	{literal}
+	<style>
+		body {
+			font-family: Helvetica, Tahoma, Arial, "Microsoft YaHei", "微软雅黑", sans-serif;
+		}
+		.msg-content {
+			width:960px;
+		    margin:50px auto 0 auto;
+	     	padding:5px;
+		    border:#7F9F00 2px solid;   
+		    text-align:center;
+        }
+	</style>
+	{/literal}
+</head>
+
+<body>
+<!--{if $message}-->
+	<div class="msg-content">
+	{$message}
+	</div>
+<!-- {else} -->
+    <div class="container" style="margin:20px auto; width:960px;border:#337AB7 2px solid;">
+    	<div class="row">
+		    <!--{if $orders} -->
+		    <table class="table table-hover">
+		   		<thead>
+		   			<tr>
+		   				<td>原订单号</td>
+		   				<td>淘宝订单号</td>
+		   				<td>Erp订单号</td>
+		   				<td>发货仓库</td>
+		            </tr>
+		   		</thead>
+		   		<tbody>
+		    <!--{foreach from=$orders key=key item=order name="groupList"}-->
+		  	<tr>
+		  		<td><a href="order_edit.php?order_id={$parent_order_id}" target="_blank">{$parent_order_sn}</a></td>
+			  	<td>{$order.taobao_order_sn}</td>
+			  	<td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+			  	<td>{$order.facility_name}</td>
+		    </tr>
+		    <!-- {/foreach} -->
+		        </tbody>
+		    </table>
+	    </div>
+	    <!-- {else} -->	
+	    <div class="row">
+	    	<h4 style="text-align:center;color:red;">原订单没有对应的拆分订单</h4>
+	    </div>
+	    <!-- {/if} --> 
+    </div>
+    
+<!--{/if}-->
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库商品库位更新</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;业务组仓库批量移库位&nbsp;</span></legend>
+  <div>
+  此方式将会清空 该业务组，所选逻辑仓 的所有商品库位对应关系，请做好备份！<br/><br/>
+ <span style="color:red;">注意：1.导入文件表名：更新库位商品;列名：库位，商品条码 &nbsp;&nbsp;2.剔除重复值、空字段 &nbsp;&nbsp; 3.半角全角,0与O区分,特殊符号</span><br/><br/>
+    <form method="post" enctype="multipart/form-data">
+    业务组： {$party_name}  &nbsp;&nbsp;
+    系统逻辑仓: &nbsp;&nbsp;
+  	<select name="batch_change_location_facility_id">
+		{html_options options=$facility_list }
+	</select>
+	<br/><br/>
+        <input type="file" name="excel" value="" ></input>
+        <input type="hidden" name="product_import" value="update_location_goods_barcode" ></input>
+        <input type="submit" name="type" value="库位商品导入EXCEL" ></input>
+    </form>
+   </div>
+  
+  <div id="error_table" style="width:40%;"><br/><hr/>
+  {if $error_list}
+  <table>
+  <tr>
+  <th width="30px;">行号</th>
+  <th>库位</th>
+  <th>商品条码</th>
+  <th>错误信息</th>
+  </tr>
+  {foreach from=$error_list item=error_info}
+  <tr>
+  <td>{$error_info.row_number}</td>
+  <td>{$error_info.location_barcode}</td>
+  <td>{$error_info.goods_barcode}</td>
+  <td>{$error_info.error_msg}</td>
+  </tr>
+  {/foreach}
+  </table>
+  
+  {/if}
+  
+  </div>
+</fieldset>
+<br/><br/>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;库位查询与更新&nbsp;</span></legend>
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">系统库位信息</h3>
+		<form method="post"  style="display:inline;">
+		   业务组： {$party_name}  &nbsp;&nbsp;
+		   <input type="hidden" name="product_import" value="location_export" ></input>
+		      <input type="submit" name="type" value="仓库库位导出" ></input>
+		</form> 
+		
+	</div>
+	<br/>
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">库位商品对应信息</h3>
+		<form method="post"  style="display:inline;">
+		   系统逻辑仓: &nbsp;&nbsp;
+		  	<select name="select_location_barcode_facility_id">
+				{html_options options=$facility_list }
+			</select>
+	        <input type="hidden" name="product_import" value="location_barcode_export" ></input>
+	        <input type="submit" name="type" value="库位商品导出" ></input>
+	    </form>
+	</div>
+</fieldset>  
+
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>盘点RF枪扫描</title>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <!-- RF枪键盘监听，页面跳转 -->
+  <script type="text/javascript" src="js/js_wms/rf_scan.js"></script>
+  
+  <!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+ <!-- Calendar /-->  
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    <!--{/literal}-->
+  </style>
+  
+	<script type="text/javascript">
+	//{literal}
+	// <![CDATA[
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        
+        // 确定页面载入时鼠标焦点的定位
+        $('#from_location').focus();  // 定位到收货容器扫描框
+        
+        // 绑定收货容器扫描事件
+        $('#from_location').bind('keyup', scan);
+
+        // 绑定上架容器扫描事件
+        $('#to_location').bind('keyup', scan);
+  	 
+        // 绑定商品条码扫描事件
+        $('#goods_barcode').bind('keyup', scan);
+        
+        // 绑定商品数量按键事件
+        $('#goods_number').bind('keyup', scan);
+        
+        // 绑定生产日期按键事件
+        $('#validity').bind('keyup', scan);
+
+ 　　     
+        data_init();
+
+        // 看商品的属性来展示
+
+    });
+    
+    // 盘点号检测
+    var flag_from_location = true;
+    function from_location_scan(event,batch_pick_sn,location_id)
+    {
+    	
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != "CTRL") {
+    		$('#'+location_id+'_note').val(EVENT_MAP[KEY_MAP[event.keyCode]]);
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_from_location) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_from_location = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+
+        var result = Array();
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=check_batch_pick_sn', 
+            data: 'batch_pick_sn=' + batch_pick_sn,
+            success: function(data) {
+            	result['error'] = data.error;
+            	result['success'] = data.success;
+            },
+            error: function(data) {
+            	result['error'] = 'ajax请求错误, 请重新扫描条码:' + batch_pick_sn;
+            	result['success'] = data.success;
+            },
+            complete: function() {
+                $note.removeClass('loading'); 
+                if(result['success']) {
+                   $note.val('扫描成功哦');
+                } 
+                else 
+                {
+                   $note.val(result['error']);
+                }
+                flag_from_location = true;
+            }
+        }); 
+        //sub_mouse_down(location_id);
+        var batch_pick_paths = get_batch_pick_patch(batch_pick_sn);
+        for(var i=0;i<batch_pick_paths.length;i++) {
+        	//alert(batch_pick_paths[i]);
+        	//alert(batch_pick_paths[i]['location_barcode']);
+        	for(var j=0;j<batch_pick_paths[i]['goods_info'].length;j++) {
+        		//alert(batch_pick_paths[i]['goods_info'][j]['goods_barcode']);
+        		//alert(batch_pick_paths[i]['goods_info'][j]['goods_number']);
+        		//alert(batch_pick_paths[i]['goods_info'][j]['goods_name']);
+        		$note = '条码:'+batch_pick_paths[i]['goods_info'][j]['goods_barcode']
+        		+' 数量:'+batch_pick_paths[i]['goods_info'][j]['goods_number']
+        		+' 名称:'+batch_pick_paths[i]['goods_info'][j]['goods_name']
+        		+' 位置:'+i+j;
+        		//alert($note);
+        	}
+        }
+        var i=0;j=0;
+        $note = '储位:'+batch_pick_paths[i]['location_barcode']
+        +' 条码:'+batch_pick_paths[i]['goods_info'][j]['goods_barcode']
+		+' 数量:'+batch_pick_paths[i]['goods_info'][j]['goods_number']
+		+' 名称:'+batch_pick_paths[i]['goods_info'][j]['goods_name']
+		+' 位置:'+i+j;
+        alert($note);
+        //get_next_batch_pick_path(batch_pick_paths);
+    }
+    
+     // 得到批捡的路线
+	 function get_batch_pick_patch(batch_pick_sn)
+	 {
+	     var result = "";
+	     $.ajax({
+	         async : false,
+	         type: 'POST',
+	         dataType: 'json',
+	         url : 'ajax.php?act=get_batch_pick_path', 
+	         data: 'batch_pick_sn=' + batch_pick_sn,
+	         error: function() { alert("得到批捡的路线ajax请求错误！"); result = false; },
+	         success: function(data) {
+		       	if(data.success == true) {
+		       		alert("得到批捡的路线成功！"+batch_pick_sn);
+		       		result = data.res;
+		       	} else {
+		       		alert(data.error);
+		       	}
+	         }
+	     }); 
+	     return result;
+	 }
+    
+    // 储位容器检测
+    var flag_to_location = true;
+    function to_location_scan(event,barcode,location_id)
+    {
+    	
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != "CTRL") {
+    		$('#'+location_id+'_note').val(EVENT_MAP[KEY_MAP[event.keyCode]]);
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_to_location) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_to_location = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+
+        var result = Array();
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=check_grouding_location', 
+            data: 'barcode=' + barcode,
+            success: function(data) {
+            	result['error'] = data.error;
+            	result['success'] = data.success;
+            },
+            error: function(data) {
+            	result['error'] = 'ajax请求错误, 请重新扫描条码:' + barcode;
+            	result['success'] = data.success;
+            },
+            complete: function() {
+                $note.removeClass('loading'); 
+                if(result['success']) {
+                   $note.val('扫描成功哦');
+                } 
+                else 
+                {
+                   $note.val(result['error']);
+                }
+                flag_to_location = true;
+            }
+        }); 
+        sub_mouse_down(location_id);
+    }
+    
+    // 商品条码检测
+    var flag_goods_barcode = true;
+    function goods_barcode_scan(event,goods_barcode,location_id)
+    {
+    	var grouding_location_barcode = $('#from_location').val();
+    	//alert(grouding_location_barcode);alert(goods_barcode);
+
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != "CTRL") {
+    		$('#'+location_id+'_note').val(EVENT_MAP[KEY_MAP[event.keyCode]]);
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_goods_barcode) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_goods_barcode = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+
+        var result = Array();
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=check_grouding_goods_barcode', 
+            data: 'grouding_location_barcode=' + grouding_location_barcode+'&goods_barcode=' + goods_barcode,
+            success: function(data) {
+            	result['error'] = data.error;
+            	result['success'] = data.success;
+            },
+            error: function(data) {
+            	result['error'] = 'ajax请求错误, 请重新扫描条码:' + barcode;
+            	result['success'] = data.success;
+            },
+            complete: function() {
+                $note.removeClass('loading'); 
+                if(result['success']) {
+                   $note.val('扫描成功哦');
+                } 
+                else 
+                {
+                   $note.val(result['error']);
+                }
+                flag_goods_barcode = true;
+            }
+        }); 
+        //sub_mouse_down(location_id);
+    }
+    
+    
+    // 商品数量检测
+    var flag_goods_number = true;
+    function goods_number_scan(event,input_number,location_id)
+    {
+    	var grouding_location_barcode = $('#from_location').val();
+    	var goods_barcode = $('#goods_barcode').val();
+    	//var input_number = $('#goods_number').val();
+
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != "CTRL") {
+    		$('#'+location_id+'_note').val(EVENT_MAP[KEY_MAP[event.keyCode]]);
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        var $note = $('#'+location_id+'_note');
+        if (!flag_goods_number) {
+            var tip = "当前操作还在进行...请稍等";
+            $note.val(tip);
+            return; 
+        }
+        flag_goods_number = false;
+        var tip = "正在验证中...请稍等";
+        $note.val(tip);
+        $note.addClass('loading');
+
+        var result = Array();
+        $.ajax({
+            mode: 'abort',
+            async : false,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=check_grouding_goods_number', 
+            data: 'grouding_location_barcode=' + grouding_location_barcode+'&goods_barcode=' + goods_barcode +'&input_number=' + input_number,
+            success: function(data) {
+            	result['error'] = data.error;
+            	result['success'] = data.success;
+            },
+            error: function(data) {
+            	result['error'] = 'ajax请求错误, 请重新扫描条码:' + barcode;
+            	result['success'] = data.success;
+            },
+            complete: function() {
+                $note.removeClass('loading'); 
+                if(result['success']) {
+                   $note.val('扫描成功哦');
+                } 
+                else 
+                {
+                   alert('error');
+                   $note.val(result['error']);
+                }
+                flag_goods_number = true;
+            }
+        }); 
+        //sub_mouse_down(location_id);
+    }
+    
+    // 生产日期检测
+    var flag_validity = true;
+    function validity_scan(event,validity,location_id)
+    {
+    	// 扫描触发事件只能是ctrl
+    	if (KEY_MAP[event.keyCode] != "CTRL") {
+    		$('#'+location_id+'_note').val(EVENT_MAP[KEY_MAP[event.keyCode]]);
+    	    action_event(event,location_id);
+    	    return;
+    	}
+        // 检测合法性
+        if(!check_validity_format(validity)) {
+    		$('#'+location_id+'_note').val("请输入2013-08-08这种格式的日期!");
+        	return false;
+        } else {
+    		$('#'+location_id+'_note').val("输入ok!");
+        }
+        
+        //sub_mouse_down(location_id);
+    }
+    
+	// ]]>
+	//{/literal}
+	</script>
+</head>
+
+<body>
+
+<form method="post" >
+<table class="bWindow" style="margin-top:5px;">
+
+<tr id="tr_from_location" align="center">
+  <td>盘点号</td>
+  <td >
+		<input type="text" style="width:80%" id="from_location" value="" >
+  </td>
+</tr>
+
+<tr id="tr_from_location_note" align="center">
+  <td>提示</td>
+  <td >
+  		<input type="text" style="width:80%" id="from_location_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_to_location_note" align="center">
+  <td>储位号</td>
+  <td >
+  		<input type="text" style="width:80%" id="to_location_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_barcode" align="center">
+  <td>商品条码</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_barcode" value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_barcode_note" align="center">
+  <td>提示</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_barcode_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<tr id="tr_goods_number" align="center">
+  <td>数量</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_number" value=""  onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
+  </td>
+</tr>
+
+<tr id="tr_goods_number_note" align="center">
+  <td>提示</td>
+  <td>
+		<input type="text" style="width:80%" id="goods_number_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+<!-- TODO:从商品条码扫描时特殊判断 -->
+<tr id="tr_validity" align="center">
+  <td>生产日期</td>
+  <td>
+		<input id="validity" style="width:70%" name="validity[]" value="">
+		<input type="button" style="width:9%" id="validity_trigger" value="..." >
+  </td>
+</tr>
+
+<tr id="tr_validity_note" align="center">
+  <td>提示</td>
+  <td>
+		<input type="text" style="width:80%" id="validity_note" readonly='readonly' value="" >
+  </td>
+</tr>
+
+
+<tr id="tr_current_page" align="center">
+  <td>提示</td>
+  <td>
+		<input type="hidden" id="current_page" value="" />当前页面
+  </td>
+</tr>
+<tr id="tr_current_func" align="center">
+  <td>提示</td>
+  <td>
+		<input type="hidden" id="current_func" value="take_stock" />当前功能
+  </td>
+</tr>
+
+
+</table>
+</form>
+
+
+
+</body>
+</html>

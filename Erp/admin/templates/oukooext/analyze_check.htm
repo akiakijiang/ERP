@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>考核数据</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索">
+</form>
+
+<table class="bWindow">
+<caption><h2>考核数据</h2></caption>
+<tr>
+<th>时间</th>
+<th>回复</th>
+<th>确认订单</th>
+<th>发货</th>
+</tr>
+{foreach from=$weeks item=week key=key}
+<tr align="center">
+<td>{$week.start}<br>至<br>{$week.end}</td>
+<td style="padding:0">
+	<table class="bWindow">
+	<tr>
+	<th>ID</th>
+	<th>回复数</th>
+	<th>回复时间</th>
+	</tr>
+	<tr align="center">
+	<th>总计</th>
+	<td>{$sum[$key].count}</td>
+	<td>
+	{if $sum[$key].count > 0}
+		{math equation="x / y / 60" x=$sum[$key].sum_second y=$sum[$key].count format="%.2f"}
+	{/if}
+	</td>
+	</tr>
+	{foreach from=$comment_users item=action key=user_name}
+	<tr>
+	<td style="width:80px">{$user_name}</td>
+	<td style="width:80px">
+		售前：{$action[$key].before_count|default:0}<br>
+		售中：<a href="analyze_check_detail.php?type=mid_comment&start={$week.start}&end={$week.end}&user_name={$user_name}" target="_blank">{$action[$key].mid_count|default:0}</a><br>
+		售后：<a href="analyze_check_detail.php?type=sale_service&start={$week.start}&end={$week.end}&user_name={$user_name}" target="_blank">{$action[$key].sale_count|default:0}</a><br>
+		评论：{$action[$key].after_count|default:0}<br>
+		小计：{$action[$key].before_count+$action[$key].mid_count+$action[$key].sale_count+$action[$key].after_count}<br>
+	</td>
+	<td style="width:100px">
+		{if $action[$key].before_count > 0}
+			售前：{math equation="x / y / 60" x=$action[$key].before_sum_second|default:0 y=$action[$key].before_count format="%.2f"}<br>
+		{/if}
+		{if $action[$key].mid_count > 0}
+			售中：{math equation="x / y / 60" x=$action[$key].mid_sum_second|default:0 y=$action[$key].mid_count format="%.2f"}<br>
+		{/if}
+		{if $action[$key].sale_count > 0}
+			售后：{math equation="x / y / 60" x=$action[$key].sale_sum_second|default:0 y=$action[$key].sale_count format="%.2f"}<br>
+		{/if}
+		{if $action[$key].after_count > 0}
+			评论：{math equation="x / y / 60" x=$action[$key].after_sum_second|default:0 y=$action[$key].after_count format="%.2f"}<br>
+		{/if}
+		{if $action[$key].before_count+$action[$key].after_count > 0}
+			平均：{math equation="x / y / 60" x=$action[$key].before_sum_second+$action[$key].after_sum_second y=$action[$key].before_count+$action[$key].after_count format="%.2f"}<br>
+		{/if}
+		{if $action[$key].before_count > 0}
+			转换率：{math equation="x / y * 100" x=$action[$key].convert_count|default:0 y=$action[$key].before_count format="%.2f"}%<br>
+		{/if}		
+	</td>
+	</tr>
+	{/foreach}
+	</table>
+</td>
+<td style="padding:0">
+	<table class="bWindow">
+	{foreach from=$confirm_action_users item=action key=user_name}
+	<tr>
+	<td style="width:80px">{$user_name}</td>
+	<td style="width:80px">{$action[$key].count}</td>
+	<td style="width:80px">
+		{if $action[$key].count > 0}
+			{math equation="x / y / 60" x=$action[$key].sum_second|default:0 y=$action[$key].count format="%.2f"}
+		{/if}
+	</td>
+	</tr>
+	{/foreach}
+	</table>
+</td>
+<td style="padding:0">
+	<table class="bWindow">
+	{foreach from=$ship_action_users item=action key=user_name}
+	<tr>
+	<td style="width:80px">{$user_name}</td>
+	<td style="width:80px">{$action[$key].count}</td>
+	<td style="width:80px">
+		{if $action[$key].count > 0}
+			{math equation="x / y / 60 / 24" x=$action[$key].sum_second|default:0 y=$action[$key].count format="%.2f"}
+		{/if}
+	</td>
+	</tr>
+	{/foreach}
+	</table>
+</td>
+</tr>
+{/foreach}
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

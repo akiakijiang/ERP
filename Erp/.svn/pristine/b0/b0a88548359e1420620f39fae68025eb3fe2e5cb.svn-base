@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+{literal}
+<style type="text/css">
+.lefttd{
+ text-align:right;
+ padding-right:10px!important;
+}
+</style>
+<title>采购修改返利</title>
+<script type="text/javascript">
+
+var process_request = '..';
+
+function disable_input(id) {
+  document.getElementById(id).disabled = true;
+  document.getElementById(id).readonly = true;
+}
+function enable_input(id) {
+  document.getElementById(id).disabled = false;
+  document.getElementById(id).readonly = false;
+}
+
+function changeproductId() {
+  if( document.getElementById('productiddiv').style.display == 'none') {
+    document.getElementById('productIdchange').value = '1';
+    document.getElementById('productiddiv').style.display = '';
+  } else {
+    document.getElementById('productIdchange').value = '0';
+    document.getElementById('productiddiv').style.display = 'none';
+  }
+}
+
+function changesupplierRebateTypeId(obj) {
+  var supplierRebateTypeId_enum = new Array('SINGLEPRODUCT', 'ORDERPRODUCT', 'PROVIDERPRODUCT', 'PROVIDER');
+  enable_input('serialNumber');
+  enable_input('originalOrderId');
+  enable_input('search');
+  enable_input('keyword');
+  for (var i = 0; i< supplierRebateTypeId_enum.length; i++) {
+    if(supplierRebateTypeId_enum[i] == 'ORDERPRODUCT') {
+      disable_input('serialNumber');
+    }
+    if(supplierRebateTypeId_enum[i] == 'PROVIDERPRODUCT') {
+      disable_input('originalOrderId');
+    }
+    if(supplierRebateTypeId_enum[i] == 'PROVIDER') {
+      disable_input('search');
+      disable_input('keyword');
+    }
+    if(obj.value == supplierRebateTypeId_enum[i]) break; 
+  }
+}
+
+function changereceivable(obj) {
+  if(obj.value.replace(' ', '') != '') {
+    disable_input('receivableRatio');
+  } else {
+    enable_input('receivableRatio');
+  }
+}
+
+function changereceivableRatio(obj) {
+  if(obj.value.replace(' ', '') != '') {
+    disable_input('receivable');
+  } else {
+    enable_input('receivable');
+  }
+}
+
+window.onload = function() {
+  changesupplierRebateTypeId(document.getElementById('supplierRebateTypeId'));
+}
+
+{/literal}
+</script>
+</head>
+
+<body>
+<h3>采购修改返利</h3>
+
+<form action="?act=edit_submit" method="POST">
+<table class="bWindow" style="width:700px;" cellpadding="5">
+  <tr>
+    <td width="150" class="lefttd">返利类型</td><td>
+    {foreach from=$supplierRebateTypeId_enum item=supplierRebateTypeId_description key=supplierRebateTypeId_item}
+    {if $SupplierRebate->supplierRebateTypeId == $supplierRebateTypeId_item} {$supplierRebateTypeId_description} {/if}
+    {/foreach}
+    <input type="hidden" name="supplierRebateTypeId" id="supplierRebateTypeId" value="{$SupplierRebate->supplierRebateTypeId}"  />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利形式</td><td>
+    <select name="supplierRebateModeId" id="supplierRebateModeId">
+    {foreach from=$supplierRebateModeId_enum item=supplierRebateModeId_description key=supplierRebateModeId_item}
+    <option value="{$supplierRebateModeId_item}" {if $SupplierRebate->supplierRebateModeId == $supplierRebateModeId_item} selected="selected" {/if}>{$supplierRebateModeId_description}</option>
+    {/foreach}
+    </select>
+    </td>
+  </tr>
+  
+  <tr>
+    <td class="lefttd">供应商 </td><td>
+    <select name="providerId" id="providerId">
+    {foreach from=$providers item=provider}
+    <option value="{$provider.provider_id}"{if $SupplierRebate->providerId == $provider.provider_id} selected="selected" {/if}>{$provider.provider_name}</option>
+    {/foreach}
+    </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">预期返利金额</td><td>
+    <input type="text" name="receivable" id="receivable" value="{$SupplierRebate->receivable}" onchange="changereceivable(this);" />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">预期返利金额百分比</td><td>
+    <input type="text" name="receivableRatio" id="receivableRatio" value="{$SupplierRebate->receivableRatio}" onchange="changereceivableRatio(this);" />%
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利对应的商品型号</td><td>
+    {$goods_name} <a href="#" onclick="changeproductId();return false;">修改</a>
+    <input type="hidden" name="productIdchange" id="productIdchange" value="0" />
+    <input type="hidden" name="productId" value="{$SupplierRebate->productId}" />
+    <div style="display:none;" id="productiddiv">
+    <br />
+    <input style="width:80px" type="text" id="keyword" value="" />
+    <input type="button" id="search" name="search" value="{$lang.button_search}" onclick="searchGoods();" />
+  	<select name="goods_id" onchange="searchGoodsStyle(this)" id="goods_id"></select>
+  	<select name="style_id" id="style_id"></select>
+  	</div>
+  	</td>
+  </tr>
+  <tr>
+    <td class="lefttd">和返利相关的原始订单号</td><td>
+    <input type="text" name="originalOrderId" id="originalOrderId" value="{$SupplierRebate->originalOrderId}" />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利对应的单台手机的串号</td><td>
+    <input type="text" name="serialNumber" id="serialNumber" value="{$SupplierRebate->serialNumber}" />
+    </td>
+  </tr>
+
+  <tr>
+    <td class="lefttd">返利活动开始时间</td><td>
+    <input type="text" name="effectiveDate" id="effectiveDate" value="{$SupplierRebate->effectiveDate}" /> <input type="button" name="effectiveDate_btn" id="effectiveDate_btn" value="..." />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利活动结束时间</td><td>
+    <input type="text" name="expiredDate" id="expiredDate" value="{$SupplierRebate->expiredDate}" /> <input type="button" name="expiredDate_btn" id="expiredDate_btn" value="..." />
+    </td>
+  </tr>
+  <tr>
+    <td class="lefttd">返利的描述</td><td>
+    <textarea name="description" id="description" cols="45" rows="5">{$SupplierRebate->description}</textarea>
+    </td>
+  </tr>
+  
+  <tr>
+    <td class="lefttd">返利的状态</td><td>
+    <select name="supplierRebateStatusId" id="supplierRebateStatusId">
+    {foreach from=$supplierRebateStatusId_enum item=supplierRebateStatusId_description key=supplierRebateStatusId_item}
+    {if $supplierRebateStatusId_item != 'USED'}
+    <option value="{$supplierRebateStatusId_item}" {if $SupplierRebate->supplierRebateStatusId == $supplierRebateStatusId_item} selected="selected" {/if}>{$supplierRebateStatusId_description}</option>
+    {/if}
+    {/foreach}
+    </select>
+    </td>
+  </tr>
+
+  <tr><td colspan="2">
+  <input type="hidden" name="supplierRebateId" value="{$SupplierRebate->supplierRebateId}" />
+  <input type="hidden" name="edit_by" value="{$edit_by}" />
+  <input type="submit" name="button" id="button" value="修改返利" />  
+  </td>
+  </tr>
+</table>
+</form>
+
+
+
+
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "effectiveDate",
+        button            : "effectiveDate_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "expiredDate",
+        button            : "expiredDate_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+  function searchGoods()
+  {
+    /* 填充列表 */
+    var keyword = document.getElementById("keyword").value;
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+//      alert('fd');
+	  var sel = document.getElementById('goods_id');
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+    		var opt = document.createElement('OPTION');
+    		opt.value = '';
+    		opt.text = '';
+    		sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+        }
+      }
+    }
+  }
+  function searchGoodsStyle(obj) {
+    /* 填充列表 */
+    var goods_id = obj.value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_goods_style&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+  }
+    
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+	  var sel = document.getElementById('style_id');
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+      }
+      
+    }
+  }
+</script>
+{/literal}
+</html>

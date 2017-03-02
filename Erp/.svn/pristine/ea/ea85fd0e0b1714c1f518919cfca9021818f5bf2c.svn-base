@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>预付款编辑</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+ 	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+ 	<!--{literal}-->
+  
+  <style type="text/css">
+	.tip{ color: #888; }
+	.require{ color: #F00; }
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	function apply_submit()
+	{
+		var $button = $(this);
+		var $form = $('#form');
+		
+		if ($.trim($form.find(':select[name="payment[provider_id]"]').val()) == '' && 
+			$.trim($form.find(':select[name="payment[distributor_id]"]').val()) == '') {
+			alert('请选择分销商/供应商');
+			return false;
+		}
+		
+		if ($.trim($form.find(':input[name="payment[pay_time]"]').val()) == '') {
+			alert('请输入交易时间');
+			return false;
+		}
+		
+		var amount = $form.find(':input[name="payment[amount]"]').val();
+		if ($.trim(amount) == '' || !/^(\+|-)?\d+(\.\d+)?$/.test(amount)) {
+			alert('请输入正确的金额');
+			return false;
+		}
+		
+		// 如果输入的金额是负数，则为消耗预付款，必须要输入备注
+		if (/^-\d+(\.\d+)?$/.test(amount)) {
+			if ($form.find(':input[name="payment[note]"]').val() == '') {
+				alert('要消耗预付款必须输入原因');	
+				return false;
+			}
+		} 
+		// 如果输入的金额是整数，则为添加预付款，必须要选择付款类型
+		else {
+			if ($.trim($form.find(':select[name="payment[payment_type_id]"]').val()) == '') {
+				alert('请选择付款类型')	;
+				return false;
+			}
+		}
+		
+		var currency = $form.find(':input[name="payment[currency]"]').val();
+		var prepayment_currency = $form.find(':input[name="prepayment_currency"]').val();
+		if(currency == ''){
+			alert('请选择币种') ;
+			return false;
+		}else if(prepayment_currency != '' && prepayment_currency != currency){
+			alert('币种与账号币种不同');
+			return false;
+		}
+		
+		$form.submit();
+	}
+	
+	// ]]>
+	</script>
+  
+ 	<!--{/literal}-->
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;添加预付款&nbsp;</span></legend>
+  
+    <div style="clear:both;float:right;"><a href="prepayment.php?type={$type}">返回列表</a></div>
+    
+    
+ 	<form method="post" id="form">  
+
+	<div style="clear:both;"> 
+    <h4>|— 预付款信息</h4>
+  	<table cellpadding="5" cellspacing="1">
+        {if $type=='DISTRIBUTOR'}
+    	<tr>
+      	<td width="120">分销商 <span class="require"> * </span></td>
+        <td>
+          	<select name="payment[distributor_id]">
+              <option value="">- 请选择</option>
+              {html_options options=$distributor_list selected=$partner_id}
+            </select>
+            <input type="hidden" name="payment[prepayment_account_type_id]" value="DISTRIBUTOR" />
+		</td>
+		</tr>
+        {else}
+    	<tr>
+      	<td width="120">供应商 <span class="require"> * </span></td>
+        <td>
+            <select name="payment[provider_id]">
+              <option value="">- 请选择</option>
+              {html_options options=$provider_list selected=$partner_id}
+            </select>
+            <input type="hidden" name="payment[prepayment_account_type_id]" value="SUPPLIER" />
+		</td>
+		</tr>
+        {/if}
+      
+    	<tr>
+      	<td>交易时间 <span class="require"> * </span> </td>
+        <td>
+            <input type="text" name="payment[pay_time]" id="pay_time" value="" size="22" /><input type="button" id="pay_time_trigger" value="日历" style="border:#960 1px solid;" />
+        </td>
+		</tr>
+      
+    	<tr>
+      	<td>最小金额</td>
+        <td>
+        	<input type="text" name="payment[min_amount]" value="" size="10" />  &nbsp;<span class="tip">新建帐号时可用</span>
+        </td>
+		</tr>
+        
+    	<tr>
+      	<td>金额 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="payment[amount]" value="" size="10" /> &nbsp;<span class="tip">输入负数则消耗预付款</span>
+        	<!--{if $type == 'DISTRIBUTOR'}-->
+        	<input type="checkbox" name="payment[is_rebate]" id="is_rebate" value="1"></input>返点
+        	<!--{/if}-->
+        </td>
+		</tr>
+        
+        <tr>
+        <td>币种 <span class="require"> * </span></td>
+        <td><select name="payment[currency]"><option value="">-选择</option>{html_options options=$currency_list selected=$currency}</select><span class="tip">默认为账号币种</span></td>
+        </tr>
+        
+    	<tr>
+      	<td>付款类型 <span class="require"> * </span></td>
+        <td>
+        	<select name="payment[payment_type_id]"><option value="">-选择</option>{foreach from=$payment_type_list item=item}<option value="{$item->prepaymentPaymentTypeId}">{$item->prepaymentPaymentTypeName}</option>{/foreach}</select>
+        </td>
+		</tr>
+        
+        <tr>
+          <td>备注</td>
+          <td><input type="text" name="payment[note]" value="" size="40" /></td>
+        </tr>
+        
+		</table>
+  </div>
+  <br />
+
+  
+  
+  <br /><br /><br />
+	<div style="text-align:center"><input type="button" value="添加" onclick="apply_submit(this);" /></div>
+  <br />
+  
+  <input type="hidden" name="act" value="update" />
+  <input type="hidden" name="type" value="{$type}" />
+  <input type="hidden" name="prepayment_currency" value="{$currency}"/>
+  </form>
+  
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "pay_time",
+	button            : "pay_time_trigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S"
+});
+// {/literal}
+// ]]>
+</script>
+
+
+</body>
+</html>

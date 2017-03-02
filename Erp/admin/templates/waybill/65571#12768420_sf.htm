@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>顺丰[怀轩]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:12pt;top:0px;left:80px;font-size:40px;">{$order.diff}</div>
+<div style="position:absolute;font-size:12pt;top:80px;left:5px;letter-spacing:11px;">7698041295</div><!-- 月结帐号 -->
+<div style="position:absolute;font-size:10pt;top:110px;left:5px;">上海乐其</div><!-- 公司名 -->
+<div style="position:absolute;font-size:10pt;top:110px;left:200px;">blackmores</div>
+<div style="position:absolute;font-size:10pt;top:135px;left:2px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:10pt;top:190px;left:1px;">{$tel_qh}</div>
+<div style="position:absolute;font-size:10pt;top:190px;left:68px;">{$tel_dh}</div>
+<!--至此为寄件人信息-->
+
+
+<div style="position:absolute;font-size:10pt;top:235px;left:210px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:260px;left:1px;width:260px;line-height:200%;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:10pt;top:315px;left:125px;">{$order.mobile}<br />{$order.tel}</div>
+<div style="position:absolute;font-size:14pt;top:400px;left:1px;">食物&nbsp;&nbsp;(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:14pt;top:385px;left:230px;">1</div>
+<div style="position:absolute;font-size:15pt;top:20px;left:470px;font-weight:bolder;">021DD</div><!--原寄地-->
+<div style="position:absolute;font-size:30pt;top:50px;left:460px;">√</div><!--寄方付 -->
+<div style="position:absolute;font-size:30pt;top:50px;left:580px;">√</div><!--第三方付 -->
+
+<div style="position:absolute;font-size:12pt;top:110px;left:475px;letter-spacing:11px;">7698041295</div>
+<div style="position:absolute;font-size:12pt;top:150px;left:475px;letter-spacing:10px;">转769F</div>
+<div style="position:absolute;font-size:14pt;top:430px;left:500px;">本人签收<br></div>
+
+</body>
+</html>

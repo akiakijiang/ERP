@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>红包发送</title>
+{literal}
+<script type="text/javascript">
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+function check_default() {
+	if (E("gtc_id").value == '') {
+		alert("请先点击配置的\"发送\"按钮!");
+		return false;
+	}
+	var gt_count = new Number(E("gt_count").value);
+	var max_gt_count = new Number(E("max_gt_count").value);
+	if (isNaN(gt_count) || gt_count <= 0) {
+		alert("数量必须大于0");
+		E("gt_count").focus();
+		return false;
+	}
+	if (gt_count > max_gt_count) {
+		alert("数量必须小于剩余数");
+		E("gt_count").focus();
+		return false;
+	}
+	if (E("comment").value == '') {
+		alert("必须填入领取原因");
+		E("comment").focus();
+		return false;		
+	}
+	return true;
+}
+function check_give_user(){
+	if (!check_default()) {
+		return false;
+	}
+	if (E("user_names").value == '') {
+		alert("请输入客户名");
+		E("user_names").focus();
+		return false;
+	}
+	
+	return confirm("确认要发给客户每人" + E("gt_count").value + "个" + E("gtc_value").value + "元的抵用券吗？");
+}
+function check_export_csv() {
+	if (!check_default()) {
+		return false;
+	}
+	return confirm("确认要导出" + E("gt_count").value + "个" + E("gtc_value").value + "元的抵用券吗？导出后则无法再导出相同红包，导出后请刷新页面！");		
+}
+
+function load(gtc_id, gtc_value, max_gt_count) {
+	E("gtc_id").value = gtc_id;
+	E("gtc_value").value = gtc_value;
+	E("max_gt_count").value = max_gt_count;
+	E("comment").focus();
+}
+
+</script>
+{/literal}
+</head>
+<body>
+
+<form method="POST">
+<fieldset style="background:#EEE">
+	<legend style="border: #999 1px outset; padding:3px; background-color: #FFF; font-weight:bold;">发送抵用劵</legend>
+  
+  配置ID： <input style="width:50px" name="gtc_id" id="gtc_id" readonly>
+  面值：<input style="width:50px" id="gtc_value" name="gtc_value" readonly>
+  剩余数：<input style="width:50px" id="max_gt_count" readonly>
+  数量：<input style="width:50px" name="gt_count" id="gt_count" value="1">
+  领取原因：<input style="width:250px" name="comment" id="comment">
+  <input type="submit" name="act" value="导出抵用券列表CSV" onclick="return check_export_csv()">
+  <br>
+  客户名：
+  <textarea style="width:150px;heigth:50px" name="user_names" id="user_names"></textarea>
+  <input type="button" value="查看全部客户" onclick="alert(E('user_names').value)">
+  <input type="submit" name="act" value="发送给用户" onclick="return check_give_user()">
+</fieldset>
+</form>
+<br>
+
+<form method="GET">
+<fieldset style="background:#EEE">
+	<legend style="border: #999 1px outset; padding:3px; background-color: #FFF; font-weight:bold;">查询抵用劵</legend>
+	
+ 	配置ID： <input type="text" name="code" value="{$filter.code}" maxlength="20" />
+  面值： <input type="text" name="value" value="{$filter.value}" maxlength="20" />
+  类型：<select name="type"><option value="0">- ALL</option>{html_options options=$bonus_type_list selected=$filter.type}</select>
+  启用网站： <select name="party_id"><option value="0">- ALL</option>{html_options options=$party_list selected=$filter.party_id}</select>
+	&nbsp;&nbsp;<input type="submit" name="act" value="筛选" />
+</fieldset>
+</form>
+<br>
+
+
+
+<table class="bWindow">
+<caption style="margin-bottom:10px;">
+	<h3>抵用券列表</h3>
+  <span style="color:red;font-weight:bold">{$info}</span><br>
+  <a href="gt_give_history.php">领取记录</a> &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="gt_give_history_byuser.php">查询用户领取记录</a>
+  {$pagination}
+</caption>
+
+<tr>
+<th>配置</th>
+<th>面值</th>
+<th>启用网站</th>
+<th>时间限制</th>
+<th>时限</th>
+<th>剩余数</th>
+<th>备注</th>
+<th>类型</th>
+<th>操作</th>
+</tr>
+<!--{foreach from=$gtcs item=gtc}-->
+<tr align="center" class="{cycle values="odd,even"}">
+<td>{$gtc.gtc_id}</td>
+<td>{$gtc.gtc_value}</td>
+<td>{if $gtc.party_id == $smarty.const.PARTY_OUKU_MOBILE}手机组{elseif $gtc.party_id == $smarty.const.PARTY_OUKU_SHOES}鞋子组{/if}</td>
+<td>{$all_gtc_state[$gtc.gtc_state]}</td>
+<td>{if $gtc.gtc_state == 2}{$gtc.gtc_stime|date_format:"%Y-%m-%d"} 至 {$gtc.gtc_etime|date_format:"%Y-%m-%d"}{elseif $gtc.gtc_state == 3}无限制{/if}</td>
+<td>{$gtc.gt_count}</td>
+<td style="width:500px"><textarea style="border:0; width:100%; text-align:center">{$gtc.gtc_comment}</textarea></td>
+<td>{$gtc.type_name}</td>
+<td>
+  {if $gtc.refer_id_required == 'Y'}
+  <a href="gt_give_order.php?gtc_id={$gtc.gtc_id}">关联订单发送</a>
+  {else}
+	<input type="button" value="发送" onclick="load('{$gtc.gtc_id}', '{$gtc.gtc_value}', '{$gtc.gt_count}')" />
+  {/if}
+</td>
+</tr>
+<!--{/foreach}-->
+</table>
+<br />
+
+{$pagination}
+<br />
+<br />
+
+</body>
+</html>

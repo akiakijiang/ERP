@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>更改快递方式</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="">
+    </head>
+    <body>
+    	<form id="from_shipping_form" name="from_shipping_form" >
+            <p>当前快递方式</p>
+    		<select id="from_shipping_name" name="from_shipping_name">
+                {foreach from=$shipping_name_from_Mysql key=k item=value}
+                <option>{$value}</option>
+                {/foreach}
+    		</select>
+            <select id="party_name" name="party_name">
+                {foreach from=$party_name_from_Mysql key=k item=value}
+                <option>{$value}</option>
+                {/foreach}
+            </select>
+    		<input type='submit' value='查询发货单' id="submit_from_shipping_name"/>
+    	</form>
+    	<div id="shipment_num"></div>
+    	<form id="target_shipping_form" name="target_shipping_form" >
+    		<p>目标快递方式</p>
+    		<select id="target_shipping_name" name="target_shipping_name">
+                {foreach from=$shipping_name_from_Mysql key=k item=value}
+                <option>{$value}</option>
+                {/foreach}
+            </select>
+    		<input type="text" id="changed_number" name="changed_number" value="5000" />
+    		<input type='submit' value='提交更改' id="submit_change"/>
+    	</form>
+        <div id="changed_status"></div>
+        <script type="text/javascript" src="misc/jquery.js"></script>
+        <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+        <script type="text/javascript">
+        // <![CDATA[
+        //{literal}
+        $(document).ready(function(){
+            var $string_onload = "<p><span>数据正在加载，请稍后撒！</span><img src=\"images/loader.gif\"></p>";
+            var $string_error = "<p>ERROR!MLGB!</p>";
+            $("#submit_from_shipping_name").click(function(){                
+                var $from_shipping_name = $("#from_shipping_name").val();
+                var $party_name = $("#party_name").val();
+                var data = 'from_data='+ $from_shipping_name+ '&party_name='+ $party_name;
+                alert(data);
+                var $shipment_num = $("#shipment_num");
+                $.ajax({
+                    type:"POST",
+                    dataType:'json',
+                    url:"ajax.php?act=search_from_carrier_shipment_number",
+                    data:data,
+                    beforeSend:function(){
+                        $shipment_num.html($string_onload);
+                    },
+                    success:function(data){
+                        $shipment_num.html("<p>共有"+ data.shipment_number+"个订单!</p>");
+                    },
+                    error:function(){
+                        $shipment_num.html($string_error);
+                    }
+                });
+                return false;
+            });
+            $("#submit_change").click(function(){
+                var $party_name = $("#party_name").val();
+                var $from_shipping_name = $("#from_shipping_name").val();
+                var $target_shipping_name = $("#target_shipping_name").val();
+                var $changed_number = $("#changed_number").val();
+                var data_change = 'from_data='+ $from_shipping_name + '&target_shipping_name=' + $target_shipping_name + '&changed_number=' + $changed_number + '&party_name=' + $party_name; 
+                alert(data_change);
+                var $changed_status = $("#changed_status");
+                $.ajax({
+                    type:"POST",
+                    dataType:'json',
+                    url:"ajax.php?act=change_carrier",
+                    data:data_change,
+                    beforeSend:function(){
+                        $changed_status.html($string_onload);
+                    },
+                    success:function(data){
+                        $changed_status.html("<p>"+data.msg+"</p>");
+                    },
+                    error:function(){
+                        $changed_status.html($string_error);
+                    }
+                });
+                return false;
+            });
+        });
+        //{/literal}
+        //]]>
+        </script>
+    </body>
+ </html>

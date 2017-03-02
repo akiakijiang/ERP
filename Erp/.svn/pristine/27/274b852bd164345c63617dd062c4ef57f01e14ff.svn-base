@@ -1,0 +1,6 @@
+业务组织,入库时间,商品,'-t订单号,操作类型,售价,原订单是否拒收,{if "finance_order"|check_admin_priv or "purchase_order"|check_admin_priv}类型,新旧,分类,仓库,库位,条码,数量,{if "5cg_sensitivity_csv"|check_admin_priv}供价,供应商,{/if}销售发票号码{/if}
+
+{foreach from=$goods_list item=goods}
+{$goods.name},{$goods.in_time},{$goods.goods_name},{$goods.order_sn},{$goods.dispose_method},{$goods.goods_price}, {if ($goods.ori_order_status == 4 || $goods.ori_shipping_status == 3)}是{else}否 {/if}, {if "finance_order"|check_admin_priv or "purchase_order"|check_admin_priv}{$goods.order_type},{$goods.is_new},{$goods.cat_name},{$goods.facility_name},{$goods.location_seq_id},="{$goods.barcode}","{$goods.goods_number}",{if "5cg_sensitivity_csv"|check_admin_priv}{if view_provide_price($goods.category)}{$goods.purchase_paid_amount}{else}N/A{/if},{if check_admin_priv('check_provider')}{foreach from=$providers item=provider}{if $provider.provider_id == $goods.provider_id}{$provider.provider_name}{/if}{/foreach}{else}××××××{/if},{/if}{$goods.shipping_invoice}{/if}
+
+{/foreach}

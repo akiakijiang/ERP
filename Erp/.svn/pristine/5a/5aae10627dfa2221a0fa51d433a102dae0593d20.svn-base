@@ -1,0 +1,4 @@
+状态,类型,原因,订单号,姓名,区域,商品,供应商,下单时间,跟踪记录,处理结果,记录时间
+{foreach from=$services item=service}
+{$_CFG.adminvars.oukoo_service_status[$service.status]},{$_CFG.adminvars.oukoo_service_type[$service.type]},{$_CFG.adminvars.oukoo_service_reason[$service.reason]},{$service.order_sn},"{$service.consignee}","[{$service.province}][{$service.city}]","{foreach from=$service.goods_list item=goods}{$goods.goods_name}，{/foreach}","{foreach from=$service.goods_list item=goods}{$goods.provider_name}，{/foreach}","{$service.order_time}","{$service.track_report}","{$service.result}","{$service.add_time}"
+{/foreach}

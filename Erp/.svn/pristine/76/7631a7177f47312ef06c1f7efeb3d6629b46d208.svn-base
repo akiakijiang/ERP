@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>采购订单明细</title>
+<!-- Autocomplete -->
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+<!-- Autocomplete /-->
+<!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+
+	<script type="text/javascript">
+	{literal}
+	// <![CDATA[
+
+	$(document).ready(function(){
+		
+		/**
+		 * 商品搜索
+		 */
+		$('#autocomplete_goods').autocomplete('ajax.php?act=search_goods', {
+			dataType : 'json',
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		});
+
+		/**
+		 * 供应商
+		 */
+		$('#autocomplete_provider').autocomplete('ajax.php?act=get_provider', {
+			minChars: 0,
+			mustMatch: true,
+			dataType : 'json',
+			formatItem : function(row, i, max, value, term) {
+				return(row.provider_name);
+			},
+			formatResult : function(row) {
+				return(row.provider_name);
+			}
+		}).result(function(event, row, formatted) {
+			// 将隐藏域的值设为供应商的id
+			$('#provider_id').val(row.provider_id);
+		});
+		
+	});
+	
+	function Pager(obj){
+		$('#pager_hidden_form').val(obj);
+		document.hidden_form.submit();
+	}
+	
+	function export_csv(){
+		$('#csv_hidden').val("批次采购订单统计信息csv");
+		document.hidden_form.submit();
+	}
+	// ]]>
+	{/literal}
+	</script>
+</head>
+<body>
+
+<div style="font-size: 15px;">当前业务组：<span style="color:red;">{$party_name}</span></div>
+<div style="font-size: 15px;">当前权限仓库：<span style="color:red;">{$facility_names}</span></div>
+
+<form method="post" autocomplete="off" id="orders_c_searchform">
+<table class="bWindow" style="margin-top:20px; width:100%;">
+<tr align="center">
+  <th>批次号</th>
+  <th>采购批次</th>
+  <th>采购订单号</th>
+  <th>商品</th>
+  <th>商品条码</th>
+  <th>是否入库</th>
+  <th>是否废除</th>
+  <th>是否完结</th>
+  <th>收货仓库</th>
+  <th>订单开始时间</th>
+  <th>订单结束时间</th>
+  <th>操作</th>
+</tr>
+<tr align="center">
+	<td><input id="batch_order_id" name="batch_order_id" value="{$smarty.request.statistics.batch_order_id}" /></td>
+	<td><input id="batch_order_sn" name="batch_order_sn" value="{$smarty.request.statistics.batch_order_sn}" /></td>
+	<td><input id="order_sn" name="order_sn" value="{$smarty.request.statistics.order_sn}" /></td>
+  <td><input id="autocomplete_goods" name="goods_name" value="{$smarty.request.statistics.goods_name}" size="30" /></td>
+  <td><input id="goods_barcode" name="goods_barcode" value="{$smarty.request.statistics.goods_barcode}" size="20" /></td>
+  <td>
+      <select name="is_in_storage" id="is_in_storage">
+         {html_options options=$is_in_storage_list selected=$is_in_storage}
+      </select> 
+  </td>
+  <td>
+      <select name="is_cancelled" id="is_cancelled">
+         {html_options options=$is_cancelled_list selected=$is_cancelled}
+      </select> 
+  </td>
+  <td>
+      <select name="is_over_c" id="is_over_c">
+         {html_options options=$is_over_c_list selected=$is_over_c}
+      </select> 
+  </td>
+  <td>
+	<select name="facility_id" id="facility_id">
+	<option value='0'>所有权限仓库</option>
+	{html_options options=$available_facility }
+	</select> 
+	<input type="hidden" value="{$smarty.request.statistics.facility_id}"   id="facility_id_hidden" />
+  </td>
+  <td>
+		<input style="width:80px;" name="order_time" id="search_order_time" value="{$smarty.request.statistics.order_time}">
+		<input type="button" id="search_order_time_trigger" value="..." >
+  </td>
+  <td>
+		<input style="width:80px;" name="order_time_end" id="search_order_time_end" value="{$smarty.request.statistics.order_time_end}">
+		<input type="button" id="search_order_time_trigger_end" value="..." >
+  </td>
+  <td>
+		<input type="submit" value="搜索">
+		<input type="hidden" name="act" value="search">
+  </td>
+</tr>
+</table>
+</form>
+<br/>
+{if $info}
+<div style="color:red;font-weight: bold;">{$info}</div>
+{elseif $smarty.request.batch_order_sn != ''}
+<table class="Window" style="margin-top:10px">
+<tr>
+<td>
+  <span style="font-weight:bold;font-size:15px;color:red;">统计数据： </span>
+  <span style="font-weight:bold;font-size:15px;color:red;">总订单数：{$statistics.total_num}  </span>
+  <span style="font-weight:bold;font-size:15px;color:red;">已入库订单数：{$statistics.in_storage_num} </span>
+  <span style="font-weight:bold;font-size:15px;color:red;">未入库订单数：{$statistics.not_in_storage_num} </span>
+  <span style="font-weight:bold;font-size:15px;color:red;">完结订单数：{$statistics.over_c_num} </span>
+  <span style="font-weight:bold;font-size:15px;color:red;">废除订单数：{$statistics.cancelled_num} </span>
+</td>
+</tr>
+</table>
+{/if} 
+<table class="bWindow" style="margin-top:10px">
+  <caption>
+    <h2>{if $smarty.request.statistics.order_time==$now_date}今日的批次采购订单详细{else}搜索的批次采购订单详细&nbsp;&nbsp;{/if} 
+    <input type="button"  onclick="export_csv();" value="批次订单统计信息csv" />
+	 <span style="font-size: 10px;font-weight: normal;">最多可以下载900行</span>
+    </h2>
+    <span style="color:red">{$smarty.request.info}</span> 
+  </caption>
+<tr>
+<th>批次号</th>
+<th>采购批次</th>
+<th>采购订单号</th>	
+<th>订单时间</th>
+<th>商品</th>
+{if $party_id == 65625}
+	<th>箱规</th>
+{/if}
+<th>商品条码</th>
+<th>计划入库个数</th>
+<th>实际入库个数</th>
+<th>入库时间</th>
+<th>未入库个数</th>
+<th>是否入库</th>
+<th>是否废除</th>
+<th>是否完结</th>
+<th>收货仓库</th>
+<th>上架车信息</th>
+<th>物流留言</th>
+<th>供应商</th>
+<th>发票类型</th>
+<th>供应商采购订单号</th>
+<th>供应商出库订单号</th>
+</tr>
+{foreach from=$search_orders item=search_order}
+<tr align="center">
+{if $pre_batch_order_id != $search_order.batch_order_id}
+{assign var=batch_order_id value=$search_order.batch_order_id} 
+<td rowspan="{$row_span.$batch_order_id}">{$search_order.batch_order_id}</td>
+<td rowspan ="{$row_span.$batch_order_id}">{$search_order.batch_order_sn}</td>
+{else}
+{/if}
+ <td>{$search_order.order_sn}</td>  
+<td>
+	{$search_order.order_time}<br/>
+</td>
+<td>{$search_order.goods_name} × {$search_order.goods_number}</td>
+{if $party_id == 65625}
+	<td>{$search_order.spec}</td>
+{/if}
+<td>{$search_order.barcode}</td>
+<td>{$search_order.goods_number}</td>
+<td>{$search_order.new_in_number}
+        <input type="hidden" id="order_id_{$search_order.order_sn}" name="order_ids[]" value="{$search_order.order_id}"/>
+        <input type="hidden" id="batch_order_sn_{$search_order.order_sn}" name="batch_order_sns[]" value="{$search_order.batch_order_sn}" />
+        <input type="hidden" id="order_sn_{$search_order.order_sn}" name="order_sns[]" value="{$search_order.order_sn}" />
+        <input type="hidden" id="goods_item_type_{$search_order.order_sn}" name="goods_item_types[]" value="{$search_order.goods_item_type}" />
+        <input type="hidden" id="not_in_count_{$search_order.order_sn}" name="not_in_counts[]" value="{$search_order.not_in_count}" />
+</td>
+<td>
+	{$search_order.iid_created_stamp} 
+</td>
+<td>{$search_order.new_needed_number}</td>
+<td>{if $search_order.is_in_storage eq 'N'} 否 {else} 是 {/if}</td>
+<td>{if $search_order.is_cancelled eq 'N'} 否 {else} 是 {/if}</td>
+<td>{if $search_order.is_over_c eq 'N'} 否 {else} 是 {/if}</td>
+<td>{$search_order.facility_name}</td>
+<td>
+  {foreach from=$search_order.receive_location_info item=receive_location_info}
+    [{$receive_location_info.location_barcode}] {$receive_location_info.rec_num}个
+  {/foreach}
+</td> 
+<td>{$search_order.remark}</td>
+<td>	
+	{if check_admin_priv('check_provider')}
+	{$search_order.provider_name}
+  {else}
+	××××××
+  {/if}
+</td>
+<td>{$search_order.order_type}</td>
+<td>{$search_order.provider_order_sn}</td>
+<td>{$search_order.provider_out_order_sn}</td>
+</tr>
+{assign var=pre_batch_order_id value=$search_order.batch_order_id}
+{/foreach}
+<tr>
+    <td colspan="20" style="text-align:center;padding-right:20px;padding: 5px;">{$Pager}</td> 
+</tr>
+</table>
+<form method="POST" name="hidden_form">
+	<input type="hidden" name="batch_order_id_hidden_form" id="batch_order_id_hidden_form" value="{$smarty.request.statistics.batch_order_id}"/>
+	<input type="hidden" name="batch_order_sn_hidden_form" id="batch_order_sn_hidden_form" value="{$smarty.request.statistics.batch_order_sn}"/>
+	<input type="hidden" name="goods_name_hidden_form" id="goods_name_hidden_form" value="{$smarty.request.statistics.goods_name}"/>
+	<input type="hidden" name="order_sn_hidden_form" id="order_sn_hidden_form" value="{$smarty.request.statistics.order_sn}"/>
+	<input type="hidden" name="goods_barcode_hidden_form" id="goods_barcode_hidden_form" value="{$smarty.request.statistics.goods_barcode}"/>
+	<input type="hidden" name="is_in_storage_hidden_form" id="is_in_storage_hidden_form" value="{$smarty.request.statistics.is_in_storage}"/>
+	<input type="hidden" name="is_cancelled_hidden_form" id="is_cancelled_hidden_form" value="{$smarty.request.statistics.is_cancelled}"/>
+	<input type="hidden" name="is_over_c_hidden_form" id="is_over_c_hidden_form" value="{$smarty.request.statistics.is_over_c}"/>
+	<input type="hidden" name="facility_id_hidden_form" id="facility_id_hidden_form" value="{$smarty.request.statistics.facility_id}"/>
+	<input type="hidden" name="order_time_hidden_form" id="order_time_hidden_form" value="{$smarty.request.statistics.order_time}"/>
+	<input type="hidden" name="order_time_end_hidden_form" id="order_time_end_hidden_form" value="{$smarty.request.statistics.order_time_end}"/>
+	<input type="hidden" name="pager_hidden_form" id="pager_hidden_form" />
+	<input type="hidden" name="csv" id="csv_hidden" />
+</form>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "search_order_time",
+        button            : "search_order_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "search_order_time_end",
+          button            : "search_order_time_trigger_end",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+    //]]>
+  	
+  	var facility_id = $("#facility_id_hidden").val();
+  	if( $.trim(facility_id) !=''){
+  		$("#facility_id option").each(function(){
+  			if($(this).val() == facility_id){
+  				$(this).attr("selected",true); 
+  			}
+  		}); 
+  	}
+</script>
+{/literal}
+</body>
+</html>

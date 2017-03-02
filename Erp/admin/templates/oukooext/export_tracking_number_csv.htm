@@ -1,0 +1,4 @@
+ERP订单号,淘宝订单号,分销商,发货单号,仓库,运单号,发货时间,快递方式,收货地址
+{foreach from=$tracking_numbers item=item}
+="{$item.order_sn}",="{$item.taobao_order_sn}",{$item.name},="{$item.SHIPMENT_ID}",{$item.facility_name},="{$item.tracking_number}",{$item.shipping_time},="{$item.shipping_name}",="{$item.address}"
+{/foreach}

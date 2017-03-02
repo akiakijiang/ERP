@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>工单统计</title>
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+
+	$(document).ready(function(){
+	    // 绑定滑动效果
+	    $('legend.expand').bind('click', function(event){
+	        $(this).next().slideToggle('normal');
+	    });
+			
+			/**
+			 * 供应商自动完成
+			 */
+			$('#autocomplete_provider').autocomplete('../ajax.php?act=get_provider', {
+					minChars: 0,
+					mustMatch: true,
+					dataType : 'json',
+					formatItem : function(row, i, max, value, term) {
+						return(row.provider_name);
+					},
+					formatResult : function(row) {
+						return(row.provider_name);
+					}
+			}).result(function(event, row, formatted) {
+					// 将隐藏域的值设为供应商的id
+					$('#provider_id').val(row.provider_id);
+			});
+			
+			/**
+			 * 表单提交验证
+			 */
+			$('form').bind('submit', function(event){
+			});
+
+	});
+
+    function cancelDispatchList(dispatchListId) {
+    	if (confirm("请确认取消工单")) {
+            location.href="create_update.php?act=cancel&dispatchListId=" + dispatchListId;    
+        }
+    }
+    
+    function confirmDispatchList(dispatchListId) {
+    	if (confirm("请确认工单已完成")) {
+            location.href="create_update.php?act=confirm&dispatchListId=" + dispatchListId;    
+        }
+    }
+	
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+<div style="margin:20px auto; width:96%;" align="left">
+
+
+<div>
+
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;统计某一商品工单情况&nbsp;</legend>
+  <form method="get" id="form" autocomplete="off">
+    <table class="inner">
+        <tr>
+          <td width="120">jjshouse上的商品id</td>
+          <td>
+          <input type="text" name="jjshouse_goods_id" value="{$smarty.request.jjshouse_goods_id}" />
+          <input type="submit" onclick="document.getElementById('subAct').value='search';" value=" 统计一下 "  />
+          <input type="hidden" id="subAct" name="subAct" value="" />
+          <input type="hidden" name="act" />
+          </td>
+        </tr>
+    </table>
+  </form>
+  <div>
+   
+<!--{if $list}-->  {* 如果有数据 *}
+
+      <table class="inner">
+        <caption style="text-align:left;font-weight:bold;">该商品共下工单 {$count} 件，平均价格 {$avg_price} ，平均工期为 {$avg_time_cost_str}</caption>
+        <tr align="center" class="th">
+            <th>工单号</th>
+            <th>外部订单号</th>
+            <th>图 片</th>
+            <th>供应商</th>
+            <th>价格</th>
+            <th>下工单时间</th>
+            <th>完成时间</th>
+            <th>制作工期</th>
+        </tr>
+		
+        <!--{foreach from=$list item=item}-->
+		<tr align="center" class="{cycle values='odd,even'}">
+		    <td>{$item.dispatch_sn}</td>
+            <td>
+            <a href="https://cms.jjshouse.com/?q=admin/main/order/view/order_sn/{$item.external_order_sn}" target="_blank">
+            {$item.external_order_sn}
+            </a>
+            </td>
+            <td><img src="{$item.IMAGE_URL}" width="60" /></td>
+			<td>{$item.provider_name}</td>
+			<td {if $item.price_alert}style="color:red;"{/if}>{$item.price}</td>
+            <td>{$item.submit_date}</td>
+            <td>{$item.finished_date}</td>
+            <td {if $item.time_cost_alert}style="color:red;"{/if}>{$item.time_cost_str}</td>
+		</tr>
+		<!--{/foreach}-->
+      </table>
+      
+<!--{else}-->  {* 如果没有数据 *}
+
+			<div style="text-align:center"><h4>无相关数据</h4></div>
+
+<!--{/if}-->
+      
+  </div>
+	</fieldset>
+  <br />
+
+
+</div>
+
+</div>
+
+</body>
+</html>

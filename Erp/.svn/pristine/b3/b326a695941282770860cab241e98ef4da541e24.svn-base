@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>理赔订单管理</title>
+  <script type="text/javascript" src="../admin/misc/jquery.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script language="javascript" type="text/javascript" src="../admin/js/WdatePicker.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  {literal}
+  <style> 
+  body{
+    font-size: 15px !important;
+  }
+  .form_controll {
+  	font-size: 13px;
+  }
+  h2{
+    margin: 10px 20px;
+  }
+  a {
+    text-decoration:none;
+    cursor:pointer;
+  }
+  #import_freight {
+  	font-size:14px;
+  	color:#337ab7;
+  }
+  #import_freight:hover {
+  	color:#ff0000;
+  }
+  .form_controll{
+    width: 1250px;
+    margin:auto;
+    border:1px solid rgba(220,220,220,.9);
+    border-radius: 10px;
+    height:140px;
+  }
+  .form_controll .div_block{
+    text-align:left;
+    padding-left:60px;
+  }
+  .form_controll .div_block div{
+    display:inline-block; 
+    vertical-align:middle; 
+    margin:4px;
+  }
+  .form_controll .div_block input{
+    border-radius: 5px;
+    border: 1px solid steelblue;
+    padding: 4px;
+  }
+  label {
+  	font-size:16px;
+  	color:#333366;
+  }
+  .form_controll .div_block div select{
+    border-radius: 5px;
+    border: 1px solid steelblue;
+    padding: 4px;
+  }
+  .form_controll .div_block div select:focus{
+    outline:none;
+  }
+  .form_controll .div_button{
+    margin: 10px 40%;
+  }
+  .btn{
+    display: inline-block;
+    padding: 4px 12px;
+    margin-bottom: 0;
+    font-size: 15px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+  .btn:focus{
+    border-radius: 4px;
+  }
+  .Button {
+  	font-size:15px;
+  	color:#2e6da4;
+  }
+  .Button:hover{
+  	color:#ff0000;
+  }
+  .form_controll div input:focus{
+    outline: none;
+  }
+  .max_table{
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-top: 50px;
+    width:100%;
+    height:auto;
+    text-align: center;
+  }
+  .max_table tr th,.max_table tr td{
+    padding:5px;
+    border: 1px solid rgba(220,220,220,1);
+  }
+/*  .max_table tr:nth-child(odd){
+    background: rgba(220,220,220,.8);
+  }
+  .max_table tr:first-child:hover{
+    background: rgba(220,220,220,.8);
+  }*/
+  .max_table tr th:first-child{
+    border-top-left-radius: 8px;
+  }
+  .max_table tr th:last-child{
+    border-top-right-radius: 8px;
+  }
+/*  .max_table tr:hover{
+    background: rgba(255,218,185,.6);
+  }*/
+  .display_none{
+    display:none;
+  }
+  .pagination {
+    display: inline-block;
+    padding-left: 0;
+    margin: 20px 0;
+    border-radius: 4px;
+    float:right;
+  }
+  .pagination > li {
+    display: inline;
+  }
+  .pagination > li > a,
+  .pagination > li > span {
+    position: relative;
+    float: left;
+    padding: 6px 12px;
+    margin-left: -1px;
+    line-height: 1.42857143;
+    color: #337ab7;
+    text-decoration: none;
+    background-color: #fff;
+    border: 1px solid #ddd;
+  }
+  .pagination > li:first-child > a,
+  .pagination > li:first-child > span {
+    margin-left: 0;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+  .pagination > li:last-child > a,
+  .pagination > li:last-child > span {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+  .pagination > li > a:hover,
+  .pagination > li > span:hover,
+  .pagination > li > a:focus,
+  .pagination > li > span:focus {
+    color: #23527c;
+    background-color: #eee;
+    border-color: #ddd;
+  }
+  .pagination > .active > a,
+  .pagination > .active > span,
+  .pagination > .active > a:hover,
+  .pagination > .active > span:hover,
+  .pagination > .active > a:focus,
+  .pagination > .active > span:focus {
+    z-index: 2;
+    color: #fff;
+    cursor: default;
+    background-color: #337ab7;
+    border-color: #337ab7;
+  }
+  .pagination > .disabled > span,
+  .pagination > .disabled > span:hover,
+  .pagination > .disabled > span:focus,
+  .pagination > .disabled > a,
+  .pagination > .disabled > a:hover,
+  .pagination > .disabled > a:focus {
+    color: #777;
+    cursor: not-allowed;
+    background-color: #fff;
+    border-color: #ddd;
+  }
+  .pagination-lg > li > a,
+  .pagination-lg > li > span {
+    padding: 10px 16px;
+    font-size: 18px;
+  }
+  .pagination-lg > li:first-child > a,
+  .pagination-lg > li:first-child > span {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+  .pagination-lg > li:last-child > a,
+  .pagination-lg > li:last-child > span {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  .pagination-sm > li > a,
+  .pagination-sm > li > span {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  .pagination-sm > li:first-child > a,
+  .pagination-sm > li:first-child > span {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+  }
+  .pagination-sm > li:last-child > a,
+  .pagination-sm > li:last-child > span {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+  table input {
+  	width:60px;
+  }
+  #change_all{
+    float: right;
+    margin-right: 20px;
+
+  }
+
+  </style>
+  {/literal}
+
+</head>
+<body>
+  <h3>理赔订单管理</h3>
+  <div class="form_controll">
+    <form method="post">
+     <div class="div_block">
+      <div><label>ERP订单号：</label><input type="text" name="order_sn" value="{$order_sn}" placeholder="请输入erp 订单号"></div>
+      <div><label>淘宝订单号：</label><input type="text" name="taobao_order_sn" value="{$taobao_order_sn}" placeholder="请输入淘宝订单号"></div>
+      <div><label>起始时间：</label><input class="Wdate" type="text" onClick="WdatePicker()" name="start_stamp" value="{$start_stamp}" placeholder="请输入起始时间"></div>
+      <div><label>结束时间：</label><input class="Wdate" type="text" onClick="WdatePicker()" name="end_stamp" value="{$end_stamp}" placeholder="请输入结束时间"></div>
+    </div>
+    <div class="div_block">
+      <div>
+        <label>责任方：</label>
+        <select id="responsible_party" name="responsible_party">
+          <option value="ALL">&nbsp;</option>
+          <!-- {foreach from=$responsible_party_list item=item key=key} -->
+          <option value="{$key}" {if $key==$responsible_party }selected {/if}>{$item}</option>
+          <!-- {/foreach} -->
+        </select>
+
+      </div>
+      <div>
+        <label>赔款方式：</label>
+        <select id="compensation_type" name="compensation_type">
+          <option value="ALL">&nbsp;</option>
+          <option value="REFUND" {if $compensation_type == "REFUND"}selected{/if}>退款</option>
+          <option value="SHIP_ONLY" {if $compensation_type == "SHIP_ONLY"}selected{/if}>补寄</option>
+        </select>
+      </div>
+      <div>
+        <label>是否理赔：</label>
+        <select id="is_claim" name="is_claim">
+          <option value="ALL">&nbsp;</option>
+          <option value="1" {if $is_claim == "1"}selected{/if}>已理赔</option>
+          <option value="0" {if $is_claim == "0"}selected{/if}>未理赔</option>
+        </select>
+      </div>
+      <div>
+        <label>分销商：</label>
+        <input type="text" style="width:150px" name="shopnick"  id="shop_id_select" value="{$shopnick}"/>      
+      </div>
+      <div>
+        <label>分销商类型：</label>
+        <select id="type" name="type">
+          <option value="ALL">&nbsp;</option>
+          <option value="zhixiao" {if $type == "zhixiao"}selected{/if}>直销</option>
+          <option value="fenxiao" {if $type == "fenxiao"}selected{/if}>分销</option>
+        </select>      
+      </div>
+      <div class="div_button">
+        <input type="submit"  class="btn" name="act" value="筛选">
+      </div>
+      <div class="div_button">
+        <input type="submit"  class="btn"  name="act" value="导出">
+      </div>
+    </div>
+  </form>
+  <div class="div_block">
+    <form method="post" enctype="multipart/form-data" action="claims_settlement.php">
+     <div>
+       <div><input type="file" name="excel" size="30" /></div> &nbsp;&nbsp;&nbsp;
+       <div><input  class="btn" type="submit" value="批量导入运费" /></div>
+       <input type="hidden" name="act" id="act" value="import_freight" />
+       &nbsp;&nbsp;&nbsp;
+       <div><a id="import_freight" href="claims_settlement_template.rar" >批量导入运费模板下载</a></div> 
+     </div>
+   </form>  
+ </div>
+</div>
+<br/>
+<div>
+	<!-- {if $compensation_proportion_list} -->
+		<table>
+		<tr>
+			<th><font color="red">直销店铺业务组责任理赔比例=本月业务组责任理赔金额/最近一个月销售额</font></th>
+			<th>直销店铺理赔比例=本月理赔金额/最近一个月销售额</th>
+		</tr>
+		<!-- {foreach from=$compensation_proportion_list item=compensation_proportion} -->
+			<tr>
+				<td><font color="red">{$compensation_proportion.nick} = {$compensation_proportion.ywz_compensation_amount}/{$compensation_proportion.order_amount} = {$compensation_proportion.ywz_compensation_proportion} ‰</font></td>
+				<td>{$compensation_proportion.nick} = {$compensation_proportion.compensation_amount}/{$compensation_proportion.order_amount} = {$compensation_proportion.compensation_proportion} ‰</td>
+			</tr>
+		<!-- {/foreach} -->
+		</table>
+	<!-- {/if} -->
+</div>
+<!--{if $claims_settlements}--> {* 如果有理赔订单数据 *}
+<div class="div_button" >
+        <input id="change_all" type="button" class="btn"  value="批量修改">
+</div>
+<table class="max_table">
+  <tr>
+    <th>时间</th>
+    <th>ERP订单号</th>
+    <th>业务组</th>
+    <th>赔付方式</th>
+    <th>分销商名称</th>
+    <th>责任理赔编码</th>
+    <th>赔付金额</th>
+    <th>运费</th>
+    <th>责任方</th>
+    <th>是否已理赔</th>
+    <th>备注（售后类型）</th>
+    <th>操作</th>
+  </tr>
+  <!-- {foreach from=$claims_settlements item=claims_settlement} -->
+  {assign var=order_sn1 value=$claims_settlement.order_stamp}
+  {if $row_span.$order_sn1 != 1}
+    <tr id="{$claims_settlement.compensation_id}" style="background:rgba(118, 117, 117, 0.4);">
+  {else}
+    <tr id="{$claims_settlement.compensation_id}">
+  {/if}
+   
+  {if $pre_order_stamp != $claims_settlement.order_stamp}
+  {assign var=order_stamp value=$claims_settlement.order_stamp}
+    <td rowspan="{$row_span.$order_stamp}">{$claims_settlement.created_stamp}</td> 
+    <td rowspan="{$row_span.$order_stamp}"><a href="order_edit.php?order_id={$claims_settlement.order_id}" target="_blank">{$claims_settlement.order_sn}</a></td>
+    <td rowspan="{$row_span.$order_stamp}">{$claims_settlement.party_name}</td>
+    <td rowspan="{$row_span.$order_stamp}">{$claims_settlement.compensation_type}</td>
+  {else}
+  {/if}
+   <!-- <td><a href="order_edit.php?order_id={$claims_settlement.order_id}" target="_blank">{$claims_settlement.order_sn}</a></td> -->
+   <td>{$claims_settlement.distributor_name}</td>
+   <td>{$claims_settlement.compensation_id}</td>  
+   <td><input type="text" id="compensationAmount_{$claims_settlement.compensation_id}" name="compensation_amount" value="{$claims_settlement.compensation_amount}" disabled="disabled" /></td>
+   <td><input type="text" id="freight_{$claims_settlement.compensation_id}" name="freight" value="{$claims_settlement.freight}" disabled="disabled" /></td>
+   <td>
+     <select id="responsible_party{$claims_settlement.compensation_id}" name="responsible_party" disabled="disabled">
+      <!-- {foreach from=$responsible_party_list item=item key=key} -->
+      <option value="{$key}" {if $key==$claims_settlement.responsible_party }selected {/if}>{$item}</option>
+      <!-- {/foreach} -->
+    </select>
+  </td>
+  <td>
+   <select name="is_claim" id="is_claim{$claims_settlement.compensation_id}" disabled="disabled" class="is_claim">
+     <!-- {foreach from=$is_claim_list item=item key=key} -->
+     <option value="{$key}" {if $key==$claims_settlement.is_claim }selected {/if}>{$item}</option>
+     <!-- {/foreach} -->
+   </select>
+ </td>
+ <td><!-- <input type="text" id="note_{$claims_settlement.compensation_id}" name="note" value="{$claims_settlement.note}" disabled="disabled" /> -->
+ 	<select id="note_{$claims_settlement.compensation_id}" name="note" disabled="disabled" style="width:260px;" >
+ 	 		<option value="{$claims_settlement.note}" >{$claims_settlement.note}</option>
+ 		<!-- {foreach from=$after_sale_type item=item key=key} -->
+ 			<option value="{$item}" {if $item == $claims_settlement.note} selected {/if}>{$item}</option>
+ 		<!-- {/foreach} -->
+ 	</select>
+ </td>
+ <td>
+   <a class="Button" id="delete_{$claims_settlement.compensation_id}" href="javascript:void(0)" {if !$can_view_action} style="display:none;" {/if}>刪除</a>
+   
+   <a class="Button" id="modifyChange_{$claims_settlement.compensation_id}" href="javascript:void(0)" {if !$can_view_action} style="display:none;" {/if}>修改</a>
+   <a class="Button" id="modifySubmit_{$claims_settlement.compensation_id}" style="display:none;" href="javascript:void(0)">提交</a>
+   
+ </td>
+</tr>
+{assign var=pre_order_stamp value=$claims_settlement.order_stamp}
+<!-- {/foreach} -->
+<!-- <tr><td colspan="10"><br /></td></tr> -->
+</table>
+{$pagination}
+<br />
+<!--{else}-->
+<div style="text-align:center"><h4>无相关数据</h4></div>
+<!--{/if}-->
+<div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+var msg = '{$message}';
+//{literal}
+$(document).ready(function(){
+ if(msg) {
+  alert(msg);
+}
+
+$('#change_all').click(function(){
+          var claim = [];
+          $('.is_claim').each(function(){
+            var compensation_id = $(this).attr('id').substr(8);
+            claim.push(compensation_id);
+          });
+          var compensation_id=claim[0]+'_';
+          for(var i=1;i<claim.length;i++){
+             compensation_id += claim[i]+'_';
+             
+          }
+          // console.log(compensation_id);
+              $.ajax({
+                  type: 'post',
+                  url: 'claims_settlement.php?act=change_claim',  
+                  data: {
+                      claim:compensation_id,
+                  },
+                  dataType:"JSON",
+                  success: function(data) { 
+                    var data = eval('(' + data + ')'); 
+                      // console.log(data.result); 
+                      if(data.result == 1){
+                        alert('操作成功！');
+                         $('.is_claim').attr('value',1);
+                       };
+                  },
+                  error:function(data){
+                      alert("操作失败！");
+                  }
+              });
+});
+
+
+$(".Button").each(function() {
+  $(this).click(function(){
+    var auto_id = $(this).attr("id");
+    var splited = auto_id.split("_");
+    if(splited[0] == "modifyChange"){
+      var id = splited[1];
+      $(this).css("display","none");
+      var compensation_amount = "#compensationAmount_"+id;
+      var freight = "#freight_"+id;
+      var note = "#note_"+id;
+      var modifySubmit = "#modifySubmit_"+id;
+      var responsibleParty = "#responsible_party"+id;
+      var isClaim = "#is_claim"+id;
+      $(compensation_amount).removeAttr("disabled");
+      $(freight).removeAttr("disabled");
+      $(note).removeAttr("disabled");
+      $(responsibleParty).removeAttr("disabled");
+      $(isClaim).removeAttr("disabled");
+      $(modifySubmit).attr("style","");
+    }else if(splited[0] == "modifySubmit"){
+     var submit_id = splited[1];
+     var compensation_amount = $("#compensationAmount_"+submit_id).val();
+     var freight = $("#freight_"+submit_id).val();
+     var note = $("#note_"+submit_id).val();
+     var responsible_party = $("#responsible_party"+submit_id).val();
+     var is_claim = $("#is_claim"+submit_id).val();
+
+            //alert($(responsible_party).val());
+            var data = {
+            	compensation_id:submit_id,
+            	compensation_amount:compensation_amount,
+            	freight:freight,
+            	note:note,
+            	responsible_party:responsible_party,
+            	is_claim:is_claim
+            };
+            $.ajax({
+            	url:"claims_settlement.php?act=modify",
+            	type:"POST",
+            	dataType:"JSON",
+            	data:data,
+            	success:function(data){
+            		console.log(data);
+            		alert("修改成功，请刷新!");           			
+            	},
+            	error:function(error){
+            		alert("ajax error ，请重试");
+            	}
+
+            });
+            $(this).css("display","none");
+            var compensation_amount = "#compensationAmount_"+submit_id;
+            var freight = "#freight_"+submit_id;
+            var note = "#note_"+submit_id;
+            var responsibleParty = "#responsible_party"+submit_id;
+            var isClaim = "#is_claim"+submit_id;
+            var modifyChange = "#modifyChange_"+submit_id;
+            $(compensation_amount).attr("disabled","disabled");
+            $(freight).attr("disabled","disabled");
+            $(note).attr("disabled","disabled");
+            $(responsibleParty).attr("disabled","disabled");
+            $(isClaim).attr("disabled","disabled");
+            $(modifyChange).attr("style","");
+          }else if(splited[0] == "delete"){
+        	  if(confirm('确定删除该理赔订单么？')) {
+                  var submit_id = splited[1];
+                  var data = {
+                   compensation_id:submit_id,
+                 };
+                 $.ajax({
+                  url:"claims_settlement.php?act=delete",
+                  type:"POST",
+                  dataType:"JSON",
+                  data:data,
+                  success:function(data){
+                   console.log(data);
+                   alert("删除成功，请刷新！");               			
+                 },
+                 error:function(error){
+                   alert("ajax error，请重试");
+                 }
+
+               });
+        	}
+        }
+      })
+});
+
+/*商店搜索*/
+  $('#shop_id_select').autocomplete('claims_settlement.php?request=ajax&act=get_select_shop', {
+    dataType : 'json',
+    minChars: 0,
+    mustMatch: false,
+    formatItem : function(row, i, max, value, term) {
+      return(row.nick);
+    },
+    formatResult : function(row) {
+      return(row.nick);
+    }
+  }).result(function(event, row, formatted) {
+    $(':input[name="shopnick"]').val(row.nick);
+  });
+});
+
+
+
+//{/literal}
+// ]]>
+</script>
+
+
+</body>
+</html>

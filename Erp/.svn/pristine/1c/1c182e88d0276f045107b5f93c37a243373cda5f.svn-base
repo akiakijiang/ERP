@@ -1,0 +1,141 @@
+{if $service.warranty_check_status gt '22' && $service.service_type eq 7}
+<table cellpadding="0" cellspacing="0" border="1 solid">
+    <form method="POST" >
+	 <tr>
+    	<th style="width:100px;" colspan="2"><b>寄回快递信息</b></th>
+        
+    </tr>
+    <tr>    
+        <th>快递公司</th>
+	    <td>
+	    快递公司：
+      	{if !$service.carrier_info}
+      		{assign var="carrier_id" value=$service.carrier_id}
+      	{else}
+      		{assign var="carrier_id" value=$service.carrier_info.carrier_name}
+      	{/if}
+      	<select name="carrier_name" id="carrier_name_{$service.order_sn}" >
+			<option value="0"></option>
+			<!--{foreach from=$carriers item=c}-->
+			<option value="{$c.carrier_id}" {if $c.carrier_id == $carrier_id}selected{/if}>{$c.name}</option>
+			<!--{/foreach}-->
+		</select>
+	    </td>
+    </tr>
+    <tr>    
+        <th>收件人</th>
+	    <td>
+	    {if !$service.carrier_info}
+	        <input type="text" name="consignee" value="{$service.consignee}" />
+	    {else}
+	       {$service.carrier_info.consignee}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>寄送地址</th>
+	    <td width="500px">
+      {if check_admin_priv('check_user_address')}
+	    {if !$service.carrier_info}
+	    <input type="text" name="address" size="70px"
+            value="{$service.province|get_region_names}{$service.city|get_region_names}{$service.district|get_region_names} {$service.address}" />
+	    {else}
+	       {$service.carrier_info.address}
+	    {/if}
+      {else}
+      ××××××
+      {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>手机</th>
+	    <td>
+      {if check_admin_priv('check_admin_tel')}
+	    {if !$service.carrier_info}
+	    <input type="text" name="mobile" value="{$service.mobile}" />
+	    {else}
+	       {$service.carrier_info.mobile}
+	    {/if}
+      {else}
+      ××××××
+      {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>电话</th>
+	    <td>
+      {if check_admin_priv('check_user_tel')}
+	    {if !$service.carrier_info}
+	    <input type="text" name="tel" value="{$service.tel}" />
+	    {else}
+	       {$service.carrier_info.tel}
+	    {/if}
+      {else}
+      ××××××
+      {/if}
+      </td>
+    </tr>
+    <tr>    
+        <th>邮编</th>
+	    <td>
+        {if !$service.carrier_info}
+	    <input type="text" name="zipcode" value="{$service.zipcode}" />
+	    {else}
+	       {$service.carrier_info.zipcode}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>备注</th>
+	    <td>
+        {if !$service.carrier_info}
+	    <input type="text" size="70px" name="remark" value="{$service.remark}" />
+	    {else}
+	       {$service.carrier_info.remark}
+	    {/if}
+	    </td>
+    </tr>
+    <tr>    
+        <th>邮箱</th>
+	    <td>
+      {if check_admin_priv('check_user_email')}
+	    {if !$service.carrier_info}
+	    <input type="text" name="email" value="{$service.email}" />
+	    {else}
+	       {$service.carrier_info.email}
+	    {/if}
+      {else}
+      ××××××
+      {/if}
+      </td>
+    </tr>
+    <tr>
+        <th>运单号</th>
+	    <td>
+	    {if !$service.carrier_info.carrier_no}
+	    <input type="text" name="carrier_no" value="" />
+	    {else}
+	       {$service.carrier_info.carrier_no}
+	    {/if}</td>
+    </tr>
+    {if !$service.carrier_info.carrier_no}
+    <tr>
+    	<td colspan="2" style="text-align:right;">
+        <p class="b_amount" sId="{$service.service_id}">
+        <input type='hidden' value="{$service.service_id}" name="service_id" />
+        {if !$service.carrier_info}
+        <input type='hidden' value="0" name="service_goods_shipping_id" />
+        {else}
+        <input type='hidden' value="{$service.carrier_info.service_goods_shipping_id}" name="service_goods_shipping_id" />
+        {/if}
+        <input type='hidden' value="44" name="warranty_shipping_status" />
+        <input type='hidden' value="edit_service_shipping" name="act" />
+        <input type='hidden' value="{$back}" name="back" />
+        <input type="submit" class="button_1" value="提交快递信息" style="width:100px;" />
+        </p>
+        </td> 
+    </tr>
+    {/if}
+    </form>
+</table>
+{/if}

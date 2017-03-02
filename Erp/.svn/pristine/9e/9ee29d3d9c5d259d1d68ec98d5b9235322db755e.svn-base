@@ -1,0 +1,4 @@
+订单号,快递运单号,组织,日期,补寄发票快递方式,打印时间,补寄发票地址
+{foreach from=$invoiceOrderList item=list key=myID}
+{$list.order_sn},"{$list.TRACKING_NUMBER}","{$list.NAME}","{$list.LAST_UPDATE_STAMP}","{$list.shipping_name}","{$list.print_time}",{$list.country_name}{$list.province_name}{$list.city_name}{$list.district_name}{$list.address}
+{/foreach}

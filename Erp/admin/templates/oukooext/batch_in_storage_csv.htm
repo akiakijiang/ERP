@@ -1,0 +1,6 @@
+批次订单号,订单号,订单时间,商品,商品条码,采购个数,已入库个数,未入库个数,收货仓库,供应商,发票类型
+{foreach from=$search_orders item=search_order}
+{if !$search_order.canceled && $search_order.order_status !=5}
+{$search_order.batch_order_sn},="{$search_order.order_sn}",{$search_order.order_time},"{$search_order.goods_name}",="{$search_order.barcode}",{$search_order.goods_number},{$search_order.in_count},{$search_order.not_in_count},"{$search_order.facility_name}","{$search_order.provider_name}","{$search_order.order_type}"
+{/if}
+{/foreach}

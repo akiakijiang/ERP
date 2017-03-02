@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script> 
+    <title>扫码打印</title>
+    <script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+
+    $(document).ready(function(){
+        $('#barcode').bind('keyup', listen_barcode).focus();
+        $('#barcode').focus();
+    });
+
+    var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+    
+    function listen_barcode(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+            	var ascUrl = $('#barcode').val();
+            	if(ascUrl==''){
+            		$('#barcode').val("");
+            		break;
+            	}
+            	arr = ascUrl.split("=");
+            	var barcode = "";
+            	if(arr.length>1){
+            		barcode = arr[1];
+            	}else{
+            		barcode = arr[0];
+            	}
+            	print_barcode(barcode);
+            	$('#barcode').val("");
+                event.preventDefault();
+                break;
+        }
+    } 
+    
+    // {/literal}
+    // ]]>
+    </script>
+</head>
+<body>
+<div>
+    <span>请扫描二维码： </span><input type="text" name="barcode" id="barcode" ></input>
+</div>
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+</body>
+</html>

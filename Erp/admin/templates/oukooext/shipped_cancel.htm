@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<title>追回列表</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+{if $smarty.request.info != ''}
+alert('{$smarty.request.info}');
+{/if}
+{literal}
+$(document).ready(function(){
+	// 点击生成退款申请
+	$('.refund_apply').bind('click', function(){
+			$i = $(this);
+			$i.attr('disabled', true);
+			if (!confirm('确定要生成退款申请吗?')) {
+				$i.attr('disabled', false);
+				return false;
+			}
+
+			var order_id = $i.attr('oid'); // 订单id
+			
+			$.ajax({
+				type: 'POST',
+				url: 'ajax.php?act=create_refund_apply',
+				data: 'order_id=' + order_id + '&check_exists=1&refund_type=1', // 检查该订单是否拥退款申请, 退款类型为订单拒收
+				dataType: 'json',
+				success: function(data){
+					$i.attr('disabled', false);
+					alert(data.message);
+				},
+				error: function(){
+					$i.attr('disabled', false);
+				}
+			});
+	});
+	
+});
+{/literal}
+</script>
+<style type="text/css">
+{literal}
+.bWindow{width:100%;border-collapse:collapse;margin:10px 0;text-align:center;}
+.bWindow table{border:0;width:100%;border-collapse:collapse;}
+#main .bWindow td{padding:10px;border:0;border-bottom:1px solid #ccc;}
+#main .bWindow td{}
+.sType{list-style:none;}
+.sType li{margin:5px 0;}
+{/literal}
+</style>
+</head>
+<body id="main">
+<form method="get" onsubmit="return form_check()">
+<ul class="sType">
+<table>
+<tr>
+<td>订单时间：</td>
+<td><input style="width:90px" id="order_time" name="order_time" value="{$order_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'"/>
+<input type="button" value="..." id="order_time_trigger"/></td>
+</tr>
+<tr>
+<td>输入"订单号"搜索：</td>
+<td><input name="search_text" id="search_text" value="{$smarty.request.search_text}"/>
+</tr>
+<tr>
+<td>输入"商品名称"或"发票号"搜索：</td>
+<td><input name="search_text1" value="{$smarty.request.search_text1}"/>
+<input type="submit" value="搜索 " /><span>如果不加入任何查询条件，则查询时间为近10天内订单；如果输入了时间限制，则查询时间点之后10天内订单</span></td>
+</tr>
+</table>
+<li>
+<!-- <a href="{$WEB_ROOT}admin/shipped_cancel.php?is_back=YES&act=search">已追回</a>
+<a href="{$WEB_ROOT}admin/shipped_cancel.php?is_back=NONE&act=search">未追回</a> -->
+<input type="hidden" name="is_back" value="{$smarty.request.is_back}"/>
+</li>
+<li>
+<!-- <input type="submit" name="csv" value="导出CSV"/> -->
+<input type="hidden" name="act" value="search"/>
+</li>
+</ul>
+</form>
+<br/>
+目前所处仓库：
+<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+<br/>
+<p style="text-align:center;"><font color="red">追货列表</font>&nbsp;&nbsp;{$pager}</p>
+
+<!--{foreach from=$orders item=order}-->
+
+<table cellpadding="0" cellspacing="0" class="bWindow">
+<tr style="background:#f1f1f1;">
+	<td>订单号：<a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+	<td>客户名：{$order.consignee}</td>
+	<td>下单时间：{$order.order_time}</td>
+	<td>送货方式：{$order.shipping_name}</td>
+</tr>
+<tr>
+    <td colspan="4">
+    	<table cellpadding="0" cellspacing="0">
+			<tr>
+            	<td>商品名称</td>
+            	<td>商品数量</td>
+                <td>商品单价</td>
+                <td>发票号</td>
+                <td>类型</td>
+            </tr>
+<!--{foreach from=$order.goods_list item=goods name=goods}-->
+			<tr>     
+				<td>{$goods.goods_name}</td>
+				<td>{$goods.goods_number}</td>
+				<td>{$goods.goods_price|price_format}</td>
+				<td>{$goods.shipping_invoice}</td>
+				<td>{$goods.order_type}</td>
+			</tr>
+ <!--{/foreach}-->
+ 		</table>
+ 	</td>
+ </tr>
+<tr>
+    <td>
+	    快递公司：
+		<!--{foreach from=$carriers item=carrier}-->
+		{if $carrier.carrier_id == $order.carrier_id}{$carrier.name}{/if}
+		<!--{/foreach}-->
+	</td>
+	<td>
+	    快递单号：{$order.bill_no}
+	</td>
+	<td style="line-height:180%" colspan="3">
+		<form id="cancel_form_{$order.order_id}" method="post" onsubmit="return check({$order.order_id});">
+		{if $order.is_back == 'NONE'}
+		<input type="submit" id="cancel_in_{$order.order_id}" value="追回"/>
+		{elseif $order.is_back == 'YES'}
+			已追回
+			<!-- {if $order.pay_status != 4 && !$order.is_cod}
+       			&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="refund_apply" oid="{$order.order_id}" value="退款申请" />
+        	{/if} -->
+		{else}
+			未追回
+		{/if}
+<!--		<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}">-->
+		<input type="hidden" name="order_id" value="{$order.order_id}"/>
+		<input type="hidden" name="act" value="追回"/>
+		</form>
+	</td>
+</tr>
+</table>
+
+<!--{/foreach}-->
+<p style="text-align:center;"><font color="red">追货列表</font>&nbsp;&nbsp;{$pager}</p>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "order_time",
+        button            : "order_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+
+<script type="text/javascript">
+//<![CDATA[
+//{literal}
+	/*$(document).ready(function(){
+    	// 提交申请请求时防止多次操作
+    	$('#cancel_in').attr('disabled', false).bind('click', check);
+	});*/
+	
+	/**
+	* 表单提交
+	*/
+	function check(order_id)
+	{
+    	// 禁用提交按钮
+    	$('#cancel_in_' + order_id).attr('disabled', true);
+    	// 出库提交
+    	if(!confirm('确认要追回入库吗？')){
+    		$('#cancel_in_' + order_id).attr('disabled', false);
+    		return false;
+    	}else{
+    		return true;
+    	}
+  	}
+	
+	function form_check(){
+		search_text = $('#search_text').val();
+		if(search_text.trim() == ''){
+			alert('请输入订单号查询');
+			return false;
+		}
+		return true;
+	}
+//{/literal}
+// ]]>
+</script>
+</body>
+</html>

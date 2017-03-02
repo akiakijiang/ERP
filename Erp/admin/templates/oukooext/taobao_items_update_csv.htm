@@ -1,0 +1,4 @@
+商店名,商家编码,商品名称,淘宝商品编码,淘宝后台商品名称,商品上传后的状态,是否同步
+{foreach from=$taobao_items_list item=taobao_items name="taobaoItemsList"}
+{$taobao_items.nick},{$taobao_items.outer_id},{$taobao_items.gName},{$taobao_items.num_iid},{$taobao_items.title},{$taobao_items.approve_status},{$taobao_items.is_sync}
+{/foreach}

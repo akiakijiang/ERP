@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="../js/js/jquery.js"></script>
+<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+<title>调整单</title> {literal}
+<style type="text/css">
+body {
+	font-size: 12px;
+	font-family: "宋体"
+}
+
+ul,ul li {
+	list-style: none;
+	font-size: 12px;
+	margin: 0;
+	padding: 0;
+	background: #fff;
+}
+
+.who_get_goods {
+	position: relative;
+	margin: 20px 0;
+}
+
+.who_get_goods ul {
+	position: absolute;
+	top: 20px;
+	left: 54px;
+	border: 1px solid #7f9db9;
+	width: 100px;
+}
+
+.who_get_goods li {
+	padding: 3px;
+}
+
+.goods_list {
+	border-collapse: collapse;
+	border: 1px solid #999;
+}
+
+.goods_list td,.goods_list th {
+	border: 1px solid #999;
+	padding: 5px;
+}
+
+.goods_list input[type="text"] {
+	height: 16px;
+	padding-top: 3px;
+}
+
+.goods_list ul {
+	position: absolute;
+	top: 23px;
+	border: 1px solid #7f9db9;
+	width: 202px;
+	padding: 5px 0;
+}
+
+.goods_list li {
+	padding: 5px;
+}
+</style>
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="../js/Calendar3.js"></script>
+{/literal}
+</head>
+<body>
+
+
+	<p>目前所处组织：{$user_current_party_name}</p>
+
+	<p style="color: red; align: center"></p>
+	
+	
+
+	<fieldset
+		style="-moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px;"
+		id="daishenpi">
+		<legend>
+			<span style="font-weight: bold; font-size: 16px; color: #4D4DE5;">&nbsp;待审批订单列表&nbsp;</span>
+		</legend>
+		<!--{if $not_out_order}-->
+		{if $priv == 1} <input type=submit value="运营主管批审核"
+			style="color: green" onClick="showNoteTag(v_p_notes)">
+		{elseif $priv == 2} <input type=submit value="BD批审核"
+			style="color: green" onClick="showNoteTag(v_p_notes)">
+		{elseif $priv == 3} <input type=submit value="财务批审核"
+			style="color: green" onClick="showNoteTag(v_p_notes)">
+		{elseif $priv == 4} <input type=submit value="执行CEO批审核"
+			style="color: green" onClick="showNoteTag(v_p_notes)">
+		{elseif $priv == 5} <input type=submit value="CEO批审核"
+			style="color: green" onClick="showNoteTag(v_p_notes)"> {/if}
+		&nbsp;&nbsp;全选:<input type="checkbox" id="allcheckbox"
+			onClick="chooseall('allcheckbox')">
+
+		<div id="v_p_notes" class="checkOrder"
+			style="display: none; left: 390px;">
+			<input style="display: none" id="vorder_request_id" value="" /> <input
+				style="display: none" id="priv" value="" /> <span>添加备注：</span>
+			<textarea id="v_p_noteText" rows="6" cols="100"
+				style="resize: none; vertical-align: top"></textarea>
+			<br> <input type="button" class="successBtn" value="同意"
+				onClick="batch_check_order({$priv},'v_p_noteText')"
+				style="color: green;">&nbsp;&nbsp; <input type="button"
+				class="refuseBtn" value="否决"
+				onClick="batch_refuse_order({$priv},'v_p_noteText')"
+				style="color: red;">
+
+		</div>
+		<p></p>
+
+		<table cellpadding=0 cellspacing=0 class="goods_list"
+			style="border: solid 2px">
+			<tr style="border: solid 2px">
+				<th width="50">申请时间</th>
+				<th width="160">商品名</th>
+				<th width="40">类型</th>
+				<th width="80">库存状态</th>
+				<th width="70">仓库名称</th>
+				<th width="40">调整数量</th>
+				<th width="40">调整金额</th>
+				<th width="150">序列号</th>
+				<th width="150">原因</th>
+				<!-- <th width="50">删除商品</th> -->
+			</tr>
+			{foreach from=$not_out_order key=key1 item=item1} {foreach
+			from=$item1.goods key=key2 item=item2}
+			<tr style="border-right: solid 2px">
+				<td>{$item1.create_stmp}</td>
+				<td>{$item2.goods_name}</td>
+				{if $item1.category == "ADD"}
+				<td>-v盘赢</td>
+				{else}
+				<td>-v盘亏</td>
+				{/if}
+				{if $item2.goods_status == "INV_STTS_AVAILABLE"}
+				<td>全新库</td>
+				{else}
+				<td>二手库</td>
+				{/if}
+				<td>{$item1.facility_name}</td>
+				<td>{$item2.goods_number}</td>
+				<td>{$item2.goods_amount}</td>
+				{if $item2.goods_type_id == "NON-SERIALIZED"}
+				<td>非序列号商品</td>
+				{else}
+				<td>{$item2.serial_number}</td>
+				{/if}
+				<td>{$item2.reason}</td>
+				<!--  
+				<td>{if $item2.is_delete == 0} <input type="button" value="删除"
+					id="goods_{$item2.rec_id}_delete"
+					onClick="deletegoods('{$key1}','{$priv}','{$item2.rec_id}')">
+					<label id="goods_{$item2.rec_id}_label"
+					style="color: red; display: none">已被删除</label> {else} <input
+					type="button" value="取消删除" id="goods_{$item2.rec_id}_delete"
+					onClick="deletegoods('{$key1}','{$priv}','{$item2.rec_id}')">
+					<label id="goods_{$item2.rec_id}_label"
+					style="color: red; display: block">已被删除</label> {/if}
+				</td>
+				-->
+			</tr>
+			{/foreach}
+			<tr>
+				<td><font style="color: green">批处理：</font> <input
+					type="checkbox" class="batch_checkbox" id={$key1} /></td>
+				<td><font style="color: green">订单号：{$key1}</font></td>
+				<td colspan=7 align="center"><font style="color: blue">订单审核：</font>
+					{if $priv == 1} <input type=submit value="运营主管审核"
+					style="color: green" onClick="showNoteTag(v_{$key1}_notes)">&nbsp;&nbsp;
+					{elseif $priv == 2} <input type=submit value="BD审核"
+					style="color: green" onClick="showNoteTag(v_{$key1}_notes)">&nbsp;&nbsp;
+					{elseif $priv == 3} <input type=submit value="财务审核"
+					style="color: green" onClick="showNoteTag(v_{$key1}_notes)">
+					{elseif $priv == 4} <input type=submit value="执行CEO审核"
+					style="color: green" onClick="showNoteTag(v_{$key1}_notes)">
+					{elseif $priv == 5} <input type=submit value="CEO审核"
+					style="color: green" onClick="showNoteTag(v_{$key1}_notes)">
+					{/if}
+
+					<div id="v_{$key1}_notes" class="checkOrder"
+						style="display: none; left: 390px;">
+						<input style="display: none" id="vorder_request_id" value="" /> <input
+							style="display: none" id="priv" value="" /> <span>添加备注：</span>
+						<textarea id="v_{$key1}_noteText" rows="6" cols="60"
+							style="resize: none; vertical-align: top"></textarea>
+						<br> <input type="button" class="successBtn" value="同意"
+							onClick="check_order({$priv},'{$key1}','v_{$key1}_noteText')"
+							style="color: green">&nbsp;&nbsp; <input type="button"
+							class="refuseBtn" value="否决"
+							onClick="refuse_order({$priv},'{$key1}','v_{$key1}_noteText')"
+							style="color: red">
+					</div></td>
+			</tr>
+			<tr style="border-bottom: solid 2px">
+				<td colspan=9>
+				{if $item1.party_name}
+						<span>申请组织：</span>
+						<font style="color:green">{$item1.party_name}</font><br/>
+						{/if}
+					<p>申请备注: {$item1.comments}
+					<p>
+					<p>{$item1.notes}
+					<p>
+				</td>
+			</tr>
+			{/foreach}
+		</table>
+		<!--{/if}-->
+
+	</fieldset>
+
+	<script type="text/javascript">
+{literal}
+
+function chooseall(id){
+	var tap = document.getElementById(id).checked;
+	var elements = document.getElementsByClassName("batch_checkbox");
+	if(tap == true){
+		for(var i=0; i < elements.length; i++){
+			var element = elements[i];
+			element.checked = true;
+		}
+	}else{
+		for(var i=0; i < elements.length; i++){
+			var element = elements[i];
+			element.checked = false;
+		}
+	}
+}
+
+
+
+function deletegoods(key,role,id){
+	var deletebtn = "#goods_"+id+"_delete";
+	var deletelab = "#goods_"+id+"_label";
+
+	if($(deletebtn).attr("value") == "删除"){
+		$.ajax({
+			type:'post',
+			dataType:'json',
+			url:'inventory_adjust_out_v2.php',
+			data:{act:"deletegoods",recid:id,role:role,key:key},
+			success: function(data){
+				if(data.msg == "ok"){
+					var deletebtn = "#goods_"+data.id+"_delete";
+					var deletelab = "#goods_"+data.id+"_label";
+					if ($(deletelab)[0].style.display == "none"){
+						$(deletelab)[0].style.display = "block";
+					}
+					if ($(deletebtn).attr("value") == "删除"){
+						$(deletebtn).attr("value","取消删除");
+					}
+				}
+				else{
+					alert(data.msg);
+				}
+			},
+			error: function(data){
+				alert("删除错误，请联系ERP组");
+			}
+		}); 
+	}else if($(deletebtn).attr("value") == "取消删除"){
+		$.ajax({
+			type:'post',
+			dataType:'json',
+			url:'inventory_adjust_out_v2.php',
+			data:{act:"undodelete",recid:id,role:role,key:key},
+			success: function(data){
+				if(data.msg == "ok"){
+					var deletebtn = "#goods_"+data.id+"_delete";
+					var deletelab = "#goods_"+data.id+"_label";
+					if ($(deletelab)[0].style.display == "block"){
+						$(deletelab)[0].style.display = "none";
+					}
+					if ($(deletebtn).attr("value") == "取消删除"){
+						$(deletebtn).attr("value","删除") ;
+					}
+				}
+				else{
+					alert(data.msg);
+				}
+			},
+			error: function(data){
+				alert("删除错误，请联系ERP组");
+			}
+		}); 
+	}
+}
+
+
+
+function showNoteTag(id){
+	if ($(id)[0].style.display == "none"){
+		$(id)[0].style.display = "block";
+	}else{
+		$(id)[0].style.display = "none";
+	}
+}
+
+
+function batch_check_order(role,noteid){
+	
+	var note = document.getElementById(noteid).value.toString();
+	var eles = document.getElementsByClassName("batch_checkbox");
+	var checked = new Array();
+	var keys = "";
+	for(var i = 0; i < eles.length; ++i){
+		if(eles[i].checked == true){
+			checked.push(eles[i].id.toString());
+		}
+	}
+	
+	if(checked.length == 0){
+		alert("请选择订单");
+		return false;
+	}
+	
+	for(var i = 0; i < checked.length-1; ++i){
+		keys += checked[i] + ",";
+	}
+	keys += checked[checked.length-1]  ;
+	
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'inventory_adjust_out_v2.php',
+		data:{act:"batchcheck",keys:keys,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.error);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	});
+	return true;
+
+}
+function batch_refuse_order(role,noteid){
+	
+	var note = document.getElementById(noteid).value.toString();
+	var eles = document.getElementsByClassName("batch_checkbox");
+	var checked = new Array();
+	var keys = "";
+	for(var i = 0; i < eles.length; ++i){
+		if(eles[i].checked == true){
+			checked.push(eles[i].id.toString());
+		}
+	}
+	
+	if(checked.length == 0){
+		alert("请选择订单");
+		return false;
+	}
+	
+	for(var i = 0; i < checked.length-1; ++i){
+		keys += checked[i] + ",";
+	}
+	keys += checked[checked.length-1]  ;
+
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'inventory_adjust_out_v2.php',
+		data:{act:"batchrefuse",keys:keys,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.error);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	});
+	return true;
+
+}
+
+function refuse_order(role,key,noteid){
+	var note = document.getElementById(noteid).value.toString();
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'inventory_adjust_out_v2.php',
+		data:{act:"singlerefuse",key:key,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.msg);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	}); 
+}
+
+function check_order(role, key, noteid){
+	/*
+	* 这里对该订单进行确认操作。
+	*/
+	var note = document.getElementById(noteid).value.toString();
+ 	$.ajax({
+		type:'post',
+		dataType:'json',
+		url:'inventory_adjust_out_v2.php',
+		data:{act:"singlecheck",key:key,role:role,note:note},
+		success: function(data){
+			if(data.msg == "ok"){
+				var formtag = document.getElementById("checkorder");
+				formtag.submit();
+			}
+			else{
+				alert(data.msg);
+			}
+		},
+		error: function(data){
+			alert("审核错误，请联系ERP组");
+		}
+	}); 
+}
+
+
+
+
+{/literal}
+</script>
+	<form id="checkorder" action="inventory_adjust_out_v2.php"
+		method="post" style="display: none"></form>
+</body>
+</html>

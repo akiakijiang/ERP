@@ -1,0 +1,4 @@
+商品名,是否全新,条码,总数量
+{foreach from=$storage_list  item=goods}
+"{$goods.goods_name}",{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if},="{$goods.barcode}",{$goods.storage_count}
+{/foreach}

@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>指示查询</title>
+<link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="../misc/autocomplete.css" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js""></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+
+<!-- Calendar -->
+<link rel="stylesheet" type="text/css" href="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.js"></script>
+<!-- Calendar /-->
+
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+var property={
+    divId:"demo",
+    needTime:true,
+    yearRange:[1970,2030],
+    week:['日','一','二','三','四','五','六'],
+    month:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+    format:"yyyy-MM-dd hh:mm:ss",
+};
+$(document).ready(function(){
+    canva1=$.createGooCalendar("start",property);
+    canva2=$.createGooCalendar("end",property);
+    var indicate_type = $("#indicate_type").val();
+	$("select[name='info[indicate_type]'] option[value='" + indicate_type + "']").attr("selected", true);
+	
+	var indicate_status = $("#indicate_status").val();
+	$("select[name='info[indicate_status]'] option[value='" + indicate_status + "']").attr("selected", true);
+	
+	var searchType = $("#searchType").val();
+	$("select[name='searchType'] option[value='" + searchType + "']").attr("selected", true);
+	
+	var timeType = $("#timeType").val();
+	$("select[name='timeType'] option[value='" + timeType + "']").attr("selected", true);
+	
+	$("#start").val($("#hidStart").val());
+	$("#end").val($("#hidEnd").val());
+
+});
+
+//{/literal}
+//]]>
+</script>
+
+</head>
+
+<body>
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+ 
+<h3 style="color:#09F;">指示搜索</h3>
+<form>
+	<table>
+		<tr>
+			<td>指示类型: <select name="info[indicate_type]">
+					<option value="">所有类型</option>
+					{foreach from=$indicate_types key=key item=indicate_type}
+					<option value="{$key}">{$indicate_type}</option>
+					{/foreach}
+				</select>
+				<input type="hidden" id="indicate_type" value="{$indicate_type_search}"></input>
+			</td>
+			<td colspan="2">指示状态: <select name="info[indicate_status]">
+					<option value="">所有状态</option>
+					{foreach from=$indicate_statuss key=key item=indicate_status}
+					<option value="{$key}">{$indicate_status}</option>
+					{/foreach}
+				</select>
+				<input type="hidden" id="indicate_status" value="{$indicate_status_search}"></input>
+			</td>
+		</tr>
+		<tr>
+			<td>关键词:  <input type="text" name="search_text" value="{$search_text}"></input></td>
+			<td>搜索类型: <select name="searchType">
+				<option value="order_sn">订单号</option>
+				<option value="taobao_order_sn">淘宝订单号</option>
+				<option value="indicate_id">指示号</option>
+				<option value="barcode">条码</option>
+				</select> 
+				<input type="hidden" id="searchType" value="{$searchType}"></input>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				  从&nbsp;<input type="text" value="" id="start" name="start" size="18" value="{$start}"></input>&nbsp;到&nbsp;
+                  <input type="text" value="" id="end" name="end" size="18" value="{$end}"></input>
+			</td>
+			<td>时间类型: <select name="timeType">
+				<option value="created_stamp">创建时间</option>
+				<option value="sended_stamp">发出时间(ERP->ILC)</option>
+				<option value="received_stamp">接收实绩时间(ILC->ERP)</option>
+				<option value="finished_stamp">完成时间</option>
+				</select>
+				<input type="hidden" id="hidStart" value="{$start}"></input>
+				<input type="hidden" id="hidEnd" value="{$end}"></input>
+				<input type="hidden" id="timeType" value="{$timeType}"></input>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center"><input type="submit" value="搜索"></input>
+			<input type="reset" value="重置"></input>
+			<input type="hidden" name="act" value="search"></input>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<!-- 指示 -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;指示列表&nbsp;</span></legend>
+     {if $search_message}
+         <b>{$search_message}</b>
+     {/if}
+     
+     <h3 style="color:#09F;">指示列表</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>指示Id</td>
+              <td>指示类型</td>
+              <td>指示状态</td>
+              <td>创建时间</td>
+              <td>发出时间(ERP->ILC)</td>
+              <td>接收实绩时间(ILC->ERP)</td>
+              <td>完成时间</td>
+              <td>订单号</td>
+              <td>淘宝订单号</td>
+              <td>订单时间</td>
+          </tr>
+          {foreach from=$list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td><a href="?act=query&indicate_id={$result.indicate_id}">{$result.indicate_id}</a></td>
+              <td>{if $result.indicate_type == 'INVENTORY_IN'}入库指示(采购) 
+                  {elseif $result.indicate_type == 'INVENTORY_OUT'}出库指示(销售)
+                  {elseif $result.indicate_type == 'INVENTORY_RETURN'}退货指示(退换货)
+                  {else $result.indicate_type == 'SUPPLIER_RETURN'}返厂退库指示(-gt)
+                  {/if}
+              </td>
+              <td>{if $result.indicate_status == 'INIT'}初始化
+                  {elseif $result.indicate_status == 'SENDED'}已发出
+                  {elseif $result.indicate_status == 'RECEIVED'}接收实绩
+                  {elseif $result.indicate_status == 'FINISHED'}已完成
+                  {else $result.indicate_status == 'CANCEL'}已取消
+                  {/if}
+              </td>
+              <td>{$result.created_stamp}</td>
+              <td>{$result.sended_stamp}</td>
+              <td>{$result.received_stamp}</td>
+              <td>{$result.finished_stamp}</td>
+              <td>{if !empty($result.order_sn)} 
+                  <a href="order_edit.php?order_id={$result.order_id}" target="new">{$result.order_sn}</a>
+                  {/if}
+              </td>
+              <td>{$result.taobao_order_sn}</td>
+              <td>{$result.order_time}</td>
+          </tr>
+          {foreachelse}
+             无结果
+          {/foreach}
+      </table>
+      {$pagination}
+</fieldset>
+  <br>
+
+<!-- 指示明细 -->
+<!-- {if $indicate_detail_list} -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;指示明细列表&nbsp;</span></legend>
+     <h3 style="color:#09F;">指示明细列表</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>指示号</td>
+              <td>指示明细号</td>
+              <td>订单商品号</td>
+              <td>商品号</td>
+              <td>样式</td>
+              <td>商品状态</td>
+              <td>商品名称</td>
+              <td>商品数量</td>
+              <td>商品条码</td>
+          </tr>
+          {foreach from=$indicate_detail_list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$result.indicate_id}</td>
+              <td>{$result.indicate_detail_id}</td>
+              <td>{$result.order_goods_id}</td>
+              <td>{$result.goods_id}</td>
+              <td>{$result.color}</td>
+              <td>{$result.goods_type}</td>
+              <td>{$result.goods_name}</td>
+              <td>{$result.goods_number}</td>
+              <td>{$result.barcode}</td>
+          </tr>
+          {foreachelse}
+             无结果
+          {/foreach}
+      </table>
+</fieldset>
+  <br>
+<!-- {/if} -->
+
+<!-- 实绩 -->
+<!-- {if $actual_list} -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;实绩列表&nbsp;</span></legend>
+     <h3 style="color:#09F;">实绩列表</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>指示号</td>
+              <td>实绩号</td>
+              <td>实绩状态</td>
+              <td>接收时间</td>
+              <td>处理时间</td>
+              <td>出入库时间</td>
+              <td>快递方式</td>
+              <td>运单号</td>
+          </tr>
+          {foreach from=$actual_list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$result.indicate_id}</td>
+              <td>{$result.actual_id}</td>
+              <td>{if $result.actual_status == 'RECEIVED'}已接收，待处理
+                  {elseif $result.actual_status == 'FINISHED'}已完成
+                  {elseif $result.actual_status == 'ERROR'}处理错误
+                  {/if}
+              </td>
+              <td>{$result.created_stamp}</td>
+              <td>{$result.last_update_stamp}</td>
+              <td>{$result.in_out_time}</td>
+              <td>{$result.carrier_name}</td>
+              <td>{$result.tracking_number}</td>
+          </tr>
+          {foreachelse}
+             无结果
+          {/foreach}
+      </table>
+</fieldset>
+  <br>
+<!-- {/if} -->
+
+<!-- {if $actual_detail_list} -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;实绩明细列表&nbsp;</span></legend>
+     <h3 style="color:#09F;">实绩明细列表</h3>
+      <table class="bWindow" style="margin-top:20px">
+          <tr align="center">
+              <td>指示号</td>
+              <td>指示明细号</td>
+              <td>实绩号</td>
+              <td>实绩明细号</td>
+              <td>实绩明细状态</td>
+              <td>备注信息</td>
+              <td>接收时间</td>
+              <td>处理时间</td>
+              <td>商品类型</td>
+              <td>商品数量</td>
+          </tr>
+          {foreach from=$actual_detail_list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$result.indicate_id}</td>
+              <td>{$result.indicate_detail_id}</td>
+              <td>{$result.actual_id}</td>
+              <td>{$result.actual_detail_id}</td>
+              <td>{if $result.actual_detail_status == 'RECEIVED'}已接收，待处理
+                  {elseif $result.actual_detail_status == 'FINISHED'}已完成
+                  {elseif $result.actual_detail_status == 'ERROR'}处理错误
+                  {/if}
+              </td>
+              <td>{$result.msg}</td>
+              <td>{$result.created_stamp}</td>
+              <td>{$result.last_update_stamp}</td>
+              <td>{$result.goods_type}</td>
+              <td>{$result.goods_number}</td>
+          </tr>
+          {foreachelse}
+             无结果
+          {/foreach}
+      </table>
+</fieldset>
+  <br>
+<!-- {/if} -->
+</body>
+</html>

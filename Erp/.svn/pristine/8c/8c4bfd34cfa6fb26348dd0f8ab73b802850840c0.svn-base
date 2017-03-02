@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>客户详情</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+<!--{literal}-->
+body,h2{
+	margin: 5px 5px 0px 5px;}
+h2{
+ 	height: 50px;
+  	margin: 100pxauto0;
+  	color: rgb(113, 113, 113);
+  	border-bottom: 1px solid #b7b7b7;}
+h2 span{
+	width:80px;
+	height:50px;
+	line-height:50px;
+	text-align:center;
+	float:left;}
+#tab .tab{
+	border: 1px solid #b7b7b7;
+  	border-bottom: 1px solid rgb(255, 255, 255);
+  	border-top-left-radius: 4px;
+  	border-top-right-radius: 4px;
+ 	padding: 0 2px;
+ 	background-color: #ffffff}
+#ct div{
+	display:none;}
+#ct .ct{
+	display:block;}
+
+ <!--{/literal}-->
+</style>
+<script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+function changetab(){
+    var tabs=document.getElementById("tab").getElementsByTagName("span");//声明id为tab下所有的span
+    for (i=0;i<tabs.length;i++){
+        tabs[i].onclick=tab;//为每个span绑定onclick事件
+    }
+}
+
+function tab(){
+var  tabs=document.getElementById("tab").getElementsByTagName("span");//声明id为tab下所有的span
+var  cts=document.getElementById("ct").getElementsByTagName("div");//声明所有的ct下的div
+    for (i=0;i<tabs.length;i++){
+    tabs[i].className="";
+    cts[i].className="";
+        if (tabs[i]==this){
+            tabs[i].className="tab";
+            cts[i].className="ct";
+        }
+    }
+}
+window.onload=function (){
+changetab();
+}
+    // {/literal}
+    // ]]>
+</script>
+</head>
+<body>
+	<h2 id="tab">
+		<span  class="tab">Master</span>
+		<span>Slave</span>
+	</h2>
+	<div id="ct">
+	<div class="ct">
+		<form action="">
+			<table class="bWindow" style="margin-bottom:20px;" width="800">
+				<tr>
+					<th>Id</th>
+					<th>User</th>
+					<th>Host</th>
+					<th>db</th>
+					<th>Command</th>
+					<th>Time</th>
+					<th>State</th>
+					<th>Info</th>
+				</tr>
+				{foreach from=$status_res item=status key=key}
+				<tr>
+						<td>{$status.Id}</td>
+						<td>{$status.User}</td>
+						<td>{$status.Host}</td>
+						<td>{$status.db}</td>
+						<td>{$status.Command}</td>
+						<td>{$status.Time}</td>
+					 	<td>{$status.State}</td>
+					 	<td>{$status.Info}</td>
+				</tr>
+				{/foreach}
+				<tr>
+					<td colspan="8" align="right">{$pagination}</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div>
+		<form>
+			<table class="bWindow" style="margin-bottom:20px;" width="800">
+				<tr>
+					<th>Id2</th>
+					<th>User2</th>
+					<th>Host2</th>
+					<th>db2</th>
+					<th>Command2</th>
+					<th>Time2</th>
+					<th>State2</th>
+					<th>Info2</th>
+				</tr>
+				{foreach from=$status_res_slave item=status key=key}
+				<tr>
+						<td>{$status.Id}</td>
+						<td>{$status.User}</td>
+						<td>{$status.Host}</td>
+						<td>{$status.db}</td>
+						<td>{$status.Command}</td>
+						<td>{$status.Time}</td>
+					 	<td>{$status.State}</td>
+					 	<td>{$status.Info}</td>
+				</tr>
+				{/foreach}
+				<tr>
+					<td colspan="8" align="right">{$pagination}</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div>
+</body>
+</html>

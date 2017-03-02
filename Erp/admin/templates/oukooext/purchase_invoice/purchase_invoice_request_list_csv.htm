@@ -1,0 +1,6 @@
+开票清单号:{$purchase_invoice_request_id_excel}
+供应商名称:{$provider_name}
+"订单号","商品","商品条码","商品货号","单价","去税单价","数量","含税总金额","去税总金额"
+{foreach from=$purchase_invoice_details item=purchase_invoice_detail}
+"{$purchase_invoice_detail.order_sn}","{$purchase_invoice_detail.goods_name}","{$purchase_invoice_detail.barcode}","{$purchase_invoice_detail.goods_sn}","￥{$purchase_invoice_detail.unit_cost}","￥{$purchase_invoice_detail.unit_net_cost}","{$purchase_invoice_detail.quantity}","￥{$purchase_invoice_detail.unit_cost*$purchase_invoice_detail.quantity}","￥{$purchase_invoice_detail.unit_net_cost*$purchase_invoice_detail.quantity}"
+{/foreach}

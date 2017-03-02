@@ -1,0 +1,4 @@
+组织名,仓库,快递,订单总数,待确认,已确认待预定,待配货,批拣中,已出库待复核,已复核待发货,已发货
+{foreach from=$order_info3 item=orders}
+="{$orders.party_name}",="{$orders.facility_name}",="{$orders.shipping_name}","={$orders.new_num}",="{$orders.unconfirmed_order}","={$orders.confirmed_order}",="{$orders.shipmentlist_order}",="{$orders.new_batched_order}",="{$orders.new_delivered_order}",="{$orders.to_ship_order}",="{$orders.shipped_order}"
+{/foreach}

@@ -1,0 +1,900 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<!--
+ * Created on 2011-5-25
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+-->
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>供应商调拨申请</title>
+  <link href="../styles/default.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css"> 
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script> 
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<style type="text/css">
+   {literal}
+     .can_request_span{
+     	color:#cc0000; 
+     	text-decoration:underline;
+     }
+.load-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 9999;
+  display: none;
+  font-size: 18px;
+}
+.load-container {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  margin-top: -60px;
+  margin-left: -60px;
+  width:120px;
+  height: 120px;
+  padding-top: 20px;
+  -webkit-border-radius:10px;
+          border-radius:10px;
+  background-color: rgba(0,0,0,.6);
+  color:#fff;
+  text-align: center;
+}
+
+  .load-container i {
+    font-size: 52px;
+  }
+
+  .load-container i,.load-container p{
+     margin:5px 0;
+  }
+  {/literal}
+ </style>
+
+<script type="text/javascript" >
+{literal}
+     //载入执行
+     
+     $(document).ready(function(){
+         $('#ret_excute').hide();
+         $('#ret_detail').hide();
+         /**
+          * 商品搜索
+          */
+         $('#goods_name_select').autocomplete('supplier_dt_goods_request.php?request=ajax&act=search_goods', {
+             dataType : 'json',
+             minChars: 0,
+             mustMatch: false,
+             formatItem : function(row, i, max, value, term) {
+                 $('#order_goods_id').val("");
+                 $('#order_style_id').val("");
+                 return(row.goods_name);
+             },
+             formatResult : function(row) {
+                 $('#order_goods_id').val("");
+                 $('#order_style_id').val("");
+                 return(row.goods_name);
+             }
+         }).result(function(event, row, formatted) {
+             $('#order_goods_id').val(row.goods_id);
+             $('#order_style_id').val(row.style_id);
+         });      
+
+
+          /**
+           * 供应商检索
+           */
+          $('#original_provider_select').autocomplete('supplier_dt_goods_request.php?request=ajax&act=search_providers', {
+              dataType : 'json',
+              minChars: 0,
+              mustMatch: true,
+              formatItem : function(row, i, max, value, term) {
+                  $("#original_provider_id").val(""); 
+                  return(row.provider_name);
+              },
+              formatResult : function(row) {
+                $("#original_provider_id").val("");
+                return(row.provider_name);
+              }
+          }).result(function(event, row, formatted) {
+              $('#original_provider_id').val(row.provider_id);
+          });  
+
+          /**
+           * 供应商检索
+           */
+          $('#ret_provider').autocomplete('supplier_dt_goods_request.php?request=ajax&act=search_providers', {
+              dataType : 'json',
+              minChars: 0,
+              mustMatch: true,
+              formatItem : function(row, i, max, value, term) {
+                  return(row.provider_name);
+              },
+              formatResult : function(row) {
+                  return(row.provider_name);
+              }
+          }).result(function(event, row, formatted) {
+              $('#ret_provider_id').val(row.provider_id);
+          });  
+          
+          /**
+          * radio 事件
+          */
+          $(".radioItem").change(
+               function() {
+        		  var selectedvalue = $("input[name='purchase_paid_type']:checked").val();
+        		  // 选择支票支付 需要填写支票号
+        		  if (selectedvalue == 4) {
+        		      $('#tr_checkno').html('<td>支票号 ：</td><td><input type="text" name="cheque" style="width: 180px" /></td>');
+        		  } else {
+        			  $('#tr_checkno').html('');
+                  }
+          });    
+     }); 
+
+     function cancellatonFunc(){
+         // 先隐藏表格
+    	 $('#ret_excute').hide();
+         // 清空表格上面的数据
+         $('#ret_original_id').val("");
+         $('#ret_status_id').val("");
+         $('#hid_amount').val("");
+         $('#ret_provider').val("");
+         $('#goods_price').val("");
+         $('#currency').val("");
+         // $('#goods_rate').val("");
+         $('#ret_amount').val("");
+         $('#remark').val("");
+         $('#chk_all').attr("checked", false);   
+         selectallchk($('#chk_all'));
+     }
+
+     function disableSubmit(){
+         // 先隐藏表格
+    	 $('#create_db_request').attr("disabled","disabled");
+
+    	 $('#returnForm').submit();
+
+         // 清空表格上面的数据
+         
+     }
+     /**
+     * ckeckbox 选中事件
+     */
+     function selectallchk(obj){
+         var items = $("#serialize_goods_items tbody").find("input[name='chkbox']") ;  
+         if (obj.checked){
+             $.each(items, function(i,item){          
+        	      item.checked = true ;
+       	      });  
+         } else {
+        	 $.each(items, function(i,item){          
+                 item.checked = false;
+              });  
+         }
+     }
+
+     /**
+     * Form提交数据检查
+     */
+     function check(obj) {
+    	    var goodsPrice = $('#goods_price') ;       	    
+            if(goodsPrice.val() == ''){
+                alert('请填写退货价格');
+                goodsPrice.focus();
+                return false;
+            }
+
+            if($('#currency').val() == '' || $('#currency').val() =='null'){
+                alert('币种异常，请联系ERP组');
+                $('#currency').focus();
+                return false;
+            }
+            
+            var taxRate = $('#goods_rate') ;
+            if(taxRate.val() == ''){
+                alert('请填写退货税率');
+                taxRate.focus();
+                return false;
+            }
+            var orderTypeId = $('#order_type_id') ;
+            if(orderTypeId.val() == ''){
+                alert("请选择订单的类型");
+                orderTypeId.focus();
+                return false;
+            }
+            var toVendorId = $('#ret_provider_id') ;
+            if(toVendorId.val() == ''){
+                alert('请选择供应商');
+                toVendorId.focus();
+                return false;
+            }
+            //现在可以允许退回的供应商和采购供应商不一致的情况
+            var is_oversea_sales=$('#is_oversea_sales').val();
+            var originalProviderId = $('#ret_original_id') ;
+            
+            //此处暂时忽略is_oversea_sales：根据需求，要求所有业务组织都要有这个权限
+            if ((orderTypeId.val() == 'SUPPLIER_RETURN') && (originalProviderId.val()!='432' && originalProviderId.val()!='78' && originalProviderId.val()!='0') && originalProviderId.val() != toVendorId.val()) {
+                alert("不退发票且原采购供应商非'自己库存'的订单，退回的供应商必须和采购进来的供应商一致");//扣原采购发票
+                toVendorId.focus();
+                return false;
+            }
+            /*
+            if ((orderTypeId.val() == 'SUPPLIER_RETURN') && originalProviderId.val() != toVendorId.val() && is_oversea_sales) {
+                alert("不退发票的订单，退回的供应商必须和采购进来的供应商一致");
+                toVendorId.focus();
+                return false;
+            }
+            */
+            var party_id=$('#party_id').val();
+            var fchr_warehouse_id=$('#fchrWareHouse').val();
+            if(fchr_warehouse_id==0 && party_id=='65574'){
+           	 alert("请选择金宝贝商品的退货仓库");
+           	 return false;
+            }
+            var remark = $('#remark') ;
+            if(remark.val() == ''){
+                alert("要填写备注的");
+                remark.focus();
+                return false;
+            }
+            
+         var need_check_number = $('#need_check_number').val();   
+         var itemType = $('#goods_item_type').val();
+    	 if (itemType == 'NON-SERIALIZED'){
+        	 // 非串号商品
+        	 var ret_amount = $('#ret_amount') ;
+        	 if (ret_amount.val() == '') {
+                 alert("需要退货数量还没有填写呢，请重新检查。");
+                 ret_amount.focus();
+                 return false;
+             }
+             
+             var storage_amount = parseInt($('#hid_amount').val()) ;
+             if(need_check_number) {
+            	 if (ret_amount.val() > storage_amount || ret_amount.val() <= 0) {
+                     alert("需要退货数量填写不正确，请重新检查。");
+                     ret_amount.focus();
+                     return false;
+                 }
+             }
+            
+    	 } else {
+        	 // 串号商品
+        	 
+        	 var chkboxs = document.getElementsByName('chkbox');    	 
+             var index = 0 ;
+        	 var json = '[';
+        	 for(var i=0;i<chkboxs.length;i++){
+            	 if(chkboxs[i].checked){
+                     if(index == 0){
+                         json += '{"erp_goods_sn":"'+ chkboxs[i].id + '"}';
+                     }else{
+                    	 json += ', {"erp_goods_sn":"'+ chkboxs[i].id + '"} ';
+                     }
+                     index++ ;
+            	 }
+        	 }
+        	 json += ']' ;
+        	 if(index == 0){
+                 // 退货入库必须选商品串号
+                 alert('你还没有选择要退商品对应的串号  ');
+                 return false ;
+             }
+
+        	 document.getElementById('serial_number').value = json ;
+
+    	 }
+    	 
+    	 var is_oversea_sales=$('#is_oversea_sales').val();
+    	 var retOrderTypeId=$('#ret_status_id').val();
+    	 if(orderTypeId.val()=='SUPPLIER_RETURN' && !is_oversea_sales && retOrderTypeId!='INV_STTS_USED'){
+    		 var goodsPrice=$('#goods_price');
+    		 var purchasePaidAmount=$('#purchase_paid_amount');
+    		 if(eval(goodsPrice.val())!=eval(purchasePaidAmount.val())){
+    			 alert('在新品并且退款类型为"退给供应商"的情况下，单价必须与原采购单价相等 ');
+    			 return false;
+    		 }
+    	 }
+    	 $('#create_db_request').attr("disabled","disabled");
+    	 $('#fchr_warehouse_id').val(fchr_warehouse_id);
+     }
+
+     function getSearchCondition(){
+        var goods_id = $('#order_goods_id').val();
+        var style_id = $('#order_style_id').val();
+        // var category_id = $("#category_id").val(); 
+        var is_new = $("#is_new").val();
+        var barcode = $("#barcode").val(); 
+        var condition = "";
+        // condition += "category_id="+category_id+"&is_new="+is_new; 
+        condition += "is_new="+is_new;
+        if(goods_id){
+            condition += "&goods_id="+goods_id+"&style_id="+style_id;
+        }else {
+            if(barcode && barcode.replaceAll(" ") !=""){
+                condition += "&barcode="+barcode;
+            }else{
+                alert("商品名 和 商品条码 至少填一个");
+                return false; 
+            }
+        }
+         
+         // 供应商暂时可不写
+        var original_provider_id = $('#original_provider_id').val();
+        if(original_provider_id){
+            condition += "&original_provider_id="+original_provider_id; 
+        }
+         
+        var facility_id = $('#facility').val();
+        if(facility_id == 0 || facility_id =="" ){
+             alert("请选择商品所在的仓库。");
+             return false ;
+        }
+        
+        var facility_id_dt = $('#facility_dt').val();
+        if(facility_id_dt == 0 || facility_id_dt =="" ){
+             alert("请选择商品需要转仓去的仓库。");
+             return false ;
+        }
+        
+        var arrive_time = $('#arrive_time').val();
+        if(arrive_time == 0 || arrive_time =="" ){
+             alert("请选择到货时间！");
+             return false ;
+        }
+               
+        condition +="&facility_id="+facility_id;
+        console.log(condition); 
+        return condition; 
+     }
+
+     /**
+     * 根据商品检索可退货的库存商品
+     */
+     function searchReturngoods(){
+    	  
+         var cond = getSearchCondition(); 
+         if(cond == false){
+            return false; 
+         }
+         $("#stop-action").fadeIn(100); 
+         // 检索提交
+         // location.href = "supplier_return_goods_request.php?goods_id="+goods_id+"&style_id="+style_id+"&original_provider_id="+original_provider_id+"&facility_id="+facility_id+"&request=ajax&act=search_goods_storage";
+         // return true;
+         $.ajax( {
+        	 url : "supplier_dt_goods_request.php",
+        	 data : cond+"&request=ajax&act=search_goods_storage&date="+(new Date()),
+        	 type : "POST",
+        	 cache: false,
+        	 dataType :"json",
+        	 error : function(XMLHttpRequest, textStatus, errorThrown) {
+        	     // alert("检索失败：" + XMLHttpRequest.responseText);
+        	     $("#stop-action").fadeOut(100);
+        	     alert(XMLHttpRequest.status) ;
+        	 },
+        	 success : function(json) {
+                   
+                 if ( json == null || json.length == 0){
+                 	 $("#stop-action").fadeOut(0);
+                	 $('#ret_detail').hide();
+                     alert('没有库存了。');
+                     $('#ret_detail tbody').html('');
+                 } else {
+                 	$("#stop-action").fadeOut(10);
+                     var html = "" ; 
+                     var strIsNew = "" ;
+        	         for(var i=0; i<json.length; i++){
+        	        	 if (json[i].is_new == 'INV_STTS_AVAILABLE'){
+        	        		 strIsNew = '全新' ;
+        	        	 } else if (json[i].is_new == 'INV_STTS_USED'){
+        	        		 strIsNew = '二手' ;
+            	         } else if (json[i].is_new == 'INV_STTS_DEFECTIVE'){
+            	        	 strIsNew = '次品' ;
+            	         } else {
+            	        	 strIsNew = '未知' ; 
+            	         }
+                         json[i].provider_name = json[i].provider_name.replaceAll(","," "); 
+            	         html += "<tr>"+
+            	                    "<td>"+json[i].goods_name+"</td>" +
+            	                    "<td>"+json[i].provider_name+"</td>" +
+            	                    "<td>"+strIsNew+"</td>" +
+            	                    "<td>"+json[i].order_type+"</td>" + 
+            	                    "<td>"+json[i].purchase_paid_amount+"</td>" + 
+            	                    "<td>"+json[i].currency+"</td>" + 
+            	                    "<td>"+json[i].storage_amount+"</td>" + 
+            	                    "<td>"+json[i].can_request+"<div style='display:none' class='show_detail'>"+json[i].detail+"</div><span onclick=\"javascript:showDetail(this);\" style='float:right;' class='can_request_span'>占用库存详情</span></td>"+
+            	                    "<td>"+json[i].facility_name+"</td>";
+                        if( json[i].can_request > 0 ){
+                            html +=     "<td><a href=\"#\"   id=\""+json[i].provider_id+"\" name=\""+json[i].is_new+
+                                ","+json[i].is_serial+ 
+                                "\" rev=\""+json[i].purchase_paid_amount+","+json[i].currency+","+json[i].provider_name+
+                                 ","+json[i].goods_id+
+                                 ","+json[i].style_id+
+                                 ","+json[i].facility_id+
+                                 ","+json[i].goods_name+
+                                "\"  rel=\""+json[i].can_request+"\" onclick=\"javascript:selectReturnGoods(this);\">申请调拨</a>";
+                            html += "</td>"; 
+                        }else{
+                            html += "<td> <a href='javascript:;' style='color:gray;'>申请退货</a> </td>"; 
+                        }
+            	        
+            	        html +=  "</tr>" ;
+        	         }
+        	  
+        	         // 几个字段赋值
+                    // $('#ret_goods_id').val(goods_id);
+                    // $('#ret_style_id').val(style_id);
+                   // $('#ret_facility_id').val(facility_id);
+                     
+                    // $('#goods_item_type').val(json[json.length-1]);
+        	         $('#ret_detail tbody').html(html);
+        	         $('#ret_detail').show();
+        	         
+        	         
+                 }
+        	 }
+        	 }); 
+     }
+     
+    String.prototype.replaceAll = function(reallyDo, replaceWith, ignoreCase) {  
+        if (!RegExp.prototype.isPrototypeOf(reallyDo)) {  
+            return this.replace(new RegExp(reallyDo, (ignoreCase ? "gi": "g")), replaceWith);  
+        } else {  
+            return this.replace(reallyDo, replaceWith);  
+        }  
+    }  
+
+     
+     function showDetail(obj){
+    	 alert($(obj).prev('div:first').html().replaceAll('<br>','\n').replaceAll('B2B','供应商退货'));
+     }
+     String.prototype.replaceAll = function(reallyDo, replaceWith, ignoreCase) {  
+ 	    if (!RegExp.prototype.isPrototypeOf(reallyDo)) {  
+ 	        return this.replace(new RegExp(reallyDo, (ignoreCase ? "gi": "g")), replaceWith);  
+ 	    } else {  
+ 	        return this.replace(reallyDo, replaceWith);  
+ 	    }  
+ 	  }  
+     /**
+      * 根据商品检索可退货的库存商品
+      */
+      function exportReturngoods(){
+     	  var cond = getSearchCondition();
+        if(cond == false){
+          return false; 
+        }
+        location.href = "supplier_dt_goods_request.php?"+cond+"&act=export_goods_storage";
+     }
+     function return_type(obj){
+         var chkVal = obj.value();
+         alert(chkVal);
+     }
+
+     function selectReturnGoods(obj){
+         // 先清除界面上已有的东西
+    	 cancellatonFunc();
+         var provider_id = obj.id ;
+         var name = obj.name; 
+         name = name.split(",");
+         var status_id =  name[0] ;
+         var total_amount = obj.rel;        // 退还数量
+         var price_currency = obj.rev.split(",");
+         var purchase_paid_amount = price_currency[0];  // 商品供价
+         var currency = price_currency[1];  // 币种
+         var provider_name = price_currency[2];  // 供应商名称
+
+         var goods_id = price_currency[3];
+         var style_id = price_currency[4];
+         var facility_id = price_currency[5];
+         var goods_name = price_currency[6];
+         var goods_item_type = name[1];
+         var is_oversea_sales=$('#is_oversea_sales').val();
+         
+         var facility_id_dt = $('#facility_dt').val();
+         var arrive_time_dc = $('#arrive_time').val();
+
+         $("#ret_goods_id").val(goods_id);
+         $("#ret_style_id").val(style_id); 
+         $("#ret_facility_id").val(facility_id);
+         $("#ret_status_id").val(status_id);
+         $("#goods_item_type").val(goods_item_type);
+         $("#ret_provider").val(provider_name);
+         $("#ret_provider_id").val(provider_id);
+         $("#ret_facility_id_dt").val(facility_id_dt);
+         $("#goods_name").val(goods_name);
+         $("#arrive_time_dc").val(arrive_time_dc);
+         
+         // 检查提交的记录之前有没有申请过： 如果有还没有处理完，则不能再重复申请； 如果还没有开始处理直接可再编辑
+         var supplierReturnId = '' ;
+         var mayApply = false ;
+         $.ajax( {
+                 url : "supplier_dt_goods_request.php",
+                 data : "goods_id="+goods_id+"&style_id="+style_id+"&original_provider_id="+provider_id+"&facility_id="+facility_id+"&status_id="+status_id+"&purchase_paid_amount="+purchase_paid_amount+"&request=ajax&act=check_repeat_item",
+                 type : "POST",
+                 async: false,
+                 cache: false,
+                 dataType :"json",
+                 error : function(XMLHttpRequest, textStatus, errorThrown) {
+                     // alert("检索失败：" + XMLHttpRequest.responseText);
+                     alert(XMLHttpRequest.status) ;
+                 },
+                 success : function(json) {
+                     supplierReturnId = json.supplierReturnId ;
+                     mayApply = json.mayApply ;
+                     mayCheck = json.mayCheck ;
+                 }
+           } );
+           var party_id=$('#party_id').val();
+
+         // 检查申请的商品
+         if ('' == supplierReturnId && false == mayApply ) {
+             alert('提交的数据不对， 请及时联系ERP相关解决。');
+             return false ;
+         } else if ('' != supplierReturnId && false == mayApply && party_id != '65574') {
+        	 alert('提交的相关商品已经有申请退还供应商了，但还没有处理完  请处理完了再提交请求。');
+             return false ;
+         } else if ('' != supplierReturnId && true == mayApply && party_id != '65574') {
+        	 if (true == mayCheck){
+        		 alert('提交的相关商品已经有申请退还给供应商并且通过审核，仓库没有操作退货出库，请处理完了再提交请求。');
+	             return false;
+        	 }
+        	 else {
+        		 var b = window.confirm('在供应商退货一览中已有个对应地未审核申请生成，可以编辑这个申请。如果继续编辑该申请，请点"确定"。');
+            	 if (b == true){
+            		 location.href = 'supplier_dt_goods_request.php?act=edit&requestId=' + supplierReturnId ;
+	                 return false ;
+            	 } else {
+            		 return false ;
+            	 }
+        	 }
+         }
+
+                     
+         if ('SERIALIZED' == goods_item_type) {
+             // 检索出对应的串号
+             $.ajax( {
+                 url : "supplier_dt_goods_request.php",
+                 data : "goods_id="+goods_id+"&style_id="+style_id+"&original_provider_id="+provider_id+"&facility_id="+facility_id+"&status_id="+status_id+"&purchase_paid_amount="+purchase_paid_amount+"&currency="+currency+"&request=ajax&act=search_serialized_goods",
+                 type : "POST",
+                 cache: false,
+                 dataType :"json",
+                 error : function(XMLHttpRequest, textStatus, errorThrown) {
+                     // alert("检索失败：" + XMLHttpRequest.responseText);
+                     alert(XMLHttpRequest.status) ;
+                 },
+                 success : function(json) {
+                     var html = "";
+                     for(var i=0; i<json.length; i++){
+                         html += "<tr><td align=\"center\">" + 
+                           "<input type=\"checkbox\" name=\"chkbox\" id=\""+ json[i].erp_goods_sn  +"\" /></td>" + 
+                           "<td>"+ json[i].erp_goods_sn +"</td><td>"+ json[i].validity +"</td></tr>" ;
+                     }
+                     $('#serialize_goods_items tbody').html(html);
+                 }
+              } );
+             
+             $('#serialize').show();
+             $('#non_serialize').hide();
+         } else {
+            $('#serialize').hide();
+            $('#non_serialize').show();
+         }
+         if('INV_STTS_USED' == status_id && !is_oversea_sales){
+        	 $("#order_type_id").empty();
+        	 $("#order_type_id").append("<option value='SUPPLIER_TRANSFER' >转仓调拨</option>");
+         }else if(!is_oversea_sales){
+        	 $("#order_type_id").empty();
+        	 $("#order_type_id").append("<option value='SUPPLIER_TRANSFER' >转仓调拨</option>");
+         }
+         
+         if('INV_STTS_AVAILABLE' == status_id && !is_oversea_sales){
+        	 $('#goods_price').val(purchase_paid_amount);
+         }
+         $('#ret_original_id').val(provider_id);
+         $('#ret_status_id').val(status_id);
+         $('#hid_amount').val(total_amount);
+         $('#purchase_paid_amount').val(purchase_paid_amount);
+       	 $('#currency').val(currency);
+         $('#ret_excute').show();
+         
+     }
+     
+     function realTimeReserveNum(){
+         location.href = "supplier_return_goods_request.php?act=realTimeReserveNum";
+     }
+     
+     function inport_return_list(){
+    	 $.ajaxFileUpload({
+ 			url:'import_dt_list.php',
+ 			secureuri:false,
+ 			fileElementId:'fileToUpload',
+ 			dataType: 'json',
+ 			success: function (data)
+ 			{
+ 				added_goods_list = data.content;
+ 				if(data.message == "")
+ 				{
+					alert('导入成功'+'B2B订单号'+data.show);
+ 				}else{
+ 					alert(data.message);
+ 				}
+ 			},
+ 			error: function (data, status, e)
+ 			{
+ 				alert("方法调用错误，请联系ERP组"+e.message);
+ 			}
+ 		})
+     }
+  {/literal}
+  
+  
+</script>
+  
+ </head>
+ <body>
+ <fieldset style="-moz-border-radius:6px;padding:10px;">
+ 
+ <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;调拨申请&nbsp;</span></legend>
+ <br/>
+ 
+   <div style="clear:both; width: 80%">
+   <table width="700px;" cellpadding="5" cellspacing="1"  style="margin-left: 30px;">
+    <!-- <tr>
+        <td>选择分类:</td>
+        <td>
+            <select name="category_id" id="category_id" >
+                <option value="-1" selected="selected">所有</option>
+                {html_options options=$category_list  selected = $smarty.request.category_id}
+            </select>
+        </td>
+    </tr> --> 
+    
+    <br>
+
+	<tr>
+        <td style="width: 85px;">商品名：</td>
+        <td>
+           <input type="text" id="goods_name_select" size="70"/>
+           <input type="hidden" id="order_goods_id" name="order_goods_id" /> <input type="hidden" id="order_style_id" name="order_style_id" /> 
+        </td>        
+    </tr>
+
+    <tr>
+        <td >商品条码：</td>
+        <td>
+           <textarea rows="5" cols="70"  name="barcode" id="barcode" size="70"></textarea>
+           <br/> 可输入多个 按英文逗号分割
+        </td>       
+    </tr>
+
+    <tr>
+        <td>供应商：</td>
+        <td>
+            <input type="text" id="original_provider_select" size="70"/>
+            <input type="hidden" id="original_provider_id" name="original_provider_id"/> 
+        </td>        
+    </tr>
+    <tr>
+        <td>出货仓库：</td>
+        <td>
+           <select id="facility" name="facility" >
+               <option label="-- 请选择仓库 --" value="0" selected="selected" >-- 请选择仓库  --</option>
+               {html_options options=$facilitys }
+           </select> 
+           &nbsp;&nbsp;
+            全新：
+            <select name="is_new" id="is_new">
+                <option value="-1" selected="selected">所有</option>
+                <option value="INV_STTS_AVAILABLE" {if $smarty.request.is_new == "INV_STTS_AVAILABLE"}selected{/if}>全新</option>
+                <option value="INV_STTS_USED" {if $smarty.request.is_new == "INV_STTS_USED"}selected{/if}>二手</option>
+            </select>
+        </td>        
+    </tr>
+    <tr>
+        <td>入货仓库：</td>
+        <td>
+           <select id="facility_dt" name="facility_dt" >
+               <option label="-- 请选择仓库 --" value="0" selected="selected" >-- 请选择仓库  --</option>
+               {html_options options=$facilitys }
+           </select>        
+    </tr>
+    <tr>
+        <td>预计入库时间：</td>
+        <td>
+	      <input style="width:120px" name="arrive_time" id="arrive_time" value="{$arrive_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d %H:%M:%S"}'">
+	      <input type="button" id="arrive_time_trigger" value="..." >     
+    </tr>
+    <tr>
+        <td colspan="2" align="right"> <input type="button" id="submit" value="检 索" onclick="javascript:searchReturngoods();" /> </td>
+        <td colspan="2" align="right"> <input type="button" id="submit" value="导 出" onclick="javascript:exportReturngoods();"/> </td> 
+        <td colspan="2" align="right"> <input type="button" id="submit" value="实时可用库存" onclick="javascript:realTimeReserveNum();"/> </td>
+    </tr>
+     <!-- 
+    <tr>
+        <td colspan="4">
+            <span>导入文件的方式申请：方法1：输入检索条件 => 导出 => 按照模板的要求填写相关信息=>选择编辑的Excel=>导入EXCEL。
+            方法2：下载模板填写信息后导入文件,批量导入需要保证仓库一致，供应商不同会产生不同的批次</span>
+        </td>
+    </tr>
+    -->
+   </table>
+   
+   <div class="inner" style="text-align:right; padding-right:20px; border-bottom:#7F9FFF 2px solid;">
+		<br/>导入-gt申请文件：
+		<input type="file" id="fileToUpload" name="fileToUpload"/>
+		<input type="button" value="导入EXCEL" onclick="inport_return_list()"/>	
+		&nbsp;&nbsp;
+		<a href="template_dt_return.rar">批量导入模板下载</a>
+		<br/><br/>
+   </div>
+    
+   </div>
+    <div style="color:red;">{$sys_message}</div>
+   <!-- 退货商品详细 -->
+   <table id="ret_detail" cellpadding="5" cellspacing="1"  style="margin-left: 30px; width: 85%;"  class="bWindow"> 
+     <thead style="font-size: 12; ">
+         <tr style="font-weight: bold;">
+           
+            <td width="15%">商品名称</td>
+            <td width="17%">供应商</td>
+            <td width="8%">库存类型</td>
+            <td width="8%">业务类型</td>
+            <td width="10%">采购单价</td>
+            <td width="5%">币种</td>
+            <td width="8%">库存数量</td>
+            <td width="9%">可申请数量</td>
+            <td width="10%">仓库</td>
+            <td width="10%">操作</td>
+         </tr>
+     </thead>
+     <tbody></tbody>
+   </table>
+   <br/>
+   
+   <form method="post" action="supplier_dt_goods_request.php" id="returnForm" name="returnForm" onsubmit="return check(this);"> 
+   <input type="hidden" id="ret_goods_id" name="ret_goods_id" />
+   <input type="hidden" id="ret_style_id" name="ret_style_id" />
+   <input type="hidden" id="ret_original_id" name="ret_original_id" />
+   <input type="hidden" id="ret_facility_id" name="ret_facility_id" />
+   <input type="hidden" id="ret_status_id" name="ret_status_id" />
+   <input type="hidden" id="goods_item_type" name="goods_item_type" />
+   <input type="hidden" id="purchase_paid_amount" name="purchase_paid_amount" />
+   <input type="hidden" id="serial_number" name="serial_number" />
+   <input type="hidden" id="is_oversea_sales" name="is_oversea_sales" value='{$is_oversea_sales}' />
+   <input type="hidden" id="party_id" name="party_id" value='{$partyId}'/>
+   <input type="hidden" id="fchr_warehouse_id" name="fchr_warehouse_id"/> 
+   <input type="hidden" id="ret_facility_id_dt" name="ret_facility_id_dt" />
+   <input type="hidden" id="goods_name" name="goods_name" />
+   <input type="hidden" id="arrive_time_dc" name="arrive_time_dc" />
+   <table id="ret_excute" cellpadding="5" cellspacing="1"  style="margin-left: 30px; width: 70%" >
+      <tr style="height: 40px;">
+         <td colspan="2"><b><big>调拨信息：</big></b> </td>
+      </tr>
+      <tr>
+         <td>供应商：</td>
+         <td>
+            <input type="text" id="ret_provider" size="70"/>
+            <input type="hidden" id="ret_provider_id" name="ret_provider_id"/> 
+        </td> 
+      </tr>
+      <tr>
+         <td>订单类型：</td>
+         <td>
+           <select name="order_type_id" id="order_type_id">
+           <option value='SUPPLIER_TRANSFER' >转仓调拨</option>
+           </select>
+        </td>
+      </tr>
+      <tr>
+         <td>商品单价：</td>
+         <td><input style="width: 80px" name="goods_price" id="goods_price"/></td>
+      </tr>
+      <tr>
+         <td>币种：</td>
+         <td><input style="width: 80px" name="currency" id="currency" readonly="readonly" /></td>
+      </tr>
+      <tr>
+         <td>税率：</td>
+         <td>
+           {if $partyId=='65638'}
+           	<input style="width: 80px" name="goods_rate" id="goods_rate" value="1"/>
+           {else} 
+	       	<input style="width: 80px" name="goods_rate" id="goods_rate" value="1.17"/>
+	       {/if}
+         </td>
+      </tr>
+      <tr id="non_serialize">
+        <td>调拨数量 ：</td>
+        <td><input type="text" name="ret_amount" id="ret_amount" style="width: 80px" /> <input type="hidden" id="hid_amount" /> </td>
+      </tr>
+      {if $partyId=='65574'}
+	  <tr>
+	      <td>金宝贝退货仓库：</td>
+	      <td>
+	         <select id="fchrWareHouse" name="fchrWareHouse" >
+	             <option label="-- 请选择仓库 --" value="0" selected="selected" >-- 请选择仓库  --</option>
+	             {html_options options=$fchrWareHouse }
+	         </select> 
+	      </td>        
+	  </tr>
+	  {/if}
+      <tr>
+         <td>付款方式 ：</td>
+         <td>
+           {foreach from=$purchasePaidTypes item=type key=key} 
+             <input type="radio" class="radioItem" name="purchase_paid_type" value="{$key}" {if $key==1}checked{/if}/>{$type} 
+           {/foreach} 
+         </td>
+      </tr>
+      <tr id="tr_checkno"> </tr>
+      <tr>
+        <td>备注 ：</td>
+        <td><input type="text" name="remark" id="remark" style="width: 400px;"/></td>
+        <td><input type="hidden" name="need_check_number" id="need_check_number" value='{$need_check_number}'/></td>
+    </tr>
+    <tr id="serialize">
+        <td style="margin-top: 10px;">可退货明细 ：</td>
+        <td>
+        <table class="bWindow" width="500" id="serialize_goods_items">
+          <thead>
+            <tr>
+                <td width="10" align="center"><input type="checkbox" name="chk_all" id="chk_all" onchange="javascript:selectallchk(this);" /></td> 
+                <td width='120'>串号</td>
+                <td width='120'>有效期</td>
+            </tr>
+          </thead>  
+          <tbody> </tbody>  
+        </table>
+        </td>
+    </tr>
+      
+    <tr style="height: 80px;">
+       <td>&nbsp;</td>
+       <td >
+          <input type="submit" value=" 申请调拨" id="create_db_request" />&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+          <input type="reset" value=" 信息重填 "/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+          <input type="button" value=" 取 &nbsp; 消 " onclick="javascript:cancellatonFunc()"/>&nbsp; &nbsp; &nbsp; 
+          <input type="hidden" id="act" name="act" value="create_item"/> 
+       </td>
+    </tr>
+   </table>
+   </form>
+
+</fieldset>
+  <div class="load-wrapper" id="stop-action">
+      <div class="load-container">
+                <i class="fa fa-spinner fa-spin"></i>
+                <p>正在加载...</p>
+      </div>
+  </div>
+  <script type="text/javascript">
+{literal}
+//<![CDATA[
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "arrive_time",
+          button            : "arrive_time_trigger",
+          ifFormat          : "%Y-%m-%d %H:%M:%S",
+          daFormat          : "%Y-%m-%d %H:%M:%S"
+        });
+      //]]>
+{/literal}
+ </script>
+</body>
+</html>

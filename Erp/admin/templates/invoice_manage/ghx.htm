@@ -1,0 +1,27 @@
+<html>
+<head>
+<title>挂号信</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+	<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+{/if}
+<table>
+
+{foreach from=$invoicePrint item=invoice } 
+<tr>
+
+<div style="position:absolute;font-size:20pt;top:-18px;left:-38px;letter-spacing:25px;">{$invoice.zipcode}</div>
+
+<div style="position:absolute;font-size:15pt;top:60px;left:70px;">{if $invoice.province != ''}{$invoice.province_name}{$invoice.city_name}{$invoice.district_name}{/if}</div>
+<div style="position:absolute;font-size:15pt;top:85px;left:70px;">{$invoice.address}</div>
+
+<div style="position:absolute;font-size:18pt;top:115px;left:100px;">{$invoice.consignee}</div>
+<div style="position:absolute;font-size:15pt;top:118px;left:180px;">{$invoice.tel}</div>
+
+</tr>
+{/foreach}
+</table>
+</body>
+</html>

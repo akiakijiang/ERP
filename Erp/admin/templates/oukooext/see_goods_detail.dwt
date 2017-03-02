@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+.bWindow{width:750px !important}
+.bWindow td{padding:5px !important;}
+.brand_name a{margin:0 5px;}
+</style>
+{/literal}
+<title>查看商品</title>
+</head>
+
+<body>
+<p>
+	<a href="?goods_cagetory=1" {if $smarty.request.goods_cagetory == 1}style="color:red;"{/if}>手机</a> &nbsp;
+	<a href="?goods_cagetory=2" {if $smarty.request.goods_cagetory == 2}style="color:red;"{/if}>手机配件</a> &nbsp;
+	<a href="?goods_cagetory=3" {if $smarty.request.goods_cagetory == 3}style="color:red;"{/if}>小家电</a> &nbsp;
+	<a href="?goods_cagetory=4" {if $smarty.request.goods_cagetory == 4}style="color:red;"{/if}>DVD</a> &nbsp;
+	<a href="?goods_cagetory=5" {if $smarty.request.goods_cagetory == 5}style="color:red;"{/if}>电教产品</a> &nbsp;
+	<a href="?goods_cagetory=6" {if $smarty.request.goods_cagetory == 6}style="color:red;"{/if}>笔记本</a> &nbsp;
+	<form style="margin:10px 0;">
+	   商品名称：<input type="" name="goods_name">
+       <select name="goods_cagetory">
+         <option value="1">手机</option>
+		 <option value="2">手机配件</option>
+		 <option value="3">小家电</option>
+		 <option value="4">DVD</option>
+         <option value="5">电教产品</option>
+         <option value="6">笔记本</option>
+       </select>
+	   <input type="submit" value="搜索" />
+	</form>
+</p>
+{if $smarty.request.goods_cagetory == 1}
+<p class="brand_name">
+	<a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=5" {if $smarty.request.brand_id == 5}style="color:red;"{/if}>诺基亚</a>
+	<a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=17" {if $smarty.request.brand_id == 17}style="color:red;"{/if}>索尼爱立信</a>
+	<a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=7" {if $smarty.request.brand_id == 7}style="color:red;"{/if}>三星</a>
+	<a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=4" {if $smarty.request.brand_id == 4}style="color:red;"{/if}>摩托罗拉</a>
+	<a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=2" {if $smarty.request.brand_id == 2}style="color:red;"{/if}>多普达</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=3" {if $smarty.request.brand_id == 3}style="color:red;"{/if}>LG</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=154" {if $smarty.request.brand_id == 154}style="color:red;"{/if}>夏普</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=19" {if $smarty.request.brand_id == 19}style="color:red;"{/if}>天语</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=32" {if $smarty.request.brand_id == 32}style="color:red;"{/if}>联想</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=46" {if $smarty.request.brand_id == 46}style="color:red;"{/if}>夏新</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=39" {if $smarty.request.brand_id == 39}style="color:red;"{/if}>飞利浦</a>					
+</p>
+{/if}
+{if $smarty.request.goods_cagetory == 2}
+<p class="brand_name">
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=5" {if $smarty.request.brand_id == 5}style="color:red;"{/if}>诺基亚</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=17" {if $smarty.request.brand_id == 17}style="color:red;"{/if}>索尼爱立信</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=7" {if $smarty.request.brand_id == 7}style="color:red;"{/if}>三星</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=4" {if $smarty.request.brand_id == 4}style="color:red;"{/if}>摩托罗拉</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=2" {if $smarty.request.brand_id == 2}style="color:red;"{/if}>多普达</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=3" {if $smarty.request.brand_id == 3}style="color:red;"{/if}>LG</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=323" {if $smarty.request.brand_id == 323}style="color:red;"{/if}>飞毛腿</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=481" {if $smarty.request.brand_id == 481}style="color:red;"{/if}>SanDisk</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=487" {if $smarty.request.brand_id == 487}style="color:red;"{/if}>金士顿</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=502" {if $smarty.request.brand_id == 502}style="color:red;"{/if}>卡莱仕</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=459" {if $smarty.request.brand_id == 459}style="color:red;"{/if}>捷波朗</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=496" {if $smarty.request.brand_id == 496}style="color:red;"{/if}>卡登仕</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=517" {if $smarty.request.brand_id == 517}style="color:red;"{/if}>YooBao</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=515" {if $smarty.request.brand_id == 515}style="color:red;"{/if}>i.tech</a> 	 
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=531" {if $smarty.request.brand_id == 531}style="color:red;"{/if}>睿科</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=532" {if $smarty.request.brand_id == 532}style="color:red;"{/if}>讴歌</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=530" {if $smarty.request.brand_id == 530}style="color:red;"{/if}>Momax</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=324" {if $smarty.request.brand_id == 324}style="color:red;"{/if}>Kingmax</a>
+  <a href="?goods_cagetory={$smarty.request.goods_cagetory}&brand_id=500" {if $smarty.request.brand_id == 500}style="color:red;"{/if}>其他</a>		
+</p>
+{/if}
+<p><a href="goods_status_change.php?status=normal">查看今日开始到货商品</a> &nbsp; <a href="goods_status_change.php?status=shortage">查看今日开始缺货商品</a></p>
+	<table class="bWindow">
+	 {foreach from=$goods_list item=goods name=goodsList}
+	   {if $smarty.foreach.goodsList.first}
+    <tr>
+    	<th style="width:200px;">商品名称</th>
+			{if $goods.top_cat_id == 1}
+			<th>商品颜色</th>
+			{/if}
+			<th>售价</th>
+			{if $goods.top_cat_id == 1}
+			<th>移动版本库存数</th>
+			<th>非移动版本库存数</th>
+			{/if}
+			<th>总库存数</th>
+			<th>商品状态</th>
+			<th>详细状态</th>
+    </tr>
+      {/if}
+			{foreach from=$goods.style_list item=style name=styles}
+			<tr {if $smarty.foreach.goodsList.iteration%2==0}style="background:#eee"{/if}>
+				 {if $smarty.foreach.styles.first}
+				<td rowspan="{$smarty.foreach.styles.total}"><a href="http://www.ouku.com/goods{$goods.goods_id}" target="_blank">{$goods.goods_name}</a></td>
+				 {/if}
+        <td>{$style.color}</td>				 
+        <td>{$style.style_price|price_format}</td>				 
+				<td>{$style.mobile_cnt}</td>
+				<td>{$style.no_mobile_cnt}</td>
+				<td>{$style.storage_count}</td>
+				<td style="{if $style.sale_status == 'normal'}color:green;{/if}{if $style.sale_status == 'shortage'}color:red;{/if}">{$style.sale_status_name}</td>
+				<td>{$style.sale_status_detail}</td>
+			</tr>
+			{foreachelse}
+			<tr  {if $smarty.foreach.goodsList.iteration%2==0}style="background:#eee"{/if}>
+				<td><a href="http://www.ouku.com/goods{$goods.goods_id}" target="_blank">{$goods.goods_name}</a></td>
+				<td>{$goods.shop_price|price_format}</td>
+				{if $goods.top_cat_id == 1}
+				<td></td>
+				<td></td>
+				<td></td>
+				{/if}
+				<td>{$goods.storage_count}</td>
+				<td style="{if $goods.sale_status == 'normal'}color:reen;{/if}{if $goods.sale_status == 'shortage'}color:red;{/if}">{$goods.sale_status_name}</td>
+				<td>{$goods.sale_status_detail}</td>
+			</tr>
+			{/foreach}
+		{/foreach}
+	</table>
+	
+	
+{*
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+*}
+</body>
+</html>

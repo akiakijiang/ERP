@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品库位查询</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  <link rel="stylesheet" type="text/css" href="misc/thickbox.css" />
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+	
+<style type="text/css">
+<!--{literal}-->
+#cbt_list_tbl th {
+	background-color: #F7F4F0;/*F0EBE2*/
+}
+#cbt_list_tbl td {
+	background-color: #FFFFFF;
+}
+body {
+	font-family: 'Microsoft YaHei', monospace;
+}
+<!--{/literal}-->
+</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	// 已添加的订单商品  (可理解为JS端的购物车)
+	var order_goods_array = new Array();
+	// 初始化商品购物车
+	{foreach from=$cart_goods_list item=goods}
+	var _g = {ldelim}ix:'{$goods.goods_id}_{$goods.style_id}_{$goods.parent_id}', price:'{$goods.shop_price}', number:{$goods.quantity}, parent_id:{$goods.parent_id}{rdelim};
+	order_goods_array.push(_g);
+	{/foreach}
+	
+	// {literal}
+	
+	// 载入执行
+	$(document).ready(function(){
+
+		// 提交禁用按钮
+		$(':button, :submit').attr('disabled', false);
+		$('form').bind('submit', function(){
+		    $(':button, :submit').attr('disabled', true);
+		});
+		
+		// 绑定添加商品按钮事件
+		$('#search_pfl_btn').bind('click', search_pfl);
+		
+		/**
+		 * 商品搜索
+		 */
+		$('#search_pfl_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+			dataType : 'json',
+			minChars: 1,
+			delay: 1000,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#search_pfl_goods_id').val(row.goods_id);
+			change_goods_style_select_list(row.goods_id);
+		});
+		
+		/**
+		 * 如果更改了分类, 则改变商品的查询范围
+		 */
+		$('#search_pfl_category').bind('change', function(){
+			$('#search_pfl_select').val('');
+			$('#search_pfl_select').flushCache().setOptions({
+				extraParams : {'category':$(this).val()}
+			});
+		});
+		var init_category = $('#search_pfl_category').val();
+		if (init_category) {
+			$('#search_pfl_select').flushCache().setOptions({
+				extraParams : {'category':init_category}
+			});
+		}
+	});
+	
+	/**
+	 * 更改样式选择的下拉项
+	 *
+	 * @param int goods_id 商品ID 
+	 */
+	function change_goods_style_select_list(goods_id)
+	{
+		var $e = $('#search_pfl_style_id');
+		
+		$.ajax({
+     		    beforeSend : function(){
+				$e.attr('disabled', true);	
+			},
+			async : false,
+			dataType : "json",
+			data: "goods_id=" + goods_id,
+			url : WEB_ROOT + "admin/ajax.php?act=search_goods_styles",
+			type : 'POST',
+			success : function(response) {
+				if (response.length) {	
+					var tpl = '';
+					for (var i = 0; i < response.length; i++) {
+						tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+					}
+				} else {
+					tpl = '<option value="0">N/A</option>';	
+				}
+				$e.html(tpl);
+			},
+			complete : function() {
+				$e.attr('disabled', false);
+			}
+		});
+	}
+	
+	/**
+	 * 添加商品
+	 */
+	function search_pfl(event)
+	{
+		// 添加按钮
+		var $button = $('#search_pfl_btn');
+		waiting($button);
+		
+		// 取得传入的订单商品id
+		var goods_id = $('#search_pfl_goods_id').val();
+		if (!goods_id) {
+			alert('请先选择商品');
+			waiting($button, 'en');
+			return;
+		}
+		
+		// 取得传入的商品样式id
+		var style_id = $('#search_pfl_style_id').val();
+
+		// 查询出该商品详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'search_product_facility_location.php?request=ajax&act=search_pfl',
+			data: 'goods_id=' + goods_id + '&style_id=' + style_id,
+			dataType: 'json',
+			success: search_pfl_callback,
+			error: function() { 
+				waiting($button, 'en'); 
+				alert('查询该商品数据失败');
+			}
+		});
+		
+		// 添加商品到列表
+		function search_pfl_callback(data) {
+			if (data.error) {
+				alert(data.error);
+				waiting($button, 'en');
+				return;
+			}
+			
+			$('.fpl_tr').remove();
+			
+			for (i in data) {
+				var d = data[i];
+				var ix = d.LOCATION_SEQ_ID + '_' + d.MIN_QUANTITY + '_' + d.MOVE_QUANTITY;
+			    var tpl = "<tr align=\"center\" ix=\"" + ix + "\" bgcolor=\"#f9f9f9\" class=\"fpl_tr\">" +
+		  		    	  "  <td align=\"left\" style=\"padding-left:10px\">" + d.FACILITY_NAME + "</td>" +
+					      "  <td>" + d.LOCATION_SEQ_ID +"</td>" +
+    					  "  <td>" + d.MIN_QUANTITY + "</td>" +
+	    				  "  <td>" + d.MOVE_QUANTITY + "</td>" +
+				    	  "</tr>";
+                $('#cbt_list_tbl').append(tpl);
+			}
+
+			waiting($button, 'en');
+		}
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+
+	/**
+	 * 格式化金额
+	 */
+	function money_format(number) 
+	{
+		var num = Math.round(number * 100) / 100 ;
+		return num.toFixed(2);
+	}
+	
+	// {/literal}
+	// ]]>
+	</script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;-webkit-border-radius:6px;border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:16px; color:#4D4DE5;">&nbsp;商品库位查询&nbsp;</span></legend>
+  
+ 	<form method="post" id="form" action="sales_order_entry.php" >  
+
+  <div style="clear:both;">
+  
+      <!-- <h3 style="color:#09F;">商品库位查询</h3> -->
+  
+    	<table cellpadding="5" cellspacing="1" class="bWindow">
+
+      <tr>
+      	<td>商品</td>
+        <td>
+        	<input type="text" id="search_pfl_select" size="60" /> #<input type="text" id="search_pfl_goods_id" size="5" readonly="readonly" style="border:none;" /> &nbsp;&nbsp;
+          样式 <select id="search_pfl_style_id"><option value="0">N/A</option></select> &nbsp;
+				</td>
+      </tr>
+      
+      <tr>
+      	<td>&nbsp;</td>
+        <td><span class="tip">请输入商品名，如果自动提示没有响应您的输入，请尝试按向下方向键</span></td>
+      </tr>
+
+      <tr>
+      	<td></td>
+        <td>
+        	<input id="search_pfl_btn" type="button" value="查询" />
+		</td>
+      </tr>
+
+      </table>
+      
+      <h4>库位详情</h4>
+      <table id="cbt_list_tbl" class="bWindow">
+        <tr>
+          <th width="45%">仓库名称</th>
+          <th width="15%">库位</th>
+          <th width="12%">MIN_QUANTITY</th>
+          <th width="8%">MOVE_QUANTITY</th>
+        </tr>   
+
+      </table>
+      
+  </div>
+
+  <input type="hidden" name="act" value="done" />
+  
+  </form>
+  
+  
+</fieldset>
+
+</body>
+</html>

@@ -1,0 +1,1180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="../js/js/jquery.js"></script>
+<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+<link rel="stylesheet" href="../misc/autocomplete.css" />
+<script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="../js/Calendar3.js"></script>
+{literal}
+<script type="text/javascript">
+
+function E(id) {
+    return document.getElementById(id);
+}
+
+$(document).ready(function(){
+     /**
+     * 商品搜索
+    */
+   $('#goods_name_select').autocomplete('inventory_adjust_apply_v3.php?act=search_goods', {
+	   dataType : 'json',
+	   minChars: 0,
+	   mustMatch: false,
+	   formatItem : function(row, i, max, value, term) {
+	       return(row.goods_name);
+	   },
+	   formatResult : function(row) {
+	       return(row.goods_name);
+	   }
+	}).result(function(event, row, formatted) {
+	   $('#select_barcode').val(row.barcode);
+	   $('#select_goods_id').val(row.goods_id);
+	   $('#select_isserial').val(row.isserial);
+	   if (row.style_id == null) {
+	   		$('#select_style_id').val(0);
+	   }else{
+	   		$('#select_style_id').val(row.style_id);
+	   }
+	});
+
+	$('#goods_name_select').blur(function(){
+		    var goods_id = E('select_goods_id').value;
+		    var style_id = E('select_style_id').value;
+		    if (goods_id != '' && style_id != '') {
+ /*       $.ajax.call('order_lcji.php?act=search_price&goods_id=' + goods_id + '&style_id=' + style_id, '', searchPriceResonse, 'GET', 'JSON');
+	 */       $.get('inventory_adjust_apply_v3.php?act=search_price&goods_id=' + goods_id + '&style_id=' + style_id,"",
+					function (result){
+					    if (result.message) {
+					        alert(result.message);
+					    }
+					    if (result.error == 0) {
+					        var html = '';
+					        var arr = result.goods_price_list;
+					        var price_length = arr.length;
+					        if (price_length > 0) {
+					            for (var i = 0; i < price_length; i++) {
+					                html += '<li gid="' + arr[i] + '">' + arr[i] + '</li>';
+					            }
+					            E('price_list').innerHTML = html;
+					        } else {
+					            E('price_list').innerHTML = '<li gid="0">选择商家编码，勿手填</li>';
+					        }
+					    }
+					}
+	        	,"json");
+	 			$.get('inventory_adjust_apply_v3.php?act=isserial&goods_id=' + goods_id + '&style_id=' + style_id,"",
+					function (result){
+					    $('#select_isserial').val(result);
+					}
+	        	,"json");
+
+	 			var status_id = E('status_id').value;
+	 			var url = 'inventory_adjust_apply_v3.php?act=searchserialnumber&goods_id=' + goods_id + '&style_id=' + style_id +"&status_id="+status_id;
+		 		$('#serialnumber').autocomplete(url, {
+			           dataType : 'json',
+			           minChars: 0,
+			           mustMatch: false,
+			           formatItem : function(row, i, max, value, term) {
+			               return(row.serial_number);
+			           },
+			           formatResult : function(row) {
+			               return(row.serial_number);
+			           }
+			       }).result(function(event, row, formatted) {
+			           $('#serialnumber').val(row.serial_number);
+			       });
+
+	}});    
+}); 
+
+</script>
+{/literal}
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>调整单</title> 
+
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<link href="../styles/vapply.css" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+	{if $showall == 1}
+	<div class="container" id="v-container">
+
+		<div class="box-title" id="apply-title">
+			<h1>-V申请界面</h1>
+			<form action="template.xls" method="get">
+				<input type="submit" class="button" value="下载批处理模板" />
+			</form>
+			<input type="button" class="button" value="批量导入" id="pldr">
+		</div>
+		<input type="hidden" id="party_id" value={$user_current_party_id}>
+		
+		
+			
+			<div id="upload_modal">
+				<div class='vfile'>
+					<input type='text' name='vfileUrl' id='vfileUrl' class='input-file' placeholder='Select a file to upload ...' readonly="readonly">
+					<input type='file' name='fileToUpload' id='fileToUpload' class='upload' onchange='vfileUrl.value = this.value'>
+					<span>选择文件</span>
+				</div>
+				<!-- <input type="file" id="fileToUpload" name="fileToUpload"> -->
+				<input type="button" value="导入" class="button" id="uploadbutton" onclick="batch_v()">
+                 
+			</div>
+			
+            
+	        <h2>添加调整单商品</h2>
+			<table class="goods_list">
+				<tr>
+					<th class="td_goods_name">商家编码</th>
+					<th class="td_kc_status">库存状态</th>
+					<th class="td_number">数量(盘亏为负)</th>
+					<th class="td_price">单价</th>
+					<th class="td_total_price">总价</th>
+					<th class="td_serianumber">序列号(选填)</th>
+					<th class="td_reason">原因</th>
+					<th class="td_act">操作</th>
+				</tr>
+
+				<tr>
+					<td style="align: center">
+						<input type="text" id="goods_name_select"/>
+						<input type="hidden" id="select_goods_id">
+						<input type="hidden" id="select_style_id">
+						<input type="hidden" id="select_isserial">
+						<input type="hidden" id="select_barcode">
+					</td>
+					<td>
+						<select id="status_id" >
+							<option value="INV_STTS_AVAILABLE">正式库</option>
+							<option value="INV_STTS_USED">二手库</option>
+						</select>
+					</td>
+					<td>
+						<input type="text" value="" id="goods_number" style="width: 90px;"/>
+					</td>
+					<td>
+						<div style="position: relative">
+							<input type="text" value="" id="price" style="width: 100px;"
+								onkeyup="select_ele('price',event)"
+								onblur="leave_ele('price');" /> <input type="hidden"
+								value="" id="price_hidden" />
+							<ul id="price_list" style="display: none; width: 150px;background:#fff">
+								<li gid="0">请先选择商家编码，不要手填价格</li>
+							</ul>
+						</div>
+					</td>
+					<td id="goods_amount_td">自动显示</td>
+					<td>
+						<input type="text" id="serialnumber">
+					</td>
+					<td>
+						<input type="text" value="" style="width: 200px;"id="goods_reason"/>
+					</td>
+					<td>
+						<input type="button" value="添加" id="add_goods" onclick="add_goods()"/>
+					</td>
+				</tr>
+			</table>
+			
+
+			<form action="error.html" id="form1" method="POST">
+				<input type="hidden" value="create" name="act" />
+				<h2>待调整商品</h2>
+				<table class="goods_list">
+					<thead>
+						<tr>
+							<th class="td_number">商家编码</th>
+							<th class="td_serianumber">商品条码</th>
+							<th class="td_goods_name">商品名</th>
+							<th class="td_kc_status">库存状态</th>
+							<th class="td_number">数量(盘亏为负)</th>
+							<th class="td_price">单价</th>
+							<th class="td_serianumber">序列号</th>
+							<th class="td_reason">原因</th>
+							<th class="td_act">操作</th>
+						</tr>
+					</thead>
+					<tbody id="added_goods">
+					</tbody>
+				</table>
+				<span class="page_added first_page" value="home_page">首页</span>&nbsp;&nbsp;
+	    		<span class="page_added" value="pre_page">前一页</span>&nbsp;&nbsp;
+	    		<span class="page_added" value="next_page">后一页</span>&nbsp;&nbsp;
+	    		<span class="page_added" value="last_page">末页</span>&nbsp;&nbsp;&nbsp;&nbsp;
+	    		<span class="page_added" id="current_page">当前页</span>
+				<p>
+					<label for="facility_id">所在分仓： </label>
+					<select name="facility_id" id="facility_id">
+					    {html_options
+						    options=$available_facility 
+						    selected = '0'
+					    }
+					</select> 
+
+					<label>备注：</label>
+					<textarea name="comment" rows='5' cols='80' id="comment">{$comment}</textarea>
+					<input type="submit" class="button" value="生成调整单" onclick=" return check_added_goods_list(this);" />
+
+				</p>
+
+			</form>
+			<div id="errormsg"></div>
+
+		<div id = "error_message">
+		{if $error_message_array}
+			<p>操作信息</p>
+			<p>状态码：{$error_message_array.status}</p>
+			<p>概要：{$error_message_array.title}</p>
+			{foreach from=$error_message_array.msg item=message}
+				<p stype="color:red">{$message}</p>
+			{/foreach}
+		{/if}
+		</div>
+
+
+		<div type="hidden" id="keycode"></div>
+    </div>
+    {/if}
+    <div class="container" id="search-container">
+    	<div class="box-title">
+    		<h1>-V调整单搜索</h1>
+    	</div>
+    	<div>
+    		<form action="inventory_adjust_apply_v3.php" method="post" id="search_form">
+    			<p>
+    			    <label>订单申请日期：</label> 
+    				<span>从</span>
+    				<input name="start_display" type="text" id="start_display" size="10" maxlength="10" onclick="clearpagenum();new Calendar().show(this);" readonly="readonly" value='{$start_display}'/>
+    				<span>至</span>
+					<input name="end_display" type="text" id="end_display" size="10"
+					maxlength="10" onclick="clearpagenum();new Calendar().show(this);" readonly="readonly" value='{$end_display}'/> 
+                    
+					<label for="order_status">订单状态：</label>
+					<select name="order_status" id="order_status" onclick="clearpagenum()">
+						{html_options
+						    options = $all_order_status 
+						    selected = $order_status
+					    }
+					</select>
+
+					 {if false}   			
+    				<label for="allparty">我的所有组织：</label>
+					<input type="checkbox" name="allparty" id="allparty" {if $allparty == "checked"}checked="checked"{/if} onclick="clearpagenum()"/>
+					{/if}
+					{if $showall == 1}
+    				<label for="goods_name">商家编码：</label>
+    				<input type="text" name="goods_name" placeholder="请输入关键字查询" value="{$goods_name}" id="goods_name_search" size="30" onclick="clearpagenum()">
+    				{/if}
+    			</p>
+
+    			<p>
+    				<input type="hidden" id="search_goods_id" name="search_goods_id" value="{$search_goods_id}">
+    				<input type="hidden" id="search_style_id" name="search_style_id" value="{$search_style_id}">
+    				<label for="goods_name">barcode：</label>
+    				<input type="text" name="search_barcode" placeholder="请输入完整barcode" value="{$search_barcode}" id="search_barcode" size="30" >
+    				<label for="facility">仓库：</label>
+    				<select id="search_facility" name="search_facility" onclick="clearpagenum()">
+    					{html_options
+						    options = $available_facility 
+						    selected = $search_facility
+					    }
+    				</select>
+    				<label for="goods_name">订单号：</label>
+    				<input type="text" name="search_orderid" placeholder="输入订单号，则其他搜索条件失效" value="{$search_orderid}" id="search_orderid" size="28" >
+    				<input type="hidden" name="act" value="searchorder" id="search_act">
+    				<input type="hidden" name="page" value="{$page}" id="page">
+    				<input type="hidden" name="pagecount" value="{$pagecount}" id="pagecount">
+                    <input type="submit" id="sub_search" value="查询">
+                    <input type="submit"  value="下载csv" onclick="downsearchcsv()">
+    			</p>
+    			
+    		</form>
+            {foreach from=$return_just_now_order key=order_key item=order}
+    		<div class="order_box">
+    			<div class="order_info">
+    				<ul>
+    					<li><p>{$order.create_stmp}</p></li>
+    					<li><p>订单号:<a href="inventory_adjust_view_v3.php?act=view&order_id={$order.vorder_id}" class="vorder_id">{$order.vorder_id}</a></p></li>
+    					<li><p>{$order.party_name}</p></li>
+    					<li><p>{$order.facility_name}</p></li>
+    					<li><p>{$order.vorder_status}</p></li>
+    					<li><p>{$order.check_status}</p></li>
+    					<li><p>{$order.v_category}</p></li>
+    					
+    					<li>
+    						<p><a href="javascript:;" class="note_btn">审核意见</a></p>
+    						<ul class="note_nav note_nav_hidden">
+    						{foreach from=$order.notes key=notes_key item=notes}
+    						
+    							<li>{$notes.username}，{$notes.time}，{$notes.comment}</li>
+    						
+    						{/foreach}
+    					    </ul>
+    					</li>
+    					{if $order.delete == "1"}
+    					<li><p class="delete_order_btn" >取消订单</p></li>
+    					{/if}
+    				</ul>
+    				
+    			</div>  
+    			<div class="goods_info">
+    				<table class="goods_list">
+    					<tr>
+	    					<th>商家编码</th>
+	    					<th>商品条码</th>
+    						<th>商品名称</th>
+    						<th>商品状态</th>
+    						<th>商品序列号</th>
+    						<th>商品数量</th>
+    						{if $showall == 1}
+    						<th>现有库存</th>
+    						<th>商品单价</th>
+    						{/if}
+    						<th>-V原因</th>
+    						<th>是否出库</th>
+    						<th>删除商品</th>
+    					</tr>
+    					{foreach from=$order.goods_detail key=goods_key item=goods}
+    					<tr>
+    						<td>{$goods.shopcode}</td>
+    						<td>{$goods.barcode}</td>
+    						<td>{$goods.goods_name}</td>
+    						<td>{$goods.goods_status}</td>
+    						<td>
+    						{if $goods.goods_type_id == "NON-SERIALIZED"}
+    							无序列号
+    						{else}
+    							{$goods.serial_number}
+    						{/if}</td>
+    						<td>{$goods.goods_number}</td>
+    						{if $showall == 1}
+    						<td>{$goods.quantity_price}</td>
+    						<td>{$goods.goods_price}</td>
+    						{/if}
+    						<td>{$goods.reason}</td>
+    						<td>{$goods.adjustment}</td>
+    						<td>
+    							{if $goods.is_delete == "1"}
+    								<p>	已删除</p>
+    							{else}
+    								{if $order.delete == "1"}
+    									<p class="delete_goods_btn" id="delgoods_{$goods.rec_id}">删除</p>
+    								{else}
+    									<p> 未删除</p>
+    								{/if}
+    							{/if}
+    							
+    						</td>
+    					</tr>
+
+    					{/foreach}
+    					
+    					{assign var='len' value=$order.goods_detail|@count}
+    					{if $len == $limit_per_order}
+    					<tr>
+    						<td class="first_page"><a href="inventory_adjust_view_v3.php?act=view&order_id={$order.vorder_id}">商品数量太多，请移步这里</a></td>
+
+    					</tr>
+    					{/if}
+    				</table>
+    			</div>
+    		</div>
+    		{/foreach}
+    		<span class="page_search first_page" value="home_page">首页</span>
+    		<span class="page_search" value="pre_page">前一页</span>
+    		<span class="page_search" value="next_page">后一页</span>
+    		<span class="page_search" value="last_page">末页</span>
+    		<span>
+	    		第<select  class="page_search_num" value="num">
+	    			{html_options
+					    options = $page_array 
+					    selected = $page
+				    }
+	    		</select>页
+    	    </span>
+            <span>共{$recordcount}条记录</span> 
+    	</div>
+
+    </div>
+    <form action="inventory_adjust_apply_v3.php" method="POST" id="create_hidden">
+    	
+    </form>
+<script>
+{literal}
+$(document).ready(function(){
+	var pldr = $("#pldr");
+	var upload_modal = $("#upload_modal");
+	pldr.click(function(event){
+		event.stopPropagation();
+		upload_modal.animate({
+			"top":0,
+			"opacity":1
+		},"normal");
+	});
+	$(document).bind("click",function(e){
+		var target  = $(e.target);//表示当前对象，切记，如果没有e这个参数，即表示整个BODY对象
+		if(target.closest("#upload_modal").length == 0){
+			upload_modal.animate({
+				"top":"-30px",
+				"opacity":0
+			},"fast");
+		}
+	});
+
+	$(".note_btn").click(function(){
+		var i = $(".note_btn").index(this);
+		$(".note_nav").eq(i).toggleClass("note_nav_hidden");
+	});
+
+	$(".delete_order_btn").click(function(){
+		if(!confirm("你确定删除订单吗？删除后无法恢复。")){
+			return false;
+		}
+		var _this = $(this);
+		var data = "act=cancelorder&key=" + _this.parents(".order_info").find(".vorder_id").text();
+		$.ajax({
+			url:"inventory_adjust_apply_v3.php",
+			type:"get",
+			dataType:"json",
+			data:data,
+			success:function(data){
+				if (data.msg == "ok") {
+					alert("删除订单成功");
+					_this.parents(".order_info").parents('.order_box').remove();
+				}else{
+					alert(data.msg);
+				}
+			},
+			error:function(data){
+				alert("ajax error");
+			}
+		});
+	});
+
+	$(".delete_goods_btn").click(function(){
+		if(!confirm("你确定删除商品吗？删除后无法恢复。")){
+			return false;
+		}
+		var _this = $(this);
+		var idstr = ((_this.attr('id')).split("_"))[1];
+		var data = "act=deletegoods&key=" + idstr;
+		$.ajax({
+			url:"inventory_adjust_apply_v3.php",
+			type:"post",
+			dataType:"json",
+			data:data,
+			success:function(data){
+				if (data.msg != "ok") {
+					alert(data.msg);
+				}else{
+					_this.parents("td").html("<p>已删除</p>");
+				}
+			},
+			error:function(data){
+				alert("ajax error");
+			}
+		});
+	});
+	$(".page_search").click(function(){
+		var _this = $(this);
+		var formtag = $('#search_form');
+		var pagetag = $('#page');
+		if ($('#page').val() == "") {
+			$('#page').val("1");
+		}else{
+			var page = parseInt($('#page').val());
+			if (_this.attr("value") == "pre_page" && page > 1) {
+				$('#page').val(page-1);
+			}
+			if (_this.attr("value") == "pre_page" && page <= 1) {
+				$('#page').val(1);
+			}
+			if (_this.attr("value") == "next_page") {
+				$('#page').val(page+1);
+			}
+			if (_this.attr("value") == "home_page") {
+				$('#page').val(1);
+			}
+			if (_this.attr("value") == "last_page") {
+				$('#page').val($('#pagecount').val());
+			}
+		}
+		formtag.submit();
+	});
+	$(".page_search_num").change(function(){
+		var _this = $(this);
+		var formtag = $('#search_form');
+		var pagetag = $('#page');
+		if ($('#page').val() == "") {
+			$('#page').val("1");
+		}else{
+			$('#page').val(_this.attr("value"));
+		}
+		formtag.submit();
+	});
+	$('#goods_name_search').autocomplete('inventory_adjust_apply_v3.php?act=search_goods', {
+	   dataType : 'json',
+	   minChars: 0,
+	   mustMatch: false,
+	   formatItem : function(row, i, max, value, term) {
+	       return(row.goods_name);
+	   },
+	   formatResult : function(row) {
+	       return(row.goods_name);
+	   }
+	}).result(function(event, row, formatted) {
+	   $('#search_goods_id').val(row.goods_id);
+	   if (row.style_id == null) {
+	   		$('#search_style_id').val(0);
+	   }else{
+	   		$('#search_style_id').val(row.style_id);
+	   }
+	});
+
+	$(".page_added").click(function(){
+		var _this = $(this);
+		
+		if (_this.attr("value") == "pre_page" && added_goods_list_page > 1) {
+			added_goods_list_page--;
+		}
+		if (_this.attr("value") == "pre_page" && added_goods_list_page <= 1) {
+			added_goods_list_page = 1;
+		}
+		if (_this.attr("value") == "next_page" && added_goods_list_page < added_goods_list_pagecount ) {
+			added_goods_list_page++;
+		}
+		if (_this.attr("value") == "next_page" && added_goods_list_page >= added_goods_list_pagecount ) {
+			added_goods_list_page = added_goods_list_pagecount;
+		}
+		if (_this.attr("value") == "home_page") {
+			added_goods_list_page = 1;
+		}
+		if (_this.attr("value") == "last_page") {
+			added_goods_list_page = added_goods_list_pagecount;
+		}
+		redraw_table();
+	});
+
+});
+
+
+
+var process_request = '';
+var oldkeyword = '';
+var last_goods;
+var is_calling = false;
+var added_goods_list = new Array();
+var added_goods_list_page = 1;
+var added_goods_list_pagecount = 1;
+var added_goods_list_limit = 25;
+var need_check_style = false;
+var last_style;
+
+
+
+
+
+var contrl = {
+    tmp : '', //  input里的值默认值
+    num : -1, //  li的所在的列数
+}
+
+
+function checkdate(start_date,end_date){
+	var start_str = E(start_date).value.toString();
+	var end_str = E(end_date).value.toString();
+	if (start_str == "" || end_str == ""){
+		alert("请填写时间");
+		return false;
+	}
+	return true;	
+}
+
+
+function check_added_goods_list(obj) {
+    var trs = E('added_goods').getElementsByTagName('tr');
+    if(trs.length == 0) {
+        alert('没有添加要调整的商品');
+        return false;
+    }
+    if (E('comment').value == '') {
+        alert('请填写调整单的原因');
+        return false;
+    }
+    var comment = E('comment').value;
+    var i = 0;
+    for(i = 0; i < added_goods_list.length; i++){
+    	if(added_goods_list[i][6] == 'SERIALIZED'){
+    		if (added_goods_list[i][7] == null) {
+    			alert("序列号商品没有填写序列号");
+    			return false;
+    		}
+    		if (added_goods_list[i][4] !=-1 && added_goods_list[i][4] != 1) {
+    			alert("序列号商品数量仅仅为 1 or -1");
+    			return false;
+    		}
+    	}
+
+    }
+    if (added_goods_list.length > 30 && added_goods_list.length <= 350) {
+    	alert("您申请的商品个数较多，系统处理速度较慢（如果失败会有提示），请耐心等待,不要重复提交！");
+    }
+    if (added_goods_list.length > 350) {
+    	alert("一次性最多申请350个商品！");
+    	return false;
+    }
+    var postdata = inv_2array(added_goods_list);
+    var facility_id = $("#facility_id").val();
+    if (facility_id == 0) {
+    	alert("请选择具体仓库");
+    	return false;
+    }
+    if (added_goods_list.length > 200) {
+    	var now=new Date();
+    	var number = now.getSeconds()%3;
+    	var happy = new Array();
+    	happy[0] = "下面题目中，哪个数字与众不同？请圈出来。6839725。";
+    	happy[1] = "“叮叮叮 叮叮叮”是3×2=6；“叮叮 叮叮 叮叮”是多少";
+    	happy[2] = "一个四位数ABCD*9=DCBA，ABCD=?";
+    	document.open();
+		document.clear();
+		var viewstr = "数量较大会导致处理时间较长,请勿刷新<br/><br/>";
+		viewstr += happy[number];
+		document.write(viewstr);
+		document.close();
+    }
+    
+	$.ajax({
+		url:"inventory_adjust_apply_v3.php",
+		type:"post",
+		dataType:"html",
+		data: {act: 'create',goods_id:postdata[1],style_id:postdata[2],status:postdata[3],count:postdata[4],price:postdata[5],type:postdata[6],serialnumber:postdata[7],reason:postdata[8],facility_id:facility_id,comment:comment},
+		traditional: false,
+		timeout: 240000,
+		success:function(data){
+			 document.open();
+			 document.clear();
+			 document.write(data);
+			 document.close();
+		},
+		error:function(data){
+			alert("调用ajax失败，返回："+data);
+		}
+	});
+    return false;
+}
+
+
+function inv_2array(ori_array){
+	var row = ori_array.length;
+	var col = ori_array[0].length;
+	var new_2array = new Array();
+	for (var j = 0; j < col; j++) {
+		new_2array.push(new Array());
+	}
+	for (var i = 0; i < row; i++) {
+		for (var j = 0; j < col; j++) {
+			new_2array[j].push(ori_array[i][j]);
+		}
+	}
+	return new_2array;
+}
+
+
+function add_goods() {
+    if(!/^(\d+)$/.test(E('select_goods_id').value)) {
+        E('goods_name_select').focus();
+        alert('请从列表中选择商家编码，不要手填，防止人为错误');
+        return false;
+    }
+    
+    if(!/^(-)?(\d+)$/.test(E('goods_number').value)) {
+        E('goods_number').focus();
+        alert('请输入正确的商品数量');
+        return false;
+    }
+    
+    if(!/^[0-9]([0-9]*\.*[0-9]+)?$/.test(E('price_hidden').value)) {
+        E('price').focus();
+        alert('请输入正确的商品价格（仅能是数字和.的字符串，需要从列表中选择），'+ E('price_hidden').value);
+        return false;
+    }
+/*    
+    
+    if (!E('goods_reason').value.trim()){
+    	alert("请填写备注");
+    	return false;
+    }*/
+
+
+    var added_goods = new Array();
+    
+    added_goods[0] = E('goods_name_select').value;
+    added_goods[1] = E('select_goods_id').value;
+    added_goods[2] = E('select_style_id').value;
+    added_goods[3] = E('status_id').value;
+    added_goods[4] = E('goods_number').value;
+    added_goods[5] = E('price_hidden').value;
+    added_goods[6] = E('select_isserial').value;
+    added_goods[7] = E('serialnumber').value;
+    added_goods[8] = E('goods_reason').value;
+    added_goods[9] = E('select_barcode').value;
+
+	added_goods_list.push(added_goods);
+	repagecount();
+	added_goods_list_page = added_goods_list_pagecount;
+    redraw_table();
+    
+    E('goods_name_select').value = '';
+    E('select_goods_id').value = '';
+    E('select_style_id').value = '';
+    E('goods_number').value = '';
+    E('price').value = '';
+    E('price_hidden').value = '';
+    E('goods_amount').innerHTML = '';
+    E('serialnumber').value = '';
+    E('goods_reason').value = '';
+    E('select_barcode').value = '';
+    E('goods_name_select').focus();
+   
+}
+
+function repagecount(){
+	var len = added_goods_list.length;
+	var pagecount = parseInt(len/added_goods_list_limit);
+	if (len%added_goods_list_limit > 0) {
+		pagecount ++;
+	}
+	added_goods_list_pagecount = pagecount;
+}
+
+function redraw_table() {
+    var i = 0;
+    var html = '';
+    var total = 0;
+
+    if (added_goods_list_page > added_goods_list_pagecount) {
+    	added_goods_list_page = added_goods_list_pagecount;
+    }
+
+    var start = (added_goods_list_page-1)*added_goods_list_limit;
+    var end   =	added_goods_list_page*added_goods_list_limit;
+    if (end > added_goods_list.length ) {
+    	end = added_goods_list.length ;
+    }
+    var added_goods_list_view = added_goods_list.slice(start,end);
+    repagecount();
+    for(i = 0; i < added_goods_list_view.length; i++) {
+        added_goods = added_goods_list_view[i];
+        //	    alert(added_goods);
+        var shopcode = ""+added_goods[1];
+        if (added_goods[2] != 0) {
+        	shopcode += "#"+added_goods[2];
+        }
+        html += "<tr><td>" + shopcode + "</td>"; //商家编码
+        html += "<td>" + added_goods[9] + "</td>"; //barcode
+        html += "<td>" + added_goods[0] + "</td>"; //goods_name
+         
+        if (added_goods[3] == 'INV_STTS_AVAILABLE') {
+        	html += "<td>正式库</td>";
+        }else if(added_goods[3] == 'INV_STTS_USED'){
+        	html += "<td>二手库</td>";
+        }else{
+        	html += "<td>" + added_goods[3] + "</td>";
+        }
+        html += "<td>" + added_goods[4] + "</td>"; //goods_number
+        html += "<td>" + added_goods[5] + "</td>"; //goods_price
+        // html += "<td>" + added_goods[6] + "</td>"; //goods_amount
+        html += '<td>' + added_goods[7] + "</td>"; //status_name
+        html += '<td>' + added_goods[8] + "</td>"; //goods_reason
+        html += '<td><input type="button" value="删除" onclick="remove_added_goods(' + i + ')" />';
+        html += '<input type="hidden" name="goods_id[]" value="' +added_goods[1]+ '" >';
+        html += '<input type="hidden" name="style_id[]" value="' +added_goods[2]+ '" >';
+        html += '<input type="hidden" name="count[]" value="' +added_goods[4]+ '" >';
+        html += '<input type="hidden" name="price[]" value="' +added_goods[5]+ '" >';
+        html += '<input type="hidden" name="amount[]" value="' +(added_goods[4]*added_goods[5])+ '" >';
+        html += '<input type="hidden" name="type[]" value="' +added_goods[6]+ '" >';
+        html += '<input type="hidden" name="serialnumber[]" value="' +added_goods[7]+ '" >';
+        html += '<input type="hidden" name="status[]" value="' +added_goods[3]+ '" >';
+        html += '<input type="hidden" name="reason[]" value="' +added_goods[8]+ '" >';
+        html += '</td></tr>';
+    }
+    var current_page = $('#current_page');
+    current_page.text("当前"+added_goods_list_page+"/"+added_goods_list_pagecount+"页||共"+added_goods_list.length+"项");
+    E('added_goods').innerHTML = html;
+
+}
+
+function remove_added_goods(i) {
+    added_goods_list.remove(i);
+    repagecount();
+    if (added_goods_list_page > added_goods_list_pagecount) {
+    	added_goods_list_page = added_goods_list_pagecount;
+    }
+    redraw_table();
+}
+
+function select_radio(radio_name) {
+    var radio = document.getElementsByName(radio_name);
+    for(var i=0;i<radio.length;i++) {
+        if (radio[i].checked) {
+            return(radio[i].value);
+            break;
+        }
+    }
+    return null;
+}
+
+Array.prototype.remove=function(dx)
+{
+    if(isNaN(dx)||dx>this.length){return false;}
+    for(var i=0,n=0;i<this.length;i++)
+    {
+        if(this[i]!=this[dx])
+        {
+            this[n++]=this[i]
+        }
+    }
+    this.length-=1
+}
+Array.prototype.in_array=function(ele)
+{
+    for(var i=0,n=0;i<this.length;i++) {
+        if(this[i] == ele) {
+            return true;
+            break;
+        }
+    }
+    return false;
+}
+
+function select_ele(id,e){
+    var evt = e || window.event;
+    E(id+'_list').style.display = '';
+    var oli = E(id+'_list').getElementsByTagName('li');
+    if (oli.length > 0) {
+        if (evt.keyCode == 40){
+            if (contrl.num < oli.length){
+                contrl.num++;
+            }
+            if( contrl.num == oli.length){
+                contrl.num = 0;
+                oli[oli.length-1].style.background = '#fff';
+                oli[oli.length-1].style.color = '#000';
+            }
+
+            if (contrl.num >=0 && contrl.num < oli.length){
+                if (contrl.num !=0 ){
+                    oli[contrl.num-1].style.background = '#fff';
+                    oli[contrl.num-1].style.color = '#000';
+                }
+
+                oli[contrl.num].style.background = '#36c';
+                oli[contrl.num].style.color = '#fff';
+                contrl.tmp = E(id).value = oli[contrl.num].innerHTML;
+            }
+        }else if(evt.keyCode == 38){
+            if(contrl.num >= 0){
+                contrl.num--;
+            }
+            if(contrl.num == -1){
+                contrl.num = oli.length-1;
+                oli[0].style.background = '#fff';
+                oli[0].style.color = '#000';
+            }
+            if(contrl.num < oli.length-1){
+                oli[contrl.num+1].style.background = '#fff';
+                oli[contrl.num+1].style.color = '#000';
+            }
+            if(contrl.num >= 0){
+                oli[contrl.num].style.background = '#36c';
+                oli[contrl.num].style.color = '#fff';
+                contrl.tmp = E(id).value = oli[contrl.num].innerHTML;
+            }
+
+        }
+
+        if(contrl.num >= 0 && contrl.num < oli.length && id != "goods_price"){
+            E(id+'_hidden').value = oli[contrl.num].attributes['gid'].value;
+        }
+    }
+}
+
+function leave_ele(id) {
+    contrl.num = -1;
+    contrl.tmp = '';
+    E(id+'_list').style.display = 'none';
+}
+function key_event(e,code,fuc){
+    var evt = e || window.event;
+    //E('keycode').innerHTML = e.keyCode;
+    if(evt.ctrlKey && evt.shiftKey && evt.keyCode == code){
+        fuc();
+    }
+}
+
+var go_style = function(){
+    E('style').focus();
+}
+
+function fill_goods_list() {
+    var keyword = E("goods").value;
+    E('oldkeyword').innerHTML = ("keyword:" + keyword + " oldword: " + oldkeyword + keyword.indexOf(oldkeyword) + ' ' );
+    if (keyword != '') {
+        if( last_goods && keyword.toUpperCase().indexOf(oldkeyword.toUpperCase()) != -1 ) { // 如果新输入的关键词包含老的关键词，那么不需要ajax call了
+            var html = '';
+            //        E('oldkeyword').innerHTML += 'inin9i ';
+            var goodsCnt = last_goods.length;
+            for (var i = 0; i < goodsCnt; i++)
+            {
+                if(last_goods[i].name.toUpperCase().indexOf(keyword.toUpperCase()) != -1) { // 如果商品名中有新的关键词，那么就留下
+                    html += '<li gid="' + last_goods[i].goods_id + '">' + last_goods[i].name + '</li>';
+                }
+            }
+            E('goods_list').innerHTML = html;
+        } else {
+            setTimeout(searchGoods, 500);
+        }
+    }
+}
+
+
+function searchGoods() {
+    if(!is_calling) {
+        is_calling = true;
+        var keyword = E("goods").value;
+        if (keyword != '' && keyword != oldkeyword) {
+            Ajax.call('../order.php?act=search_goods&extend=include_not_on_sale&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+            oldkeyword = keyword;
+        } else {
+            is_calling = false;
+        }
+    }
+}
+
+function searchGoodsResponse(result)
+{
+    is_calling = false;
+    if (result.message.length > 0)
+    {
+        alert(result.message);
+    }
+    if (result.error == 0)
+    {
+        var html = '';
+        var arr = result.goodslist;
+        var goodsCnt = arr.length;
+        if (goodsCnt > 0)
+        {
+            for (var i = 0; i < goodsCnt; i++)
+            {
+                html += '<li gid="' + arr[i].goods_id + '">' + arr[i].name + '</li>';
+            }
+            last_goods = arr;
+            E('goods_list').innerHTML = html;
+        }
+    }
+}
+
+function fill_style_list() {
+    searchGoodsStyle();
+}
+function searchGoodsStyle() {
+    var goods_id = E('goods_hidden').value;
+    if (goods_id != '') {
+        Ajax.call('../order.php?act=search_goods_style&no_storage_info=true&goods_id=' + goods_id , '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+}
+
+function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0) {
+        alert(result.message);
+    }
+    if (result.error == 0) {
+        var html = '';
+        var arr = result.goods_style_list;
+        var style_length = arr.length;
+        if (style_length > 0) {
+            last_style = new Array();
+            for (var i = 0; i < style_length; i++) {
+                last_style.push(arr[i].style_id);
+                html += '<li gid="' + arr[i].style_id + '">' + arr[i].color + '</li>';
+            }
+            E('style_list').innerHTML = html;
+            //        need_check_style = true;
+        } else {
+            last_style = new Array();
+            last_style.push(0);
+            E('style_list').innerHTML = '<li gid="0">无颜色</li>';
+            E('style').value = '无颜色';
+            E('style_hidden').value = 0;
+            //        need_check_style = false;
+        }
+    }
+}
+
+function fill_provider_list() {
+    var provider = E('provider').value;
+    var html = '';
+    var provider_name = '';
+    for(var i = 0; i < providers.length; i++) {
+        provider_name = providers[i][2];
+        if(providers[i][1].toUpperCase().indexOf(provider.toUpperCase()) != -1 || provider_name.toUpperCase().indexOf(provider.toUpperCase()) != -1)
+        html += '<li gid="' + providers[i][0] + '">' + provider_name + '</li>'
+    }
+    E('provider_list').innerHTML = html;
+}
+
+function changeProvider() {
+    var provider = E('provider').value;
+    var pid = E('provider_hidden').value;
+    if (pid == '') {
+        E('order_type_text').innerHTML='请选择供应商';
+    } else {
+        E('order_type').value = order_type[pid];
+        E('order_type_text').innerHTML= ' 订单类型：' + order_type[pid];
+    }
+}
+
+function fill_purchasers() {
+    var purchaser = E('purchaser').value;
+    var html = '';
+    var matched = 0;
+    var matched_i = 0;
+    for(var i = 0; i < purchasers.length; i++) {
+        if(purchasers[i].toUpperCase().indexOf(purchaser.toUpperCase()) != -1 || purchaser == '') {
+            html += '<li gid="' + purchasers[i] + '">' + purchasers[i] + '</li>';
+            matched++;
+            matched_i = i;
+        }
+    }
+    if(matched == 1) { E('purchaser_hidden').value = purchasers[matched_i];  }
+    E('purchaser_list').innerHTML = html;
+}
+
+
+
+
+E('goods_name_select').addEventListener('keydown', function(e){
+		var evt = e || window.event;
+/*		fill_price_list();*/
+		if(evt.keyCode == 13) { 
+			E('status_id').focus(); 
+		}else {
+		} 
+	}, false); 
+
+E('status_id').addEventListener('keydown', function(e){
+	var evt = e || window.event;
+	if(evt.keyCode == 13) 
+		E('goods_number').focus(); 
+	}, false);
+E('goods_number').addEventListener('keydown', function(e){
+	var evt = e || window.event;
+	if(evt.keyCode == 13) { 
+		E('price').focus();  
+		} 
+	}, false);
+E('price').addEventListener('keydown', function(e){
+	var evt = e || window.event;
+	if(evt.keyCode == 13) {
+		E('serialnumber').focus(); 
+		var count = parseFloat(E("goods_number").value);
+		var price = parseFloat(E("price").value);
+		var html = ""+count*price + "<input type='hidden' id='goods_amount' value='"+count*price+"' />"
+		E("goods_amount_td").innerHTML = html;
+	}
+	}, false);
+E('price').addEventListener('click', function(e){
+
+	$("#price_list").show();
+}, false);
+E('serialnumber').addEventListener('keydown', function(e){
+	var evt = e || window.event;
+	if(evt.keyCode == 13) 
+		E('goods_reason').focus(); 
+	}, false);
+
+
+
+function batch_v(){
+	$.ajaxFileUpload({
+		url:'inventory_adjust_apply_v3.php?act=batchupload',
+		secureuri:false, 
+		fileElementId:'fileToUpload',
+		dataType: 'json',
+		timeout: 120000,
+		success: function (data)
+		{
+ 			if(data.msg.statuscode == 0)
+			{
+ 				var content = data.content;
+ 				var i = 0;
+ 				
+ 				for(i = 0; i < content.length; i++){
+ 					var goods = new Array();
+ 					goods[0] = content[i].goods_name.toString();
+ 					goods[1] = content[i].goods_id.toString();
+ 					goods[2] = content[i].style_id.toString();
+					goods[3] = content[i].status_id.toString();
+					goods[4] = content[i].goods_number.toString();
+					goods[5] = content[i].price.toString();
+ 					goods[6] = content[i].goods_item_type_id.toString();
+ 					goods[7] = content[i].serialnumber;
+ 					goods[8] = content[i].comment.toString();
+ 					goods[9] = content[i].barcode;
+ 					added_goods_list.push(goods); 
+ 				}
+ 				repagecount();
+ 				added_goods_list_page = 1;
+				redraw_table();
+				E("errormsg").innerHTML = "";
+			}else{
+				redraw_error(data.msg);
+			} 
+
+		},
+		error: function (data, status, e)
+		{
+			alert("方法调用错误，请联系ERP组");
+		}
+	});
+}
+
+function redraw_error(errormsg){
+	var html = "";
+	html += "<p style='color:red'>操作码："+errormsg.statuscode+"</p>";
+	html += "<p tyle='color:red'>概要："+errormsg.title+"</p>";
+	html += "<p tyle='color:red'>"+errormsg.msg+"</p>";
+	E("errormsg").innerHTML = html;
+}
+
+function downsearchcsv(){
+	if ($("#pagecount").val() == "") {
+		alert("请先搜索出需要导入csv的订单");
+		return false;
+	}
+	$('#search_act').val('downcsv');
+	$('#search_form').submit();
+	return false;
+}
+
+function clearpagenum(){
+	$("#page").val("1");
+}
+
+
+
+{/literal}
+</script>
+		<div id="oldkeyword"></div>
+
+	</div>
+</body>
+</html>

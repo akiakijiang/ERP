@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>返利列表</title>
+
+<script type="text/javascript">
+{literal}
+var process_request = '..';
+{/literal}
+</script>
+</head>
+
+<body>
+<h3>返利查询</h3>
+<form>
+<p>供应商　
+  <select name="supplierId" id="supplierId">
+  <option value="">全部</option>
+  {foreach from=$providers item=provider}
+  <option value="{$provider.provider_id}" {if $provider.provider_id == $smarty.request.supplierId}selected="true"{/if}>{$provider.provider_name}</option>
+  {/foreach}
+  </select>
+  返利创建人
+  <input name="createdByUserLogin" value="{$smarty.request.createdByUserLogin}" onclick="if(this.value == '')  this.value='{$smarty.session.admin_name}'; " /> (erp登录帐号)
+</p>
+<p>
+  商品型号
+    <input style="width:80px" type="text" id="keyword" value="" />
+    <input type="button" id="search" name="search" value="{$lang.button_search}" onclick="searchGoods();" />
+  	<select name="goods_id" onchange="searchGoodsStyle(this)" id="goods_id"></select>
+  	<select name="style_id" id="style_id"></select>
+</p>
+<p>
+    返利类型
+    <select name="supplierRebateTypeId" id="supplierRebateTypeId" onchange="changesupplierRebateTypeId(this)">
+    <option value="">全部</option>
+    {html_options options=$supplierRebateTypeId_enum selected=$smarty.request.supplierRebateTypeId}
+    </select>
+    </label>
+返利的状态
+  <select name="supplierRebateStatusId" id="supplierRebateStatusId">
+  <option value="">全部</option>
+  {html_options options=$supplierRebateStatusId_enum selected=$smarty.request.supplierRebateStatusId}
+  </select>
+返利的形式
+  <select name="supplierRebateModeId" id="supplierRebateModeId">
+  <option value="">全部</option>
+  {html_options options=$supplierRebateModeId_enum selected=$smarty.request.supplierRebateModeId}
+    </select>
+</p>
+<p>
+返利创建时间
+  从 <input type="text" name="createdTimeMin" id="createdTimeMin" value="{$smarty.request.createdTimeMin}" />  
+  <input type="button" name="createdTimeMin_btn" id="createdTimeMin_btn" value="..." />
+  到 <input type="text" name="createdTimeMax" id="createdTimeMax" value="{$smarty.request.createdTimeMax}" />
+  <input type="button" name="createdTimeMax_btn" id="createdTimeMax_btn" value="..." />
+</p>
+
+<!--<p>
+按 
+<select name="sort">
+    <option value="">默认</option>
+    {html_options options=$sort_enum selected=$smarty.request.sort}
+</select> 排序
+</p>-->
+<input type="submit" name="s" value="查询" />
+</form>
+<h3><a href="supplier_rebate_detail.php?act=create">新建返利</a></h3>
+<table class="bWindow">
+<tr><td>返利ID</td><td>描述</td><td>供应商</td><td>返利状态</td><td>操作</td><td>返利创建人</td><td>预期返利金额</td><td>确认返利金额</td><td>已收返利金额</td><td>返利类型</td><td>返利形式</td><td>建立时间</td></tr>
+<tr><td>该页返利总计</td><td></td><td></td><td></td><td></td><td></td><td>抵扣货款：￥ {$sumDeductedExpectedAmount}<br />现金返利：￥ {$sumInvoicepaidExpectedAmount}</td><td>抵扣货款：￥ {$sumDeductedConfirmedAmount}<br />现金返利：￥ {$sumInvoicepaidConfirmedAmount}</td><td>抵扣货款：￥ {$sumDeductedReceivedAmount}<br />现金返利：￥ {$sumInvoicepaidReceivedAmount}</td><td></td><td></td><td></td></tr>
+{foreach from=$SupplierRebates item=SupplierRebate key=productId name=SupplierRebates}
+<tr {if $smarty.foreach.SupplierRebates.iteration % 2 eq 0}bgcolor="#EFEFEF"{/if}>
+<td><a href="supplier_rebate_detail.php?supplierRebateId={$SupplierRebate->supplierRebateId}">{$SupplierRebate->supplierRebateId}</a></td>
+<td>{$SupplierRebate->description_summary}</td>
+<td>{if check_admin_priv('check_provider')}{$SupplierRebate->supplierName}{else}××××××{/if}</td>
+<td>{$SupplierRebate->supplierRebateStatusId_description}</td>
+<td>
+{if $SupplierRebate->supplierRebateStatusId == 'UNPAID' }
+
+{if $SupplierRebate->supplierRebateModeId == 'DEDUCTED'}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'confirm', '{$SupplierRebate->supplierRebateModeId}', '{$SupplierRebate->expectedAmount}'); return false;">确认抵扣货款金额</a>
+{/if}
+{if $SupplierRebate->supplierRebateModeId == 'INVOICEPAID'}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'confirm', '{$SupplierRebate->supplierRebateModeId}', '{$SupplierRebate->expectedAmount}'); return false;">确认返利现金金额</a>
+{/if}
+{if $SupplierRebate->supplierRebateModeId == 'GIFTED'}
+<a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'confirm', '{$SupplierRebate->supplierRebateModeId}', '{$SupplierRebate->expectedGiftAmount}'); return false;">确认返利实物数量</a>
+{/if}
+
+{/if}
+{if $SupplierRebate->supplierRebateStatusId == 'CONFIRMED' && $SupplierRebate->supplierRebateModeId != 'GIFTED'}
+    {if $SupplierRebate->receivedAmount < $SupplierRebate->confirmedAmount}
+        {if $can_receive_rebate_deducted && $SupplierRebate->supplierRebateModeId == 'DEDUCTED'}
+        <a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'receive', '{$SupplierRebate->supplierRebateModeId}', '{math equation="x-y" x=$SupplierRebate->confirmedAmount y=$SupplierRebate->receivedAmount}'); return false;" >输入收到返利金额</a>
+        {/if}
+        {if $can_receive_rebate_cash && $SupplierRebate->supplierRebateModeId == 'INVOICEPAID'}
+        <a href="#" onclick="editSupplierRebate('{$SupplierRebate->supplierRebateId}', 'receive', '{$SupplierRebate->supplierRebateModeId}', '{math equation="x-y" x=$SupplierRebate->confirmedAmount y=$SupplierRebate->receivedAmount}'); return false;" >输入收到返利金额</a>
+        {/if}
+    {/if}
+{/if}
+<div id="SupplierRebateId_{$SupplierRebate->supplierRebateId}"></div>
+</td>
+<td>{$SupplierRebate->createdByUserLogin}</td>
+{if $SupplierRebate->supplierRebateModeId == 'GIFTED'}
+<td>{$SupplierRebate->expectedGiftAmount}</td>
+<td>{$SupplierRebate->confirmedGiftAmount}</td>
+<td>{$SupplierRebate->receivedGiftAmount}</td>
+{else}
+<td>￥{$SupplierRebate->expectedAmount}</td>
+<td>￥{$SupplierRebate->confirmedAmount}</td>
+<td>￥{$SupplierRebate->receivedAmount}</td>
+{/if}
+<td>{$SupplierRebate->supplierRebateTypeId_description}</td>
+<td>{$SupplierRebate->supplierRebateModeId_description}</td>
+<td>{$SupplierRebate->createdStamp_description}</td>
+</tr>
+{/foreach}
+<tr><td>该页返利总计</td><td></td><td></td><td></td><td></td><td></td><td>抵扣货款：￥ {$sumDeductedExpectedAmount}<br />现金返利：￥ {$sumInvoicepaidExpectedAmount}</td><td>抵扣货款：￥ {$sumDeductedConfirmedAmount}<br />现金返利：￥ {$sumInvoicepaidConfirmedAmount}</td><td>抵扣货款：￥ {$sumDeductedReceivedAmount}<br />现金返利：￥ {$sumInvoicepaidReceivedAmount}</td><td></td><td></td><td></td></tr>
+</table>
+{$pager}
+
+<script type="text/javascript">
+{literal}
+Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "createdTimeMin",
+        button            : "createdTimeMin_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "createdTimeMax",
+        button            : "createdTimeMax_btn",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+var supplierRebateRebateId_global = '';
+  function editSupplierRebate(supplierRebateId, act_detail, mode_id, suggest_value) {
+//    alert(obj.href); 
+    var amount, tips;
+    if(mode_id == 'GIFTED') tips = '返利实物数量';
+    else if(mode_id == 'INVOICEPAID') tips = '返利现金金额';
+    else tips = '返利抵扣货款金额';
+    if (act_detail == 'confirm') {
+      amount = window.prompt("请输入确认的" + tips, suggest_value);
+      if(!amount) return false;
+    } else if (act_detail == 'receive') {
+      amount = window.prompt("请输入收到的" + tips, suggest_value);
+      if(!amount) return false;
+      if(Number(suggest_value) < Number(amount)) {
+        alert("收到的金额大于确认的金额");
+        return false;
+      }
+    } else if(act_detail == 'discard') {
+      if(!confirm('确认要采购废弃返利吗？')) return false;
+    } else if(act_detail == 'cancel') {
+      if(!confirm('确认要供应商取消返利吗？')) return false;
+    }
+    
+    var url = 'supplier_rebate_detail.php?supplierRebateId=' + supplierRebateId + '&act=edit_submit&act_detail=' + act_detail + '&confirmedAmount=' + amount ;
+    supplierRebateRebateId_global = supplierRebateId;
+    Ajax.call(url,'',editSupplierRebateResponse, 'GET', 'JSON');
+  }
+
+  function editSupplierRebateResponse(result) {
+    if(result.error > 0) {
+      alert(result.message);
+      document.getElementById('SupplierRebateId_' + supplierRebateRebateId_global).innerHTML = result.message;
+    } else {
+      alert(result.content);
+      document.getElementById('SupplierRebateId_' + supplierRebateRebateId_global).innerHTML = result.content;
+    }
+    location.reload();
+  }
+  
+  function searchGoods()
+  {
+    /* 填充列表 */
+    var keyword = document.getElementById("keyword").value;
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+//      alert('fd');
+	  var sel = document.getElementById('goods_id');
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+    		var opt = document.createElement('OPTION');
+    		opt.value = '';
+    		opt.text = '';
+    		sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+        }
+      }
+    }
+  }
+  function searchGoodsStyle(obj) {
+    /* 填充列表 */
+    var goods_id = obj.value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_goods_style&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }
+  }
+    
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+	  var sel = document.getElementById('style_id');
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+      }
+      
+    }
+  }
+{/literal}
+</script>
+</body>
+</html>

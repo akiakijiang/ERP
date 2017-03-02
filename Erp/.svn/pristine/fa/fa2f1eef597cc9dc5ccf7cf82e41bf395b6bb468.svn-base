@@ -1,0 +1,127 @@
+<!--  
+$arata.print_date
+$arata.tracking_number
+
+$order.consignee
+$order.mobile
+$order.tel
+$order.province
+$order.city
+$order.district
+$order.address
+$order.c_tel
+$order.company_address
+
+$smarty.request.print
+
+
+-->
+<style type="text/css">
+{literal}
+	div {
+		font-family: 黑体;
+		position:absolute;
+		border:none;
+	}
+	div.inside {
+		border:none;
+	}
+	p {
+		padding: 0px;
+		margin: 1px;
+		font-family: 黑体;
+		font-size: 18px;
+	}
+	img {
+		padding: 0px 10px;
+		margin: 1px;
+		width: 90%;
+		height: 90%;
+	}
+{/literal}
+</style>
+<div id="jd-cod" style="position:relative;display:inline-block;height:560px;width:550px;border:none;">
+	<div style="position:absolute;display:inline-block;height:560px;width:550px;border:none;">
+		{if $smarty.request.print != 2 && $smarty.request.print != 1}
+		<!--<input type="button" onClick="this.style.display='none';window.print();" value="打印">-->
+		{/if}
+
+		<div style="top:10px;left:0px;height:560px;width:550px;">
+			<div style="top:0%;left:3%;width:90%;height:18%;"><!-- 15cm=9% -->
+				
+				{if $arata.JDsendCode==100}
+				<img style="-webkit-user-select: none"  src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=1&rotation=0&font_family=Arial.ttf&font_size=10&text={$arata.tracking_number}-1-1-&thickness=30&start=C&code=BCGcode128">
+				{else}
+				不能京配
+				{/if}
+			</div>
+
+			<div style="top:18%;left:0%;width:72%;height:33%"><!-- 20cm=12% -->
+				<div style="left:2%;top:0%;width:98%;height:60%">
+					{if $arata.JDsendCode==100}
+					<div><p>始发地:{$arata.sourcetSortCenterName} &nbsp;&nbsp;&nbsp;{$arata.originalCrossCode} - {$arata.originalTabletrolleyCode}</p></div><br/><br/>
+					<div><p>目的地:{$arata.targetSortCenterName}&nbsp;&nbsp;&nbsp;{$arata.destinationCrossCode} - {$arata.destinationTabletrolleyCode}</p></div>
+				{else} 不能京配 {/if}
+				</div>
+				<div style="left:2%;top:60%;width:98%;height:40%">
+					<p>客户信息</p>
+					<p>姓名：{$order.consignee} 电话：{$order.mobile} {$order.tel}　</p>
+					<p>
+						地址：{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+					</p>
+				</div>
+			</div>
+			<div style="top:18%;left:72%;width:28%;height:33%"><!-- 20cm=12% -->
+				<div style="left:0%;top:0%;width:100%;height:35%">
+					<p>代收金额</p>
+					<p>￥{$order.order_amount}元　</p>
+				</div>
+				<div style="left:0%;top:35%;width:100%;height:35%">
+					<p style="font-size: 30px;">1/1</p>
+				</div>
+				<div style="left:0%;top:70%;width:100%;height:30%">
+					<p>客户签字</p>
+				</div>
+			</div>
+			<div  style="top:53%;left:0%;width:100%;height:5%">
+				<div style="top:20%;left:63%;width:37%;height:80%"><!-- 15cm=9% -->
+					<p  style="font-size: 12px;">{$arata.print_date}</p>
+				</div>
+			</div>
+			<div style="top:58%;left:0%;width:100%;height:5%"><!-- 15cm=9% -->
+				<div style="top:10%;left:33%;width:67%;height:90%">
+					<p>运单号：{$arata.tracking_number}</p>
+				</div>
+			</div>
+
+			<div style="top:63%;left:0%;width:70%;height:33%"><!-- 20cm=12% -->
+				<div style="left:2%;top:10%;width:98%;height:56%;">
+					<p style="font-size:12px;">客户信息 &nbsp;姓名：{$order.consignee} 电话：{$order.mobile} {$order.tel}</p>
+					<div  style="top:18%;left:3%;width:90%;height:80%;">
+					{if $arata.JDsendCode==100}<img style="-webkit-user-select: none"  src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=2&rotation=0&font_family=Arial.ttf&font_size=15&text={$arata.tracking_number}&thickness=30&start=C&code=BCGcode128">
+					{else} 不能京配 {/if}
+					</div>
+				</div>
+				<div style="left:2%;top:66%;width:98%;height:36%;">
+					<p style="font-size:12px;">寄方&nbsp;电话：{$order.c_tel} 地址：{$order.company_address} </p> 
+					<p style="font-size:12px;">请您确认此包裹完好，保留此包裹联时，表明您已正常签收。http://www.jd-ex.com&nbsp;&nbsp;客服电话：400-603-3600</p>
+				</div>
+			</div>
+			<div style="top:63%;left:70%;width:30%;height:33%"><!-- 20cm=12% -->
+				<div style="left:0%;top:10%;width:100%;height:56%">
+					<p>代收金额</p>
+					<p>￥{$order.order_amount}元　</p>
+				</div>
+				<div style="left:0%;top:66%;width:100%;height:36%">
+					<p>始发城市：{$arata.sentBranch}</p>
+				</div>
+			</div>
+			<div style="bottom:0%;left:0%;width:95%;height:4%"><!-- 15cm=9% -->
+				<div style="top:0%;left:65%;width:35%;height:70%">
+					<p style="font-size: 12px;">{$arata.print_date}</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>

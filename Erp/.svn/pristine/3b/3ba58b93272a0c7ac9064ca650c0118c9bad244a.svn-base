@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>更改快递方式</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="styles/change_shipping.css">
+     </head>
+    <body>
+        <div id="main_content">
+        	<form id="from_shipping_form" name="from_shipping_form" >
+                <p>当前快递方式:</p>
+        		<select id="from_shipping_id" name="from_shipping_id">
+                    {foreach from=$shipping_from_Mysql key=k item=value}
+                    <option class="shipping_id" value="{$value.shipping_id}">{$value.shipping_name}</option>
+                    {/foreach}
+        		</select>
+                <select id="facility_id" name="facility_id">
+                    {foreach from=$facility_from_Mysql key=k item=value}
+                    <option value="{$value.FACILITY_ID}">{$value.FACILITY_NAME}</option>
+                    {/foreach}
+                </select>
+                <select id="party_id" name="party_id">
+                    {foreach from=$party_from_Mysql key=k item=value}
+                    <option value="{$value.PARTY_ID}">{$value.NAME}</option>
+                    {/foreach}
+                </select><br>
+        		<input type='submit' value='查询发货单' id="submit_from_shipping_id"/>
+        	</form>
+            <div class="tips" id="tip1">
+                <div class="loading_and_error" id="load1">
+                    <span>正在努力加载，请耐心等待！</span>
+                    <img src="images/loading36.gif" title="loading" class="loading_img"/>
+                </div>
+                <div class="loading_and_error" id="shipment_num"></div>
+                <div class="loading_and_error" id="error1">
+                    <p>AJAX请求失败!</p>
+                </div>
+            </div>
+        	<form id="target_shipping_form" name="target_shipping_form" >
+        		<p>目标快递方式:</p>
+        		<select id="target_shipping_id" name="target_shipping_id">
+                    {foreach from=$shipping_from_Mysql key=k item=value}
+                    <option class="shipping_id" value="{$value.shipping_id}">{$value.shipping_name}</option>
+                    {/foreach}
+                </select>
+        		<input type="text" id="changed_number" name="changed_number" value="5000" /><br>
+        		<input type='submit' value='提交更改' id="submit_change"/>
+        	</form>
+            <div class="tips" id="tip2">
+                <div class="loading_and_error" id="load2">
+                    <span>正在努力加载，请耐心等待！</span>
+                    <img src="images/loading36.gif" title="loading" class="loading_img"/>
+                </div>
+                <div class="loading_and_error" id="change_status"></div>
+                <div class="loading_and_error" id="error2">
+                    <p>AJAX请求失败!</p>
+                </div>
+            </div>
+    </div>
+        <script type="text/javascript" src="misc/jquery.js"></script>
+        <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+        <script type="text/javascript">
+        // <![CDATA[
+        //{literal}
+        $(document).ready(function(){
+            $("#main_content").slideDown("normal");
+            $("#submit_from_shipping_id").click(function(){                
+                var $from_shipping_id = $("#from_shipping_id").val();
+                var $party_id = $("#party_id").val();
+                var $facility_id = $("#facility_id").val();
+                var data = 'from_data='+ $from_shipping_id+ '&party_id='+ $party_id+ '&facility_id='+ $facility_id;
+                //var confirm_msg_search = confirm("仔细确认后再提交查询或更改！");
+                $.ajax({
+                    type:"POST",
+                    dataType:'json',
+                    url:"ajax.php?act=search_from_carrier_shipment_number",
+                    data:data,
+                    beforeSend:function(){
+                        $("#load1").siblings().fadeOut("slow");
+                        $("#load1").slideDown("slow");
+                    },
+                    success:function(data){
+                        //alert(data.confirm);
+                        $("#shipment_num").siblings().fadeOut("slow");
+                        $("#shipment_num").html("<p>共有"+ data.shipment_number+"个订单,耗时"+data.cost_time+"秒</p>").fadeIn("slow");
+                    },
+                    error:function(){
+                        $("#error1").siblings().fadeOut("slow");
+                        $("#error1").fadeIn("slow");
+                    }
+                });
+                return false;
+            });
+            $("#submit_change").click(function(){
+                var $party_id = $("#party_id").val();
+                var $from_shipping_id = $("#from_shipping_id").val();
+                var $target_shipping_id = $("#target_shipping_id").val();
+                var $changed_number = $("#changed_number").val();
+                var $facility_id = $("#facility_id").val();
+                var data_change = 'from_data='+ $from_shipping_id + '&target_shipping_id=' + $target_shipping_id + '&changed_number=' + $changed_number + '&party_id=' + $party_id+'&facility_id='+ $facility_id; 
+                //var confirm_msg_change = confirm("仔细确认后再提交查询或更改！");
+                $.ajax({
+                    type:"POST",
+                    dataType:'json',
+                    url:"ajax.php?act=change_carrier",
+                    data:data_change,
+                    beforeSend:function(){
+                        $("#load2").siblings().fadeOut("slow");
+                        $("#load2").slideDown("slow");
+                    },
+                    success:function(data){
+                        //alert(data.confirm);
+                        $("#change_status").siblings().fadeOut("slow");
+                        $("#change_status").html("<p>"+data.msg+",共耗时"+data.cost_time+"秒,"+data.order_id_affected+"</p>").fadeIn("slow");
+                    },
+                    error:function(){
+                        $("#error2").siblings().fadeOut("slow");
+                        $("#error2").fadeIn("slow");
+                    }
+                });
+                return false;
+            });
+        });
+        //{/literal}
+        //]]>
+        </script>
+    </body>
+ </html>

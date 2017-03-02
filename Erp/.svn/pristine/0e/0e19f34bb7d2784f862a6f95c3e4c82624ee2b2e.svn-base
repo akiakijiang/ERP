@@ -1,0 +1,257 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<style type="text/css">
+	{literal}
+	body{
+		font-size: 14px;
+	}
+	table{
+		font-size: 13px;
+		width: 100%;
+	}
+	table th,table td{
+	    font-weight: normal;
+	    text-align: center;
+	    border:1px solid #62B4E8;
+	}
+	table td{
+	    padding:6px 0;
+	}
+
+	table th{
+	    padding:10px 0;
+	    background: #62B4E8;
+	    color:#fff;
+	}
+	h1{
+		font-size: 1.5em;
+		color:#333;
+		text-align: center;
+		margin:10px 0;
+	}
+	.button{
+				border:none;
+				outline: none;
+			    display: block;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 8px 12px !important;
+			    color: #fff !important;
+			    width: 200px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 20px auto;
+	}
+	.simpEditBtn{
+		width: auto;
+		margin:5px;
+	}
+	.button:hover { 
+	                background: #3da1d1;
+	                transition:all .2s;
+	                -o-transition:all .2s;
+	                }
+	                
+	.button:active {
+	                position: relative;
+	                top:1px;
+	                }
+	input[type="text"]{
+                display: inline-block;
+                height: 32px;
+                line-height: 32px;
+                width: 200px;
+                padding:2px 5px;
+                color: #333;
+                border-radius: 3px;
+                -o-border-radius: 3px;
+                border:1px solid #b1b1b1;
+                outline: none; /* for chorme & safari's default effect */
+            }
+    .msg{
+        width: 80%;
+    	padding:5px 0 5px 40px;
+    	margin:10px auto;
+    	display: none;
+    	
+    }
+    .msg-success{
+    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+    	background-position: 10px center;
+        border-color: #9adf8f;
+        color: #556652;
+        
+    }
+    .msg-error{
+    	background: url('img/cross_circle.png') #ffcece no-repeat;
+    	background-position: 10px center;
+        border-color: #df8f8f;
+        color: #665252;
+    }
+    .redtr{
+    	background-color: #ffcece;
+    }
+    .importantNote{
+        color:red;
+        font-size:18px;
+    }
+    {/literal}
+	</style>
+</head>
+<body>
+	<h1>Origins（悦木之源）品牌商商品信息维护</h1>
+	<p class="msg msg-success">{$message_success}</p>
+	<p class="msg msg-error">{$message_error}</p>
+	<p class="importantNote">备注：</p>
+	<p class="importantNote">1. 只有名称中包含market的套餐才会展示</p>
+	<p class="importantNote">2. 未维护goods_type的商品或套餐标记为红色，请务必维护！</p>
+	<p class="importantNote">3. 当商品以套餐形式出现在订单中，若此处有该套餐，该商品在当前订单中的goods_type为套餐goods_type，否则为商品本身的goods_type</p>
+	
+	<form>
+    商家编码：
+    <input id="barcode" style="width:100px" size="50" name="barcode" value="{$smarty.request.barcode}">
+    &nbsp;&nbsp;
+    商品（套餐名）：
+    <input style="width:100px" name="goods_name" value="{$smarty.request.goods_name}">
+    &nbsp;&nbsp;
+  material_number：
+    <input style="width:100px" name="material_number" value="{$smarty.request.material_number}">
+    &nbsp;&nbsp;
+  goods_type：
+    <select name="goods_type">
+    <option value="-1">所有</option>
+    <option value="saleable" {if $smarty.request.goods_type == "saleable"}selected{/if}>saleable</option>
+    <option value="sample" {if $smarty.request.goods_type == "sample"}selected{/if}>sample</option>
+    <option value="market" {if $smarty.request.goods_type == "market"}selected{/if}>market</option>
+    </select>
+
+    <input type="submit" value="搜索">
+    &nbsp;&nbsp;
+    <input type="submit" name="type" value="商品导出CSV">
+
+    <input type="hidden" name="act" value="search">
+    </form>
+	
+	
+	<form action="brand_goods_maintain_65619.php" method="post">
+		<table>
+			<thead>
+				<tr>
+					<th>商家编码</th>
+					<th>商品（套餐名）</th>
+					<th>material_number</th>
+					<th>goods_type</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			{foreach from=$goods_list key=k item=goods}
+			<tr {if $goods.is_product_empty == "1"}
+				    class="redtr"
+				{/if}>
+
+				<td><input type="hidden" name="code[]" class="code" value="{$goods.code}">{$goods.code}</td>
+				<td>
+					
+				    {$goods.goods_name}
+				</td>
+				<td><input type="text" name="material_number[]" class="material_number" value="{$goods.material_number}"></td>
+				<td>
+					<select class="goods_type" name="goods_type[]">
+						{if $goods.goods_type eq "saleable"}
+							<option selected="selected" value="saleable">saleable</option>
+							<option value="sample">sample</option>
+							<option value="market">market</option>
+						{elseif $goods.goods_type eq "sample"}
+							<option value="saleable">saleable</option>
+							<option selected="selected" value="simple">sample</option>
+							<option value="market">market</option>
+						{else}
+							<option value="saleable">saleable</option>
+							<option value="sample">sample</option>
+							<option selected="selected" value="market">market</option>
+						{/if}
+					</select>
+				</td>
+				<td>
+					<input type="button" value="修改" class="button simpEditBtn">
+				</td>
+			</tr>
+			{/foreach}
+		</table>
+	</form>
+<script src="js/jquery.js"></script>
+<script>
+// <![CDATA[
+    var message_success = "{$message_success}";
+    var message_error = "{$message_error}";
+//{literal}
+$(document).ready(function(){
+	var msg_success = $(".msg-success");
+	var msg_error = $(".msg-error");
+	if(message_success != ""){
+		msg_success.fadeIn("normal");
+		msg_error.hide();
+	}
+	if(message_error != ""){
+		msg_error.fadeIn("normal");
+		msg_success.hide();
+	}
+	var simpEditBtn = $(".simpEditBtn");
+	var material_number = $(".material_number");
+	var goods_type = $(".goods_type");
+	var saveBtn = $("#saveBtn");
+
+	simpEditBtn.click(function(){
+		var that = $(this);
+		var simp_material_number = that.parent().parent().find(".material_number").val();
+		var simp_goods_type = that.parent().parent().find(".goods_type").val();
+		var simp_code = that.parent().parent().find(".code").val();
+		var data = "material_number=" + simp_material_number + "&goods_type=" + simp_goods_type + "&code=" + simp_code;
+		if(simp_goods_type != "market" && simp_material_number == ""){
+			alert("goods_type不为market时，material_number不能为空~");
+		}else{
+			// alert(data);
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=update_or_goods',
+				success:function(data){
+					alert("修改成功");
+				},
+				error:function(data){
+					alert("修改失败");
+				}
+			});
+		}
+	});
+	
+    
+	saveBtn.click(function(){
+		var flag = true;
+		goods_type.each(function(){
+
+			if($(this).val() != "market"){
+				if($(this).parent().prev().find(".material_number").val() == ""){
+                    flag = false;
+				}
+			}
+		});
+		if(flag){
+			return true;
+		}else{
+			alert("goods_type不为market时，material_number不能为空~");
+			return false;
+		}
+	});
+});
+//{/literal}
+// ]]>
+</script>
+	
+</body>
+</html>

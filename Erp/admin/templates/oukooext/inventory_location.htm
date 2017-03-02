@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>容器管理界面</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="/misc/ajaxfileupload.js"></script>
+<script type="text/javascript" src="/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<script type="text/javascript" src="/misc/autocomplete.js"></script>
+<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script> 
+
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: center;
+	}
+	.sb td{
+	   text-align: left;
+	}
+	<!--{/literal}-->
+	</style>
+
+<script type="text/javascript">
+{literal}
+	
+	$(document).ready(function() {
+		$('#new_location_button').click(function(){
+			setTimeout("hideMessage()", 100);
+		    $('#new_location_table').css('display') == 'none' ? $('#new_location_table').show() : $('#new_location_table').hide();
+		    $('#new_location_table').css('display') == 'none' ? $('#new_location_button').val('新建容器') : $('#new_location_button').val('取消新建');
+		    return false;
+		});
+	});
+	
+	function hideMessage() {
+		$('#message').hide();
+	}
+	
+	function add() {
+		var barcode = $('#add_barcode').val();
+		
+		barcode = $.trim(barcode);
+		//若为库位，用正则判断是否匹配
+		var re =/^[A-Z1-9][A-Z]-[A-Z]-\d\d-\d\d$/;
+		var ra =/^[A-Z1-9][A-Z]-[A-Z][A-Z]-\d\d-\d\d$/;
+		var ma = re.test(barcode);
+		var na = ra.test(barcode);
+		if (ma || na) {
+			location.href = "inventory_location.php?act=add&barcode=" + barcode ;
+		} else {
+			alert("输入的容器条码有误，请重试^_^");
+		}
+	}
+	
+	function inport_location_list(){
+   	 $.ajaxFileUpload({
+			url:'inventory_location.php?act=group_add',
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			success: function (data)
+			{
+				if(data.message == "")
+				{
+					alert('导入成功');
+				}else{
+					alert(data.message);
+				}
+			},
+			error: function (data, status, e)
+			{
+				alert("方法调用错误，请联系ERP组"+e.message);
+			}
+		})
+    }
+	// ]]>	
+{/literal}
+</script>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;margin:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;容器管理界面&nbsp;</span></legend>
+	<h3 style="color:#09F;">单个库位创建</h3>
+	
+	<input type="button" id="new_location_button" onclick="" value="新建库位" />
+	<table class="bWindow" id="new_location_table" style="margin:10px 0;display:none;width:400px;">
+		<tr>
+			<td style="font-weight: bold;">当前业务组</td>
+			<td style="color:red">{$party_name}</td>
+			<td style="font-weight: bold;">库位条码</td>
+			<td><input id="add_barcode" type="text"></td>
+		</tr>
+		<tr>
+			<td colspan="6" >
+				<input type="button" value="创建" onclick="add();"/>
+			</td>
+		</tr>
+	</table>
+	<form action="inventory_location.php?act=group_add" id="upload" enctype="multipart/form-data" method="post">
+	    <h3 style="color:#09F;">批量库位创建</h3> 
+	    <fieldset style="border: #FF7FFF 1px dashed;margin-top:15px;width:500px"><legend>&nbsp;使用说明&nbsp;</legend>
+	    <table class="sb" > 
+	     <tr><td>1.导入EXCEL文件sheet命名为"容器导入"</td></tr>
+	     <tr><td>2.导入EXCEL文件需填写库位条码，列名称为"库位条码"</td></tr>
+	     <tr><td>3.导入库位之前请确认批量导入的库位是否要导入当前业务组</td></tr>
+	     <tr><td><font style="font-weight: bold;">当前业务组：</font><font style="color:red">{$party_name}</font></td></tr>
+	 	</table>
+	 	<input type="file" size="30" name="excel">
+		<input type="submit" value="导入">
+		</fieldset>
+	</form>
+	<br/>
+	<div><span style="color:red;">容器创建：仓库管理->设备管理->条码打印->打印上架容器条码</span></div>
+	<br/>
+	<h3 style="color:#09F;">容器查询</h3>
+	<form action="inventory_location.php?act=search" method="POST">
+		容器条码：
+		<input type="text" name="location_barcode" value="{$smarty.request.location_barcode}"/>
+		商品名：
+		<input type="text" name="goods_name" value="{$smarty.request.goods_name}"/>
+		商品条码：
+		<input type="text" name="goods_barcode" value="{$smarty.request.goods_barcode}"/>
+		&nbsp;&nbsp;&nbsp; 容器状态：
+		<select name="location_status">
+			<option value="ALL" {if $smarty.request.location_status == "ALL"}selected{/if}>全部</option>
+			<option value="EMPTY" {if $smarty.request.location_status == "EMPTY"}selected{/if}>空</option>
+			<option value="NOT_EMPTY" {if $smarty.request.location_status == "NOT_EMPTY"}selected{/if}>非空</option>
+		</select>
+		&nbsp;&nbsp;&nbsp; 
+		容器类型：
+		<select name="location_type">
+			<option value="ALL" {if $smarty.request.location_type == "ALL"}selected{/if}>全部</option>
+			<option value="IL_GROUDING" {if $smarty.request.location_type == "IL_GROUDING"}selected{/if}>上架容器</option>
+			<option value="IL_LOCATION" {if $smarty.request.location_type == "IL_LOCATION"}selected{/if}>库位</option>
+		</select></br></br>
+		创建人：
+		<input type="text" name="action_user" value="{$smarty.request.action_user}"/>
+		创建时间范围：
+		<input style="width:90px;margin-top:0px" id=start_validity_time name="start_validity_time" value="{$smarty.request.start_validity_time}"><input type="button" value="..." id="start_validity_time_trigger">
+	            至：
+	    <input style="width:90px;margin-top:0px" id="end_validity_time" name="end_validity_time" value="{$smarty.request.end_validity_time}"><input type="button" value="..." id="end_validity_time_trigger">
+		&nbsp;&nbsp;&nbsp;
+		<input type="submit" value="搜索" />
+	</form>
+	<br />
+	
+    {if $flag==true}
+    <div id="message">
+		{$message}
+	</div>
+    {else}
+     <div id="message" style="color:red">
+		{$message}
+	 </div>
+    {/if}
+	
+	<table class="bWindow" style="margin-top:10px;width:800px;">
+		<tr>
+		    <th>NO.</th>
+		    <th>业务组</th>
+			<th>容器条码</th>
+			<th>容器类型</th>
+			<th>容器状态</th>
+			<th>创建人</th>
+			<th>创建时间</th>
+			<!-- <th>
+				<form action="print_barcodes.php" method="post" target="print_frame">
+					操作
+					&nbsp;
+					
+					<a href="javascript:void(0);" onclick="print_location_barcode_list('{$sinri_all_print}');"><input type="button" value="少量情况下打印全部"></a>
+					&nbsp;
+					
+					<input type="hidden" name="sugu_print" value="1">
+					<input type="hidden" name="type" value="locations_post">
+					{foreach from=$sinri_all_post item=f key=k}
+					<input type="hidden" name="barcodes[]" value="{$f}">
+					{/foreach}
+					<input type="submit" value="前往打印全部">
+				</form>
+			</th> -->
+		</tr>
+		{foreach from=$locations key=location_key item=location}
+		<tr>
+		    <td>{$location_key+1}</td>
+		    <td>{$location.party_name}</td>
+			<td>
+			{if $location.location_status != '已删'}
+				<a href="inventory_location.php?act=show_list&location_barcode={$location.location_barcode}">{$location.location_barcode}</a>
+			{else}
+				{$location.location_barcode}
+			{/if}
+			</td>
+			<td>{$location.location_type}</td>
+			<td>{$location.location_status}</td>
+			<td>{$location.action_user}</td>
+			<td>{$location.created_stamp}</td>
+			<!-- <td>
+				{if $locations[key].location_status == '空'}
+					<a href="inventory_location.php?act=delete&location_barcode={$locations[key].location_barcode}"><input type="button" value="删除此容器"></a>
+				{else}
+					{if $locations[key].location_status == '已删'}
+						<a href="inventory_location.php?act=start&location_barcode={$locations[key].location_barcode}&location_type={$locations[key].location_type}"><input type="button" value="启用此容器"></a>
+					{else}
+						&nbsp; 容器使用中 &nbsp;
+					{/if}
+				{/if}
+				{if $locations[key].location_type=='上架容器'}
+				<a href="javascript:void(0);" onclick="
+					print_barcodes_for_test('{$locations[key].location_barcode}');
+				"><input type="button" value="打印此条码"></a>
+				{else}
+				<a href="javascript:void(0);" onclick="
+					print_location_barcodes('{$locations[key].location_barcode}',1);
+				"><input type="button" value="打印此条码"></a>
+				{/if}
+			</td> -->
+		</tr>
+		{/foreach}
+	</table>
+	<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+ </fieldset>
+ {literal}
+ <script type="text/javascript">//<![CDATA[
+     Zapatec.Calendar.setup({
+         weekNumbers       : false,
+         electric          : false,
+         inputField        : "start_validity_time",
+         button            : "start_validity_time_trigger",
+         ifFormat          : "%Y-%m-%d",
+         daFormat          : "%Y-%m-%d"
+       });
+     
+     Zapatec.Calendar.setup({
+         weekNumbers       : false,
+         electric          : false,
+         inputField        : "end_validity_time",
+         button            : "end_validity_time_trigger",
+         ifFormat          : "%Y-%m-%d",
+         daFormat          : "%Y-%m-%d"
+       });
+     //]]>
+</script>
+{/literal}
+</body>
+</html>

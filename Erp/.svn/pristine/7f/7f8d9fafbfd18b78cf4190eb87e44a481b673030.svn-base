@@ -1,0 +1,24 @@
+.list th {
+  line-height: 28px;
+  background: #BBDDE5 url("../images/th_bg.gif") repeat-x;
+  white-space: nowrap;
+}
+
+.list td {
+  background: #EEF8F9;
+  line-height: 28px;
+}
+*{
+margin:0pt;
+padding:0pt;
+}
+h5{
+height:28px;
+}
+.tipMessage_z{background:#fff;border:1px solid #d1b4ec;width:350px;font-size:12px;color:#666;line-height:150%;}
+.tipMessage_z h5{font-size:12px;border-bottom:1px solid #d1b4ec;height:28px;line-height:28px;color:#000;background:#f4ebfc url(http://www.ouku.com/themes/ouku/images/newIndexBg.png) 0px -247px no-repeat;padding:0 10px 0 30px;}
+.tipMessage_z p{padding:5px 10px;}
+.tipMessage_z h5 img{float:right;margin-top:10px;cursor:pointer;}
+.tipMessage_z a:link{
+color:blue;
+}

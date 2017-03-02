@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库库位管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+
+	<script type="text/javascript"><!--
+	var partyId = {$smarty.session.party_id};
+	var facilityId = {$smarty.request.facility_id};
+    var total = 0;
+	// <![CDATA[
+	 {literal}
+	 
+	 $(document).ready(function() {
+	     document.getElementById("batch_barcode_no").value = '';
+	     document.getElementById("item_barcode").value = '';
+	 });
+	 
+	function remove_facility_location(facilityId,location_seq_id) {
+		if(typeof(facilityId) == 'undefined' || typeof(location_seq_id) == 'undefined'){
+			return false;
+		}
+		$.ajax({
+            async : true,
+            dataType : "json",
+            data: "facility_id=" + facilityId +"&location_seq_id=" + location_seq_id,
+            url : "product_facility_location_manage.php?act=ajaxquery",
+            type : 'POST',
+            success : function(response) {
+                if(response['count'] == 0){
+                	if(confirm("您确定删除该库位吗？")){
+                		location.href = "facility_location_update.php?act=remove&facility_id="+response['facility_id']+"&location_seq_id="+response['location_seq_id'];
+                	}
+                }else{
+                	alert("该库位下面还有商品,请先删除商品后再删除库位");
+                }
+            }
+       });
+    }
+	
+	function check_facility_location() {
+		if(!confirm('确认批量删除库位吗？删之前最好导出库位csv保存下！')) {
+			return false;
+		}
+		if(!facilityId){
+			alert('仓库Id获取失败！');
+			return false;
+		}
+		if(!partyId){
+			alert('组织Id获取失败！');
+			return false;
+		}
+    	$('#batch_delete_facility_loc').attr('disabled',true);
+
+		$.ajax({
+            async : false,
+            dataType : "json",
+            data: "facility_id=" + facilityId +'&party_id=' + partyId,
+            url : "ajax.php?act=check_facility_location",
+            type : 'POST',
+            error: function() {	
+            	alert('检查库位信息，ajax请求错误');
+            	$('#batch_delete_facility_loc').attr('disabled',false);
+            },
+            success : function(message) {
+                if(message['false']){
+                	alert(message['false']);
+                	$('#batch_delete_facility_loc').attr('disabled',false);
+                	return false;
+                }else{
+                	if(message['error']) {
+                		alert(message['error']);
+                    	$('#batch_delete_facility_loc').attr('disabled',false);
+                    	return false;
+                	}
+                	batch_delete_facility_location(facilityId,partyId);
+                }
+            }
+       });
+    }
+	
+	// 批量删除库位 ljzhou 2013.04.15
+	function batch_delete_facility_location(facility_id,party_id) {
+		$.ajax({
+            async : false,
+            dataType : "json",
+            data: "facility_id=" + facility_id +'&party_id=' + party_id,
+            url : "ajax.php?act=batch_delete_facility_location",
+            type : 'POST',
+            error: function() {	
+            	alert('批量删除库位，ajax请求错误');     
+            	$('#batch_delete_facility_loc').attr('disabled',false);
+            },
+            success : function(message) {
+                if(message['false']){
+                	alert(message['false']);
+                	$('#batch_delete_facility_loc').attr('disabled',false);
+                	return false;
+                }else{
+                	if(message['error']) {
+                		alert(message['error']);
+                    	$('#batch_delete_facility_loc').attr('disabled',false);
+                    	return false;
+                	}
+                	alert(message['success']);
+                	window.location.href="facility_location_manage.php?facility_id="+facility_id; 
+                	$('#batch_delete_facility_loc').attr('disabled',false);
+                }
+            }
+       });
+    }
+	
+    function change_item_barcode(event) {
+        eventObj = event == null ? window.event : event;
+        keyCode = eventObj.which == null ? event.keyCode : eventObj.keyCode;
+        if (keyCode == 17) {
+            document.getElementById('item_barcode').value += "\n";
+            total++;
+            document.getElementById('tips').innerHTML = total;
+            if (total % 8 == 0) {
+                document.getElementById('item_barcode').rows += 8;
+            }
+        }
+    }
+    
+
+    // 数组去重
+    Array.prototype.uniquelize = function()
+    {
+    	var n = {},r=[]; //n为hash表，r为临时数组
+    	for(var i = 0; i < this.length; i++)
+    	{
+    		if (!n[this[i]])
+    		{
+    			n[this[i]] = true; 
+    			r.push(this[i]);
+    		}
+    	}
+    	return r;
+    }
+
+    //检查目的库位是否存在
+    function check_destination_location(location_seq_id) {
+    	var res = '';
+    	$.ajax({
+    		async:false,
+    		type: 'POST',
+            url: 'ajax.php?act=check_destination_location',
+            data: 'location_seq_id=' + location_seq_id,
+            dataType: 'json',
+            error: function() {	alert('ajax请求错误,检查目的库位是否存在失败:' + location_seq_id); return false},
+            success: function(data) {
+               res = data;
+            }
+        }); 
+        return res;
+    }
+    
+    //根据条码得到库位，商品是否存在等信息
+    function get_location_seq_id(barcode) {
+    	if(!partyId) {
+    		alert('partyId为空：'+barcode);
+    		return false;
+    	}
+    	var res = new Array();
+    	$.ajax({
+    		async:false,
+    		type: 'POST',
+            url: 'ajax.php?act=get_location_seq_id',
+            data: 'barcode=' + barcode + '&party_id='+partyId,
+            dataType: 'json',
+            error: function() {	alert('ajax请求错误,根据条码得到库位，商品是否存在等信息失败:' + barcode); return false},
+            success: function(data) {
+               if(data['error']) {
+            	   res['error'] = data['error'];
+               } else {
+                   res['location_seq_id'] = data['location_seq_id'];
+               }
+            }
+        }); 
+        return res;
+    }
+
+    // 检测输入库位
+    function check_location_seq_id(location_seq_id) {
+		var reg = /(^([a-z]|[A-Z]|[-]|[0-9])+$)/;
+        if(!location_seq_id.match(reg)) {
+        	return false;
+        } else {
+        	return true;
+        }
+    }
+    
+    function ul_append_child(item_barcode, from_location, to_location) {
+		var ul = document.getElementById("list");
+		var li = document.createElement('li');
+		var li_value = document.createTextNode("条码："+item_barcode+" 原库位："+ from_location + " 后来库位:" + to_location);
+		check_remove_child(item_barcode); // 多个条码只展示最后1个
+		li.appendChild(li_value);
+		ul.appendChild(li); 
+		document.getElementById("batch_barcode_no").value += item_barcode+';'+to_location+"\n";
+		li.onclick = function() {
+		    var result = confirm("删除记录："+li.innerHTML);
+		    if (result) {
+		        remove_ul(li.innerHTML);
+		        data = document.getElementById("batch_barcode_no").value;
+		        document.getElementById("batch_barcode_no").value = data.replace(item_barcode+";"+to_location+"\n","");
+		    }
+		};
+    }
+    
+    // 多个运单号只展示最后1个
+    function check_remove_child(item_barcode) {
+        var ul = document.getElementById("list");
+        var li = document.getElementsByTagName('li');
+        item_barcode = item_barcode + " 原库位";
+        for (var i = 0; i < li.length ; i++) {
+            if (li[i].innerHTML.indexOf(item_barcode) > 0) {
+                ul.removeChild(li[i]);
+			    data = document.getElementById("batch_barcode_no").value;
+		        // 把原来的记录删掉 
+		        var reg = new RegExp(item_barcode+".+\n"); 
+                document.getElementById("batch_barcode_no").value = data.replace(reg,"");
+		        break;
+            }
+        }
+    }
+    
+    function remove_ul(li_value){
+        var ul = document.getElementById("list");
+        var li = document.getElementsByTagName('li');
+        for (var i = 0; i < li.length ; i++) {
+            if (li[i].innerHTML == li_value) {
+                ul.removeChild(li[i]);
+            }
+        }
+     }
+
+    // 批量移库位信息整理 ljzhou 2013.04.16
+    function get_batch_barcode() {
+        var item_barcodes = document.getElementById("item_barcode").value;
+
+        item_barcodes = item_barcodes.replace(/^\s+|\s+$/g,"");
+        if (item_barcodes == '') {
+            alert('请输入商品条码');
+            return false;
+        }
+
+      	var item_barcode_arr = new Array();  
+      	item_barcode_arr = item_barcodes.split('\n'); 
+      	// 数组去重
+      	item_barcode_arr = item_barcode_arr.uniquelize();
+      	var from_location_arr = new Array();  
+
+       	 var facility_location = prompt("输入目的库位：", '');
+         facility_location = facility_location.trim();
+       	 if(!facility_location) {
+           	alert("目的库位不能为空，请重新输入！");
+       	 }
+       	 
+       	 var check_loc = check_location_seq_id(facility_location); // 判断字符正确性,只包含字母，-，数字
+       	 if(!check_loc) {
+            alert("请输入正确的库位！不要有其他字符，如果一定是这个库位，请联系erp！");
+            return false;
+       	 }
+       	 
+       	 // 检查目的库位是否存在
+       	 var check_des_loc = check_destination_location(facility_location);
+         if (check_des_loc['error']) {
+             alert(check_des_loc['error']);
+             return false;
+         } 
+         var item_barcode_last = new Array();
+
+     	 //批量移库分别检测每个条码
+ 	     for (var j=0;j<item_barcode_arr.length;j++) {
+ 	         var item_barcode = item_barcode_arr[j].trim();
+ 	         var location_seq_id = get_location_seq_id(item_barcode); // 检查该条码是否存在,返回原始库位
+              if (!location_seq_id['error']) {
+            	  if(location_seq_id['location_seq_id']) {
+                      from_location_arr[item_barcode] = location_seq_id['location_seq_id'];
+            	  } else {
+                      from_location_arr[item_barcode] = '无';
+            	  }
+              } else {
+            	  alert(location_seq_id['error'] + " \n请删除该条码后再输入新库位！")
+                  return false;
+              }
+              item_barcode_last[j] = item_barcode;
+          }
+ 	     for (var j=0;j<item_barcode_last.length;j++) {
+         	 ul_append_child(item_barcode_last[j], from_location_arr[item_barcode_last[j]],facility_location);
+         }
+	     document.getElementById("item_barcode").value = '';
+
+    }
+    
+    // 批量移库位 ljzhou 2013.04.16
+    function batch_change_location() {
+		if(!confirm('确认批量移库吗？')) {
+			return false;
+		}
+        var batch_barcode_nos = document.getElementById("batch_barcode_no").value;
+        if (batch_barcode_nos == '') {
+            alert('数据为空，请先扫好条码，维护好目的库位！');
+            return false;
+        }
+		if(!facilityId){
+			alert('仓库Id获取失败！');
+			return false;
+		}
+		if(!partyId){
+			alert('组织Id获取失败！');
+			return false;
+		}
+    	$('#batch_change_facility_loc').attr('disabled',true);
+
+        $.ajax({
+    		async:false,
+    		type: 'POST',
+            url: 'ajax.php?act=batch_change_location',
+            data: 'batch_barcode_nos=' + batch_barcode_nos + "&party_id="+partyId + "&facility_id="+facilityId,
+            dataType: 'json',
+            error: function() {	alert('ajax请求错误,批量移库位失败:'); $('#batch_change_facility_loc').attr('disabled',false);return false},
+            success: function(data) {
+               alert('批量移库位成功！');
+           	   window.location.href="facility_location_manage.php?facility_id="+facilityId; 
+        	   $('#batch_change_facility_loc').attr('disabled',false);
+            }
+        }); 
+       	
+    }
+    
+    
+    {/literal}
+	// ]]>
+	--></script>
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;仓库库位管理&nbsp;</span></legend>
+  <div style="clear:both;"> 
+	<h3 style="color:#09F;">添加</h3>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="excel" value="" ></input>
+        <input type="hidden" name="product_import" value="import" ></input>
+        <input type="submit" name="type" value="仓库库位导入excel" ></input>
+        <a href="facility_location_update.php?facility_id={$filter.facility_id}">添加库位</a>
+    </form>
+   </div>
+  <div style="clear:both;"> 
+	<h3 style="color:#09F;">查询</h3>
+ 	<form method="post" id="form" action="facility_location_manage.php" style="display:inline;">
+  	仓库: &nbsp;&nbsp;
+  	<select name="facility_id" onchange="javascript:location.href='facility_location_manage.php?facility_id=' + this.options[this.selectedIndex].value">
+		{html_options options=$facility_list selected=$filter.facility_id}
+	</select>
+    <input type="hidden" name="act" value="add" />
+    </form>
+    &nbsp;&nbsp;
+    <form method="post"  style="display:inline;">
+        <input type="hidden" name="product_export" value="export" ></input>
+        <input type="submit" name="type" value="仓库库位导出CSV" ></input>
+    </form>
+  </div>
+  
+   <div style="clear:both;"> 
+	<h3 style="color:#09F;">商品移库位</h3>
+	<ul id="list"></ul>
+           商品条码：<br/><textarea name="item_barcode" cols="25" rows="8" id="item_barcode" onkeyup="change_item_barcode(event)"></textarea>
+    <p id="number">
+         已扫描条码数：<span id='tips'>0</span>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' value='输入新库位' onclick='get_batch_barcode()'></input>
+    <input type='button' style="color:red" id='batch_change_facility_loc' name="batch_change_facility_loc" value='批量移库' onclick='batch_change_location()'></input>
+    </p><br/>
+    <input type="hidden" name="batch_barcode_no" id="batch_barcode_no" value=""></input>
+  </div>
+
+   <div style="clear:both;"> 
+	<h3 style="color:#09F;">批量删除库位</h3>
+ 	<input type="button" style="color:red" id='batch_delete_facility_loc' name="batch_delete_facility_loc" onclick="check_facility_location();" value="批量删除库位" />
+  </div>
+  
+  {if $facility_location_list}
+  <br />
+  <div style="clear:both;">
+  
+      <h3 style="color:#09F;">库位</h3>
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="30%">标识符</th>
+          <th width="30%">创建时间</th>
+          <th width="40%"></th>
+        </tr>   
+        
+        <!--{foreach from=$facility_location_list item=facilityLocation}-->
+		<tr align="center" bgcolor="#f9f9f9">
+		    <td>{$facilityLocation->locationSeqId}</td>
+			<td>{$facilityLocation->createdStamp|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+            <td>
+            	<a href="facility_location_update.php?facility_id={$facilityLocation->facilityId}&location_seq_id={$facilityLocation->locationSeqId}">编辑</a>
+                &nbsp;&nbsp;
+                <a href="#" onclick="remove_facility_location('{$facilityLocation->facilityId}', '{$facilityLocation->locationSeqId}');" >删除</a>
+                <!--<a href="facility_location_update.php?act=remove&facility_id={$facilityLocation->facilityId}&location_seq_id={$facilityLocation->locationSeqId}">删除</a>  -->
+                &nbsp;&nbsp;
+            	<a href="product_facility_location_manage.php?facility_id={$facilityLocation->facilityId}&location_seq_id={$facilityLocation->locationSeqId}">产品列表</a>
+			</td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+  </div>
+  {else}
+  
+  <br /><div style="clear:both;text-align:center;">没有记录</div>
+  {/if}
+  
+  <br />
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

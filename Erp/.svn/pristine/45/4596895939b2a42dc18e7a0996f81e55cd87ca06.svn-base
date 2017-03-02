@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/css_2007.9.8.css" rel="stylesheet" type="text/css">
+{literal}
+<style type="text/css">
+
+	p{margin:0;}
+	.confirm_box{position:absolute;background:#ECFFF0;top:0;right:0;width:300px;height:150px;border:1px solid #006600;padding:10px;color:#000;}
+	.confirm_box p{margin:5px;}
+	.status_cat a{color:#000;text-decoration:none;}
+	.status_cat a.a_on{background:green;color:#fff;}
+	#confirmBody table{border:1px solid #c1dad7; font-family:Tahoma, "宋体"}
+	#confirmBody table td{border:1px solid #c1dad7;color:#000;}
+	#confirmBody table table td{padding:0;padding-left:5px;}
+	#confirmBody table th{background:url(images/image/bg_1.jpg) repeat-x;color:#000;border:1px solid #c1dad7;}
+	#confirmBody table th a{color:blue;}
+	#confirmBody table table {margin:0;border:0;border-collapse:collapse;width:100%;}
+	.goods{margin:0;padding:0;overflow:hidden;}
+	.goods li{list-style:none;width:33%;float:left;}
+</style>
+<script type="text/javascript">
+	function showTab(num){
+		var oli = document.getElementById('pay_style').getElementsByTagName('li');
+		for(var i=0;i<oli.length;i++){
+			oli[i].className = '';
+			document.getElementById('s'+i).style.display = 'none';
+		}
+		oli[num].className = 'on';
+		document.getElementById('s'+num).style.display = '';
+	}
+</script>
+<script src="js/js/jquery.min.js" type="text/javascript" ></script>
+<script type="text/javascript">
+
+function confirmOrder(sn){
+		var a = sn;
+		var b = $('#t_'+sn).val();	
+		$.ajax({
+			type: "POST",
+			url: "?act=ajax&do=confirm",
+			data: "order_sn="+a+"&note="+b,
+			success: function(msg){
+				if (msg == 'ok') {
+					alert('操作成功！');
+					window.location.reload();
+					return true;
+				}else if (msg == 'error') {
+					alert('操作失败！');
+				}else{
+					alert('未能正确传递参数！');
+				}
+			},
+			error: function(){alert('出现错误了');return false;}
+		});
+	}	
+</script>
+{/literal}
+</head>
+<title>订单确认</title>
+<body id="confirmBody">
+<div>
+<form style="text-align:left;line-height:30px;">
+搜索条件：
+<br />
+模糊框 <input name="search_text" value="{$smarty.request.search_text}" />
+订单状态
+<select name="order_status">
+<option value="-1">所有</option>
+{html_options selected=$smarty.request.order_status options=$_CFG.adminvars.order_status}
+</select>
+付款状态
+<select name="pay_status">
+<option value="-1">所有</option>
+{html_options selected=$smarty.request.pay_status options=$_CFG.adminvars.pay_status}
+</select>
+物流状态
+<select name="shipping_status">
+<option value="-1">所有</option>
+{html_options selected=$smarty.request.shipping_status options=$_CFG.adminvars.shipping_status}
+</select>
+支付方式
+<select name="pay_id">
+<option value="-1">所有</option>
+<optgroup label="在线支付">
+{foreach from=""|getPayments key=key item=payment}
+{if $payment.pay_order >=100 && $payment.pay_order < 200}
+<option value="{$key}" {if $smarty.request.pay_id != null && $smarty.request.pay_id == $key}selected{/if}>{$payment.pay_name}</option>
+{/if}
+{/foreach}
+</optgroup>
+<optgroup label="货到付款">
+{foreach from=""|getPayments key=key item=payment}
+{if $payment.pay_order >=200 && $payment.pay_order < 300}
+<option value="{$key}" {if $smarty.request.pay_id != null && $smarty.request.pay_id == $key}selected{/if}>{$payment.pay_name}</option>
+{/if}
+{/foreach}
+<optgroup>
+<optgroup label="银行汇款">
+{foreach from=""|getPayments key=key item=payment}
+{if $payment.pay_order >=300 && $payment.pay_order < 400}
+<option value="{$key}" {if $smarty.request.pay_id != null && $smarty.request.pay_id == $key}selected{/if}>{$payment.pay_name}</option>
+{/if}
+{/foreach}
+</optgroup>
+</select><br />
+按 <select name="order_by"><option value="goods_num">订单所含商品数</option><option value="order_amount">订单总金额</option><option value="pay_time">付款时间</option><option value="confirm_pay_time">申请付款时间</option><option value="reg_time">用户注册时间</option></select> <select name="asc"><option value="desc">降序</option><option value="asc" {$smaery.request.asc}>升序</option></select> 排序
+<input type="hidden" name="act" value="search">
+<input type="submit" value="搜索" />
+</form>
+</div>
+    <ul class="order_liTab fix" id="pay_style" style="margin:0 0 -1px 0;padding:0 0 0 1px;">
+		<li {if $smarty.request.having_storage == 1}class="on"{/if}><a href="?having_storage=1">有库存({$storage_order_count})</a></li>
+		<li {if $smarty.request.having_storage == 0}class="on"{/if}><a href="?having_storage=0">无库存({$nostorage_order_count})</a></li>
+    </ul>
+<div class="status_cat" id="s0">
+  <p style="margin:10px 0;">
+	  <a {if $smarty.request.is_cod}class="a_on"{/if} href="?order_status=0&pay_status=-1&shipping_status=-1&is_cod=1&having_storage={$smarty.request.having_storage}">货到付款未确认</a>
+      <a {if $smarty.request.no_cod}class="a_on"{/if} href="?order_status=0&pay_status=-1&shipping_status=-1&no_cod=1&having_storage={$smarty.request.having_storage}">先款后货未确认</a>
+      <a {if $smarty.request.is_self_get}class="a_on"{/if} href="?order_status=0&pay_status=-1&shipping_status=-1&is_self_get=1&having_storage={$smarty.request.having_storage}">自提未确认</a>
+  </p>
+</div>
+{if $smarty.request.no_cod}
+<div class="status_cat" id="s1">
+  <p style="margin:10px 0;">
+    {foreach from=$payments item=payment}
+    {if !$payment.is_cod == cod && $payment.pay_code != 'bank'}
+    <a href="{$uri|remove_param_in_url:"pay_id"|add_param_in_url:"pay_id":$payment.pay_id:"no_cod":1}" {if $smarty.request.pay_id == $payment.pay_id}class="a_on"{/if} >
+    {$payment.pay_name}
+    </a>
+    {/if}
+    {/foreach}
+    <a {if $smarty.request.allbank}class="a_on"{/if} href="?all_bank=1&no_cod=1">银行汇款</a>
+	</p>
+</div>
+{/if}
+	<form action="order_edit_action.php" method="POST" > 
+<!--{foreach from=$orders item=order} -->
+<table class="table_1">
+	<tr>
+		<th>
+        <span style="float:right">
+ 			         支付方式：{$order.pay_name}&nbsp;&nbsp;快递方式：<a href="http://www.sf-express.com/tabid/70/Default.aspx?{$order.encode_province}={$order.encode_city}" target="_blank">{$order.shipping_name}</a>
+           		{if $order.bonus > 0}使用红包：{$order.bonus|price_format}{/if}&nbsp;&nbsp;运费：{$order.shipping_fee|price_format}&nbsp;&nbsp;订单总金额：{$order.order_amount|price_format}
+        {if $order.order_status == 0}
+        <a href="#" onclick="orderStatusFn(1,'edit_order_status','{$order.order_sn}');return false;">确认订单</a>
+        {/if}	
+        <a href="{$WEB_ROOT}admin/order_edit.php?order_id={$order.order_id}" target="_blank">修改订单</a>	
+        <a href="#" onclick="orderStatusFn({$order.order_status},'edit_order_action','{$order.order_sn}');return false;">添加备注</a>  	
+        </span>
+		订单号：<a href="{$WEB_ROOT}admin/order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a>&nbsp;&nbsp;下单时间：{$order.order_time}
+	<div style="position:relative;text-align:left;">
+	 <div class="confirm_box" id="c_{$order.order_sn}" style="display:none;">
+		<p>订单号：{$order.order_sn}</p>
+		<p>备注：<textarea style="width:285px;height:70px;" id="a_{$order.order_sn}"></textarea></p>
+		<p style="text-align:center;">
+		    <input type="submit" value="提交" onclick="document.getElementById('actionNoteId').value = document.getElementById('a_{$order.order_sn}').value;" style="margin-right:15px;"/>	
+		    <input type="button" onclick="document.getElementById('c_{$order.order_sn}').style.display='none'" value="取消" />
+            <input type="hidden" value="{$order.order_id}" id="id_{$order.order_sn}"/>    			
+		</p>  
+      </div>   
+	</div>         			
+	</th>
+	</tr>
+	<tr>
+		<td style="line-height:200%;">
+           <ul class="goods">
+        	<!--{foreach from=$order.goods_list item=goods key=key name=goodsName}-->
+            
+            <li><a href="{$WEB_ROOT}goods{$goods.goods_id}/" style=" white-space: nowrap;">{$goods.goods_name}</a>{$goods.goods_price|price_format}  &chi; {$goods.goods_number} {if $goods.storage_count > 0}<span style="color:green;">库存数量：{$goods.storage_count}</span>{else}<span style="color:red;">无库存{/if}</span></li>  
+        	<!--{/foreach} -->
+           </ul> 
+        </td>
+  </tr>
+
+  <tr>      
+		<td style="line-height:200%;padding:0;border-bottom:0;">
+			<table cellpadding="0" cellspacing="0">
+            	<tr>
+                	<td style="width:15%">	
+						用户名：{$order.user_name}
+                    </td>
+					<td  style="width:15%">                    
+                        客户姓名：{$order.consignee}
+                    </td>
+                    <td  style="width:20%">    
+                        手机号码：{$order.mobile}
+                    </td>
+                    <td  style="width:20%">    
+                        电话号码：{$order.tel}
+                    </td>
+                    <td style="border-right:0;">
+                        联系地址：{$order.province|get_region_names} {$order.city|get_region_names} {$order.district|get_region_names}{$order.address}
+                    </td>
+                </tr>    
+        <tr>
+        	<td>
+                {if $order.inv_payee}发票抬头：{$order.inv_payee}{/if}
+            </td>
+            {if $order.inv_address}
+            <td>
+                {if $order.inv_phone}发票电话：{$order.inv_phone}{/if}
+
+                {if $order.inv_zipcode}发票邮编：{$order.inv_zipcode}{/if}
+   
+                {if $order.inv_address}发票地址：{$order.inv_address}{/if}
+            </td>
+            {/if}
+            <td>
+                 
+            </td>
+            <td>     
+                 {if $order.sucess_order_count}购买成功：{$order.sucess_order_count}次{/if}
+            </td>
+            <td style="border-right:0;">
+                {if $order.orders_services}
+                    <!--{foreach from=$order.orders_services item=service} -->
+                    申请{$service.type_name}&nbsp;{$service.num}次 &nbsp;&nbsp;&nbsp;&nbsp;
+                    <!--{/foreach} -->
+                {/if}	
+    		</td>
+          </tr>
+          </table>
+		</td>
+	<tr>
+			<td style="border:0;">
+				订单附言：{if $order.postscript}<span style="color:red">{$order.postscript}</span>{else}<span style="color:#000;">客户没有留言</span>{/if}
+			</td>
+	</tr>
+
+
+</table>
+<!--{/foreach} -->
+				<input type="hidden" name="order_status" value="" id="orderStatus"/>
+                <input type="hidden" name="order_id" value="" id="orderId" />
+                <input type="hidden" name="actionNote"  value="" id="actionNoteId" />
+				<input type="hidden" name="action" value="edit_order_action" id="order_action"/>
+				<input type="hidden" name="back" value="{$back}" />
+    	</form>  
+{$pager}
+{literal}
+<script type="text/javascript">
+function orderStatusFn(status,action,sn){
+	document.getElementById('c_'+sn).style.display = document.getElementById('c_'+sn).style.display == '' ? 'none':'';
+	document.getElementById('orderStatus').value = status;
+	document.getElementById('order_action').value = action;
+	document.getElementById('orderId').value = document.getElementById('id_'+sn).value; 
+	document.getElementById('a_'+sn).focus();
+}
+</script>
+{/literal}
+</body>
+</html>

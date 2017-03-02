@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{literal}
+<style type="text/css" media="all">
+*{
+	margin:0;
+	padding:0;
+}
+h2{
+	font-size:12pt;
+	clear:both;
+	margin:10px 0;
+}
+ul{
+	list-style:none;
+	font-size:10pt;
+	width:49%;
+	float:left;
+}
+ul li{
+	height:40px;
+	line-height:40px;
+}
+
+table{
+	width:99.7%;
+	font-size:10pt;
+	/* text-align:center;
+	border:1px solid #000; */
+	border-collapse:collapse;
+	margin:20px 0 20px 2px;
+}
+table td{padding:5px 10px;}
+table td,table th{
+	border:1px solid #000;
+	height:25px;
+	line-height:25px;
+}
+p{
+	font-size:10pt;
+	clear:both;
+}
+.left{
+	float:left;
+	margin-left:40px;
+	display:inline;
+}
+.right{
+	float:right;
+	margin-right:20px;
+}	
+h1{
+	text-align:center;
+	font-size:14pt;
+}
+li.c{
+	clear:both;
+	width:100%;
+}	
+.rmatracker {
+    display:block!important;
+}
+</style>
+{/literal}
+<title>打印售后档案</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+
+<p style="margin:10px 0 0 10px; font-weight:bold;">{$service_type_name}</p>
+{include file="v3/include/rma_track.dwt"} 
+ 
+</body>
+</html>

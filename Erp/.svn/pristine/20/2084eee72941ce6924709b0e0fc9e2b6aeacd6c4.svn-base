@@ -1,0 +1,171 @@
+<!-- 
+
+$arata.sentBranch
+$arata.tracking_number
+
+
+
+$order.consignee
+$order.mobile
+$order.tel
+$order.province
+$order.city
+$order.district
+$order.address
+$order.c_tel
+$order.company_addres
+
+-->
+<style type="text/css">
+{literal}
+	div {
+		border:none;
+		font-family: 黑体;
+		position:absolute;
+	}
+	div.inside {
+		border:none;
+	}
+	p {
+		padding: 0px;
+		margin: 1px;
+		font-family: 黑体;
+	}
+	img {
+		padding: 0px 10px;
+		margin: 1px;
+		width: 90%;
+		height: 90%;
+	}
+{/literal}
+</style>
+<div style="position:relative;display:inline-block;width:390px;height:640px;border:none;">
+	<div style="position:absolute;display:inline-block;width:390px;height:640px;border:none;">
+		<!-- 中通快递高端洋气的自打印发货单 -->
+		{if $smarty.request.print != 2 && $smarty.request.print != 1}
+		<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+		<!--<input type="button" onClick="this.style.display='none';window.print();" value="打印">-->
+		<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+		{/if}
+		<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+
+		<div style="top:5px;left:5px;height:640px;width:390px;">
+			
+			<div style="top:0%;left:0%;width:50%;height:9%;"><!-- 15cm=9% -->
+				<p style="font-size:20px;">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					标准快件
+				</p>
+				<p style="font-size:5px;">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					成就商业 精彩生活
+				</p>
+			</div>
+			<div style="top:0%;left:50%;width:50%;height:9%;"><!-- 15cm=9% -->
+				<!--Code128 OF {$arata.tracking_number}-->
+				<img style="-webkit-user-select: none"  src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=1&rotation=0&font_family=Arial.ttf&font_size=8&text={$arata.tracking_number}&thickness=30&start=C&code=BCGcode128">
+			</div>
+
+			<div style="top:9%;left:0%;width:100%;height:12%"><!-- 20cm=12% -->
+				<div style="left:0%;top:0%;width:7%;height:100%">
+					<!--收件人-->
+				</div>
+				<div style="left:7%;top:0%;width:93%;height:100%">
+					<p>{$order.consignee} 电话：{$order.mobile} {$order.tel}　</p>
+					<p>
+						地址：{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+					</p>
+				</div>
+			</div>
+
+			<div style="top:21%;left:0%;width:100%;height:9%"><!-- 15cm=9% -->
+				<div style="left:0%;top:0%;width:7%;height:100%">
+					<!--寄件人-->
+				</div>
+				<div style="left:7%;top:0%;width:93%;height:100%">
+					<p>乐其 电话：{$order.c_tel}　</p>
+					<p>
+						地址：{$order.company_address}
+					</p>
+				</div>
+			</div>
+
+			<div style="top:30%;left:0%;width:100%;height:10%"><!-- 15cm=9% -->
+				<div style="left:0%;top:0%;width:7%;height:100%">
+					<!--目的地-->
+				</div>
+				<div style="left:7%;top:0%;width:93%;height:100%">
+					<p style="text-align:center;font-size:35px;">{$order.province}{$order.city}{$order.district}</p>
+				</div>
+			</div>
+
+			<div style="top:40%;left:0%;width:100%;height:12%"><!-- 20cm=12% -->
+				<div style="left:0%;top:0%;width:5%;height:100%">
+					<!-- BLANK -->
+				</div>
+				<div style="left:5%;top:0%;width:65%;height:100%">
+					<div class='inside' style="left:-30px;top:0px;width:80px;height:80px;">
+						<!-- QR -->
+						<img style="-webkit-user-select: none" src="./phpqrcode/sinri_qr.php?sinri_content={$arata.tracking_number}">
+					</div>
+					<div class="inside" style="left:60px;top:0%;">
+						<p>收件人签收</p>
+						<p>
+							<br>
+						</p>
+						<p>运单编号：{$arata.tracking_number}</p>
+						<p>日期：{$smarty.now|date_format:"%Y-%m-%d"}</p>
+					</div>
+				</div>
+				<div style="left:70%;top:0%;width:30%;height:100%">
+					<p style="text-align:left;font-size:10px;">
+						始发：{$arata.sentBranch}
+						<br>
+						达到：
+					</p>
+				</div>
+			</div>
+
+			<div style="top:54%;left:0%;width:100%;height:3%;text-align:right;">
+				:P
+			</div>
+
+			<div style="top:57%;left:2%;width:52%;height:9%;"><!-- 15cm=9% -->
+				<!--Code128 OF {$arata.tracking_number}-->
+				<img style="-webkit-user-select: none"  src="./barcodegen1Dv5/html/image.php?filetype=PNG&dpi=72&scale=1&rotation=0&font_family=Arial.ttf&font_size=8&text={$arata.tracking_number}&thickness=30&start=C&code=BCGcode128">
+			</div>
+			<div style="top:57%;left:52%;width:48%;height:9%;"><!-- 15cm=9% -->
+				<!-- BLANK -->
+			</div>
+
+			<div style="top:66%;left:0%;width:100%;height:9%;">
+				<p>
+				<!--收件人--> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				{$order.consignee} 电话：{$order.mobile} {$order.tel}　</p>
+				<p>
+					地址：{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+				</p>
+			</div>
+
+			<div style="top:75%;left:0%;width:100%;height:9%;">
+				<p><!--寄件人--> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				乐其 电话：{$order.c_tel}　</p>
+				<p>
+					地址：{$order.company_address}
+				</p>
+			</div>
+
+			<div class="inside" style="top:84%;left:0%;width:100%;height:15%;">
+				<div class="inside" style="left:5%;top:5%;width:65%;height:100%;">
+					LEQEE ARATA EXPRESS
+					<!--<span style='background-color: #FEFEFE;'>John 3:16</span>-->
+				</div>
+				<div class="inside" style="left:70%;top:10px;width:100px;height:100px;">
+					<img style="-webkit-user-select: none" src="./phpqrcode/sinri_qr.php?sinri_content={$arata.tracking_number}">
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+</div>

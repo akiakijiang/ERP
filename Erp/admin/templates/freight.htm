@@ -1,0 +1,96 @@
+<!-- $Id: area_list.htm 6664 2007-03-08 10:59:58Z scottye $ -->
+{if $full_page}
+{include file="pageheader.htm"}
+{insert_scripts files="../js/utils.js,listtable.js"}
+
+
+<div class="list-div">
+<table cellspacing='1' cellpadding='3' id='listTable'>
+	<tr>
+		<th>{$area_here}运费列表</th>
+	</tr>
+</table>
+</div>
+<div class="list-div" id="listDiv">
+{/if}
+<table cellspacing='1' cellpadding='4' id='listTable'>
+    <!--{if $type == 'start_address' }-->
+    <tr>
+       <td colspan="3" style="font-weight:bold;">起始地址：{$from_province_name}{$from_city_name}{$from_district_name}</td>
+    </tr>
+    <!--{/if}-->
+	<!--{foreach from=$fee_lists item=list name=name}-->
+	<tr>
+	    <!--{if $type == 'start_facility'}-->
+			<!--{foreach from=$available_facility item=item key=facility_id}-->
+			<!--{if $facility_id == $list.facility_id}-->
+			<td>仓库：{$item}</td>
+			<!--{/if}-->
+			<!--{/foreach}-->
+		<!--{/if}-->
+		<!--{foreach from=$shipping_lists item=shipping_list name=name}-->
+		<!--{if $shipping_list.shipping_id == $list.carrier_id}-->
+		<td>快递方式：{$shipping_list.shipping_name}</td>
+		<!--{/if}-->
+		<!--{/foreach}-->
+		<td>首重：{$list.first_weight}</td>
+		<td>首重快递费：{$list.first_fee}</td>
+		<td>续重快递费：{$list.continued_fee}</td>
+		<!-- {if $list.carrier_id==115&& $list.facility_id=="19568549" } -->
+		<td>面单费：{$list.tracking_fee}</td>
+		<td>操作费：{$list.operation_fee}</td>
+		<td>过磅费：{$list.weighing_fee}</td>
+		<td>中转费：{$list.transit_fee}</td>
+		<td>最低中转费：{$list.lowest_transit_fee}</td>
+		<!-- {/if} -->
+		<!-- {if ( $list.carrier_id==99&& $list.facility_id=="19568549") || ( $list.carrier_id==89&& $list.facility_id=="19568548")} -->
+		<td>面单费：{$list.tracking_fee}</td>
+		<td>操作费：{$list.operation_fee}</td>
+		<td>中转费：{$list.transit_fee}</td>
+		<!-- {/if} -->
+		<td>到达地址：{$list.region_name}</td>
+	</tr>
+	<!--{/foreach}-->
+</table>
+
+{if $full_page}
+</div>
+
+{literal}
+<script language="JavaScript"><!--
+
+
+onload = function() {
+  document.forms['theForm'].elements['region_name'].focus();
+  // 开始检查订单
+  startCheckOrder();
+}
+/**
+ * 新建区域
+ */
+function add_area()
+{
+    var region_name = Utils.trim(document.forms['theForm'].elements['region_name'].value);
+    var region_type = Utils.trim(document.forms['theForm'].elements['region_type'].value);
+    var parent_id   = Utils.trim(document.forms['theForm'].elements['parent_id'].value);
+
+    if (region_name.length == 0)
+    {
+        alert(region_name_empty);
+    }
+    else
+    {
+      Ajax.call('area_manage.php?is_ajax=1&act=add_area',
+        'parent_id=' + parent_id + '&region_name=' + region_name + '&region_type=' + region_type,
+        listTable.listCallback, 'POST', 'JSON');
+    }
+
+    return false;
+}
+
+//
+--></script>
+{/literal}
+
+{include file="pagefooter.htm"}
+{/if}

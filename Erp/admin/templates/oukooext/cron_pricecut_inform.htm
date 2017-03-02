@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>欧酷网 {$pricecut_inform.goods_name}降价提醒</title>
+</head>
+
+<body style="width:1000px;font-size:12px;color:#000;background:#fff;">
+<div style="margin:auto;width:700px;">
+	<a href="http://www.ouku.com" target="_blank"><img src="http://www.ouku.com/auto/top_01.jpg" alt="欧酷网" border="0"/></a>
+</div>
+<div style="margin:auto;width:700px;">
+	<p>亲爱的欧酷会员：</p>
+	<p style="text-indent:2em;line-height:200%;">
+    您在欧酷网关注的 <a href="http://www.ouku.com/goods{$pricecut_inform.goods_id}" target="_blank">{$pricecut_inform.goods_name}</a> 已经降价到您设置的降价区间！
+  </p> 
+  <p style="text-indent:2em;line-height:200%;">
+    目前欧酷商城售价：<font color="Red">{$pricecut_inform.price|price_format}</font> 本次降价：<font color="Red">{$pricecut_inform.shop_price-$pricecut_inform.price|price_format}</font>
+  </p>
+  <p style="text-indent:2em;line-height:200%;">
+    商品标配：{$pricecut_inform.seller_note}
+  </p>
+	<a href="http://www.ouku.com/goods{$pricecut_inform.goods_id}" target="_blank">点击进入购买</a><br />
+	<p>若您无法直接点击链接，请复制以下地址到浏览器地址栏中：<br />
+	<a href="http://www.ouku.com/goods{$pricecut_inform.goods_id}" target="_blank">http://www.ouku.com/goods{$pricecut_inform.goods_id}</a></p>
+	<p style="width:660px;border-bottom:1px dashed #ccc;height:1px;"></p>
+	更多商品可登录<a href="http://www.ouku.com" target="_blank">欧酷商城</a>寻找，还可登录<a href="http://bbs.ouku.com" target="_blank">欧酷论坛</a>，一同参与讨论哦。 
+	<p>温馨提示：</p>
+  <p> &nbsp;1. 本邮件在商品降价时由系统自动发出，仅提醒一次，不会重复提醒。<br />
+	    &nbsp;2. 若您想持续关注该商品降价信息，在收到降价提醒后，请您务必重新设置降价提醒，否则再次降价时将无法通知您。<br /><a href="http://www.ouku.com/goods{$pricecut_inform.goods_id}" target="_blank">点击进入重新设置</a>
+  </p>
+</div>
+<div style="margin:auto;width:700px;">
+<img src="http://www.ouku.com/auto/bottom_02.jpg" alt="欧酷信息" />
+</div>
+</body>
+</html>

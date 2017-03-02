@@ -1,0 +1,568 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+{insert_scripts files="../js/utils.js,../js/transport.js"}
+<title>生成库存订单</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+{literal}
+/**
+ * 验证是否为数字
+ *
+ * @return boolean
+ */
+function isNumber(oNum)
+{
+	if(!oNum) return false;
+	if (!/^\d+(\.\d+)?$/.test(oNum)) {
+		return false;
+	}
+	
+	try {
+		if(parseFloat(oNum)!=oNum) return false;
+	} catch(ex) {
+		return false;
+	}
+	
+	return true;
+}
+
+var top_cat_id = [];
+var top_cat_check = 0;
+
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+function check(obj) {
+	if (ES("order_id")[0].value == '') {
+		if (ES("goodslist")[0].value == '') {
+			alert('请选择商品');
+			ES("goodslist")[0].focus();
+			return false;
+		}
+		if (obj.goods_number.value == '' || !isNumber(obj.goods_number.value)) {
+			alert('请填写商品数量');
+			obj.goods_number.focus();
+			return false;
+		}
+	}
+	
+	if (obj.purchase_paid_amount.value == '' || !isNumber(obj.purchase_paid_amount.value)) {
+		alert('请填写采购单价');
+		obj.purchase_paid_amount.focus();
+		return false;
+	}
+	
+	if (obj.benefit.value != '') {
+		if (!isNumber(obj.benefit.value)) {
+			alert('请填写正确的返利金额');
+			obj.benefit.focus();
+			return false;		
+		}
+		
+		// 采购金额
+		var gn = obj.goods_number.value || 0 ; 
+		var total_amount = parseFloat(obj.purchase_paid_amount.value) * parseInt(gn);
+		if (parseFloat(obj.benefit.value) > total_amount) {
+			alert('返利金额不能大于采购金额');
+			obj.benefit.focus();
+			return false;
+		}
+	}
+	
+//	flag = false;
+//	order_type_choose = -1;
+//	for (var i = 0; i < obj.order_type.length; i++) {
+//		if (obj.order_type[i].checked) {
+//			flag = true;
+//			order_type_choose = obj.order_type[i].value;
+//			break;
+//		}
+//	}
+//	if (!flag) {
+//		alert('请填写发票类型');
+//		obj.order_type[0].focus();
+//		return false;
+//	}
+
+	flag = false;
+	for (var i = 0; i < obj.customized.length; i++) {
+		if (obj.customized[i].checked) {
+			flag = true;
+			break;
+		}
+	}
+	if (!flag) {
+		alert('请填写移动定制信息');
+		obj.customized[0].focus();
+		return false;
+	}
+	
+	if (ES("provider_id")[0].value == 0) {
+		alert('请选择供应商');
+		ES("provider_id")[0].focus();
+		return false;
+	}
+	if (ES("purchaser")[0].value == -1) {
+		alert('请选择采购姓名');
+		ES("purchaser")[0].focus();
+		return false;
+	}
+	if (top_cat_check == 1 || top_cat_check == 597) {
+		if ( (ES("provider_id")[0].value == 55 && order_type_choose == "B2C") )
+		  if (!confirm("确认供应商是襟怀且发票类型是B2C？"))
+		    return false;
+	    if ((ES("provider_id")[0].value != 55 && order_type_choose == "C2C")  )
+		  if (!confirm("确认供应商不是襟怀且发票类型是C2C？"))
+		    return false;
+	}
+	
+	// 判断供价与上次相比是否相差两个百分比
+	var last_price = parseInt(E("lastPrice").innerHTML.substring(3));
+	var purchase_paid_amount = parseInt(obj.purchase_paid_amount.value);
+	var percent = parseInt((purchase_paid_amount - last_price) * 100 / last_price);
+	if (Math.abs(percent) > 2) {
+		return confirm("与上次供价相差" + percent + "%，确认入库吗？");
+	} else {
+		return confirm("是否要生成采购订单？");
+	}
+	
+}
+
+function destroy_order(order_id) {
+	if (!confirm('确认要废除订单吗？这将会影响库存'))
+		return;
+	var form_obj = E('generate_form');
+	form_obj.order_id.value = order_id;
+	form_obj.generate_type.value = 'destroy-c';
+	form_obj.submit();
+}
+
+{/literal}
+</script>
+</head>
+<body>
+
+<script type="text/javascript">
+var order_type = new Array();
+<!--{foreach from=""|getProviders item=provider}-->
+order_type[{$provider.provider_id}] = '{$provider.provider_order_type}';
+<!--{/foreach}-->
+{literal}
+function changeProvider(pid) {
+	if (pid == 0) {
+		document.getElementById('order_type_text').innerHTML='请选择供应商';
+	}
+	else {
+		document.getElementById('order_type').value = order_type[pid]; 
+		document.getElementById('order_type_text').innerHTML=order_type[pid];
+	}
+}
+{/literal}
+
+</script>
+
+
+<h2 align="center">生成采购订单 <a href="generate_c_orderV2.php">新的采购订单界面</a></h2>
+<div style="margin-top:20px;margin-left:25%" align="left">
+<form method="POST" action="generate_order_action.php" onsubmit="return check(this)">
+{if $order == null}
+	添加商品：
+	<input style="width:80px" type="text" name="keyword" value="" />
+	<input type="button" name="search" value="{$lang.button_search}" onclick="searchGoods();" />
+	<select name="goodslist" onchange="searchGoodsStyle(this)" id="goodslist"></select>
+	<select name="goods_style_list" onchange="getLastPrice()"></select>
+	商品数量：
+	<input name="goods_number" style="width:20px">
+{else}
+	订单号：<a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a>
+	商品：{$order.goods_name}
+	<font color='red'>实际入库数量：{$order.in_count}</font>
+	<input type="hidden" name="order_id" value="{$order.order_id}">
+	<input type="hidden" name="order_goods_id" value="{$order.rec_id}">
+{/if}
+<br>
+
+
+<!--{if $type =="p" || $type=="e"}-->
+
+<br>
+采购单价：
+<input style="width:50px" name="purchase_paid_amount" value="{$order.purchase_paid_amount}">
+<div id="lastPrice" style="display:inline;margin: 0 10px 0 10px;color:red"></div>
+<input type="hidden" name="is_new" value="NEW">
+返利金额:
+<input type="text" name="benefit" id="benefit" value="{$order.applied_rebate}" style="width:50px;" />
+发票类型：
+{if $type == "p"}
+	{if $order.order_type == 'B2C'}B2C{else}C2C{/if}
+{else}
+<input type="hidden" name="order_type" id="order_type" value="{$order.order_type}"/>
+<span id="order_type_text">{$order.order_type}</span>
+{/if}
+是否全新：
+<input type="radio" name="is_new" checked=checked value="NEW">全新
+<!--<input type="radio" name="is_new" {if $order.is_new == 'SECOND_HAND'}checked{/if} value="SECOND_HAND">二手-->
+移动定制：
+{if $type == "p"}
+{if $order.customized == 'not-applicable'}无{/if}
+{if $order.customized == 'mobile'}定制机{/if}
+{if $order.customized == 'non-mobile'}非定制机{/if}
+{else}
+<input type="radio" name="customized" {if $order.customized == 'not-applicable'}checked{/if} value="not-applicable">无
+<input type="radio" name="customized" {if $order.customized == 'mobile'}checked{/if} value="mobile">定制机
+<input type="radio" name="customized" {if $order.customized == 'non-mobile'}checked{/if} value="non-mobile">非定制机
+{/if}
+
+<br>
+<!--{/if}-->
+
+
+<br>
+供应商：
+{if $type == "p"}
+	<!--{foreach from=""|getProviders item=provider}-->
+		{if $provider.provider_id == $order.provider_id}{$provider.provider_name}{/if}
+	<!--{/foreach}-->
+{else}
+<select name="provider_id" onchange="changeProvider(this.value);">
+  <option value="0"></option>
+	<!--{foreach from=""|getProviders item=provider}-->
+	<option value="{$provider.provider_id}" {if $provider.provider_id == $order.provider_id}selected{/if}>{$provider.provider_name}</option>
+	<!--{/foreach}-->
+</select>
+{/if}
+&nbsp;&nbsp;
+采购：
+{if $type == "p"}
+	{$order.purchaser}
+{else}
+	<select name="purchaser">
+    <option value="-1"></option>
+		<option value="xfeng" {if $order.purchaser == 'xfeng'}selected{/if}>xfeng</option>
+		<option value="wwang" {if $order.purchaser == 'wwang'}selected{/if}>wwang</option>
+		<option value="lunux" {if $order.purchaser == 'lunux'}selected{/if}>lunux</option>
+		<option value="qlliu" {if $order.purchaser == 'qlliu'}selected{/if}>qlliu</option>
+		<option value="yy" {if $order.purchaser == 'yy'}selected{/if}>yy</option>
+		<option value="others" {if $order.purchaser == 'others'}selected{/if}>others</option>
+	</select>
+{/if}
+&nbsp;&nbsp;
+<input type="hidden" name="generate_type" value="c">
+<input type="hidden" name="type" value="{$type}">
+<input type="submit" value="提交">
+</form>
+</div>
+
+<h2 align="center">搜索</h2>
+<div style="margin-top:20px;margin-left:10%" align="left">
+<form>
+订单：<input name="order_sn" value="{$smarty.request.order_sn}">
+商品：<input name="goods_name" value="{$smarty.request.goods_name}" >
+采购单价：<input style="width:80px" name="purchase_paid_amount" value="{$smarty.request.purchase_paid_amount}">
+供应商：
+<select name="provider_id">
+    <option value="-1"></option>
+	<!--{foreach from=""|getProviders item=provider}-->
+	<option value="{$provider.provider_id}" {if $provider.provider_id == $smarty.request.provider_id}selected{/if}>{$provider.provider_name}</option>
+	<!--{/foreach}-->
+</select>
+<br>
+<br>
+发票类型：
+<input type="radio" name="order_type" {if $smarty.request.order_type == '-1' }checked{/if} value="-1"  />全部
+<input type="radio" name="order_type" {if $smarty.request.order_type == 'B2C'}checked{/if} value="B2C" />B2C
+<input type="radio" name="order_type" {if $smarty.request.order_type == 'C2C'}checked{/if} value="C2C" />C2C
+<input type="radio" name="order_type" {if $smarty.request.order_type == 'DX' }checked{/if} value="DX"  />DX
+是否全新：
+<input type="radio" name="is_new" {if $smarty.request.is_new == '-1'}checked{/if} value="-1">全部
+<input type="radio" name="is_new" {if $smarty.request.is_new == 'NEW'}checked{/if} value="NEW">全新
+<input type="radio" name="is_new" {if $smarty.request.is_new == 'SECOND_HAND'}checked{/if} value="SECOND_HAND">二手
+<br>
+商品类别：
+<input type="radio" name="goods_cagetory" {if $smarty.request.goods_cagetory == '-1'}checked{/if} value="-1">全部
+<input type="radio" name="goods_cagetory" {if $smarty.request.goods_cagetory == '1'}checked{/if} value="1">手机
+<input type="radio" name="goods_cagetory" {if $smarty.request.goods_cagetory == '2'}checked{/if} value="2">手机配件
+<input type="radio" name="goods_cagetory" {if $smarty.request.goods_cagetory == '3'}checked{/if} value="3">健康电子
+<input type="radio" name="goods_cagetory" {if $smarty.request.goods_cagetory == '4'}checked{/if} value="4">DVD
+<br>
+采购是否付款：
+<input type="radio" name="is_purchase_paid" {if $smarty.request.is_purchase_paid == '-1'}checked{/if} value="-1">全部
+<input type="radio" name="is_purchase_paid" {if $smarty.request.is_purchase_paid == 'YES'}checked{/if} value="YES">是
+<input type="radio" name="is_purchase_paid" {if $smarty.request.is_purchase_paid == 'NO'}checked{/if} value="NO">否
+
+付款方式：
+<input type="radio" name="purchase_paid_type" {if $smarty.request.purchase_paid_type == '-1'}checked{/if} value="-1">全部
+<!--{foreach from=""|getPurchasePaidTypes item=type key=key}-->
+<input type="radio" name="purchase_paid_type" {if $smarty.request.purchase_paid_type == $key}checked{/if} value="{$key}">{$type}
+<!--{/foreach}-->
+<br>
+<br>
+采购付款时间：
+<input style="width:80px" name="purchase_paid_time" id="search_purchase_paid_time" value="{$smarty.request.purchase_paid_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+<input type="button" id="search_purchase_paid_time_trigger" value="..." >
+入库开始时间：
+<input style="width:80px" name="start_in_time" id="start_in_time" value="{$smarty.request.start_in_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+<input type="button" id="start_in_time_trigger" value="..." >
+入库结束时间：
+<input style="width:80px" name="end_in_time" id="end_in_time" value="{$smarty.request.end_in_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+<input type="button" id="end_in_time_trigger" value="..." >
+<br>
+<br>
+支票号：
+<input name="cheque" style="width:80px" value="{$smarty.request.cheque}">
+采购：
+<select name="purchaser">
+    <option value="-1"></option>
+	<option value="xfeng" {if $smarty.request.purchaser == 'xfeng'}selected{/if}>xfeng</option>
+	<option value="wwang" {if $smarty.request.purchaser == 'wwang'}selected{/if}>wwang</option>
+	<option value="lunux" {if $smarty.request.purchaser == 'lunux'}selected{/if}>lunux</option>
+	<option value="qlliu" {if $smarty.request.purchaser == 'qlliu'}selected{/if}>qlliu</option>
+	<option value="yy" {if $smarty.request.purchaser == 'yy'}selected{/if}>yy</option>
+	<option value="others" {if $smarty.request.purchaser == 'others'}selected{/if}>others</option>
+</select>
+
+<input type="hidden" name="generate_type" value="c">
+<input type="submit" value="搜索">
+<!--<input style="margin-left:400px" type="submit" name="submit" value="批量采购付款" onclick="return confirm('确认要批量付款吗？')">-->
+<input type="hidden" name="act" value="search">
+</form>
+</div>
+
+<table class="bWindow" style="margin-top:20px">
+<caption><h2>{if $smarty.request.act != 'search'}今日的采购订单{else}搜索的采购订单{/if} <input type="button" name="csv" onclick="location.href='{$smarty.server.REQUEST_URI|add_param_in_url:"csv":"1"}'" value="导出CSV" /></h2></caption>
+<tr>
+<th>订单号</th>
+<th>订单时间</th>
+<th>商品</th>
+<th>移动定制</th>
+<th>供应商</th>
+<th>采购负责人</th>
+<th>原订单(供价*个数)</th>
+<th>返利金额</th>
+<th>已入库(供价*实际入库个数)</th>
+<th>付款方式</th>
+<th>支票号</th>
+<th>操作</th>
+</tr>
+{assign var=total_goods_number value=0}
+{assign var=total_purchase_paid_amount value=0}
+{foreach from=$search_orders item=search_order}
+<tr align="center">
+<td>{$search_order.order_sn}</td>
+<td>
+	{$search_order.order_time}<br>
+</td>
+<td>{$search_order.goods_name} × {$search_order.goods_number}<!--累加商品数{assign var=total_goods_number value=$total_goods_number+$search_order.in_count}{assign var=total_purchase_paid_amount value=$total_purchase_paid_amount+$search_order.purchase_paid_amount*$search_order.in_count}--></td>
+<td>{if $search_order.customized == 'mobile'}定制机{elseif $search_order.customized == 'non-mobile'}非定制机{/if}</td>
+<td>
+	<!--{foreach from=""|getProviders item=provider}-->
+	{if $provider.provider_id == $search_order.provider_id}{$provider.provider_name}{/if}
+	<!--{/foreach}-->
+</td>
+<td>{$search_order.purchaser}</td>
+<td>
+	{$search_order.purchase_paid_amount} × {$search_order.goods_number}
+</td>
+<td>{$search_order.applied_rebate}</td>
+<td>
+	{$search_order.purchase_paid_amount} × {$search_order.in_count}
+</td>
+<td>{$_CFG.adminvars.purchase_paid_type[$search_order.purchase_paid_type]}</td>
+<td>{$search_order.cheque}</td>
+<td>
+	{if $search_order.is_purchase_paid != 'YES' && $search_order.in_count == 0}
+		<a href="generate_c_order.php?order_goods_id={$search_order.rec_id}&type=e">批量编辑</a>
+    	<input type="button" value="废除订单" onclick="destroy_order({$search_order.order_id})">
+    {else}
+	    {if $search_order.is_purchase_paid != 'YES'}
+			<a href="generate_c_order.php?order_goods_id={$search_order.rec_id}&type=p">修改价格</a>
+			<a href="generate_c_order.php?order_goods_id={$search_order.rec_id}&type=s">修改供应商</a>
+	    {/if}
+    {/if}
+</td>
+</tr>
+{/foreach}
+<tr align="center">
+<th>汇总</th>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>{$total_purchase_paid_amount}（{$total_goods_number}）</td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+<form action="generate_order_action.php" id="generate_form" method="POST">
+<input type="hidden" name="order_id">
+<input type="hidden" name="generate_type">
+<input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}">
+</form>
+</body>
+
+<script type="text/javascript">
+// 这里把JS用到的所有语言都赋值到这里
+{foreach from=$lang.js_languages key=key item=item}
+var {$key} = "{$item}";
+{/foreach}
+{literal}
+  /**
+   * 按商品编号或商品名称或商品货号搜索商品
+   */
+  
+  function searchGoods()
+  {
+    /* 填充列表 */
+    var keyword = ES("keyword")[0].value;
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+	  var sel = ES('goodslist')[0];
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+		var opt = document.createElement('OPTION');
+		opt.value = '';
+		opt.text = '';
+		sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+		  top_cat_id[arr[i].goods_id] = arr[i].top_cat_id;
+        }
+      }
+    }
+  }
+  function searchGoodsStyle(obj) {
+    /* 填充列表 */
+    var goods_id = obj.value;
+    if (goods_id != '')
+    {
+	  top_cat_check = top_cat_id[goods_id];
+      Ajax.call('order.php?act=search_goods_style&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }  	
+	
+  }
+    
+  function searchGoodsStyleResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }  
+    if (result.error == 0)
+    {
+	  var sel = ES('goods_style_list')[0];
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+      }
+      getLastPrice();
+    }
+  }
+  
+  function getLastPrice() {
+    /* 填充列表 */
+    var goods_id = ES('goodslist')[0].value;
+    var style_id = ES('goods_style_list')[0].value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_last_price&goods_id=' + goods_id + '&style_id=' + style_id, '', getLastPriceResponse, 'GET', 'JSON');
+    }  	
+  }
+  
+  function getLastPriceResponse(result) {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.price >= 0) {
+    	E("lastPrice").innerHTML = "上次：" + result.price;
+    }
+  }
+</script>
+<script type="text/javascript">//<![CDATA[
+//     Zapatec.Calendar.setup({
+//        weekNumbers       : false,
+//        electric          : false,
+//        inputField        : "purchase_paid_time",
+//        button            : "purchase_paid_time_trigger",
+//        ifFormat          : "%Y-%m-%d",
+//        daFormat          : "%Y-%m-%d"
+//      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "search_purchase_paid_time",
+        button            : "search_purchase_paid_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_in_time",
+        button            : "start_in_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });    
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_in_time",
+        button            : "end_in_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });     
+    //]]>
+</script>
+{/literal}
+</html>

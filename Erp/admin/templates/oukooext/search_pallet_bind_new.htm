@@ -1,0 +1,95 @@
+<!DOCTYPE>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>新包裹码托查询</title>
+  	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+  	<script type="text/javascript" src="misc/jquery.js"></script>
+  	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+	<script type="text/javascript">
+	// <![CDATA[ 
+	// {literal} 
+    function form_check() 
+    {
+        var order_sn = $.trim($('#order_sn').val());
+        var tracking_number = $.trim($('#tracking_number').val());
+        var status = $.trim($('#status').val());
+        var physical_facility = $.trim($('#physical_facility').val());
+        if (order_sn == '' && tracking_number == '' && status == 0) {
+            alert('订单号、运单号、状态三个条件至少需要选择一个');
+            return false; 
+        }
+        
+        $('#act').val('search');
+        return true;
+    }
+
+	// {/literal} 
+	// ]]> 
+	</script>
+</head>
+<body>
+	<div style="font-size: 20px;">
+		<form>
+			<table class="inner">
+				<tr>
+					<td >订单号：</td>
+					<td><input type="text" id="order_sn" value="{$order_sn}" name="order_sn" size="24" />&nbsp;</td>
+					<td >快递单号：</td>
+					<td><input type="text" id="tracking_number" value="{$tracking_number}" name="tracking_number" size="24" />&nbsp;</td>
+					<td >包裹状态：</td>
+					<td>
+						<select id="status" name="status">
+							<option value="0" {if $status == 0}selected="selected"{/if}>--- 不限 ---</option>
+							<option value="1" {if $status == 1}selected="selected"{/if}>已复核,待称重</option>
+							<option value="2" {if $status == 2}selected="selected"{/if}>已称重,待码托</option>
+							<option value="3" {if $status == 3}selected="selected"{/if}>已码托,待交接</option>
+						</select>
+						&nbsp;
+					</td>
+					<td>物理仓库：</td>
+					<td>
+						<select id="physical_facility" name="physical_facility">
+							<option value="" selected="selected">--- 不限 ---</option>
+							{html_options values=$physical_facility_list selected=$physical_facility output=$physical_facility_list}
+						</select>
+						&nbsp;
+					</td>
+					<td>
+						<input type="submit" id="search" value="查询" onclick="return form_check()"/>
+						<input type="hidden" id="act" name="act" value="" />
+					</td>
+				</tr>
+			</table>
+		</form>	
+	</div>
+	<div>
+		<table class="bWindow">
+			<tr>
+				<th>序号</th>
+				<th>业务组</th>
+				<th>物理仓</th>
+				<th>订单号</th>
+				<th>发货单号</th>
+				<th>运单号</th>
+				<th>码托</th>
+				<th>包裹状态</th>
+				<th>操作时间</th>
+			</tr>
+			{foreach from=$list key=key item=item}
+				<tr align="center">
+					<td>{$key+1}</td>
+					<td>{$item.name}</td>
+					<td>{$item.physical_facility}</td>
+					<td>{$item.order_sn}</td>
+					<td>{$item.SHIPMENT_ID}</td>
+					<td>{$item.TRACKING_NUMBER}</td>
+					<td>{$item.pallet_no}</td>
+					<td>{$item.status}</td>
+					<td>{$item.action_time}</td>
+				</tr>
+			{/foreach}
+		</table>
+	</div>
+</body>
+</html>

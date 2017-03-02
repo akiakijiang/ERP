@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>发货四天后未妥投订单</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+														 
+			// 提交禁用按钮
+			$(':button, :submit').attr('disabled', false);
+			$('form').bind('submit', function(){
+					$(':button, :submit').attr('disabled', true);
+			});
+			
+	});
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;未妥投订单&nbsp;</span></legend>
+
+
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">筛选</h3>
+  	<form method="get">  
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+        <td>
+        	<strong>由</strong> <select name="shipping_id">{html_options options=$shipping_list selected=$filter.shipping_id}</select> 配送，
+        	发货 <select name="day">{html_options options=$day_list selected=$filter.day}</select> 天后未妥投，
+          <select name="status">{html_options options=$status_list selected=$filter.status}</select> 的订单
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="submit" value="筛选" />
+				</td>
+			</tr>
+      
+    	<tr>
+        <td>
+        	<strong>按</strong> <select name="order_by">{html_options options=$order_by_list selected=$filter.order_by}</select>&nbsp;
+          <select name="order_type">{html_options options=$order_type_list selected=$filter.order_type}</select>
+          排列
+				</td>
+			</tr>
+            
+		</table>
+    </form>
+  </div>
+  
+  
+  
+  
+  <div style="clear:both;">
+		  <br />
+      <h3 style="color:#09F;">订单列表</h3>
+      
+    
+	<!--{if $order_list}--> 
+  
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th>订单号</th>
+          <th>下单时间</th>
+          <th>发货时间</th>
+          <th>联系电话</th>
+          <th>订单状态</th>
+          <th>操作</th>
+        </tr>
+        
+        {foreach from=$order_list item=order name=orderList}
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.orderList.iteration}</td>
+          <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td>{$order.order_time}</td>
+          <td>{$order.shipping_time|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+          <td>
+          	{if check_admin_priv('check_user_tel')} 
+          	{if $order.tel}{$order.tel}{else}{$order.mobile}{/if}
+            {else}
+            ××××××
+            {/if}
+					</td>
+          <td>{$order.mixed_status_name}</td>
+          <td>
+           <!--{if $filter.status == 1}-->
+          	<form method="post">
+            <input type="hidden" name="order_id" value="{$order.order_id}" />
+            <input type="hidden" name="act" value="track" />
+          	<input type="submit" value="标记为跟踪" />
+            </form>
+            <!--{/if}-->
+           
+          	<form method="post">
+            <input type="hidden" name="order_id" value="{$order.order_id}" />
+            <input type="hidden" name="act" value="confirm" />
+ 						<input type="submit" value="收货确认" />
+            </form>
+					</td>
+        </tr>
+        {/foreach}
+        
+      </table>
+      
+      <div style="clear:both"><br /><br /></div>
+			{$pagination}
+      
+	<!--{else}-->
+  
+  <div style="font-weight:bold; color:#666;">&nbsp;&nbsp;没有数据哦</div>
+  
+  <!--{/if}-->
+  
+  </div>
+  
+	<br /><br />
+  
+</fieldset>
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+/*
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "startDate",
+	button            : "startDateTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "endDate",
+	button            : "endDateTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+*/
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

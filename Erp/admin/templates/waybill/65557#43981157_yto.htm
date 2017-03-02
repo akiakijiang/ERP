@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>圆通[yukiwenzi#宁波北仓]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+
+<div style="position:absolute;font-size:11pt;top:40px;left:60px;">yukiwenzi</div>
+<div style="position:absolute;font-size:11pt;top:70px;left:80px;"><!--上海乐其--></div>
+<div style="position:absolute;font-size:11pt;top:90px;left:55px;">浙江　　　宁波市　　　  北仑区</div>
+<div style="position:absolute;font-size:11pt;top:140px;left:55px;">浙江省宁波市北仑区大碶清水倪家弄53号  310000</div>
+<div style="position:absolute;font-size:11pt;top:160px;left:50px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:20pt;top:185px;left:50px;">√</div>
+<div style="position:absolute;font-size:11pt;top:235px;left:75px;">食品</div>
+
+<div style="position:absolute;font-size:11pt;top:60px;left:410px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:11pt;top:60px;left:550px;">{$order.city}</div>
+<div style="position:absolute;font-size:11pt;top:110px;left:440px;">{if $order.province != ''}{$order.province}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:110px;left:560px;">{if $order.city != ''}{$order.city}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:110px;left:640px;">{if $order.district != ''}{$order.district}{/if}</div>
+<div style="position:absolute;font-size:11pt;top:140px;left:390px;width:380px;">{$order.address}<br />(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:11pt;top:170px;left:440px;">{$order.mobile}</div>
+<div style="position:absolute;font-size:11pt;top:170px;left:640px;">{$order.tel}</div>
+<div style="position:absolute;font-size:20pt;top:210px;left:570px;">√</div>
+<div style="position:absolute;font-size:10pt;top:340px;left:400px;">请检查包裹再签收，破损请拒收</div>
+<div style="position:absolute;font-size:11pt;top:310px;left:60px;">yukiwenzi</div>
+<div style="position:absolute;font-size:11pt;top:340px;left:30px;">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+<!-- <div style="position:absolute;font-size:11pt;top:330px;left:170px;">杨军勇</div> -->
+</body>
+</html>

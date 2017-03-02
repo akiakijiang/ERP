@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  
+  <script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>预付款管理</title>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;实时库存余额查询&nbsp;</span></legend>
+<div>
+ <form action="current_inventory_balance_query.php" id= "form" method ="post">
+     商家编码：
+    <input  id ="productCode" style="width:100px" size="50" class="ac_input" name="productCode"  value="{$smarty.request.productCode}" >
+    商品名 ：  <input style="width:300px" type="text" id="order_goods_add_select" name="goods_name" size="60" /> <input type="hidden" id="order_goods_add_goods_style_id" />
+    商品条码：
+    <input style="width:100px" name="barcode" value="{$smarty.request.barcode}">
+   仓库:
+    <select name="available_facility">
+    <option value="-1">所有</option>
+    {html_options options=$available_facility selected = $smarty.request.available_facility }
+    </select>
+   全新：
+    <select name="is_new">
+    <option value="-1">所有</option>
+    <option value="INV_STTS_AVAILABLE" {if $smarty.request.is_new == "INV_STTS_AVAILABLE"}selected{/if}>全新</option>
+    <option value="INV_STTS_USED" {if $smarty.request.is_new == "INV_STTS_USED"}selected{/if}>二手</option>
+    </select>
+    <input type="submit" name="act" value="搜索" >
+ </form><br>
+</div>
+<table class="bWindow">
+  <thead>
+	<tr>
+		<th withd="25%">商品名称</th>
+		<th withd="15%">商品编码</th>
+		<th width="15%">仓库名称</th>
+		<th width="15%">新旧</th>
+		<th width="15%">库存总量</th>
+		<th width="15%">库存金额</th>
+	</tr>
+  </thead>
+  <tbody>
+ <!--{foreach from=$goods_list key=goods_id item=goods name="goods"}-->
+ <tr align="center" height="20px;">
+  <td>{$goods.product_name}</td>
+  <td>{$goods.goods_style_id}</td>
+  <td>{$goods.facility_name}</td> 
+  <td>{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新 {else}二手 {/if}</td>
+  <td>{$goods.quantity_total}</td>
+  <td>{$goods.inventory_balance}</td>
+  </tr>
+  <!--{/foreach}-->
+  </tbody>
+</table>
+</fieldset>
+<script type="text/javascript">
+{literal}
+$(document).ready(function(){
+	$('#order_goods_add_select').autocomplete('distribution_order.php?request=ajax&act=search_goods', {
+		dataType : 'json',
+		minChars: 0,
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.goods_name);
+		},
+		formatResult : function(row) {
+			return(row.goods_name);
+		}
+	}).result(function(event, row, formatted) {
+		$('#order_goods_add_goods_style_id').val(row.goods_id + '_' + row.style_id);
+	});
+})
+{/literal}
+</script>
+</body>
+</html>

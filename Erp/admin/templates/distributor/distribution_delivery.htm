@@ -1,0 +1,807 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销订单发货</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+    <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	var ORDER_SN   = '{$order.order_sn}';
+	var ORDER_ID   = '{$order.order_id}';
+	var FACILITY_ID = '{$order.facility_id}';
+	var SHIP_STTS  = '{$order.shipping_status}';  // 该订单的配送状态，根据该状态来确定鼠标焦点的定位位置
+	var CARRIER_ID = '{$carrier_bill.carrier_id}';
+	var SHIPPING_ID = '{$order.shipping_id}';
+	// {literal}
+	
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			// 绑定加载事件
+			$('#load').bind('click', load);
+			$('#order_sn').bind('keyup', listen).focus();
+			
+			// 确定页面载入时鼠标焦点的定位
+			if ($.trim($('#order_sn').val()) != '') {
+				if (SHIP_STTS == '0' || SHIP_STTS == '10') {
+					$('#scan').focus();	                  // 定位到串号扫描框
+				} else if (SHIP_STTS == '9') {
+					if($('.inputTrackingNumber').get(0)){
+						$('.inputTrackingNumber').get(0).focus();                // 定位到面单扫描框
+					}
+				} else if (SHIP_STTS == '8') {
+					$('#print_delivery_order').focus();	  // 定位到打印发货单按钮
+				}
+			} else {
+				$('#order_sn').focus();
+			}
+			
+			// 绑定扫描串号事件
+			$('#scan').bind('keyup', scan);
+			//确认资料下载
+			$('#download').attr('disabled', false).bind('click', checkone);
+			// 出库提交检查
+			$('#pick').attr('disabled', false).bind('click', check);
+			
+			// 扫描面单号
+			$('#shipping_invoice').bind('keyup', invoice);
+			
+			// 修改发票号按钮
+			$('#change_shipping_invoice').toggle(
+				function(){
+					$('#shipping_invoice').attr('disabled', false);
+				},
+				function(){
+					$('#shipping_invoice').attr('disabled', true);//不让连续点击按钮=。=
+				}
+			);
+			
+			// 提交扫描面单号
+			$('.inputTrackingNumber').bind('keyup', check_tracking_number);
+			$('.changeTrackingNumber').bind('click', function(){
+				var $input = $(this).prev();
+				if ($input.attr('disabled') && confirm('确认要修改面单号吗?')) {
+					$input.attr('disabled', false);
+					$input.select();
+				}
+			});
+			 // 添加扫描面单号
+            $('#add_tracking_number_input').bind('click',function(){
+                $(this).after("面单号：<input type=\"text\" name=\"add_shipment_tracking_number\" size=\"30\" class=\"inputTrackingNumber\" />&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"tip\"><strong>请扫描面单号</strong></span><br/>");
+                $('.inputTrackingNumber').keyup(check_tracking_number);
+            });
+			// 发货提交
+			$('#shipment').attr('disabled', false).bind('click', function(){
+				$(this).attr('disabled', true);
+				$('#form').find(':hidden[name="act"]').val('shipment');
+				$('#form').submit();																		
+			});
+	});
+	
+	var KEY = {
+			RETURN: 13,  // 回车
+			CTRL: 17,    // CTRL
+			TAB: 9
+	};
+	
+	/**
+	 * 监听
+	 */
+	function listen(event) 
+	{	
+			switch (event.keyCode) {
+				case KEY.RETURN:
+				case KEY.CTRL:
+					load();
+					event.preventDefault();
+					break;
+			}
+	}
+	
+	/**
+	 * 载入订单商品和信息
+	 */
+	function load() 
+	{
+			var order_sn = $.trim($('#order_sn').val());
+			if (order_sn == '') {
+				alert('请先输入订单号');
+			}
+			//退款状态
+			if (check_order_refund_status(order_sn) == -1) {
+	        	if(!confirm('该运单对应订单发起退款申请?\n1、强制配货出库请点 确认\n否则请点 取消')){
+	        		return;
+	             }
+	        }
+			location.href = "distribution_delivery.php?order_sn="+order_sn;
+	}
+		
+	/**
+	 * 扫描动作
+	 * 把扫描的串号自动匹配到订单的商品，没有匹配则报错
+	 */
+	function scan(event)
+	{
+           if (event.keyCode != KEY.CTRL && event.keyCode != KEY.RETURN) return;
+			
+			var $i = $(this);
+			var erp_goods_sn = $.trim($i.val());
+			if (erp_goods_sn != '') {
+				validate(erp_goods_sn);
+				$i.val('').select();
+			}
+	}
+	
+	var Stack = new Array();
+		
+    
+    /**
+     * 验证串号
+     */
+    function validate(barcode)
+    {
+        if ($.inArray(barcode, Stack) != -1) {
+            return; 
+        }
+        Stack.push(barcode);
+        var $i = $('#validate');
+        $i.val(Stack.join(', '));
+        $i.addClass('loading');
+        
+        $.ajax({
+            mode: 'abort',
+            port: 'barcode_validate_' + barcode,
+            async : true,
+            type: 'POST',
+            dataType: 'json',
+            url : 'ajax.php?act=scan_barcode_new', 
+            data: 'barcode=' + barcode + '&order_sn=' + ORDER_SN,
+            success: matching,
+            error: function() {
+                alert('ajax请求错误, 请重新扫描串号:' + barcode); 
+            },
+            complete: function() {
+                // 从数组中删除
+                var idx = $.inArray(barcode, Stack);
+                if (idx != -1) { Stack.splice(idx, 1); }
+                $i.val(Stack.join(', '));
+                if (Stack.length < 1) { $i.removeClass('loading'); }
+            }
+        }); 
+    }
+
+    function check_order_refund_status(order_sn){
+    	var refund_status;
+    	$.ajax({
+    		async:false,
+    		type: 'POST',
+            url: 'ajax.php?act=check_order_refund_status_by_ordersn',
+            data: 'order_sn=' + order_sn,
+            dataType: 'json',
+            error: function() {	alert('ajax请求错误, 扫描发货单号时检查订单退款状态失败:' + order_sn); return false},
+            success: function(data) {
+            	refund_status = data;
+            }
+        }); 
+        return refund_status;
+    }
+	
+    
+    // 检测输入的数字
+    function check_number_format(number) {
+		var reg = /(^\d+$)/;
+        if(!number.match(reg)) {
+        	return false;
+        } else {
+        	return true;
+        }
+    }
+    
+    // 处理请求返回的结果，匹配商品
+    function matching(data) 
+    {
+        if (data && !data.message) {
+        	var big_goods = data.big_goods;
+        	var product_id = big_goods.product_id;
+        	var is_serial = big_goods.is_serial;
+        	if(!product_id) {
+            	alert('扫描得到的product_id为空！');
+            	return false;
+        	}
+   
+
+        	var real_out_number_total = $('#item_list_'+product_id+'_real_out_goods_number').val();
+        	var left_out_number_total = $('#item_list_'+product_id+'_left_out_number').val();
+        	var goods_name = $('#item_list_'+product_id+'_goods_name').val();
+
+        	// 大订单特殊处理
+        	if(big_goods.has_big_goods == 'Y') {
+        		// 输入该条码的出库数量
+            	var goods_number = prompt("请输入  "+goods_name+" 的出库数", '');
+            	// 检查数字格式
+            	var check_number = check_number_format(goods_number); // 判断字符正确性
+            	if(!check_number) {
+                    alert("请输入正确格式的正整数！不要有其他字符");
+                 	return false;
+            	}
+            	goods_number = parseInt(goods_number);
+            	if(goods_number > parseInt(left_out_number_total)) {
+            		alert('输入的数量不能超过订单商品：'+goods_name+' 未出库的总数：'+left_out_number_total);
+            		return false;
+            	}
+            	if(goods_number > parseInt(big_goods.item_stock_quantity)) {
+            		alert('输入的数量不能超过商品：'+goods_name+' 的所剩库存总数：'+big_goods.item_stock_quantity);
+            		return false;
+            	}
+            	$('#item_list_'+product_id+'_real_out_goods_number').val(goods_number);
+            	
+        	} else {
+        		// 普通订单
+        		if(parseInt(left_out_number_total) <= real_out_number_total) {
+            		alert(goods_name+' 未出库的总数：'+left_out_number_total+' 请检查是否多发！');
+            		return false;
+            	}
+        		if(is_serial == 'SERIALIZED') {
+                	var serail_number_texts = document.getElementsByName('item_list_'+product_id+'_serial_numbers[]');
+                	// 判重
+                	for(var i=0;i<serail_number_texts.length;i++) {
+                		if(serail_number_texts[i].value == data.barcode) {
+                    		alert(goods_name+' 不能和已扫描的串号相同：'+data.barcode);
+                    		return false;
+                		}
+                	}
+                	for(var i=0;i<serail_number_texts.length;i++) {
+                		if(serail_number_texts[i].value == '') {
+                			serail_number_texts[i].value = data.barcode;
+                			break;
+                		}
+                	}
+        		}
+        		
+                $('#item_list_'+product_id+'_real_out_goods_number').val(parseInt(real_out_number_total)+1);
+        	}
+            
+            // 检查是否都已经扫描，尝试提交
+            var _submit = true;
+            var product_ids = document.getElementsByName('item_list_product_ids[]');
+            for(var i=0;i<product_ids.length;i++) {
+            	var the_left_out_number = $('#item_list_'+product_ids[i].value+'_left_out_number').val();
+            	var the_real_out_number = $('#item_list_'+product_ids[i].value+'_real_out_goods_number').val();
+
+            	if(parseInt(the_left_out_number) > parseInt(the_real_out_number)) {
+                    _submit = false;
+                    return false;
+            	}
+            }
+            if (_submit) { 
+            	check(); 
+            }
+        }
+        // 该商品串号不存在或已出库
+        else {
+            alert(data.message);
+        }
+    }
+    
+	
+	function checkone(event)
+	{
+		//$('#download').attr('disabled', true);
+		$('#form').find(':hidden[name="act"]').val('download');
+		$('#form').submit();
+	}
+
+    /**
+     * 表单提交
+     */
+    function check(event)
+    {
+        // 禁用出库按钮
+        $('#pick').attr('disabled', true);
+        // 出库提交
+        $('#form').find(':hidden[name="act"]').val('pick');
+        $('#form').submit();
+    }
+    
+    
+	/**
+	 * 扫描面单
+	 */
+	function check_tracking_number(event)
+	{
+        if (event.keyCode != KEY.CTRL && event.keyCode != KEY.RETURN) return;
+
+		var flag = true;
+		var bill_no = $.trim($(event.target).val());
+
+		//  检查运单号规则
+        if(!check_tracking_number_rule (CARRIER_ID,bill_no)) {
+            flag = false;
+            alert('提醒：运单号和发货的类型不匹配！请检查');
+            return false;
+        }
+	    //检查运单号是否存在系统里面
+		$.ajax({
+			type : "POST",
+			url : "ajax.php?act=unique_trackingNumber",
+			data : "trackingNumber=" + bill_no,
+			dataType : 'json',
+			error : function() {
+				alert("运单号查询失败，请重新扫描");
+			},
+			success : function(data) {
+				if (data == '') {
+					if (!flag) {
+						alert('提醒：运单号和发货的类型不匹配！请检查');
+							return false;
+						
+					}
+					
+						// 所有的面单全部扫描后才能出库（分开发货时）
+						$('.inputTrackingNumber').each(function(i) {
+							var trackingNumber = $.trim($(this).val()).toString();
+							if (trackingNumber == '') {
+								return;
+							}
+						});
+
+						// EMS有自己的面单打印软件
+						if (CARRIER_ID != '14') {
+							sync_record_print('BILL',ORDER_SN,bill_no);
+							pprint('print_shipping_order3.php?order_id=' + ORDER_ID
+									+ '&print=1', 'hidden');
+						}
+
+						setTimeout(function() {
+							// 更新面单号提交
+							$('#form').find(':hidden[name="act"]').val('waybill');
+							$('#form').submit();
+						}, 1000);
+					
+
+					
+				} else {
+					alert("运单号已存在，请更换运单，重新扫描");
+					return;
+				}
+			}
+		});
+	}
+
+	   // 检查运单号规则 
+    function check_tracking_number_rule (carrier_id,tracking_number) {
+        var result = false;
+        $.ajax({
+            async:false,
+            type: 'POST',
+            url: 'ajax.php?act=check_tracking_number',
+            data: 'carrier_id=' + carrier_id + '&tracking_number=' + tracking_number,
+            dataType: 'json',
+            error: function() {
+                alert('ajax请求错误,检查面单号规则失败:' + tracking_number); 
+            },
+            success: function(data) {
+                if(data['error']) {
+                    alert(data['error']);
+                } else if(data == true) {
+                    result = true;
+                } 
+            }
+        });
+        return result;
+    }
+	
+	//批量导入串号 ljzhou 2014.2.21
+	function bacth_in_sns() {
+		if(!ORDER_ID || !FACILITY_ID){
+			alert("订单号或仓库为空！请联系erp");
+			return;
+		}
+		$.ajaxFileUpload({
+			url:'batch_in_sn.php?order_id='+ORDER_ID+'&facility_id='+FACILITY_ID,
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			success: function (data)
+			{
+				if(data.message == "")
+				{	
+					// 把能分配到串号依次填表
+					var product_ids = data.product_ids;
+					var product_serial_numbers = data.product_serial_numbers;
+					for(var i=0;i<product_ids.length;i++) {
+						var product_id = product_ids[i];
+						var serial_numbers = product_serial_numbers[product_id].serial_number;
+						for(var j=0;j<serial_numbers.length;j++) {
+		                	var serial_number_texts = document.getElementsByName('item_list_'+product_id+'_serial_numbers[]');
+		                	//alert(serial_numbers[j]);alert(serial_number_texts.length);
+							for(var k=0;k<serial_number_texts.length;k++) {
+								if($('#item_list_'+product_id+'_serial_number_'+(k+1)).val() == '') {
+									$('#item_list_'+product_id+'_serial_number_'+(k+1)).val(serial_numbers[j]);
+									$('#item_list_'+product_id+'_real_out_goods_number').val(parseInt($('#item_list_'+product_id+'_real_out_goods_number').val())+1);
+									break;
+								}
+							}
+						}
+					}
+
+				}else{
+					alert(data.message);
+				}
+			},
+			error: function (data, status, e)
+			{
+				alert("方法调用错误，请联系ERP组："+e);
+			}
+		})
+	}
+	
+	/**
+	 * 扫描发票
+	 */
+	function invoice(event)
+	{
+        if (event.keyCode != KEY.CTRL && event.keyCode != KEY.RETURN) return;
+		
+		var shipping_invoice = $.trim($('#shipping_invoice').val()).toString();  // 发票号
+		if (shipping_invoice == '') {
+			alert('请输入发票号');
+			return;
+		}
+		
+		$('#form').find(':hidden[name="act"]').val('change_invoice');
+		$('#form').submit();
+	}
+	
+	/**
+	 * 打印
+	 */
+	function pprint(url, mode)
+	{
+		if (mode == 'hidden') {
+			var iframe = document.getElementById('_pprint_');
+			if (!iframe) {
+				var obj = document.createElement("iframe");
+				obj.frameborder = 0;
+				obj.width = 1;//0;
+				obj.height = 1;//0;
+				obj.id = '_pprint_';
+				var iframe = document.body.appendChild(obj);
+			}
+			iframe.src = url;
+		} else {
+			window.open(url, "PrintWindow", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=800,height=920,left=10,top=240");			
+		}
+	}
+
+	/**
+	 * Record PRint Action
+	 * @param  {[type]} ORDER_ID [description]
+	 * @param  {[type]} bill_no  [description]
+	 * @return {[type]}          [description]
+	 */
+	function sync_record_print(type,order_sn,tracking_number){
+		$.ajax({
+            async:false,
+            type: 'POST',
+            url: 'ajax.php?act=add_print_record_for_carrier_bill',
+            data: 'type='+type+'&order_sn=' + order_sn + '&tracking_number=' + tracking_number,
+            dataType: 'json',
+            error: function() {
+                alert('ajax请求错误,Record Bill Print 失败:' + tracking_number); 
+            },
+            success: function(data) {
+                if(data['error']) {
+                    alert(data['error']);
+                } else if(data == true) {
+                    result = true;
+                } 
+            }
+        });
+	}
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <style type="text/css">
+	{literal}
+	.loading {
+		background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+	}
+	{/literal}
+	</style>  
+</head>
+<body>
+
+{include file="distributor/inc.navigation.htm"}
+<p>
+目前所处仓库：
+<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+</p>
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;分销订单发货&nbsp;</span></legend>
+<form method="post" id="form" style="width:96%; margin:auto;">
+  <input type="hidden" name="act" />
+  <input type="hidden" name="order_id" value="{$order.order_id}" />
+  <input type="hidden" name="order_sn" value="{$order.order_sn}" />
+  <input type="hidden" name="order_info_md5" value="{$order.order_info_md5}" />
+	<!--{if $message}-->
+	<div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;扫描订单&nbsp;</legend>
+  		<div>
+      <table class="inner">
+        <tr>
+          <td width="120">销售订单号</td>
+          <td>
+          	<input type="text" id="order_sn" value="{$order.order_sn}" size="24" /> &nbsp;&nbsp;&nbsp;&nbsp;
+          	<input type="button" id="load" value="加载" />
+          </td>
+        </tr>
+				
+        <!--{if $order}-->
+        <tr>
+          <td>订单状态</td>
+          <td>{$order.status_name}</td>
+        </tr>
+        
+        <tr>
+          <td>配送方式</td>
+          <td>{$order.shipping_name}</td>
+        </tr>
+        
+        <tr>
+          <td>收货人</td>
+          <td>{$order.consignee}</td>
+        </tr>
+        
+        <tr>
+          <td>收货地址</td>
+          <td>
+          	{if check_admin_priv('check_user_address')}
+          	{if $order.province != 0}[{$order.province|get_region_names}]{/if}{if $order.city != 0}[{$order.city|get_region_names}]{/if}{if $order.district != 0}[{$order.district|get_region_names}]{/if}{$order.address}
+            {else}
+            ××××××
+            {/if}
+					</td>
+        </tr>
+        
+        <tr>
+          <td>订单备注</td>
+          <td><font color="red">{$order.postscript}</font></td>
+          <td><input type="hidden" name="order_info_md5[{$item.order_id}]" value="{$item.order_info_md5}" /></td>
+        </tr>
+        
+        <!--{/if}-->
+    
+      </table>
+  		</div>    
+  </fieldset>
+  
+  
+	<br /><br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend {if $item_info_list}class="expand"{else}class="disabled"{/if}>&nbsp;商品列表&nbsp;</legend>
+  <div {if !$item_info_list}style="display:none;"{/if}>   
+      
+      <div class="inner" style="text-align:right; padding-right:20px; border-bottom:#7F9FFF 2px solid;">
+                    扫描框 ：  <input type="text" id="scan" style="width:220px;" /> <br /> 
+      <input id="validate" style="width:204px; padding:5px 20px 5px 0; border:0; color:#60F; font-weight:bold;" readonly="readonly" />
+      </div>
+      <!-- 香港平视65566串号excel导入 -->
+      <!--{ if $order.party_id == '65566' }-->
+      <div class="inner" style="text-align:right; padding-right:20px; border-bottom:#7F9FFF 2px solid;">
+		<br/>批量导入串号：
+		<input type="file" id="fileToUpload" name="fileToUpload"/>
+		<input type="button" value="导入串号" onclick="bacth_in_sns()"/>	
+		<br/><br/>
+	  </div>
+	  <br/>
+	  <!--{/if}-->
+	  
+      <table class="bWindow">
+        <tr>
+            <td colspan="4" align="right">
+            <span style="color:red;">共有商品数</span> <strong>{$order.total_goods_count}</strong>
+            </td>
+        </tr>   
+
+        <tr align="center">
+            <!--{if !$screened_barcode_flag}-->
+            <td width="11%">商品编码</td>
+            <!--{/if}-->
+            <td width="32%">商品名称</td>
+            <td width="9%">串号控制</td>
+            <td width="9%">订购数量</td>
+            <td width="30%">串号</td>
+        </tr>
+<!--{foreach from=$item_info_list key=key item=item}-->
+        <tr align="center">
+            <!--{if !$screened_barcode_flag}-->
+            <td >{$item.productcode}</td>
+            <!--{/if}-->
+            <td >{$item.goods_name}</td>
+            <td >{if $item.goods_type == 'SERIALIZED'}有{else}无{/if}</td>
+            <td >{$item.goods_number_total}</td>
+            <td align="left">
+	            <input type="hidden" id="item_list_{$item.product_id}_common_barcode" name="item_list_{$item.product_id}_common_barcode" value="{$item.productcode}" />
+	            <input type="hidden" id="item_list_{$item.product_id}_goods_number_total" name="item_list_{$item.product_id}_goods_number_total" value="{$item.goods_number_total}" />
+	            <input type="hidden" id="item_list_{$item.product_id}_goods_name" name="item_list_{$item.product_id}_goods_name" value="{$item.goods_name}" />
+	            <input type="hidden" id="item_list_{$item.product_id}_product_id" name="item_list_product_ids[]" value="{$item.product_id}" />
+	            <input type="hidden" id="item_list_{$item.product_id}_left_out_number" name="item_list_{$item.product_id}_left_out_number" value="{$item.left_out_number}" />
+	            
+	            <span style="color:#FF0000;"><strong> 已出库数：</strong>
+	            <input type="text" size="3" id="item_list_{$item.product_id}_has_out_number" name="item_list_{$item.product_id}_has_out_number" value="{$item.has_out_number_total}" readonly="true"/>
+	            </span>
+	            &nbsp;&nbsp;
+	            </br><span style="color:#FF0000;"><strong> 本次出库：</strong></span>
+	            <input type="text" size="3" id="item_list_{$item.product_id}_real_out_goods_number" name="item_list_{$item.product_id}_real_out_goods_number" value="0" readonly="true"/>
+	            </br></br><span class="tip">扫描一次，出库数会+1</span>
+	            {if $item.goods_type == 'SERIALIZED'}
+	            	 <input type="hidden" id="item_list_{$item.product_id}_is_serial" name="item_list_{$item.product_id}_is_serial" value="SERIALIZED" />
+	                 {foreach from=$item.serial_numbers key=s_key item=serail_number}
+	            	 <input type="text" id="item_list_{$item.product_id}_serial_number_{$s_key+1}" name="item_list_{$item.product_id}_serial_numbers[]" value="{$serail_number}" readonly="true" />
+	                 {/foreach}
+	            {/if}
+	            
+            </td>
+        </tr>
+
+ <!-- {/foreach} -->     
+       
+		<tr>
+			<td colspan="5" align="center">
+        	  {if in_array($order.shipping_status, array(0, 10))} 
+        	  
+              {if $download_status == "0"}
+              	<input type="button" id="download" value="资料未下载"/>&nbsp;&nbsp;&nbsp;&nbsp;
+              {else}
+              	<input type="button" id="pick" value="出库" /> &nbsp;&nbsp;&nbsp;&nbsp;
+              {/if}
+              {/if}
+             </td>
+		</tr>
+        
+      </table> 
+      
+      
+      {* 已配货待出库 *}
+      <!--{if $order.shipping_status == 8 || $order.shipping_status == 9 }--> 
+      <div class="inner" style="text-align:right; padding-right:20px; border-top:#7F9FFF 2px solid;">
+      	{* 打印发票部分 *}
+        {if $distributor.abt_print_invoice == 'Y'} {* 需要打印发票 *}
+        <a href="print_shipping_invoice_list.php" target="_blank">查看发票打印列表</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        
+        发票号 ： <input type="text" id="shipping_invoice" name="shipping_invoice" value="{$shipping_invoice}" size="30" {if $shipping_invoice}disabled="disabled"{/if} />
+        {if $shipping_invoice}<input type="button" id="change_shipping_invoice" value="修改" />{/if}        
+        <br />
+        {/if}
+        
+        
+        {* 扫面单部分 *}
+        {if $is_merge_shipment && !$is_primary_shipment}  {* 合并发货 *}
+        	<!--{foreach from=$merge_shipment_list item=shipment_order}-->
+        	{if $shipment_order.is_primary_shipment}与订单"{$shipment_order.order_sn}"合并发货{/if}
+        	<!--{/foreach}-->
+        {else}
+        	<!--{foreach from=$shipment_list item=shipment}-->
+
+			{if $sf_arata eq 1}
+			<p style="text-align: right">
+			顺丰热敏使用指南。<br>第一步，出库，该怎么出库就怎么出库。<br>第二步，申报，点申报按钮，会加载一个申报来的快递单号。<br>如果出错的话，就把订单号告诉erp。一个订单只能成功申报一次。<br>第三步，打印，按下打印按钮。热敏打印机和浏览器的配置请务必学会，做到能打印，打好印。<br>如果有追加面单的情况，按照苏林协定，使用手写面单解决。以上。
+			</p>
+			{if $shipment.TRACKING_NUMBER}
+			顺丰热敏面单: 
+			<input type="text" name="shipment_tracking_number[{$shipment.SHIPMENT_ID}]" value="{$shipment.TRACKING_NUMBER}" disabled="disabled" size="30" /> 
+			<input type="button" onclick="sync_record_print('THERMAL','{$order.order_sn}','{$shipment.TRACKING_NUMBER}');printSFBill({$order.order_id},'{$shipment.TRACKING_NUMBER}')" value="打印">
+			{else}
+			顺丰热敏面单: <input type="text" name="shipment_tracking_number[{$shipment.SHIPMENT_ID}]" size="30" readonly="readonly" class="inputTrackingNumber"/>
+			<input type="button" onclick="requestSFTrackingNumber('{$shipment.SHIPMENT_ID}','shipment_tracking_number[{$shipment.SHIPMENT_ID}]')" value='申报'>
+			{/if}
+
+			<br>
+
+			<script type="text/javascript">
+			{literal}
+			function requestSFTrackingNumber(shipment_id,input_name){
+				//ajax_arata_request_tracking_number
+				var tracking_number='';
+				$.ajax({
+		    		async:false,
+		    		type: 'POST',
+		            url: 'distribution_delivery.php?act=ajax_arata_request_tracking_number',
+		            data: 'shipment_id=' + shipment_id,
+		            dataType: 'json',
+		            error: function(mono) {	
+		            	alert("出错！"+mono); 
+		            	return false
+		            },
+		            success: function(data) {
+		            	// refund_status = data;
+		            	tracking_number=data.tracking_number;
+
+		            	$("input[name='"+input_name+"']").attr('value',tracking_number);
+
+		            	setTimeout(function() {
+							// 更新面单号提交
+							$('#form').find(':hidden[name="act"]').val('waybill');
+							$('#form').submit();
+						}, 1000);
+		            }
+		        }); 
+			}
+			function printSFBill(order_id,tracking_number){
+				pprint('print_shipping_order3.php?order_id=' + order_id + '&arata=1&print=1','hidden');
+			}
+			{/literal}
+			</script>
+			
+			{else}
+
+        	面单号 ：
+        	{if $shipment.TRACKING_NUMBER} {* 如果有面单号了则显示启用面单号修改的按钮 *}
+        	<input type="text" name="shipment_tracking_number[{$shipment.SHIPMENT_ID}]" value="{$shipment.TRACKING_NUMBER}" disabled="disabled" size="30" class="inputTrackingNumber" />
+        	<input type="button" value="修改" class="changeTrackingNumber" /><br/>
+        	{else}
+        	<input type="text" name="shipment_tracking_number[{$shipment.SHIPMENT_ID}]" size="30" class="inputTrackingNumber" /><br/>
+        	{/if}
+
+			{/if}
+	
+        	<!--{/foreach}-->
+        {/if}
+        <!-- count($order.order_goods) -->
+         {if !$is_merge_shipment && $order.shipping_status==8 && $order.is_cod == '0'}
+         <a href="javascript:void(0);" id="add_tracking_number_input">添加面单号</a>
+         {/if}
+        <br />
+      </div>
+      <!--{/if}-->
+      
+
+			{* 已出库的重打发票 *}
+			<!--{if $order.shipping_status == 1}-->
+      <div class="inner" style="text-align:right; padding-right:20px; border-top:#7F9FFF 2px solid;">
+        <a href="javascript:return void(0);" onclick="pprint('distribution_print_delivery_order.php?print=1&order_id={$order.order_id}');">重打发货单</a>
+      </div>
+      <!--{/if}-->
+      
+           
+      {* 已出库待发货 *}
+      <!--{if $order.shipping_status == 8}-->
+      <div class="inner" style="text-align:center;">
+         <!--{if $is_third_party == false}-->  
+				<input type="button" id="print_delivery_order" value="打印发货单" onclick="pprint('distribution_print_delivery_order.php?print=1&order_id={$order.order_id}')" />
+         &nbsp;&nbsp;&nbsp;->&nbsp;&nbsp;&nbsp;
+         <!--{/if}-->
+        <!--{if !$screened_shipment_flag}-->
+      	<input type="button" id="shipment" value="发货" />
+      	<!--{/if}-->
+      </div>
+      <!--{/if}-->
+      
+  </div>
+	</fieldset>
+  <br />
+
+</form>
+</fieldset>
+</div>
+
+</body>
+</html>

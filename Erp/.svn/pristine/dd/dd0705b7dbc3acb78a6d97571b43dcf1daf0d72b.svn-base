@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<title>应收未收汇总</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+
+<script type="text/javascript">
+{if $smarty.request.info}alert('{$smarty.request.info}');{/if}
+</script>
+</head>
+<body>
+<table class="bWindow" style="width:600px">
+<caption style="align:center"><h2>未收状况</h2></caption>
+<tr>
+	<th>配送方式</th>
+	<th>前60天已收</th>
+	<th>帐期</th>
+	<th>过期未收</th>
+	<th>当期未收</th>
+</tr>
+<!--{foreach from=$yishous item=yishou}-->
+  <tr>
+	<td>{$yishou.name}</td>
+	<td>{$yishou.real_paid}</td>
+	<td>{$yishou.bill}天</td>
+	<td><a href='finance_ysws.php?end={$yishou.start}&seq={$yishou.seq}'>{$yishou.gq_weishou}</a></td>
+	<td><a href='finance_ysws.php?start={$yishou.start}&end={$yishou.end}&seq={$yishou.seq}'>{$yishou.dq_weishou}</td>
+  </tr>
+<!--{/foreach}-->
+<tr>
+	<th>汇总</th>
+	<th>{$sum_yishou}</th>
+	<th></th>
+	<th>{$sum_gqws}</th>
+	<th>{$sum_dqws}</th>
+</tr>
+
+</table>
+</form>
+
+<table class="bWindow" style="width:600px">
+<caption style="align:center"><h2>清算状况</h2></caption>
+<tr>
+	<th>大分类</th>
+	<th>分类</th>
+	<th>金额</th>
+	<th>汇总</th>
+</tr>
+{if $qss.not_ys}
+   <!--{foreach from=$qss.not_ys item=clear name=clear}-->
+	<tr>
+	{if $smarty.foreach.clear.first}<td rowspan={$qss.not_ys|@count}><font color="red">非应收未收</font></td>{/if}
+		<td>{$clear.type_name}<br>[{$clear.description}]</td>
+		<td><a href='finance_dz.php?type={$clear.finance_clear_type}'>{$clear.amount}</a></td>
+	{if $smarty.foreach.clear.first}<td rowspan={$qss.not_ys|@count}>{$qss.not_ys_sum}</td>{/if}
+	</tr>
+   <!--{/foreach}-->
+{/if}
+
+{if $qss.ys}
+  <!--{foreach from=$qss.ys item=clear name=clear}-->
+  <tr>  
+  	{if $smarty.foreach.clear.first}<td rowspan={$qss.ys|@count}><font color="red">实际损失</font></td>{/if}
+		<td>{$clear.type_name}<br>[{$clear.description}]</td>
+		<td><a href='finance_dz.php?type={$clear.finance_clear_type}'>{$clear.amount}</a></td>
+	{if $smarty.foreach.clear.first}<td rowspan={$qss.ys|@count}>{$qss.ys_sum}</td>{/if}
+  </tr>
+  <!--{/foreach}-->
+{/if}
+
+<tr>
+  	<th>汇总</th>
+  	<th></th>
+  	<th></th>
+  	<th>{$qss.sum}</th>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>淘宝店铺商品列表</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+</head>
+<body>
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝分销商品列表&nbsp;</span></legend>
+	<div style="clear:both;"> 
+    <form method="post" >
+    <table >
+    <tr>
+	    <td>搜索：<input type="text" name="goods_name" value="{$smarty.request.goods_name}" /></td>
+	    <td>状态：
+	    <select name="status">
+	        <option value="ALL">不选</option>
+	        {html_options options=$status_list selected=$smarty.request.status }
+	    </select></td>
+	    <td>
+		商店名：
+	    <select name="application_key" >
+	      <option value="ALL">不选</option>
+	      {html_options options=$application_nicks selected=$smarty.request.application_key }
+	    </select>
+	    </td>
+	    <td>
+	    <input type="hidden" name="act" value="search" />
+	    <input type="submit" value="搜索" />
+	    </td>
+    </tr>
+    </table>
+    </form>
+    </div>
+  <br />
+  <h3 style="color:RED;">请在  淘宝管理 ——》淘宝分销库存同步  设置是否同步信息</h3>
+  <div style="clear:both;">
+      <h3 style="color:#09F;">淘宝分销商品列表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="goods_list_table">
+        <tr>
+          <th width="30">No.</th>
+          <th>商店名</th>
+          <th>商品名称 (商品编码)</th>
+          <th>淘宝后台商品名称</th>
+          <th>淘宝状态</th>
+          <th>预留量</th>
+          <th>同步状态</th>
+          <th>操作</th>
+        </tr>
+        
+        <!--{foreach from=$taobao_goods_list item=taobao_goods name="taobaoGoodsList"}-->
+        <form method="post">
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td>{$smarty.foreach.taobaoGoodsList.iteration}</td>
+          <td>{$taobao_goods.nick}</td>
+          <td>{$taobao_goods.goods_name}
+            &nbsp;&nbsp;({$taobao_goods.outer_id})
+          </td>
+          <td>{$taobao_goods.name}</td>
+          <td>{if $taobao_goods.status eq 'up'}在售{else}下架{/if}</td>
+          <td><input type="text" size="6" name="reserve_quantity" value="{$taobao_goods.reserve_quantity}"></input></td>
+          <td><select name="erp_status">
+          		{html_options options=$erp_status_list selected=$taobao_goods.erp_status}
+          	  </select>
+          </td>
+          <td>
+          <input type="hidden" name="act" value="update"></input>
+          <input type="hidden" name="taobao_goods_id" value="{$taobao_goods.taobao_goods_id}" />
+          <input type="submit" value="修改" class="update_product"/>
+          <input type="hidden" name="product_id" value="{$taobao_goods.product_id}" />
+          <input type="hidden" name="sku_id" value="{$taobao_goods.sku_id}"/>
+          <input type="hidden" name="application_key" value="{$taobao_goods.application_key}" />
+          <input type="hidden" name="erp_status_old" value="{$taobao_goods.erp_status}"/>
+          <input type="hidden" name="reserve_quantity_old" value="{$taobao_goods.reserve_quantity}"/>
+          <input type="hidden" name="outer_id" value="{$taobao_goods.outer_id}"/>
+          </td>
+        </tr>
+        </form>
+        <!--{foreachelse}-->
+            <tr><td colspan="8" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+      </table>
+      <br />
+  </div>
+</fieldset>
+  <script type="text/javascript">
+// <![CDATA[
+// {literal} 
+$(".update_product").click(function() {
+    var act = $(this).attr("value");
+    var product_id = $(this).parent().find("input[name='product_id']").attr("value");
+    var sku_id = $(this).parent().find("input[name='sku_id']").attr("value");
+    var application_key = $(this).parent().find("input[name='application_key']").attr("value");
+    var reserve_quantity = $(this).parent().parent().find("input[name='reserve_quantity']").attr("value");
+    var erp_status = $(this).parent().parent().find("select[name='erp_status']").attr("value");
+	var reserve_quantity_old = $(this).parent().find("input[name='reserve_quantity_old']").attr("value");
+	var erp_status_old = $(this).parent().find("input[name='erp_status_old']").attr("value");
+	if ((erp_status == erp_status_old) && (reserve_quantity == reserve_quantity_old)) {
+		alert("该商品预留库存数量及同步库存状态未修改");	
+		return false;
+	} else {
+		return true;
+	}
+});
+// {/literal}
+// ]]>
+</script>  
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+<!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /--> 
+  <script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+</head>
+<body>
+
+<form action="batch_sn_input_actionV2.php" method="post" id="form" >
+  <input type="hidden" id="search_orders_init[]" name="search_orders_init[]" value="{$search_orders}"/>
+  <input type="hidden" name="back" value="{$back}" />
+  <input type="hidden" name="validity_type" value="{$sort_validity}" />
+          <td width="120">显示方式</td>
+          <td>
+          	<select name="sort_method" id="sort_method" onchange="javascript:location.href='{$url}&sort=' + this.options[this.selectedIndex].value">
+          	{html_options options=$sort_method_list selected=$sort_method}
+            </select> 
+          </td>
+          <td width="120">&nbsp;&nbsp;日期录入方式</td>
+          <td>
+          	<select name="sort_validity" id="sort_validity" onchange="javascript:location.href='{$url}&sort_validity=' + this.options[this.selectedIndex].value">
+          	{html_options options=$sort_validity_list selected=$sort_validity}
+            </select> 
+          </td>
+          <br>
+          <br>
+          <span style="font-weight:bold;font-size:15px;">统计数据： </span>
+          <span style="font-weight:bold;font-size:15px;color:red;">商品总数：{$count_all_batch}  </span>
+          <span style="font-weight:bold;font-size:15px;color:red;">已入库商品数：{$count_all_in} </span>
+          <span style="font-weight:bold;font-size:15px;color:red;">未入库商品数：{$count_all_not} </span>
+          <br><br>
+  <table class="bWindow" style="margin-top:10px" id="batchTable">
+	<caption>
+		{if $batch_goods_item_type eq 'NON-SERIALIZED'}
+		<div align='center'>
+			<input type="button" style="color: red" id='batch_in_storage_button' name="batch_in_storage_button" onclick="javascript:batch_in_storage_click();" value="批量入库" />
+		</div>
+		{/if}
+		<h2>
+			批次采购订单详细
+			<input type="button" name="csv" onclick="location.href='{$smarty.server.REQUEST_URI|add_param_in_url:"csv":"批次订单详细csv"}'" value="批次订单详细csv" />
+		</h2>
+		<span style="color: red">{$smarty.request.info}</span>
+		<div align='left' ; style="margin-top: 5px; clear: both;">
+			<input type="button" value="全选" onclick="select_all('#batchTable');" /> 
+				&nbsp;&nbsp; 
+			<input type="button" value="反选" onclick="select_reverse('#batchTable');" />
+			&nbsp;&nbsp;&nbsp;&nbsp; 
+			<input name="in_time" style="width: 80px" id="batch_validity" value=""> 
+			<input type="button" id="batch_validity_trigger" value="...">
+					&nbsp;&nbsp; 
+			<input type="button" class="edit_validity" value="批量修改日期" />
+		</div>
+		<br />
+	</caption>
+	<tr>
+<th>选择</th>
+<th>批次订单号</th>
+<th>订单号</th>
+<th>订单时间</th>
+<th>商品</th>
+<th>商品条码</th>
+<th>已入库个数</th>
+<th>未入库个数</th>
+<th style="width:30%">修改入库个数</th>
+<th>{if $smarty.session.party_id == $smarty.const.PARTY_OUKU_SHOES}内部SKU{else}移动定制{/if}</th>
+<th>收货仓库</th>
+<th>供应商</th>
+<th>发票类型</th>
+<th>操作</th>
+<th>打印串号</th>
+</tr>
+{assign var=total_goods_number value=0}
+{foreach from=$search_orders item=search_order}
+{if !$search_order.canceled && $search_order.order_status != 5}
+<tr align="center">
+<td><input type="checkbox" name="check_validity[]" value="{$search_order.rec_id}" /></td>
+<td>{$search_order.batch_order_sn}</td>
+<td>{$search_order.order_sn}</td>
+<td>
+	{$search_order.order_time}<br>
+</td>
+<td>{$search_order.goods_name} × {$search_order.goods_number}<!--累加商品数{assign var=total_goods_number value=$total_goods_number+$search_order.goods_number}--></td>
+<td>{$search_order.barcode}</td>
+<td>{$search_order.in_count}</td>
+<td>{$search_order.not_in_count}</td>
+<td>
+        <input type="hidden" id="order_id_{$search_order.rec_id}" name="order_ids[]" value="{$search_order.order_id}"/>
+        <input type="hidden" id="batch_order_sn_{$search_order.rec_id}" name="batch_order_sns[]" value="{$search_order.batch_order_sn}" />
+        <input type="hidden" id="order_sn_{$search_order.rec_id}" name="rec_ids[]" value="{$search_order.rec_id}" />
+        <input type="hidden" id="goods_item_type_{$search_order.rec_id}" name="goods_item_types[]" value="{$search_order.goods_item_type}" />
+        <input type="hidden" id="not_in_count_{$search_order.rec_id}" name="not_in_counts[]" value="{$search_order.not_in_count}" />
+        <input type="hidden" id="is_maintain_warranty_{$search_order.rec_id}" name="is_maintain_warrantys[]" value="{$search_order.is_maintain_warranty}" />
+
+     <table style="width:90%;">
+     <tr>
+        <td style="width:50%;border:0px" align='center'>	
+        {if $search_order.is_maintain_warranty == 1} {$validity_info}
+        <input style="width:40%" id="search_in_time_{$search_order.rec_id}_1" name="search_in_times_{$search_order.rec_id}[]" value="">
+		<input type="button" id="search_in_time_trigger_{$search_order.rec_id}_1" value="..." >
+		{else} 无需维护日期
+		<input type="hidden" id="search_in_time_{$search_order.rec_id}_1" name="search_in_times_{$search_order.rec_id}[]" value="">
+		<input type="hidden" id="search_in_time_trigger_{$search_order.rec_id}_1" value="..." >
+		{/if}
+		</td>
+        <td style="width:50%;border:0px"> 数量
+    	<input style="width:15%" type="text" id="input_number_{$search_order.rec_id}_1" name="input_numbers_{$search_order.rec_id}[]" value="{$search_order.not_in_count}" onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" readonly />
+    	<input style="width:25%" type='button' value='编辑' onclick="$('#input_number_{$search_order.rec_id}_1').attr('readonly', false);return false;">
+    	</td>
+    </tr>
+    <tr>
+    <td colspan="2" style="text-align:center;border:0px">
+    <a href="javascript:void(0)" id="addValidityNumber_{$search_order.rec_id}" onclick="add_validity_number('{$search_order.rec_id}')">添加日期和数量</a>  
+    </td>
+    </tr>
+     </table>
+
+    </td>
+<td>
+  {if $smarty.session.party_id == $smarty.const.PARTY_OUKU_SHOES}
+    {$search_order.internal_sku}
+  {else}
+    {if $search_order.customized == 'mobile'}定制机{elseif $search_order.customized == 'non-mobile'}非定制机{/if}
+  {/if}
+</td>
+<td>{$search_order.facility_name}</td>
+<td>	
+	{if check_admin_priv('check_provider')}
+	{$search_order.provider_name}
+  {else}
+	××××××
+  {/if}
+</td>
+<td>{$search_order.order_type}</td>
+<td>
+	 <a href="sn_inputV3.php?order_id={$search_order.order_id}&rec_id={$search_order.rec_id}">{if (($search_order.in_count < $search_order.goods_number)&&($search_order.order_status != 5))}入库{/if}</a>  
+</td>
+<td>
+    <input type="checkbox" name="print_sn" value="1" checked />
+    <select name="printer_id">{html_options options=$printers selected=$smarty.session.latest_printer_id}</select>
+</td>
+</tr>
+{/if}
+{/foreach}
+</table>
+  
+</form>
+
+<script type="text/javascript">
+// <![CDATA[
+    var validity_info = '{$validity_info}';
+	{literal}
+	// ]]>
+
+    // 页面加载时初始化日历设置 ljzhou 2013.1.12
+    window.onload = function() {
+    	var rec_ids = document.getElementsByName('rec_ids[]');
+    	for(var i=0;i<rec_ids.length;i++)
+	    {
+	        var rec_id = $.trim($('#order_sn_'+rec_ids[i].value).val());
+	       
+	        // 默认日期为空
+	        document.getElementById("search_in_time_"+rec_id+"_1").value = "";
+	        set_up_calendar("search_in_time_"+rec_id+"_1","search_in_time_trigger_"+rec_id+"_1")
+	    }
+        document.getElementById("batch_validity").value = "";
+    	set_up_calendar("batch_validity","batch_validity_trigger");
+    }
+    
+    // 初始化日历函数
+    function set_up_calendar(input_field_value,button_value) {
+        Zapatec.Calendar.setup({
+            weekNumbers       : false,
+            electric          : false,
+            inputField        : input_field_value,
+            button            : button_value,
+            ifFormat          : "%Y-%m-%d",
+            daFormat          : "%Y-%m-%d"
+        });
+    }
+	
+    function get_date_format(later) {
+		var now = new Date();
+		var year = now.getFullYear();
+		var date_format = year+later;
+	    var month = now.getMonth();
+	    if(month < 10) {
+	    	date_format += "-0";
+	    } else {
+	    	date_format += "-";
+	    }
+	    date_format += month+1;
+	    var day = now.getDate();
+	    if(day < 10) {
+	    	date_format += "-0";
+	    } else {
+	    	date_format += "-";
+	    }
+	    date_format += day;
+		return date_format;
+    }
+    
+    function get_last_key_id(keys) {
+    	var last_id = keys[keys.length-1].id;
+		var newIds = last_id.split('_');
+		var newId = parseInt(newIds[newIds.length-1]);
+		return newId;
+    }
+    
+    // 添加日期和数量    
+	function add_validity_number(rec_id) {
+		var is_maintain_warranty = document.getElementById('is_maintain_warranty_'+rec_id);
+		if(is_maintain_warranty.value == 0) {
+			alert('无需维护日期的商品不能添加日期！');
+			return false;
+		}
+		var search_in_time_names = document.getElementsByName('search_in_times_'+rec_id+'[]');
+		var newId = get_last_key_id(search_in_time_names)+1;
+
+		var content = " <tr colspan=2><td style=\"width:50%;border:0px\" align='center'>	";
+		content += validity_info + "<input style=\"width:40%\" id=\"search_in_time_"+rec_id+"_"+newId+"\" name=\"search_in_times_"+rec_id+"[]\" value=\"\" >";
+		content += " <input  type=\"button\" id=\"search_in_time_trigger_"+rec_id+"_"+newId+"\" value=\"...\" >";
+		content += " </td>";
+		content += " <td style=\"width:50%;border:0px\"> 数量";
+		content += " <input style=\"width:15%\" type=\"text\" id=\"input_number_"+rec_id+"_"+newId+"\" name=\"input_numbers_"+rec_id+"[]\" value='1' onkeyup=\"value=value.replace(/[^\\d]/g,'')\" onbeforepaste=\"clipboardData.setData('text',clipboardData.getData('text').replace(/[^\\d]/g,''))\" readonly />";
+		content += " <input style=\"width:25%\" type='button' value='编辑' onclick=\"$('#input_number_"+rec_id+"_"+newId+"').attr('readonly', false);return false;\">";
+	    content += " <input style=\"width:25%\" type='button' value='删除' onclick=";
+	    content += " remove_validity_number(this)>";
+		content += " </td></tr>";
+
+        $('#addValidityNumber_'+rec_id).parent().parent().before(content);
+        set_up_calendar("search_in_time_"+rec_id+"_"+newId,"search_in_time_trigger_"+rec_id+"_"+newId);
+	}
+	
+	
+	//删除当前行
+	function remove_validity_number(obj) { 
+		if(confirm('确认删除吗？')) {
+		    $(obj).parent().parent().remove(); 
+            return true;
+		} else {
+			return false;
+		}
+	} 
+	
+	//批量入库 ljzhou 2012.11.27
+	function batch_in_storage_click(){
+	      if(!confirm("确定批量入库吗？\n请确保已经导出excel检查过了！")) {
+	    	  return false;
+	      };
+
+	      var rec_ids = document.getElementsByName('rec_ids[]');
+	      var orders_form = document.getElementById('form');
+	      if(rec_ids.length ==0) {
+	    	  alert('没有找到订单号！请联系erp');
+	    	  return false;
+	      }
+	      for(var i=0;i<rec_ids.length;i++)
+	      {
+	    	  if(!check_validity_number(rec_ids[i].value)){
+		    	  return false;
+	    	  }
+	      }
+	       orders_form.submit();
+	       $('#batch_in_storage_button').attr('disabled', true);
+	}
+    
+	// 检测日期和数量是否正确
+	function check_validity_number(rec_id) {
+		var validitys = document.getElementsByName('search_in_times_'+rec_id+"[]");
+		var numbers = document.getElementsByName('input_numbers_'+rec_id+"[]");
+  	    var not_in_count = $.trim($('#not_in_count_'+rec_id).val());
+
+  	    var total_num = 0;
+		for (var i=0;i<validitys.length;i++) {
+	  	    var is_maintain_warranty = $.trim($('#is_maintain_warranty_'+rec_id).val());
+	  	    if(is_maintain_warranty == 1) {
+	  	    	if(!check_validity_format(validitys[i].value)) {
+					alert('请输入 “2013-01-01” 这样格式的日期!'+rec_id+':'+validitys[i].value);
+					return false;
+				}
+				
+				for (var j=i+1;j<validitys.length;j++) {
+					if(validitys[i].value == validitys[j].value) {
+						alert('同一个订单日期不能重复！'+rec_id+':'+validitys[i].value);
+						return false;
+					}
+				}
+	  	    }
+			
+			// 检测格式
+	    	if(!check_input(not_in_count,rec_id,numbers[i].value)) {
+	    		return false;
+	    	}
+			total_num += parseInt($.trim(numbers[i].value));
+
+		}
+		// 检测总数量
+		if(parseInt(not_in_count) < parseInt(total_num)) {
+			alert('该订单总入库数量大于未入库数量：'+rec_id);
+			return false;
+		}
+		return true;
+	}
+	
+	function check_input(input_number,rec_id,number) {
+	    if (isNaN(number.trim())) {
+	        alert("请输入数字"+rec_id + ':' + number);
+	        return false;
+	    }
+		
+		if (number.trim() == ''){
+			alert("请输入一个数字，不想入库请输入0 " + rec_id + ':' + number);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='check_validity[]']:enabled").each(function(i){
+			this.checked = true;
+		});
+	}
+
+	/**
+	 * 反选
+	 */
+	function select_reverse(node)
+	{
+		node = node ? node : document ;
+		$(node).find("input[name='check_validity[]']:enable").each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+	
+	function batch_edit_validity(rec_ids) {
+		var new_validity = $('#batch_validity').val();
+		if(!check_validity_format(new_validity)) {
+			alert('请输入 “2013-01-01” 这样格式的日期!');
+			return false;
+		}
+		
+    	for(var i=0;i<rec_ids.length;i++)
+	    {
+	       document.getElementById("search_in_time_"+rec_ids[i]+"_1").value = $('#batch_validity').val();
+	    }
+	}
+	
+	function check_validity_format(validity) {
+		var exp = /^[1-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/;
+		if(!exp.test(validity)) {
+			return false;
+		}
+		return true;
+	}
+	
+	// 批量修改日期
+	$('.edit_validity').bind('click', function(event){
+		$checked = $("input[name='check_validity[]']:checked");
+		if ($checked.length) {
+			var ids = new Array();
+			$checked.each(function(i){
+			    ids.push(this.value);
+			});
+			batch_edit_validity(ids);
+		} else {
+			alert('没有选中项');
+			return false;
+		}
+	});
+	
+	{/literal}
+
+// ]]>
+</script>
+
+</body>
+</html>

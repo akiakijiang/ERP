@@ -1,0 +1,317 @@
+<!-- $Id: privilege_info.htm 7762 2007-04-02 05:11:08Z paulgao $  -->
+<!DOCTYPE html >
+<html>
+<head>
+<title>{$lang.cp_home}{if $ur_here} - {$ur_here} {/if}</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/general.css" rel="stylesheet" type="text/css" />
+<link href="{$WEB_ROOT}admin/styles/main.css" rel="stylesheet" type="text/css" />
+{insert_scripts files="../js/transport.js,common.js"}
+<script language="JavaScript">
+<!--
+// 这里把JS用到的所有语言都赋值到这里
+{foreach from=$lang.js_languages key=key item=item}
+var {$key} = "{$item}";
+{/foreach}
+//-->
+</script>
+</head>
+<body>
+<div class="main-div">
+<form name="theForm" method="post" enctype="multipart/form-data" onsubmit="return validate();">
+<p>密码安全强化实施中！如果密码不符合安全要求，请速速修改！</p>
+<table width="100%">
+  {if  $action eq 'edit'}
+  <tr>
+    <td class="label">所属party</td>
+    <td>
+      <select id="party_list" name="party_list[]" style="width:242px;" size="10" multiple="multiple" onchange="change_party_id()" {if !$enable_edit_party}disabled="disabled"{/if}>
+      {html_options options=$party_options_list selected=$user_party_list}
+      </select>
+      {$lang.require_field}
+    </td>
+  </tr>
+  <tr>
+    <td class="label">可选仓库 [我知道你们都想用<input type='button' onclick='var k=document.getElementsByName("facility_id[]");for(var i=0;i<k.length;i++)k[i].checked=true;' value='全选'>]</td>
+    <td id="facility_td">
+        {foreach from=$available_facility item=facility}
+        <input type="checkbox" name="facility_id[]" value="{$facility.facility_id}" {if $facility.owner}checked="checked"{/if} /> 
+        {$facility.facility_name}
+        {/foreach}
+    </td>
+  </tr>
+  {/if}
+  
+  <tr>
+    <!-- 用户名 -->
+    <td class="label">{$lang.user_name} </td>  
+    <td>
+      {if $action eq "modif"}
+      <input readonly="readonly" type="text" name="user_name" maxlength="20" value="{$user.user_name|escape}" size="34"/>{$lang.require_field}
+       {else}
+       <input type="text" name="user_name" maxlength="20" value="{$user.user_name|escape}" size="34"/>{$lang.require_field}
+        {/if}
+    </td>
+  </tr>
+  <tr>
+    <!-- 真实姓名 -->
+    <td class="label">{$lang.real_name} </td>
+    <td>
+      <input type="text" name="real_name" maxlength="20" value="{$user.real_name|escape}" size="34"/>{$lang.require_field}
+    </td>
+  </tr> 
+   <tr>
+    <!-- 分组 -->
+    <td class="label">{$lang.group}</td>
+    <td>
+      <select name="department" style="width:248px;">
+          {html_options options=$department_list selected=$user.department|escape}
+
+      </select> 
+    </td>
+  </tr>  
+  <tr>
+    <!-- Email地址 -->
+    <td class="label">{$lang.email}</td>
+    <td>
+      <input type="text" name="email" value="{$user.email|escape}" size="34" />{$lang.require_field}
+   </td>
+  </tr>
+ {if $action eq "add"}
+  <tr>
+    <!-- 密码 -->
+    <td class="label">{$lang.password}  </td> 
+    <td>
+      <input type="password" name="password" maxlength="32" size="34" />
+    </td>
+  </tr>
+  <tr>
+    <!-- 确认密码 -->
+    <td class="label">{$lang.pwd_confirm} </td>
+    <td>
+      <input type="password" name="pwd_confirm" maxlength="32" size="34" />
+    </td>
+  </tr>
+  {/if}
+  {if $action neq "add"}
+  <tr>
+    <td class="label">{$lang.new_password}  </td>
+    <td>
+      <input type="password" name="new_password" maxlength="32" size="34" /> 密码至少8位然后要有字母和数字。
+    </td>
+  </tr>
+  <tr>
+    <td class="label">{$lang.pwd_confirm}   </td>
+    <td>
+      <input type="password" name="pwd_confirm" value="" size="34" />
+    </td>
+  </tr>
+  {if  $action eq 'edit'}
+  <tr>
+    <td class="label">IP访问策略   </td>
+    <td>
+      <select name="allowedip_type">
+      <option value="COMPANY">仅公司内访问</option>
+      <option value="SELECTED" {if $user.allowedip_type == 'SELECTED'}selected="selected"{/if}>指定的IP访问</option>
+      <option value="ANYWHERE" {if $user.allowedip_type == 'ANYWHERE'}selected="selected"{/if}>任意IP访问</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="label">允许的IP地址   </td>
+    <td>
+      <textarea name="allowedip_list" rows="5" cols="32">{$user.allowedip_list}</textarea> 
+      <br />该设置仅在"IP访问策略"设置为"指定IP访问"时起效<br /> 每行代表一个不同的IP
+    </td>
+  </tr>
+  {/if}
+  {/if}
+  {if $action eq "modif"}
+  <tr>
+  <td align="left" class="label">{$lang.edit_navi}</td>
+  <td>
+      <table style="width:300px" cellspacing="0">
+        <tr>
+        <td valign="top">
+          <input type="hidden" name="nav_list[]" id="nav_list[]" />
+          <select name="menus_navlist" id="menus_navlist" multiple="true" style="width: 120px; height: 180px" onclick="toggleButtonSatus()">
+          {html_options options=$nav_arr}
+          </select>
+        </td>
+        <td align="center">
+         <input type="button" class="button" value="{$lang.move_up}" id="btnMoveUp" onclick="moveOptions('up')" disabled="true" />
+         <input type="button" class="button" value="{$lang.move_down}" id="btnMoveDown" onclick="moveOptions('down')" disabled="true" />
+         <input type="button" value="{$lang.add_nav}" id="btnAdd" onclick="JavaScript:addItem(theForm.all_menu_list,theForm.menus_navlist); this.disabled=true;" class="button" disabled="true" /><br />
+         <input type="button" value="{$lang.remove_nav}" onclick="JavaScript:delItem(theForm.menus_navlist); toggleButtonSatus()" class="button" disabled="true" id="btnRemove" />
+        </td>
+        <td>
+          <select id="all_menu_list" name="all_menu_list" size="15" multiple="true" style="width:150px; height: 180px" onchange="toggleAddButton()">
+            {foreach from=$menus item=menu key=key}
+              {if $key neq "admin_home"}
+              <option value="" style="font-weight:bold;">{$lang.$key}</option>
+              {foreach from=$menus.$key item=item key=k}
+              <option value="{$item}">&nbsp;&nbsp;&nbsp;&nbsp;{$lang.$k}</option>
+              		{if $item|is_array}
+              		{foreach from =$menus.$key.$k item=item_3 key=k_3}
+              		<option value="{$item_3}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$lang.$k_3}</option>
+              		{/foreach}
+              		{/if}
+              {/foreach}
+              {/if}
+             {/foreach}
+           </select>
+         </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  {/if}
+  <tr>
+    <td colspan="2" align="center">
+      <input type="hidden" id="user_facility_id" value="{$user.facility_id}" />
+      <input type="submit" value="{$lang.button_submit}" class="button" />&nbsp;&nbsp;&nbsp;
+      <input type="reset" value="{$lang.button_reset}" class="button" />
+      <input type="hidden" name="act" value="{$form_act}" />
+      <input type="hidden" name="id" value="{$user.user_id}" />
+    </td>
+  </tr>
+</table>
+</form>
+</div>
+{insert_scripts files="../js/utils.js,validator.js"}
+<script language="JavaScript">
+var action = "{$action}";
+<!--
+{literal}
+document.forms['theForm'].elements['user_name'].focus();
+onload = function()
+{
+    // 开始检查订单
+    startCheckOrder();
+}
+
+function change_party_id() {
+    var party_list = document.getElementById('party_list');
+    var user_facility_id = document.getElementById('user_facility_id').value;
+	var v = new Array();
+	for (var i = 0; i < party_list.length; i++) {
+		if (party_list.options[i].selected) {
+			v.push(party_list.options[i].value);
+		}
+	}
+    Ajax.call('ajax.php?act=get_available_faciltity', 'party_id=' + v.join(',') + '&user_facility_id=' + user_facility_id, change_party_id_response, 'POST', 'JSON');
+}
+
+function change_party_id_response(result) {
+    var html = '';
+    for (var i = 0; i< result.length; i++) {
+        html += '<input type="checkbox" name="facility_id[]" value="' + result[i].facility_id + '"';
+        if (result[i].owner) {
+            html += ' checked="checked" ';
+        }
+        html += ' /> ' + result[i].facility_name;
+    }
+    document.getElementById('facility_td').innerHTML = html;
+}
+
+/**
+ * 切换增加按钮的状态
+ */
+function toggleAddButton()
+{
+    var sel = document.getElementById("all_menu_list");
+    document.getElementById("btnAdd").disabled = (sel.selectedIndex > -1) ? false : true;
+}
+
+/**
+ * 切换移出，上移，下移按钮状态
+ */
+function toggleButtonSatus()
+{
+    var sel = document.getElementById("menus_navlist");
+    document.getElementById("btnRemove").disabled = (sel.selectedIndex > -1) ? false : true;
+    document.getElementById("btnMoveUp").disabled = (sel.selectedIndex > -1) ? false : true;
+    document.getElementById("btnMoveDown").disabled = (sel.selectedIndex > -1) ? false : true;
+}
+
+/**
+ * 移动选定的列表项
+ */
+function moveOptions(direction)
+{
+    var sel = document.getElementById('menus_navlist');
+    if (sel.selectedIndex == -1)
+    {
+        return;
+    }
+
+    len = sel.length
+    for (i = 0; i < len; i++)
+    {
+        if (sel.options[i].selected)
+        {
+            if (i == 0 && direction == 'up')
+            {
+                return;
+            }
+
+            newOpt = sel.options[i].cloneNode(true);
+
+            sel.removeChild(sel.options[i]);
+            tarOpt = (direction == "up") ? sel.options[i-1] : sel.options[i+1]
+            sel.insertBefore(newOpt, tarOpt);
+            newOpt.selected = true;
+            break;
+        }
+    }
+}
+
+/**
+* 检查表单输入的数据
+*/
+function validate()
+{
+  get_navlist();
+
+  validator = new Validator("theForm");
+  validator.required("user_name", user_name_empty);
+  validator.required("real_name", real_name_empty);
+  validator.required("email", email_empty, 1);
+  validator.isEmail("email", email_error);
+
+  if (action == "add")
+  {
+    if (document.forms['theForm'].elements['password'])
+    {
+      validator.required("password", password_empty);
+      validator.eqaul("password", "pwd_confirm", password_error);
+    }
+  }
+  if (action == "edit" || action == "modif")
+  {
+    if (document.forms['theForm'].elements['old_password'].value.length > 0)
+    {
+      validator.required("new_password", password_empty);
+      validator.eqaul("new_password", "pwd_confirm", password_error);
+    }
+  }
+
+  return validator.passed();
+}
+
+function get_navlist()
+{
+  if (!document.getElementById('nav_list[]'))
+  {
+    return;
+  }
+
+  document.getElementById('nav_list[]').value = joinItem(document.getElementById('menus_navlist'));
+  //alert(document.getElementById('nav_list[]').value);
+}
+//-->
+{/literal}
+</script>
+ </body>
+</html>

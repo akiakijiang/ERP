@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>收货入库</title>
+<!-- Autocomplete -->
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  
+<!-- Autocomplete /-->
+<!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+
+	<script type="text/javascript">
+	{literal}
+	// <![CDATA[
+	$(document).ready(function(){
+	
+		/**
+		 * 商品分类
+		 */
+		// 数据
+		var categorys = [
+			{'id' : '',              'result' : '全部' },
+			{'id' : 'mobile',        'result' : '手机' },
+			{'id' : 'fittings',      'result' : '手机配件' },
+			{'id' : 'dvd',           'result' : 'DVD' },
+			{'id' : 'education',     'result' : '电教产品' }
+		];
+		// 自动完成
+		$('#autocomplete_cagetory').autocomplete(categorys, {
+			minChars: 0,
+			mustMatch: true,
+			formatItem : function(row, i, max, value, term) {
+				return(row.result);
+			},
+			formatResult : function(row) {
+				return(row.result);
+			}
+		}).result(function(event, row, formatted) {
+			// 将隐藏域提供分类id
+			$('#goods_cagetory').val(row.id);
+			$('#autocomplete_goods').flushCache().setOptions({
+				extraParams : {'category':row.id}
+			});
+		}).focus();
+		
+		/**
+		 * 商品搜索
+		 */
+		$('#autocomplete_goods').autocomplete('ajax.php?act=search_goods', {
+			dataType : 'json',
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		});
+		// 如果选择了商品分类，为商品搜索缩小范围
+		var cat = $('#goods_cagetory').val();
+		if (cat) {
+			$('#autocomplete_goods').setOptions({
+				extraParams : {'category':cat}
+			});
+		}
+
+		/**
+		 * 供应商
+		 */
+		$('#autocomplete_provider').autocomplete('ajax.php?act=get_provider', {
+			minChars: 0,
+			mustMatch: true,
+			dataType : 'json',
+			formatItem : function(row, i, max, value, term) {
+				return(row.provider_name);
+			},
+			formatResult : function(row) {
+				return(row.provider_name);
+			}
+		}).result(function(event, row, formatted) {
+			// 将隐藏域的值设为供应商的id
+			$('#provider_id').val(row.provider_id);
+		});
+
+		
+	});
+	// ]]>
+	{/literal}
+	</script>
+</head>
+
+<body>
+
+<h2 align="center">搜索</h2>
+目前所处仓库：
+<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+
+
+<table class="bWindow" style="margin-top:10px">
+
+<form method="post" autocomplete="off">
+<table class="bWindow" style="margin-top:20px; ">
+<tr align="center">
+  <th>批次号</th>
+  <th>订单时间</th>
+  <th>仓库</th>
+  <th>操作</th>
+</tr>
+<tr align="center">
+	<td><input id="order" name="batch_order_sn" value="{$smarty.session.batch_in_storage.batch_order_sn}" /></td>
+  <td >
+		<input name="batch_in_time_from" id="batch_in_time_from" value="{$smarty.session.batch_in_storage.batch_in_time_from}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="batch_in_time_from_trigger" value="..." >
+                    到
+		<input name="batch_in_time_to" id="batch_in_time_to" value="{$smarty.session.batch_in_storage.batch_in_time_to}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="batch_in_time_to_trigger" value="..." >
+  </td>
+  <td>
+      <select name="facility_id" id="facility_id">
+         {html_options options=$facility_id_list selected=$smarty.request.facility_id}
+      </select> 
+  </td>
+  <td>
+		<input type="submit" value="搜索">
+		<input type="hidden" name="act" value="search">
+		<input type='hidden' name="label" value="{$smarty.request.label}"/>
+  </td>
+</tr>
+</table>
+</form>
+
+
+<div align='center'><br><font color='red'>{$info}</font></div>
+
+
+<table class="bWindow" style="margin-top:20px">
+<caption><h2>{if $smarty.request.act != 'search'}今日的批次采购订单{else}搜索的批次采购订单{/if}</h2></caption>
+<tr>
+<th>批次号</th>
+<th>组织</th>
+<th>订单时间</th>
+<th>收货仓库</th>
+<th>操作</th>
+</tr>
+{foreach from=$search_orders item=search_order}
+<tr align="center">
+<td>
+   <a href="batch_order_statistics.php?batch_order_sn={$search_order.batch_order_sn}">{$search_order.batch_order_sn}</a> 
+</td>
+<td>
+	{$search_order.party_name}<br>
+</td>
+<td>{$search_order.order_time}</td>
+<td>{$search_order.facility_name}</td>
+<td>
+	 <a href="batch_or_edit_in_storage.php?batch_order_id={$search_order.batch_order_id}">{if ($search_order.is_in_storage == 'N' && $search_order.is_over_c == 'N' && $search_order.is_cancelled == 'N' && $search_order.is_serial == 'N')}入库{/if}</a> 
+</td>
+</tr>
+
+{/foreach}
+</table>
+
+
+<script type="text/javascript">//<![CDATA[
+{literal}
+	   $(document).ready(function(){
+	       Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "batch_in_time_from",
+	          button            : "batch_in_time_from_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	       Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "batch_in_time_to",
+	          button            : "batch_in_time_to_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+		   });
+    	});
+
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

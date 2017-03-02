@@ -1,0 +1,701 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link type="text/css" rel="stylesheet" href="styles/v3.css" media="all"/>
+{literal}
+<style type="text/css">
+.clear{
+    clear:both;
+}
+.wrap{
+    width: 820px;
+    margin:0 auto;
+}
+.headWrap{
+    position: relative;
+    padding:10px;
+    background-color: #fff;
+    color: #34495e;
+    position: fixed;
+    top:-10px;
+    width: 100%;
+    height: 45px;
+    border-bottom: 1px solid #16a085;
+    box-shadow:0 0 10px rgba(0,146,199,.5);
+    -moz-box-shadow:0 0 10px rgba(0,146,199,.5);
+    -webkit-box-shadow:0 0 10px rgba(0,146,199,.5);
+}
+#header{
+    width: 960px;
+    position: relative;
+    left:50%;
+    margin-left: -520px;
+}
+.tab{
+    margin-top: 5px;
+    margin-left: 60px;
+}
+.tab a{
+    display: inline-block;
+    width: 100px;
+    height: 32px;
+    line-height: 32px;
+    margin:5px 0 6px 0;
+    background-color:#BFE1FF;
+    border:2px solid #BFE1FF; 
+    font-size: 14px;
+    color:#16a085;
+    text-align: center;
+}
+.tab a:hover{
+    border-bottom:2px solid #16a085; 
+    background-color: #BFE1FF;
+    -webkit-transition:background-color .2s linear;
+    -moz-transition:background-color .2s linear;
+    transition:background-color .2s linear;
+    cursor: pointer;
+}
+.tab a:active{
+    position: relative;
+    top:2px;
+}
+.tab a span{
+    color:#d35400;
+}
+.fac{
+    width: 98%;
+    font-weight: normal;
+    font-size: 14px;
+    color:#3498db;
+    display: inline-block;
+    margin-left: 5px;
+    /*display: none;*/
+}
+.search{
+    width: 500px;
+    position: absolute;
+    left: 50%;
+    top:5px;
+    margin-left: -200px;
+}
+#search_text{
+    width: 265px;
+    height: 32px;
+    line-height: 32px;
+    border:2px solid #d35400;
+    padding-left: 2px;
+    margin-right: 5px;
+}
+#search_text:focus{
+    transition:border linear .2s;
+    -moz-transition:border linear .2s;
+    -webkit-transition:border linear .2s;
+    outline:none;border-color:#1ABC9C;
+}
+
+.search input[type='submit']{
+    position: absolute;
+    border:none;
+    outline: none;
+    background: url(img/search.png) left no-repeat;
+    width: 32px;
+    height: 32px;
+}
+.search input[type='submit']:hover{
+    cursor: pointer;
+}
+.search input[type='submit']:active{
+    top:2px;
+}
+#rightSideWrap{
+    width: 214px;
+    position: absolute;
+    top: 6px;
+    right: 20px;
+}
+.n{
+    width: 212px;
+    position: absolute;
+    top:34px;
+    padding-top: 5px;
+    background-color: #fff;
+    border:1px solid #16a085;
+    margin-top:-1px;
+        -moz-box-shadow:0 0 10px #7fceb8;
+    -webkit-box-shadow:0 0 10px #7fceb8;
+    box-shadow:0 0 10px #7fceb8;
+}
+#faWrap{
+    height: auto;
+    padding-bottom: 5px;
+    display: none;
+}
+#hideBtn{
+    height: 0;
+    padding: 0;
+}
+#searchBar{
+    height: 400px;
+    display: none;
+}
+#searchBar img{
+    position: absolute;
+    top:19px;
+    right: 20px;
+    display: none;
+}
+#rightSideWrap ul li{
+    border:1px solid #52b1dd;
+    background-color: #52b1dd;
+    color:#FFF;
+    width: 70px;
+    height: 33px;
+    line-height: 33px;
+    text-align: center;
+    float: left;
+    cursor: pointer;
+}
+#searchLi,#facLi{
+    margin-left: -1px;
+}
+#rightSideWrap ul li.shown{
+    background-color: #16a085;
+    color:#fff;
+    border:1px solid #16a085;
+}
+#searchBarcode{
+    border:1px solid #d35400;
+    margin-left: 10px;
+    margin-top: 5px;
+    width: 180px;
+    padding-left: 10px;
+    height: 32px;
+    line-height: 32px;
+
+}
+#nameList{
+    min-width: 190px;
+    width: 255px;
+    margin-left: 10px;
+    border:1px solid #c7c7c7;
+    -moz-box-shadow:0 0 10px #c7c7c7;
+    -webkit-box-shadow:0 0 10px #c7c7c7;
+    box-shadow:0 0 10px #c7c7c7;
+    display: none;
+    background-color: #fff;
+}
+#nameList p{
+    cursor: pointer;
+    padding:5px;
+    margin: 0;
+}
+#nameList p:hover{
+    background-color: #0093DA;
+    color: #fff; 
+}
+#styleList{
+    border:1px solid #d35400;
+    position: absolute;
+    top:43px;
+    left: 10px;
+    display: none;
+    width: 178px;
+    padding-left: 12px;
+}
+.user{width:99%;text-align:center;}
+.goods{width:99%;clear:both;}
+.goods td{text-align:center;}
+label[for='forScan']{
+    margin-left: 16px;
+    margin-bottom: 12px;
+    display: inline-block;
+    height: 28px;
+    line-height: 28px;
+    color:#34495e;
+    font-size: 14px;
+}
+#forScan{
+    width: 180px;
+    height: 24px;
+    line-height: 24px; 
+    padding-left: 2px;
+    border:2px solid #bdc3c7;
+    -webkit-transition:border .3s linear;
+    -moz-transition:border .3s linear;
+    transition:border .3s linear;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+
+}
+#forScan:focus{
+    border:2px solid #1abc9c;
+}
+.nowNum{
+    width: 1.5em;
+}
+input[type='radio']{
+}
+.goods a{
+    display: inline-block;
+    color:#d35400;
+}
+.goods a:hover{
+    text-decoration: underline;
+}
+.tips{
+    margin-left: 5px;
+    color:#e74c3c;
+    font-size: 14px;
+    padding-left: 22px; 
+    background: url(img/inf.png) left no-repeat;
+    display: none;
+}
+.loadTips{
+    color:#1abc9c;
+    background: url(img/load.gif) left no-repeat;
+}
+</style>
+{/literal}
+<title>退换货收货验货</title>
+</head>
+
+<body>
+    <div class="headWrap">
+        <div id="header"> 
+            <div class="tab">
+                <a href="?back_shipping_status=12">已入库</a>
+                <a href="?back_shipping_status=0">待处理(<span> {$count_var.back_shipping_status_0} </span>)</a>
+            </div>
+            <form class="search" id="form1" onsubmit="return check();">
+                <input type="hidden" name="act" value="search" />
+                <select name="search_type">
+                	<option label="ERP订单号" value="order_sn">订单号</option>
+                	<option label="淘宝订单号" value="taobao_order_sn">淘宝订单号</option>
+					<option label="收货人" value="consignee">收货人</option>
+					<option label="收货人电话" value="tel">收货人电话</option>
+					<option label="寄回快递运单号" value="deliver_number">寄回快递运单号</option>
+                </select>     
+                <input type="text" name="search_text" id="search_text" placeholder="请输入搜索内容，例如订单号、快递单号等..."/>
+                <input type="submit" value="" title="搜索" alt="搜索"/>
+            </form>
+            <div id="rightSideWrap">
+                <ul>
+                    <li id="hideLi" class="shown">隐藏</li>
+                    <li id="searchLi">搜索条码</li>
+                    <li id="facLi" >仓库</li>
+                </ul>
+                <div id="rightNav">
+                    <div class="n" id="hideBtn">
+                    </div>
+                    <div class="n" id="searchBar">
+                        <input type='text'name='searchBarcode' id='searchBarcode' placeholder='输入商品名称，回车查询 ... '>
+                        <div id="nameList"></div>
+                        <div id="styleList"></div>
+                        <img src="img/load.gif">
+                    </div>
+                    <div class="n" id="faWrap">
+                            {foreach from=$facility_name key=k item=value}
+                                <span class="fac">{$value}</span>
+                            {/foreach}
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+        <div class="clear"></div>
+    </div> 
+                    
+    <div class="wrap">
+        <!--{foreach from=$back_goods_services item=service}-->
+
+        <div class="service_box">
+            <h2><span>订单号：<a href="{$WEB_ROOT}admin/order_edit.php?order_id={$service.order_id}" target="_blank">{$service.order_sn}</a></span>&nbsp;&nbsp;售后类型：{if $service.service_type == 2}退货申请{elseif $service.service_type == 1}换货申请{elseif $service.service_type == 7}返修申请{/if}&nbsp;&nbsp;&nbsp;售后申请时间：{$service.apply_datetime}</h2>
+             <table cellpadding="0" cellspacing="0" class="user">
+                <tr>
+                    <th>用户名</th>
+                    <th>收货人</th>
+                    <th>支付方式</th>
+                    <th>送货方式</th>
+                </tr>
+                <tr>
+                    <td>{$service.apply_username}</td>
+                    <td>{$service.consignee}</td>
+                    <td>{$service.pay_name}</td>
+                    <td>{$service.shipping_name}</td>
+                </tr>
+             </table>
+            <div style="margin: 7px">
+                <span>原订单发货仓库：</span>
+                <b id="{$service.facility_id}">{$service.facility_name}</b>
+                <span style="margin-left: 10px;">受理仓库：</span>
+                <span id="{$service.facility_id}">{$service.origin_facility_name}<span>
+            </div>
+   
+            {include file="v3/include/back_express_info.dwt"} 
+            {include file="v3/include/action_info.dwt"}  
+            <div style="clear:both;margin:15px auto;"></div>
+            <span style="display:none">{$service.service_id}</span>
+            <label for="forScan">扫描:</label>
+            <input type="text" id="forScan" class="scanBox">
+            <span class="tips">该商品为串号控制商品呀，请扫描串号~</span>
+            <form method="post" class="form_submit" >
+            <table cellpadding="0" cellspacing="0" class="goods">
+                <tr>
+                    <th>商品名称</th>
+                    <th>商品数量</th>
+                    <th>可退数量</th>
+                    <th>本次退回数量</th>
+                    <th>商品条码/串号</th>
+                    <th>新旧情况</th>
+                    <th>已入库全新、二手情况</th>
+                </tr>
+                {foreach from=$service.back_goods_list key=k item=goods }
+                <tr class="goodsList">   
+                    <td style='text-align:center;padding-left:10px;color:blue;'>{$goods.goods_name}</td>
+                    <td>{$goods.goods_number}</td>
+                    <td class="amount">{$goods.amount}</td>
+                    <td><input type="text" class="nowNum" value="0" {if $goods.is_serial}disabled="true"{/if} readonly="true"/></td>
+                    <td class="barcodeOrSerial"><p class="barcode"></p></td>
+                    <td class="newOld">
+                    </td>
+                    <td>{$goods.new_old_status}</td>
+                </tr>
+                {/foreach}
+                <tr>
+                    <td colspan="7" style="text-align:right;padding-right:10px;">
+                {if $service.inner_check_status == 32}
+                    <strong style="color:red;font-size:14px;margin-right:10px;">已全部入库</strong>
+                {else}
+                	{if $service.back_shipping_status == 12}
+                		<strong style="color:red;font-size:14px;margin-right:10px;">已部分入库</strong>
+                	{else}
+    	                {if $service.can_in_storage && $service.inner_check_status != 32}
+    	                <div class='check_goods_result' style='border-top:1px solid #ccc;'>
+    	            			<p style="margin:5px 0;text-align:left;">验货结果：</p>
+    							<textarea name="check_result" style="margin-top:10px;width:99%;height:60px;"></textarea>
+    	                       <br/>
+    	                    {if $service.back_shipping_status == 0}
+    	                    	<input type='button' id='cancel_wait' value='等待消费者寄回货物' onclick="update_logistic_service_note('{$service.service_id}')" />
+    	                    {else if $service.back_shipping_status == 5}
+    	                        <input type='button' id='cancel_wait_1' value='已等待消费者寄回货物' disabled=true>
+    	                    {/if}
+    	                    <input type="submit" value="验货入库" class="examine_ok button_1">
+    	                    <input type="submit" value="拒绝入库"  class="examine_refuse button_1"/>
+                        </div>
+    	                    <input type="hidden" name="act" value="update" />
+    	                    <input type="hidden" name="back_url" value="{$back_url}" />
+    	                    <input type="hidden" name="inner_check" value="pass"/>
+    	                    <input type="hidden" name="service_id" value="{$service.service_id}" />
+    	                {else}
+    	               		 <strong style="color:red;font-size:14px;margin-right:10px;">未填写售后档案详细信息，无法入库</strong>
+    	                {/if}
+    	            {/if}
+                {/if}
+                    </td>
+                </tr>
+            </table>
+            </form>
+
+        </div>
+        <!-- {/foreach} -->
+
+        <div style="clear:both;">{$pager}</div>
+        <div id="popDiv" style="display:none;">
+            <div class="popw">
+                <span class="closeMask">&times;</span>
+                    <h2>添加备注：</h2>
+                    <div class="popContent">
+                        <p><textarea name="track_result"></textarea></p>
+                        <input type="hidden" name="act"  value="remark" />
+                        <input type="hidden" name="service_id"  value="0"/>
+                        <p><input type="button" value="提交" class="sub button_1"/><input type="button" value="取消" class='closeMask button_2'/></p>
+                    </div>    
+            </div>        
+        </div> 
+    </div>
+        <script type="text/javascript" src="{$WEB_ROOT}admin/js/jquery-1.2.6.pack.js"></script>
+        <script type="text/javascript" src="{$WEB_ROOT}admin/js/json2.js"></script>
+        <script type="text/javascript" src="{$WEB_ROOT}admin/js/v3.js"></script>
+        <script type="text/javascript">
+        //{literal}
+        function check(){
+        	var search_text = this.document.getElementById("search_text").value;
+        	if(search_text.trim() == ""){
+        		alert("请输入需要查找的内容！");
+        		return false;
+        	}
+        	return true;
+        }
+        
+        String.prototype.trim = function()  
+        {  
+            return this.replace(/(^\s*)|(\s*$)/g, "");  
+        }
+
+        $(document).ready(function(){
+            $(".service_box").eq(0).css("margin-top","70px");
+            var $scanBox = $(".scanBox");
+            var $nowNum = $(".nowNum");
+            var radioSeq = 0;   // 作为radio单选标签控件的编号使用
+            var existSN = new Array();
+            var $examine_ok = $(".examine_ok");
+            var $examine_refuse = $(".examine_refuse");
+            $("#rightSideWrap ul li").click(function(){
+                if(! $(this).hasClass("shown")){
+                    $(this).addClass("shown").siblings().removeClass("shown");
+                }
+                var liIndex = $("#rightSideWrap ul li").index(this);
+                $(".n").eq(liIndex).fadeIn(400).siblings().hide();
+            });
+            $("#hideLi").click(function(){
+                $(".n").slideUp();
+            });
+            $("#searchBarcode").keyup(function(e){
+                var data = "key=" + $(this).val();
+                if(e.which == 13){
+                    $.ajax({
+                        type:"POST",
+                        dataType:'json',
+                        url:"ajax.php?act=get_barcode",
+                        data:data,
+                        beforeSend:function(){
+                            $("#searchBar img").fadeIn(200);
+                        },
+                        success:function(data){
+                            var $nameNumber = data.goodslist.length;
+                            var $nameList = $("#nameList");
+                            var $styleList = $("#styleList");
+                            $styleList.html("").hide();
+                            $nameList.html("");
+                            $("#searchBar img").fadeOut(200);
+                            if($nameNumber == 0){
+                                $nameList.append("<p>搜不到呀,换个关键词再试试~</p>").fadeIn(200);
+                            }else{
+                                for(var i=0;i<$nameNumber;i++){
+                                    $nameList.append("<p>"+data.goodslist[i].name+"</p>").fadeIn(200);
+                                }
+                                var $np = $("#nameList p");
+                                $np.click(function(){
+                                    var aname = $(this).text();
+                                    var goodsIndex = $np.index(this);
+                                    // alert(goodsIndex);
+                                    $("#searchBarcode").val(aname);
+                                    $nameList.html("").fadeOut(200);
+                                    var styleLen = data.goodslist[goodsIndex].style_list.length;
+                                    // alert(styleLen);
+                                    for(var i=0;i<styleLen;i++){
+                                        $styleList.append("<p>"+data.goodslist[goodsIndex].style_list[i]+"</p>");
+                                    }
+                                    $styleList.fadeIn(200);      
+                                });
+                            }
+                        },
+                        error:function(){
+                            alert("ajax error");
+                        }
+                    });
+                }
+            });
+            $examine_ok.click(function(){
+            	var index = $examine_ok.index(this);
+            	$examine_ok.eq(index).attr('disabled', true);
+            	$examine_refuse.eq(index).attr('disabled', true);
+            	$('#cancel_wait').attr('disabled', true);
+                var $nowNum = $(this).parent().parent().parent().parent().find(".nowNum");
+                
+                var len = $nowNum.length;
+                for(var i=0;i<len;i++){
+                    var am = Number($nowNum.eq(i).parent().prev().text());
+                    var nn = Number($nowNum.eq(i).val()); 
+                    if(isNaN(nn) || parseInt(nn) != nn || nn < 0){
+                    	alert("请输入合法的商品数量（正整数）");
+                    	$examine_ok.eq(index).attr('disabled', false);
+                    	$examine_refuse.eq(index).attr('disabled', false);
+                	    $('#cancel_wait').attr('disabled', false);
+                    	return false;
+                    }else if(am > nn){
+                        alert("对不起，请扫描所有的商品！");
+                        $examine_ok.eq(index).attr('disabled', false);
+                        $examine_refuse.eq(index).attr('disabled', false);
+                	    $('#cancel_wait').attr('disabled', false);
+                        return false;
+                    }else if(am < nn){
+                    	alert("本次退回数量超过可退数量！请重新输入");
+                    	$examine_ok.eq(index).attr('disabled', false);
+                    	$examine_refuse.eq(index).attr('disabled', false);
+                	    $('#cancel_wait').attr('disabled', false);
+                    	return false;
+                    }
+                }
+                if(confirm("确定入库吗？")){
+                    $(this).parents().find('input[name="inner_check"]').val('pass');
+                    $(this).parents().filter(".form_submit").trigger("submit");
+                    return true;
+                }else{
+                    $examine_ok.eq(index).attr('disabled', false);
+                    $examine_refuse.eq(index).attr('disabled', false);
+                	$('#cancel_wait').attr('disabled', false);
+                    return false;
+                };
+            }); 
+            $examine_refuse.click(function(){
+            	//$(this).parents().find('input[name="inner_check"]').val('refused');
+            	index = $examine_refuse.index(this);
+                $examine_ok.eq(index).attr('disabled', true);
+            	$examine_refuse.eq(index).attr('disabled', true);
+            	$('#cancel_wait').attr('disabled', true);
+            	alert('这是验货拒绝哦！');         	          
+	            if(confirm('确定拒绝吗？')){
+	            	$(this).parents().find('input[name="inner_check"]').val('refused');
+	            	$(this).parents().filter(".form_submit").trigger("submit");
+	                return true;
+	            }else{
+		            $examine_ok.eq(index).attr('disabled', false);
+	            	$examine_refuse.eq(index).attr('disabled', false);
+	            	$('#cancel_wait').attr('disabled', false);
+	            	return false;
+	            };
+
+            }); 
+            
+            $scanBox.keyup(function(e){
+
+                if(e.which == 17 || e.which == 13){
+                    var scanIndex = $(".scanBox").index(this);
+                    var thisVal = $(this).val();
+                    var serviceId = $(".scanBox").eq(scanIndex).prev().prev().text();
+                    var data = "key="+thisVal+"&service_id="+serviceId;
+                    $(".tips").hide();
+                    $.ajax({
+                        type:"post",
+                        dataType:'json',
+                        url:"ajax.php?act=back_goods_scan",
+                        data:data,
+                        beforeSend:function(){
+                            $(".scanBox").eq(scanIndex).next().addClass("loadTips").text("正在拼了命加载...").fadeIn(400);
+                        },
+                        success:function(data){
+                        	if(data.goodIndex == -1){
+                        		$(".scanBox").eq(scanIndex).next().removeClass("loadTips").text("条码（串号）输入错误（该商品可能不属于此订单）！请重新扫描！");
+                        	}else{
+                        		var is_full = true;
+                        		for(var i=0;i<data.goodIndex.length;i++){
+	                            	var goodsInd = data.goodIndex[i];
+	                            	var nowgoodsList = $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd);
+		                            var goodsNumNow = parseInt(nowgoodsList.find(".nowNum").val());
+		                            var availableNum = parseInt(nowgoodsList.find(".amount").text());
+		                            if(goodsNumNow < availableNum) {
+		                               var keyStatus = data.keyStatus;   // 标记用户输入的条码（串号）的查找结果    0:未找到用户输入的条码（串号）  1:找到了用户输入的条码   2:找到了用户输入的串号   3:用户输入了商品条码，但该商品为串号控制商品
+		                               if(keyStatus == 1){  // 找到了用户输入的条码
+		                                   $(".tips").fadeOut();
+		                               	   var newNum = parseInt(goodsNumNow) + 1;
+		                               	   nowgoodsList.find(".nowNum").attr("readonly",false);
+		                                   $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".nowNum").keyup(function(){
+	                                        	if($(this).val() == ""){
+	                                        		$(this).val("0");
+	                                        	}
+	                                        	var reg = /^\d+$/;
+	                                        	var n = $(this).val();
+		                                        if(n == 0){
+		                                        	$(this).attr("readonly",true);
+		                                        }
+		                                        var an = $(this).parent().prev().text();
+		                                        var b = parseInt(n) <= parseInt(an);
+		                                        if( reg.test(n) && b){
+		                                            $(this).parent().next().next().html("");
+		                                            for(var i=0;i<n;i++){
+		                                                $(this).parent().next().next().append("<input type='radio' name='goodsType[" + data.key + "][" + radioSeq.toString() + "]' value='new' checked='checked'>全新"+"<input type='radio' name='goodsType[" + data.key + "][" + radioSeq.toString() + "]' value='old'>二手"+"</br>");
+		                                                radioSeq++;
+		                                            }
+		                                        }else{
+		                                            alert("请输入小于等于可退数量的正整数");  
+		                                        }
+		                                   });
+		                                   $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".nowNum").val(newNum);  // 本次已退商品数目加一
+		                               	   $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".barcode")  // 刷新刚扫描进的商品条码
+		                                   .text(data.key+"（条码）");
+		                                   $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".newOld")
+		                                   .append("<input type='radio' name='goodsType[" + data.key + "][" + radioSeq.toString() + "]' value='new' checked='checked'>全新"+"<input type='radio' name='goodsType[" + data.key + "][" + radioSeq.toString() + "]' value='old'>二手"+"</br>");
+		                                   $(".scanBox").eq(scanIndex).val("");
+		                                   radioSeq++;
+		                               }else if(keyStatus == 2){  // 找到了用户输入的串号 
+		                                    if($.inArray(data.key,existSN) == -1){
+		                                           existSN.push(data.key);
+		                                           $(".tips").fadeOut();
+		                                           var newNum = parseInt(goodsNumNow) + 1;
+		                                           $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".nowNum").val(newNum);  // 本次已退商品数目加一
+		                                           $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".barcodeOrSerial")  // 添加刚扫描进的商品串号
+		                                           .append("<p>" + data.key + "（串号）</p><input type='hidden' name='serialNum[" + goodsInd.toString() + "][]' value='" + data.key + "'/>");
+		                                           $(".scanBox").eq(scanIndex).next().next().find(".goodsList").eq(goodsInd).find(".newOld")
+		                                           .append("<input type='radio' name='goodsType[" + data.key + "][]' value='new' checked='checked'>全新"+"<input type='radio' name='goodsType[" + data.key + "][]' value='old'>二手"+"</br>");
+		                                           $(".scanBox").eq(scanIndex).val("");
+		                                    }else{
+		                                        $(".scanBox").eq(scanIndex).next().removeClass("loadTips").text("该串号已经输入过了呀~");  
+		                                    }
+		                               }else if(keyStatus == 3){  // 用户输入了正确的商品条码，但该商品为串号控制商品,应该输入商品的串号
+		                               	   $(".scanBox").eq(scanIndex).next().removeClass("loadTips").text("该商品为串号控制商品,应该输入商品的串号");
+		                               }else if(keyStatus == 4){  // 用户输入了正确的串号，可是该串号的商品已经在库存里面了
+		                               	   $(".scanBox").eq(scanIndex).next().removeClass("loadTips").text("该串号的商品已经在库存里面了，请扫描其他商品入库");
+		                               }else{  // 未找到用户输入的条码（串号）
+		                                   $(".scanBox").eq(scanIndex).next().removeClass("loadTips").text("输入错误（该商品可能不属于此订单）呀,请重新扫描~");
+		                               }
+		                               is_full = false;
+		                               break;
+		                            }
+	                            }
+		                        if(is_full){
+		                        	$(".scanBox").eq(scanIndex).next().removeClass("loadTips").text("已达可退数量上限呀~");
+		                        }
+                        	}
+                        },
+                        error:function(){
+                            alert("AJAX ERROR!");
+                        }
+                    });
+                }
+            }); 
+            
+        });
+        
+        // 等待消费者寄回货物
+		function update_logistic_service_note(service_id) {
+		    if(!confirm('确认等待消费者寄回货物吗？')) {
+		    	return false;
+		    }
+		    $('#cancel_wait').attr('disabled',true);
+			var result = "";
+	    	$.ajax({
+	   		    async:false,
+	            type: 'POST',
+	            url: 'ajax.php?act=update_logistic_service_note',
+	            data: 'action_type=5&service_id='+service_id,
+	            dataType: 'json',
+	            error: function() {	
+	            	alert('ajax请求错误,update_logistic_service_note service_id:' + service_id); 
+	            },
+	            success: function(data) {
+	               result=true;
+	           	}
+	        }); 
+	        if(result) {
+	           alert('等待消费者寄回货物成功');
+	           $('#cancel_wait').val('已等待消费者寄回货物');
+	        }
+		}
+		
+        // $(window).scroll(function(){
+        //         var t = $(document).scrollTop();
+        //         var m = $(".main");
+        //         var h = m.height();
+        //         if(t >= h){
+        //             $(".main").css("position","fixed");
+        //         }else{
+        //             $(".main").css("position","relative");
+        //         }
+        //     });
+        // //{/literal}
+        </script>
+</body>
+</html>

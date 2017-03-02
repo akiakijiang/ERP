@@ -1,0 +1,653 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>淘宝外包发货管理</title>
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <!-- <script type="text/javascript" src="../misc/jquery.js"></script> --> 
+  <script type="text/javascript" src="../misc/jquery1.11.min.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  {literal}
+  	<style>
+	.slid{
+		border: 1px solid white;	
+	}
+
+	.slid tr td{
+		border: 1px solid white;
+		
+	}
+	.slid tr th{
+		border: 1px solid white;
+		
+	}
+	tr.odd {
+	    background-color:#FFF;
+	}
+	tr.even {
+	    background-color:#E2F9FA;
+	}
+	tr.hover {
+	    background-color:#b6d1ec;
+	}
+
+	body{
+		z-index: 1; 
+	}
+
+	.province-ul {
+		list-style: none;
+	}
+	.province-ul li{
+		display: inline-block;
+    	float:left;
+    	width: 100px;
+    	margin: 2px 3px;
+	}
+	tr.th {
+	  background-color:#E2F9FA;
+	  color: black;
+	}
+	.fenye_change {
+	  float: none;
+	  margin-top: -40px;
+	  text-align: center;
+	}
+
+	</style>
+
+	<script type="text/javascript">
+	// <![CDATA[
+							
+	var WEB_ROOT = '{$WEB_ROOT}';
+	//初始化两个用来存储用户作出的修改，用以显示
+	
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit(){
+		var flag = true;
+		// 判断是否选择了分销店铺 
+		var appkey = $("#application_nicks").find("option:selected").val();
+		if(appkey == 'ALL'){
+			flag = false;
+			alert('请选择店铺');
+			return;
+		}
+		
+		//判断是否输入了商家编码 
+		var outer_id = $('#outer_id').val();
+		if (!outer_id) {
+			flag = false;
+			alert('请先输入商家编码 ');
+			return;
+		}else{
+			$.ajax({
+				type: 'POST',
+				url: 'taobao_out_ship_goods_configure.php?request=ajax&act=check',
+				data: 'outer_id=' + outer_id,
+				dataType: 'json',
+				async: false,
+				success:function(data){
+					flag=data;
+					if(!flag)alert("商家编码不存在，请查询后再试");
+				},
+				error: function() { 
+					flag=false;
+					alert("商家编码查询异常，请稍后重试");
+				}
+			});
+		}
+		
+		//判断是否输入了外包订单商品数量
+		var out_goods_number = $('#out_goods_number').val();
+		if(out_goods_number == 0){
+			flag = false;
+			alert('请选择外包商品数量');
+			return;
+		}
+		
+		//判断套餐是否可以拆分
+		var tc_is_split = $("input[name='item[tc_is_split]']:checked").val();
+		var party_id = $('#party_id').val();
+		if(tc_is_split == 'Y'){
+			if(party_id != 65558 || outer_id.substr(0, 3) !== "TC-"){
+				flag = false;
+				alert('只有金佰利的套餐才能拆分');
+				return;
+			}else{
+				$.ajax({
+					type: 'POST',
+					url: 'taobao_out_ship_goods_configure.php?request=ajax&act=check_tc',
+					data: 'outer_id=' + outer_id,
+					dataType: 'json',
+					async: false,
+					success:function(data){
+						flag=data;
+						if(!flag)alert("套餐包含的商品数量为2个的套餐才能拆分");
+					},
+					error: function() { 
+						flag=false;
+						alert("商家编码查询异常，请稍后重试");
+					}
+				});
+			}
+		}
+		
+		
+		//判断是否输入了外包数量
+		var num = $('#out_number').val();
+		if (num == '' || !/^\d+$/.test(num) || num < 1) {
+			flag = false;
+			alert('请输入正确的商品数量');
+			return;
+		}
+		
+		var out_province = $("#out_province").val();
+		if(out_province ==""){
+			alert("请选择外包省份");
+			return; 
+		}
+		// 取得外包时限 
+		var start = $('#start_time').val();
+		var end = $('#end_time').val();
+		var now = (new Date()).valueOf();
+		var startstamp = Date.parse(start);
+		if(start.trim() == '' || end.trim() == ''){
+			flag = false;
+			alert('输入起始与截止日期');
+			return;
+		}else if(!/\d{4}-\d{2}-\d{2}\s*/.test(start) || !/\d{4}-\d{2}-\d{2}\s*/.test(end)){
+			flag = false;
+			alert('输入的起始与截止日期不符合规则');
+			return;
+		}else if(start >= end){
+			flag = false;
+			alert('起始时间不能晚于截止时间');
+			return;
+		}
+		if($('#startTrigger').attr('disabled') !='disabled'){
+			if(now > startstamp){
+				flag = false;
+				alert('创建起始时间不能早于当前时间');
+				return;
+			}
+		}else{
+			if(now > Date.parse(end)){
+				flag = false;
+				alert('截止起始时间不能早于当前时间');
+				return;
+			}
+		}
+		
+		//取得配送方式
+		var shipping = $('#out_ship_id').val();
+		if(shipping == 0){
+			flag = false;
+			alert('请选择配送方式');
+			return;
+		}
+		var facility = $('#facility_id').val();
+		if(facility == -1){
+			flag = false;
+			alert('请选择外包仓库');
+			return;
+		}
+		
+		var act = $('#act').val();
+		if(flag){
+			if(act == 'add'){
+				//判断该商品+店铺组合是否还在做活动
+				$.ajax({
+					type: 'POST',
+					url: 'taobao_out_ship_goods_configure.php?request=ajax&act=check_add_appkey_outerId',
+					data: 'outer_id=' + outer_id+"&application_key="+appkey,
+					dataType: 'json',
+					async: false,
+					success:function(data){
+						if(!data){
+							alert("该店铺+商家编码组合正在活动进行中，创建失败");
+							return false;
+						}
+					},
+					error: function() { 
+						flag=false;
+						alert("店铺+商家编码组合现状查询异常，请稍后重试");
+						return false;
+					}
+				});
+			}
+			$('#update').attr('disabled',false);
+			$('#create').attr('disabled',false);
+			if (confirm("外包的商品不能参加赠品活动，请问是否还要外包？")) {
+				$('#tc_is_split_value').val(tc_is_split);
+				$('#group_detail_form').submit();
+			} else {
+				return false;
+			}
+		}else{
+			alert('无法创建成功');
+		}	
+		
+	}
+	
+	
+		
+	</script>
+	{/literal}
+	
+
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<div style="margin:20px auto;" align="left">
+<fieldset style="border:rgba(220,220,220,.8) 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px;">&nbsp;外包管理&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+	<br />
+
+  <fieldset style="border: rgba(2,23,2,.5)	1px dashed;">
+  <legend class="expand" id="goods-add-upd" style="font-size: 15px;background-color:#B8DCFF;">&nbsp;商品管理&nbsp;</legend>
+  
+  <div> <a name="update"></a>
+	<form method="post" id="group_detail_form">
+      <table class="inner">
+        <tr>
+          <td width="120">分销店铺</td>
+          <td>
+	          <select name="item[application_key]" id="application_nicks" {if $start_disabled} disabled="disabled" {/if}>
+					<option value="ALL" >未选</option> {html_options options=$application_list selected=$update.application_key }
+			</select>
+		</td>
+        </tr>
+        
+        <tr>
+          <td>商家编码</td>
+          <td>
+            <input type="text" name="item[outer_id]" value="{$update.outer_id}" id="outer_id" maxlength="128" size="30"  {if $start_disabled} disabled="disabled" {/if}/>
+          </td>
+        </tr>
+        
+        <!-- <tr>
+        	<td>订单商品数量</td>
+        	<td>
+        		<input type="text" name="item[goods_number]" value="{$update.goods_number}" id="goods_number" maxlength="128"  {if $start_disabled} disabled="disabled" {/if}/>
+        	</td>
+        </tr> -->
+        
+        <tr>
+        	<td>外包商品数量</td>
+        	<td>
+        		<select name="item[out_goods_number]" id="out_goods_number">
+        			<option value="0">-请选择-</option>
+        			<option value="1" {if $update.out_goods_number==1}selected="selected"{/if}>1</option>
+        			<option value="2" {if $update.out_goods_number==2}selected="selected"{/if}>2</option>
+        			<option value="3" {if $update.out_goods_number==3}selected="selected"{/if}>3</option>
+        		</select>
+        		<span style="color:grey">(1:订单商品数量为1的进入外包仓; 2:订单商品数量为1、2的进入外包仓; 3:订单商品数量为1、2、3的进入外包仓)</span>&nbsp;&nbsp;
+        		<span style="color:red">注：外包的商品不能参加赠品活动</span>
+        		</td>
+        </tr>
+        
+        <tr>
+        	<td>拆分套餐</td>
+        	<td>
+        		<input type="radio" name="item[tc_is_split]" id="tc_is_split_Y" value="Y" {if  $update.tc_is_split=="Y"}checked="checked"{/if} {if $party_id != 65558} disabled {/if} />是
+        		<input type="radio" name="item[tc_is_split]" id="tc_is_split_N" value="N" {if  $update.tc_is_split!=="Y"}checked="checked"{/if} {if $party_id != 65558} disabled {/if} />否
+        		<span style="color:red">(注：拆分套餐目前只针对金佰利业务组，其他业务组均不能拆分)</span>
+        		<input type="hidden" name="item[tc_is_split_value]" id="tc_is_split_value" value=""/>
+        		<input type="hidden" name="party_id" id="party_id" value="{$party_id}" />
+        		
+        	</td>
+        </tr>
+        
+        <tr>
+          <td>商品数量上限</td>
+          <td>
+            <input name="item[out_number]" type="text" id="out_number" value="{$update.out_number}" maxlength="128"/>
+          </td>
+        </tr>
+
+        <tr>
+          <td>外包省份</td>
+          <td>
+             <a href="javascript:;" id="province-select-a">选择</a>
+             <input type="hidden" name="item[out_province]" id="out_province" value="{$update.province_list}" />
+             &nbsp;&nbsp;&nbsp;
+             <span id="show-province">{$update.region_name}</span>
+             <div id="province-select-div" style="position: absolute;z-index: 2;background-color: white;margin-left: 100px;border:1px solid gray; width: 520px;padding: 5px;"> 省份选择 </div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>耗材条码</td>
+          <td>
+            <input name="item[consumables]" type="text" id="consumables" value="{$update.consumables}" maxlength="128"/>
+          </td>
+        </tr>
+        
+
+        <tr>
+          <td>有效时间</td>
+          <td>
+            <input type="text" name="item[start_time]" value="{$update.start_time}" {if $start_disabled}readonly='readonly'{/if}size="21" id="start_time" />
+            <input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" {if $start_disabled}disabled='disabled'{/if}/>&nbsp;&nbsp;---&nbsp;&nbsp;
+			<input type="text" name="item[end_time]" value="{$update.end_time}" size="21" id="end_time"/>
+            <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+          </td>
+        </tr>
+        
+
+        <tr>
+          <td>配送方式</td>
+          <td>
+        	<select name="item[out_ship_id]" id="out_ship_id">
+             		<option value="0">-请选择-</option>
+                    <optgroup label="款到发货">
+                    {foreach from=$get_shippings item=shipping key=shipping_id}
+                    	{if $shipping.support_no_cod == 1 && $shipping.support_cod == 0}
+                        	<option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $update.out_ship_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                   	 	{/if}
+                    {/foreach}
+                    </optgroup>
+          
+                    <optgroup label="货到付款">
+          				{foreach from=$get_shippings item=shipping key=shipping_id}
+                    	{if $shipping.support_no_cod == 0 && $shipping.support_cod == 1}
+                        	<option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $update.out_ship_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    	{/if}
+                   	 {/foreach}
+                    </optgroup>    
+          
+                    <optgroup label="上门自提">
+                    {foreach from=$get_shippings item=shipping key=shipping_id}
+                   	 	{if $shipping.support_no_cod == 1 && $shipping.support_cod == 1}
+              				<option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $update.out_ship_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    	{/if}
+          			{/foreach}
+                    </optgroup>                                                
+             </select>
+          </td>
+        </tr> 
+        
+        <tr>
+          <td>外包仓库</td>
+          <td>
+        	<select name="item[facility_id]" id="facility_id">
+			<option value=-1 {if $facility_id eq 0}selected="selected"{/if}>-请选择-</option>
+			{html_options options=$get_facilities selected=$update.facility_id }
+			<!-- {foreach from=$get_facilities key=key item=facility}
+				<option value="{$facility.facility_id}" {if $facility.facility_id eq $update.facility_id}selected="selected"{/if}>{$facility.facility_name}</option>
+			{/foreach} -->
+	</select>&nbsp;&nbsp;&nbsp;&nbsp;
+          </td>
+        </tr> 
+
+      </table>
+
+      <br />
+      {if $update.out_ship_goods_id}
+      <div style="text-align:center"><input type="button" value="更新" onclick="apply_submit(this);" id="update"/></div>
+      <input type="hidden" name="item[out_ship_goods_id]" id="out_ship_goods_id" value="{$update.out_ship_goods_id}" />
+      <input type="hidden" name="act" id="act" value="update" />
+      <input type="hidden" name="comment" id="comment" value="更新"/>
+      {else}
+      <div style="text-align:center"><input type="button" value="创建" onclick="apply_submit(this);" id="create"/></div>
+      <input type="hidden" name="act" id="act" value="add" />
+      <input type="hidden" name="comment" id="comment" value="创建"/>
+      {/if}
+  </form>
+	</div>
+	</fieldset>
+ 	<br />
+	<br />
+  <fieldset style="border: rgba(2,23,2,.5) 1px dashed;">
+  <legend class="expand" style="font-size: 15px;background-color: #B8DCFF;">&nbsp;商品列表&nbsp;</legend>
+  <div>
+<!--{if $group_list}-->  {* 如果有列表数据 *}
+
+      <table class="inner slid" id="group_table" cellpadding="0" cellspacing="0">
+      
+        <tr align="center" class="th" style="font-size: 15px;">
+          <th width="10%">分销店铺</th>
+          <th width="5%">商家编码</th>
+          <!-- <th width="5%">订单商品数量</th> -->
+          <th width="5%">外包商品数量</th>
+          <th width="5%">套餐拆分</th>
+          <th width="5%">外包数量上限</th>
+          <th width="5%">已售</th>
+          <th width="8%">起始时间</th>
+          <th width="8%">截止时间</th>
+          <th width="7%">配送方式</th>
+          <th width="5%">耗材条码</th>
+          <th width="8%">外包仓库</th>
+          <th width="17%">外包省份</th>
+          <th width="7%">操作</th>
+           
+        </tr>
+        
+        <!--{foreach from=$group_list item=group name="groupList"}-->
+	    <tr align="center" class="{cycle values='odd,even'}" out_ship_goods_id="{$group.out_ship_goods_id}" 
+	    style="font-size:15px;border:1px solid #ddd;">
+		  <td>{$group.nick}</td>
+          <td>{$group.outer_id}</td>
+          <!-- <td>{$group.goods_number}</td> -->
+          <td>{$group.out_goods_number}</td>
+          <td>
+          {if $group.tc_is_split == 'Y'}
+          	是
+          {else}
+          	否
+          {/if}
+          </td>
+		  <td>{$group.out_number}</td>
+		  <td>{$group.transfer_num}</td>
+          <td>{$group.start_time}</td>
+          <td>{$group.end_time}</td>
+          <td>{$group.shipping_name}</td>
+          <td>{$group.consumables}</td>
+          <td>{$group.facility_name}</td>
+          <td>{$group.region_name}</td>
+	      <td>
+	      {if $group.end_time >$group.nowstamp}
+            <a href="taobao_out_ship_goods_configure.php?id={$group.out_ship_goods_id}">编辑</a>
+            <a href="taobao_out_ship_goods_configure.php?out_ship_goods_id={$group.out_ship_goods_id}&act=delete">删除</a>
+          {/if}
+           </td>
+		   
+		</tr>
+        <!--{/foreach}-->
+<!--         <tr>
+        	<td colspan="13" style="text-align:center;padding-right:20px;padding: 5px;">{$Pager}</td> 
+        </tr> -->
+        
+      </table>
+      
+	   {$pagination}
+
+<!--{else}-->
+
+	  <div style="text-align:center"><h4>无相关数据</h4></div>
+      
+<!--{/if}-->
+
+
+
+  </div>    
+  </fieldset>
+
+	
+        
+  
+<br />
+</div>
+</fieldset>
+</div>
+
+
+<script type="text/javascript">
+// <![CDATA[
+            
+{literal}
+Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "start_time",
+		button            : "startTrigger",
+		ifFormat          : "%Y-%m-%d %H:%M:%S",
+		daFormat          : "%Y-%m-%d %H:%M:%S",
+		showsTime         :true
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "end_time",
+		button            : "endTrigger",
+		ifFormat          : "%Y-%m-%d %H:%M:%S",
+		daFormat          : "%Y-%m-%d %H:%M:%S",
+		showsTime         :true
+	});
+
+
+    var goods_add_upd_show = true;
+    $("#goods-add-upd").click(function(){
+    	console.log("hehe"); 
+    	goods_add_upd_show = !goods_add_upd_show;
+    	if(goods_add_upd_show == true){
+    		$(this).parents("fieldset").find("form").fadeIn(800); 
+    	}else{
+    		$(this).parents("fieldset").find("form").fadeOut(800); 
+    	}
+    }); 
+
+	$("#province-select-div").hide(); 
+	var is_show = false; 
+	var provinces = null ; 
+	var current_province_array = null; 
+
+		// 省份选择 
+	$("#province-select-a").click(function(){
+		$("#province-select-div").toggle(); 
+		is_show = !is_show; 
+		if(is_show == false ) return false; 
+		current_province_array = $("#out_province").val().split(",");
+		if( provinces == undefined || provinces == null  || provinces.length < 1 ){
+			$.getJSON("taobao_out_ship_goods_configure.php?request=ajax&act=province",function(data){
+			    provinces = data.data; 
+			    provinceHtml(provinces);
+			  }); 
+		}else {
+			provinceHtml(provinces); 
+		}
+	}); 
+
+	// 确定
+	$("body").on("click","#province-ok",function(event){
+		event.preventDefault(); 
+		$("#show-province").html("");
+		current_province_array = []; 
+		$(".province-check:checked").each(function(){
+			 var thisProvince = $(this).siblings("input.hidden").val();
+			 thisProvince = JSON.parse(thisProvince); 
+			 current_province_array.push(thisProvince.region_id); 
+			 $("#show-province").append("&nbsp;"+thisProvince.region_name); 
+		}); 
+		$("#out_province").val(current_province_array.join(",")); 
+		is_show = false; 
+		$("#province-select-div").hide();
+	}); 
+
+	// 全选 
+	$("body").on("click","#province-all",function(event){
+		event.preventDefault();
+		$(".province-check").each(function(){
+			 $(this).prop("checked",true);
+		}); 
+	}); 
+    
+	// 反选 
+	$("body").on("click","#province-all-not",function(event){
+		event.preventDefault();
+		$(".province-check").each(function(){
+			var isChecked = $(this).prop("checked");
+			if(isChecked){
+				$(this).prop("checked",false);
+			}else{
+			    $(this).prop("checked",true);
+			}
+		}); 
+	}); 
+
+	function findProvinceId(region_id,ids){
+		var index = -1;
+		for(var i in ids){
+			if(ids[i] == region_id){
+				index = i;
+				return index; 
+			}
+		}
+		return index; 
+	}
+
+	// 关闭 
+	$("body").on("click","#province-close",function(){
+		is_show = false; 
+		$("#province-select-div").hide(); 
+	}); 
+
+    // 点击复选框旁边的名称 可以切换选中状态 
+	$("body").on("click",".province-name",function(){
+		var checkbox = $(this).siblings("input.province-check");
+		var isChecked = checkbox.prop("checked");
+		if(isChecked){
+			checkbox.prop("checked",false);
+		}else{
+			checkbox.prop("checked",true);
+		}
+	}); 
+    
+    // 选中 
+    $("body").on("change",".province-check",function(){
+		// console.log($(this).val()); 
+		 var thisProvince = $(this).siblings("input.hidden").val();
+		// console.log(thisProvince); 
+	}); 
+
+
+	function provinceHtml(province){
+		var html = "";
+		html += "<p> <span id='province-close' style='float:right;margin-top:-10px;'> &times; 关闭</span> </p>";
+		html += "<ul class='province-ul'>";
+		for(var i in province){
+			html += "<li >";
+			if(findProvinceId(province[i].region_id,current_province_array) > -1 ){
+				html += "<input  type='checkbox' class='province-check' checked='checked' value ='"+province[i].region_id+"'>"; 
+			}else{
+				html += "<input  type='checkbox' class='province-check'  value ='"+province[i].region_id+"'>"; 
+			}
+			html += "<span class='province-name'>"+province[i].region_name+"</span>"; 
+			html += "<input type='hidden' class='hidden' value='"+JSON.stringify(province[i])+"'"; 
+			html += "</li>";
+		}
+		html += "</ul>";
+		html += "<br/>";    
+		html += "<p style='float:right;margin-top:10px;'>  <button  id='province-all'> 全选</button>  &nbsp; <button  id='province-all-not'> 反选</button>  &nbsp;   <button  id='province-ok' style='color:red;'> 确定</button> </p>";
+		$("#province-select-div").html(html);
+	}
+	{/literal}
+	
+		// ]]>
+
+</script>
+</body>
+</html>

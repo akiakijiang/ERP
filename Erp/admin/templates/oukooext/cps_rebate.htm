@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>cps规则列表</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+<!-- calendar -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;cps规则列表&nbsp;</span></legend>
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">cps规则列表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+          <th width="30">No.</th>
+          <th width="50">cps名称</th>
+          <th>开始时间</th>
+          <th>结束时间</th>
+          <th>是否启用</th>
+          <th>所属网站</th>
+          <th>返现方式</th>
+          <th>计算方式</th>
+          <th width="50%">返现规则</th>
+          <th>操作</th>
+        </tr>
+        <form method="POST">
+        <input type="hidden" name="act" value="add" />
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td rowspan="2" ></td>
+          <td rowspan="2" >
+          <select name='cps_name'>
+	       {html_options options=$cps_name_mapping selected=$rebate_rule.cps_name}
+          </select>
+          </td>
+          <td rowspan="2" ><input type="text" id="startCalendar" name="startdate" value="{$start}" />
+            <input type="button" value="..." id="startTrigger"></td>
+          <td rowspan="2" ><input type="text" id="endCalendar" name="enddate" value="{$end}" />
+            <input type="button" value="..." id="endTrigger"></td>
+          <td rowspan="2" >
+          <select name='is_delete'>
+            {html_options options=$is_delete_mapping selected=$rebate_rule.is_delete}
+          </select>
+          </td>
+          <td rowspan="2" >
+          <select name='party_id'>
+            {html_options options=$party_id_mapping selected=$rebate_rule.party_id}
+          </select>
+          </td>
+          <td>通过金额<input type="hidden" name="rebate_type[]" value='by_amount' /></td>
+          <td>
+          <select name='calc_type[]'>
+            {html_options options=$calc_type_mapping selected=$rebate_rule.1.calc_type}
+          </select>
+          </td>
+          <td><input type="text" style="width:600px;" name="rebate_detail[]" 
+                value="{$rebate_rule.by_amount.rules}"></td>
+          <td rowspan="2"><input type="submit" value="添加" /></td>
+        </tr>
+        <tr align="center">
+          <td>商品分类<input type="hidden" name="rebate_type[]" value='by_order_goods' /></td>
+          <td>
+          <select name='calc_type[]'>
+            {html_options options=$calc_type_mapping selected=$rebate_rule.1.calc_type}
+          </select>
+          </td>
+          <td><input type="text" style="width:600px;" name="rebate_detail[]" 
+                value="{$rebate_rule.by_order_goods.rules}"></td>
+        </tr>
+        </form>
+        <!--{foreach from=$rebate_rules item=rebate_rule name="rebateRules"}-->
+        <form method="POST">
+        <input type="hidden" name="act" value="edit" />
+        <input type="hidden" name="cps_rebate_rule_id" value="{$rebate_rule.0.cps_rebate_rule_id}" />
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td rowspan="2">{$smarty.foreach.rebateRules.iteration}</td>
+          <td rowspan="2" >
+          <select name='cps_name'>
+	       {html_options options=$cps_name_mapping selected=$rebate_rule.0.cps_name}
+          </select>
+          </td>
+          <td rowspan="2" ><input type="text" name="startdate" value="{$rebate_rule.0.startdate}" /></td>
+          <td rowspan="2" ><input type="text" name="enddate" value="{$rebate_rule.0.enddate}" /></td>
+          <td rowspan="2" >
+          <select name='is_delete'>
+            {html_options options=$is_delete_mapping selected=$rebate_rule.0.is_delete}
+          </select>
+          </td>
+          <td rowspan="2" >
+          <select name='party_id'>
+            {html_options options=$party_id_mapping selected=$rebate_rule.0.party_id}
+          </select>
+          </td>
+          <td>通过金额<input type="hidden" name="rebate_type[]" value='by_amount' /></td>
+          <td>
+          <select name='calc_type[]'>
+            {html_options options=$calc_type_mapping selected=$rebate_rule.0.calc_type}
+          </select>
+          </td>
+          <td>
+          <input name="cps_rebate_rule_detail_id[]" value="{$rebate_rule.0.cps_rebate_rule_detail_id}" 
+                type="hidden" />
+          <input name="rebate_detail[]" value="{$rebate_rule.0.rules}" 
+                type="text" style="width:600px;" >
+          </td>
+          <td rowspan="2"><input type="submit" value="修改" /></td>
+        </tr>
+        <tr align="center" >
+          <td>商品分类<input type="hidden" name="rebate_type[]" value='by_order_goods' /></td>
+          <td>
+          <select name='calc_type[]'>
+            {html_options options=$calc_type_mapping selected=$rebate_rule.1.calc_type}
+          </select>
+          </td>
+          <td>
+          <input name="cps_rebate_rule_detail_id[]" value="{$rebate_rule.1.cps_rebate_rule_detail_id}" 
+                type="hidden" />
+          <input name="rebate_detail[]" value="{$rebate_rule.1.rules}" 
+                type="text" style="width:600px;" ></td>
+        </tr>
+        </form>
+        
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        
+      </table>
+      <br />
+  </div>
+  
+</fieldset>
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d %H:%M:%S",
+  daFormat          : "%Y-%m-%d %H:%M:%S"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d %H:%M:%S",
+  daFormat          : "%Y-%m-%d %H:%M:%S"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

@@ -1,0 +1,4 @@
+"订单编号","联系人","联系人手机","省","市","区","详细地址","总金额","递送编号","产品","应发优惠券","应收优惠券","客户特殊需求描述","备注",
+{foreach from=$corr_order_list item=corr_order}
+"{$corr_order.taobao_order_sn}","{$corr_order.consignee}","{$corr_order.mobile}","{$corr_order.province}","{$corr_order.city}","{$corr_order.district}","{$corr_order.address}","{$corr_order.goods_amount}","{$corr_order.tracking_number}", "{$corr_order.goods}", "{$corr_order.payable_coupon}", "{$corr_order.receivable_coupon}", "{$corr_order.user_note}", "{$corr_order.note}",
+{/foreach}

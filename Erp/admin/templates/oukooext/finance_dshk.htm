@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>快递公司对账</title>
+
+</head>
+<body>
+<div align="center"><a href="finance_dshk_import.php">导入账单</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="finance_dshk_search.php">查询快递单号</a><br>
+<form>
+物流公司
+<select name="shipping_id">
+<option value="0" {if $smarty.request.shipping_id == 0}selected{/if}>全部</option>
+<option value="1" {if $smarty.request.shipping_id == 1}selected{/if}>深圳宅急送</option>
+<option value="2" {if $smarty.request.shipping_id == 2}selected{/if}>上海宅急送</option>
+<option value="3" {if $smarty.request.shipping_id == 3}selected{/if}>深圳EMS</option>
+<option value="4" {if $smarty.request.shipping_id == 4}selected{/if}>上海EMS</option>
+<option value="5" {if $smarty.request.shipping_id == 5}selected{/if}>顺丰</option>
+<option value="6" {if $smarty.request.shipping_id == 6}selected{/if}>风火</option>
+</select>
+时间(YYYYMM)
+<input type="text" name="bill_time" value="{$smarty.request.bill_time}"></input>
+<input type="submit" name="submit" value="搜索"></input>
+</form>
+</div>
+<br>
+<table class="bWindow" style="width:800px">
+<tr>
+<th>物流公司</th>
+<th>账单(第几月的第几次)</th>
+<th>类型</th>
+<th>状态</th>
+<th>操作</th>
+</tr>
+<!--{foreach from=$jobs item=job}-->
+
+<tr align="center">
+  <td>
+    {if $job.shipping_id == 1}深圳宅急送{/if}
+    {if $job.shipping_id == 2}上海宅急送{/if}
+    {if $job.shipping_id == 3}深圳EMS{/if}
+    {if $job.shipping_id == 4}上海EMS{/if}
+    {if $job.shipping_id == 5}顺丰{/if}
+    {if $job.shipping_id == 6}风火{/if}
+  </td>
+  <td>
+  	{$job.bill_time}的第{$job.times}份账单
+  </td>
+  <td>
+  	{if $job.type == 1}快递费、代收货款账单合在一起{/if}
+  	{if $job.type == 0}快递费、代收货款账单独立分开{/if}
+  </td>
+  <td>
+  	{if $job.status == 1}数据已经齐了{/if}
+  	{if $job.status == 2}少邮费的数据{/if}
+  	{if $job.status == 3}少代收货款的数据{/if}
+  </td>
+  <form action='finance_dshk_update.php'>
+  <input type="hidden" name="seq" value="{$job.seq}">
+  <td>
+  	<input type = "submit" name="submit" value="开始对账"/>
+  </td>
+  </form>
+</tr>
+
+<!--{/foreach}-->
+</table>
+<div align="center">{$pager}</div>
+
+<div align="center">
+需要先导入账单，然后点"开始结帐"。系统会自动更新我们的、BiaoJu的、C2CPlus的订单。
+<br>
+限制条件：
+<br>1. 代收金额为0，查看系统里面该订单的状态是否为拒收？如果不是，列出来，人工核查
+<br>2. 代收金额为0，不更新订单的状态
+<br>3. 如果实收金额已经有值了，那就不做任何更新
+<br>4. 无代收货款的，不应该有手续费
+<br>5. 一个快递单号出现在多个订单里，需要人工来分配。
+</div>
+</body>
+</html>

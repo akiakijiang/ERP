@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>韵达贝亲仓</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript">
+// <![CDATA[
+var pdf_info = '{$pdf_infos}';
+// {literal} 
+function print(turl,tname,docname,data){
+	var url = turl+"?t="+new Date().getTime();
+	var pdfform = $("<form>");
+	pdfform.attr('id','pdfform');
+	pdfform.attr('style','display:none'); //在form表单中添加查询参数
+	pdfform.attr('target','mainbody');
+	pdfform.attr('method','post');
+	pdfform.attr('action',url);
+	var tnamex = $("<input type='hidden'>");
+	tnamex.attr("name","tname");
+	tnamex.attr("value",tname);
+	var docnamex = $("<input type='hidden'>");
+	docnamex.attr("name","docname");
+	docnamex.attr("value",docname);
+	var value = $("<input type='hidden'>");
+	value.attr("name","value");
+	value.attr("value",data);
+	$('#hawblayout_print').append(pdfform); 
+	pdfform.append(tnamex);
+	pdfform.append(docnamex);
+	pdfform.append(value);
+	pdfform.submit(); 
+}
+print("http://127.0.0.1:9090/ydecx/service/mailpx/printDirect.pdf","mailtmp_s8","mailpdfm1",pdf_info);
+
+// {/literal} 
+	// ]]>
+</script>
+</head>
+<body>
+  <div>如果打印机没有动静，请查看 1.韵达专用“运单打印服务”是否安装  2.打印机是否已脱机 </div> 
+	<iframe id="mainbody" width="0" height="0"></iframe>
+</body>
+</html>

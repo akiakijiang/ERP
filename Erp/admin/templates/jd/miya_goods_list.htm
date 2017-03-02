@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>京东商品列表</title>
+	<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../misc/jquery.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  <link href="../misc/thickbox.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../misc/thickbox.js"></script>
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;京东商品列表&nbsp;</span></legend>
+  <div style="clear:both;"> 
+    <form method="POST" >
+    <table >
+    <tr>
+    <td>京东后台商品名称：<input type="text" name="goods_name" value="{$smarty.request.goods_name}" /></td>
+    <td>状态：
+    <select name="status">
+        <option value="ALL">不选</option>
+        {html_options options=$status_list selected=$smarty.request.status }
+    </select></td>
+    <td>是否扣减预警库存：
+    <select name="is_use_reserve_status">
+        <option value="ALL">不选</option>
+        <option value="1">是</option>
+        <option value="0">否</option>
+    </select></td>    
+    <td>
+    商店名：
+    <select name="application_key" >
+      <option value="ALL">不选</option>
+      {html_options options=$application_nicks selected=$smarty.request.application_key }
+    </select>
+    </td>
+    <td>
+    <input type="hidden" name="act" value="search" />
+    <input type="submit" value="搜索" />
+    </td>
+    </tr>
+    </table>
+    </form>
+    </div>
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">京东商品列表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="goods_list_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th>商店名</th>
+          <th>商品名称 (商品编码)</th>
+          <th>欧酷状态</th>
+          <th>欧酷数量</th>
+          <th>是否使用默认预警量</th>
+          <th>预警量</th>
+          <th>是否扣减预警量</th>
+          <th>是否同步</th>
+          <th>操作</th>
+        </tr>
+        
+        <!--{foreach from=$jd_goods_list item=jd_goods name="jdGoodsList"}-->
+        <form method="POST" >
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td>{$smarty.foreach.jdGoodsList.iteration}</td>
+          <td>{$jd_goods.nick}</td>
+          <td>
+            <!--
+            <a href="../taobao_inventory_list.php?type=all&outerId={$jd_goods.outer_id}&keepThis=true&TB_iframe=true&height=500&width=900" class="thickbox" title="库存同步情况">
+            -->
+              <font {if $jd_goods.error} color="Red" {/if} >{$jd_goods.goods_name}</font>
+            &nbsp;&nbsp;({$jd_goods.outer_id})
+          </a>
+          </td>
+          <td>{$jd_goods.new_sale_status}</td>
+          <td>{$jd_goods.quantity}</td>
+          <td>
+              <!-- <input type="radio" name="reserve" value="1" {if $jd_goods.is_auto_reserve == 1} checked="checked" {/if} 
+                  onclick="update_reserve('1{$jd_goods.jd_goods_id}');"></input>是&nbsp;
+              <input type="radio" name="reserve" value="0" {if $jd_goods.is_auto_reserve == 0} checked="checked" {/if} 
+              onclick="update_reserve('0{$jd_goods.jd_goods_id}');"></input>否 -->
+              <input type="radio" name="reserve" value="1" {if $jd_goods.is_auto_reserve == 1} checked="checked" {/if} class="reserve"></input>是&nbsp;
+              <input type="radio" name="reserve" value="0" {if $jd_goods.is_auto_reserve == 0} checked="checked" {/if} class="reserve"></input>否
+          </td>
+          <td><input type="text" size="6" name="reserve_quantity" value="{$jd_goods.reserve_quantity}" class="reserve_quantity"></input></td>
+          <td>
+              <input type="radio" name="use_reserve" value="1" {if $jd_goods.is_use_reserve == 1} checked="checked" {/if} class="is_use_reserve"></input>是&nbsp;
+              <input type="radio" name="use_reserve" value="0" {if $jd_goods.is_use_reserve == 0} checked="checked" {/if} class="is_use_reserve"></input>否
+          </td>          
+          <td>{if $jd_goods.status eq 'OK'}同步{else}不同步{/if}</td>
+          <td>
+          {if $jd_goods.status eq 'OK'}
+            <input type="hidden" name="act" value="delete" />
+            <input type="hidden" name="jd_goods_id" value="{$jd_goods.jd_goods_id}" />
+            <input type="submit" value="停止同步" />
+          {else}
+            <input type="hidden" name="act" value="add" />
+            <input type="hidden" name="jd_goods_id" value="{$jd_goods.jd_goods_id}" />
+            <input type="submit" value="恢复同步" />
+          {/if}
+          <input type="hidden" name="goods_name" value="{$smarty.request.goods_name}" />
+          <input type="hidden" name="status" value="{$smarty.request.status}" />
+          <input type="hidden" name="application_key" value="{$smarty.request.application_key}" />
+          </td>
+        </tr>
+        </form>
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+  </div>
+  
+</fieldset>
+  <script type="text/javascript">
+// <![CDATA[
+// {literal} 
+$(".reserve").click(function() {
+    var is_auto_reserve =  $(this).attr("value");
+    var jd_goods_id =  $(this).parent().parent().find("input[name='jd_goods_id']").attr("value");
+    var radios = $(this).parent().find("input[name='reserve']");
+    var reserve_quantity = $(this).parent().parent().find("input[name='reserve_quantity']");
+    var goods_name = $(this).parent().parent().find("input[name='goods_name']").val();
+    var size = radios.length;
+    $.ajax({
+        type: "POST",
+        url: "/admin/ajax.php?act=update_reserve_jd",
+        data: "is_auto_reserve=" + is_auto_reserve + "&jd_goods_id=" + jd_goods_id,
+        dataType: 'json',
+        error: function(){
+            if (is_auto_reserve == 0) {
+                alert("商品未使用系统默认预留值，修改失败。"); 
+            } else {
+                alert("商品使用系统默认预留值，修改失败。"); 
+            }
+        },
+        success: function(data){
+            //alert(data);
+            if (is_auto_reserve == 0) {
+            	reserve_quantity.attr("disabled", false);
+            	reserve_quantity.focus();
+            	reserve_quantity.focus(function(){
+            		if($.browser.msie) this.createTextRange().select();
+            		else {
+            			this.selectionStart = 0;
+            			this.selectionEnd = this.value.length;
+            		}
+               });
+            } else {
+            	reserve_quantity.attr("disabled", true);
+            	alert(goods_name+"使用默认预留量，预留库存量会自动更新。");
+            }
+        }
+    });
+});
+$(".reserve_quantity").change(function(){
+    var reserve_quantity = $(this).attr("value");
+    var jd_goods_id =  $(this).parent().parent().find("input[name='jd_goods_id']").attr("value");
+    $.ajax({
+        type: "POST",
+        url: "/admin/ajax.php?act=update_reserve_quantity_jd",
+        data: "reserve_quantity=" + reserve_quantity+"&jd_goods_id="+jd_goods_id,
+        dataType: 'json',
+        error: function(){
+           alert("修改失败，请重新修改。");
+        },
+        success: function(data){
+            if (data == 1) {
+                alert("修改成功。");
+            } else if (data == 3) {
+            	alert("如果您需要设置商品预留库存，请修改‘是否使用默认预留量’为否后，重新操作。");
+            } else {
+                alert("修改失败，请重新操作。");
+            }
+        }
+    });
+});
+
+$(".is_use_reserve").click(function() {
+    var is_use_reserve =  $(this).attr("value");
+    var jd_goods_id =  $(this).parent().parent().find("input[name='jd_goods_id']").attr("value");
+    var radios = $(this).parent().find("input[name='use_reserve']");
+    var reserve_quantity = $(this).parent().parent().find("input[name='reserve_quantity']");
+    var goods_name = $(this).parent().parent().find("input[name='goods_name']").val();
+    var size = radios.length;
+    $.ajax({
+        type: "POST",
+        url: "/admin/ajax.php?act=update_use_reserve_jd",
+        data: "is_use_reserve=" + is_use_reserve+"&jd_goods_id=" + jd_goods_id,
+        dataType: 'json',
+        error: function(){
+            if (is_auto_reserve == 0) {
+                alert("商品库存不扣减预警值,修改失败"); 
+            } else {
+                alert("商品库存扣减预警值,修改失败"); 
+            }
+        },
+        success: function(data){
+        	if (is_use_reserve == 0) {
+        	    alert(goods_name+" 库存不扣减预警值设置成功");
+        	} else {
+        		alert(goods_name+" 库存扣减预警值设置成功");
+        	}
+        }
+    });
+});
+// {/literal}
+// ]]>
+</script>  
+</body>
+</html>

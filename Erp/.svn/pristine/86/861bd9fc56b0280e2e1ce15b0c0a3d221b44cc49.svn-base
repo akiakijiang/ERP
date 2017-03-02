@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>快递公司对账报告</title>
+</head>
+<body>
+对账结果如下：
+
+{if $no_order_bill_no_list}
+找不到订单的快递单号：
+{foreach from=$no_order_bill_no_list item=bill_no}
+<p>{$bill_no}</p>
+{/foreach}
+{/if}
+
+{if $bill_no_more}
+同一个快递单号出现在不同的订单，需要你手工输入系统
+<br>
+{foreach from=$bill_no_more item=bill_no}
+{$bill_no}
+{/foreach}
+<br>
+{/if}
+
+{if $order_amount_zero}
+<br>
+以下订单在快递公司账单代收货款金额是0，但在我们系统里不是拒收订单，请确定以下订单是否是拒收的？<br>
+{foreach from=$order_amount_zero item=order}
+{$order}
+{/foreach }
+<br>
+
+{/if}
+
+{if $no_order_has_proxy}
+<br>
+该订单代收货款金额是0，但手续费却大于0<br>
+{foreach from=$no_order_has_proxy item=order}
+{$order}
+{/foreach}
+<br>
+{/if}
+
+{if $combined_not_found_list}
+<br>
+代收货款金额:以下部分在我们系统里找不到，请用人名搜索，看是否是快递单号填错？<br>
+{foreach from=$combined_not_found_list item=order}
+{$order}
+{/foreach}
+<br>
+{/if}
+
+{if $sp_not_found_order_amount_list}
+<br>
+代收货款金额:以下部分在我们系统里找不到，请用人名搜索，看是否是快递单号填错？<br>
+{foreach from=$sp_not_found_order_amount_list item=order}
+{$order}
+{/foreach}
+<br>
+{/if}
+
+{if $sp_not_found_fee_list}
+<br>
+快递费用:以下部分在我们系统里找不到，请用人名搜索，看是否是快递单号填错？<br>
+{foreach from=$sp_not_found_fee_list item=order}
+{$order.bill_no}&nbsp;&nbsp;快递费:{$order.fee}<br>
+{/foreach}
+总计:{$sp_not_found_fee_list_sum}
+{/if}
+
+</body>
+</html>

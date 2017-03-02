@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>快递交接单导出</title>
+<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+var property={
+    divId:"demo",
+    isFirst:true,
+    needTime:true,
+    yearRange:[1970,2030],
+    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+    month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    format:"yyyy-MM-dd hh:mm:ss"
+};
+$(document).ready(function(){
+    canva1=$.createGooCalendar("start",property);
+    property.isFirst = false;
+    canva2=$.createGooCalendar("end",property);
+    canva1.setDate({});
+    canva2.setDate({});
+});
+function check() {
+    var facility = $.trim($('#facility').val());
+    var shipping = $.trim($('#shipping').val());
+    var start = $.trim($('#start').val());
+    var end = $.trim($('#end').val());
+    if (start == end) {
+    	alert("查询的开始时间与终止时间相同，请重新选择时间范围。");
+    	return false;
+    }  
+    if (start > end) {
+    	alert("查询的开始时间大于终止时间，请重新选择时间范围。");
+        return false;
+    }
+    if (facility == -1) {
+        alert("请选择仓库");
+        return false;
+    }
+    if (shipping == -1) {
+        alert("请选择快递");
+        return false;
+    }
+    $('#form').submit();
+}
+// {/literal}
+//]]>
+</script>
+</head>
+<body>
+<h3>导出快递交接信息</h3>
+<form action="" id="form">
+发货时间：<input type="text" value="" id="start" name="start"></input>&nbsp;到&nbsp;
+         <input type="text" value="" id="end" name="end"></input><br/><br/>
+选择仓库：<select name="facility" id="facility" >
+           <option value="-1">请选择仓库</option>
+           {html_options options=$facility selected=$smarty.request.facility}
+          </select><br/><br/>
+选择快递：<select name="shipping" id="shipping">
+           <option value="-1">请选择快递</option>
+           <!--{foreach from=$shipping item=item name=name}-->
+           <option value="{$item.shipping_id}" {if $smarty.request.shipping == $item.shipping_id}selected="selected"{/if}>
+            {$item.shipping_name}
+           </option>
+           <!--{/foreach}-->
+         </select><br/><br/>
+<input type="hidden" name="act" value="export"></input>
+<input type="button" value="导出交接单" onclick="check()">
+</form>
+</body>
+</html>

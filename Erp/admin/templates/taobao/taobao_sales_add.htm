@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>添加淘宝旺旺客服</title>
+  <link href="../styles/default.css" rel="stylesheet" type="text/css" />
+ </head>
+ <body>
+ <div style="clear:both;"> 
+    <h4>|— 添加淘宝旺旺客服</h4>
+    <form method="post">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+	      	<td width="120">选择店铺</td>
+	        <td>
+	        	<select name="taobao_shop_conf_id">
+	            {html_options options=$shop_nicks selected=$taobao_shop_conf_id}
+	            </select>
+			</td>
+		</tr>
+      
+    	<tr>
+	      	<td>昵称</td>
+	        <td>
+	        	<input type="text" name="nickname" id="nickname" value="{$nickname}" size="30" />
+	            &nbsp;&nbsp;&nbsp;&nbsp;
+	        	<span class="tip">如果该昵称存在则会更改状态，否则则添加记录</span>
+			</td>
+		</tr>
+        
+    	<tr>
+	      	<td>状态</td>
+	        <td>
+	        	<select name="enabled">
+	            	<option value="Y" >开启</option>
+		           	<option value="N" >禁用</option>
+				</select>
+	            &nbsp;&nbsp;&nbsp;&nbsp;
+	        	<span class="tip">如果该昵称存在则会更改状态，否则则添加记录</span>
+			</td>
+		</tr>
+        
+    	<tr>
+	      	<td>&nbsp;</td>
+	        <td>
+	        	<input type="hidden" name="act" value="edit_taobao_sales" />
+	        	<input type="submit" value="提交" />&nbsp;&nbsp;<font color='red'>{$message}</font>
+			</td>
+		</tr>    
+	</table>
+    </form>
+  </div>
+  <br />
+  
+  <fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;淘宝旺旺客服查询&nbsp;</span>
+		</legend>
+		<div style="clear: both;">
+			<form method="post">
+				<table>
+					<tr>
+						<td>昵称：<input type="text" name="nick_name"
+							value="{$nick_name}" /></td>
+						<td>商店名： 
+							<select name="shop_nicks">
+								<option value="ALL">不选</option> {html_options options=$shop_nicks selected=$shop_nick }
+							</select>
+						</td>
+						<td>
+							<input type="hidden" name="act" value="search_taobao_sales" />
+						 	<input	type="submit" value="搜索" />
+						 </td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<br />
+		<div style="clear: both;">
+			<h3 style="color: #09F;">淘宝旺旺客服查询</h3>
+
+			<table class="bWindow" style="margin-top: 10px;"
+				id="goods_list_table">
+				<tr>
+					<th width="30">No.</th>
+					<th>商店名</th>
+					<th>客服昵称</th>
+					<th>状态</th>
+					<th>创建时间</th>
+				</tr>
+				<!--  {if $taobao_sale_names != null} -->
+				<!-- {foreach from=$taobao_sale_names item=taobao_sale name="taobaoSaleList"} -->
+				<tr align="center" class="{cycle values='odd,even'}">
+					<td>{$smarty.foreach.taobaoSaleList.iteration}</td>
+					<td>{$taobao_sale.nick}</td>
+					<td>{$taobao_sale.nickname}</td>
+					<td>{$taobao_sale.status}</td>
+					<td>{$taobao_sale.created}</td>
+				</tr>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="5" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+			</table>
+
+			<br />
+		</div>
+
+	</fieldset>
+ </body>
+</html>

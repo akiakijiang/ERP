@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>风火快递</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:10pt;top:70px;left:30px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:10pt;top:70px;left:180px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:10pt;top:110px;left:40px;">上海市闸北区恒丰路610号1号楼503室</div>
+<div style="position:absolute;font-size:10pt;top:200px;left:80px;">
+{if $order.distributor_id == 0}上海欧酷网络科技有限公司{/if}
+</div>
+
+
+<div style="position:absolute;font-size:10pt;top:70px;left:340px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:70px;left:530px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:10pt;top:100px;left:350px;width:350px;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}(订单号：{$order.order_sn})</div>
+
+{if !$smarty.request.service_goods_back}
+<div style="position:absolute;font-size:20pt;top:220px;left:570px;">{$order.order_amount|price_format}</div>
+<div style="position:absolute;font-size:23pt;top:270px;left:570px;">√</div>
+{/if}
+
+<div style="position:absolute;font-size:20pt;top:240px;left:490px;">√</div>
+<div style="position:absolute;font-size:10pt;top:355px;left:100px;">633019</div>
+<div style="position:absolute;font-size:15pt;top:370px;left:360px;"><strong>本人签收，只能验收外观不得试机<br>{if $order.shipping_id == 23}请在12点后配送{/if}</strong></div>
+</body>
+
+</html>

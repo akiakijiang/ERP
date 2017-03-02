@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<title>订单配货</title>
+<script type="text/javascript">
+{literal}
+window.onload = function() {
+  document.getElementById('order_sn').focus();
+  document.getElementById('order_sn').select();
+}
+function submit_order_sn(event) {
+  eventObj = event == null ? window.event : event;
+	keyCode = eventObj.which==null ? event.keyCode : eventObj.keyCode;
+	if (keyCode == 17) {
+	    document.getElementById('order_sn').value = document.getElementById('order_sn').value.toLowerCase();
+		document.getElementById('form1').submit();
+	}
+}
+{/literal}
+</script>
+</head>
+
+<body>
+<form id="form1" name="form1" method="get" action="">
+  <h3 for="order_sn">扫描订单号</h3>
+  <input style="line-height:20px;height:20px;width:200px;vertical-align:middle;" name="order_sn" type="text" id="order_sn" value="{$order.order_sn}"  onkeyup="submit_order_sn(event);" />
+  <input type="submit" name="button" id="button" value="查询订单" />
+  目前所处仓库：<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+</form>
+<p>请扫描订单号。</p>
+</body>
+</html>

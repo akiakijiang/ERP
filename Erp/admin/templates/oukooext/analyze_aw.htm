@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+
+</style>
+{/literal}
+<title>日志分析数据</title>
+</head>
+
+<body>
+<form>
+统计开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+统计结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="查看" />
+</form>
+<h3>从{$start}到{$end} 的统计数据</h3>
+<h3>热门关键词和商品</h3>
+<table cellpadding="10">
+<tr><td>
+<table class="bWindow">
+<tr><td colspan="2">外部关键词</td></tr>
+<tr><td width="200">关键词</td><td>搜索</td></tr>
+{foreach from=$outer_words item=word}
+<tr><td>{$word.words}</td><td>{$word.c}</td></tr>
+{/foreach}
+</table>
+</td><td>
+<table class="bWindow">
+<tr><td colspan="2">内部关键词</td></tr>
+<tr><td width="200"> 关键词</td><td>搜索</td></tr>
+{foreach from=$inner_words item=word}
+<tr><td>{$word.words}</td><td>{$word.c}</td></tr>
+{/foreach}
+</table>
+</td>
+<td>
+<table class="bWindow">
+<tr><td colspan="3">浏览的最多的商品</td></tr>
+<tr><td>商品id</td><td>商品名</td><td>浏览次数</td></tr>
+{foreach from=$goods_viewed item=goods}
+<tr><td>{$goods.goods_id}</td><td>{$goods.goods_name}</td><td>{$goods.pages_count}</td></tr>
+{/foreach}
+</table>
+</td>
+</tr></table>
+
+<h3>搜索和外部链接带来的流量</h3>
+<table cellpadding="10">
+<tr><td>
+<table class="bWindow">
+<tr><td colspan="3">搜索带来的流量</td></tr>
+<tr><td>搜索引擎</td><td>网页数</td><td>文件数</td></tr>
+{foreach from=$search_ref item=search}
+<tr><td>{$search.search_name}</td><td>{$search.pages_count}</td><td>{$search.hits_count}</td></tr>
+{/foreach}
+</table>
+</td>
+<td>
+<table class="bWindow">
+<tr><td colspan="3">外部链接带来的流量</td></tr>
+<tr><td>外部链接</td><td>网页数</td><td>文件数</td></tr>
+{foreach from=$page_ref item=ref}
+<tr><td>{$ref.page_ref}</td><td>{$ref.pages_count}</td><td>{$ref.hits_count}</td></tr>
+{/foreach}
+</table>
+</td></tr>
+</table>
+
+<table cellpadding="10">
+<tr><td>
+<table class="bWindow">
+<tr><td colspan="2">停留时间</td></tr>
+<tr><td>停留的时间</td><td>平均人数</td></tr>
+{foreach from=$session_time item=stime}
+<tr><td>{$stime.time_range}</td><td>{$stime.avg_count}</td></tr>
+{/foreach}
+</table></td></tr>
+</table>
+
+更多统计数据敬请关注XX组开发日程或通过大量的营养快线兑换。
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

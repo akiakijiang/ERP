@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>降价提醒统计数据</title>
+</head>
+
+<body>
+<form>
+统计开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$start}"><input type="button" value="..." id="startTrigger">
+统计结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$end}"><input type="button" value="..." id="endTrigger">
+价格区间：
+<select name="price">
+{html_options options=$price_mapping selected=$smarty.request.price}
+</select>
+商品名：<input style="width:90px" id="goods_name" name="goods_name" value="{$goods_name}" />
+<input type="submit" name="go" value="查看" />
+</form>
+<h3>从{$start}到{$end} <b style="color:blue;">{$goods_name}</b> 的降价提醒统计数据 (共{$goods_list_count}件商品|共{$sum_base}人次设置)</h3>
+
+<table class="bWindow">
+<tr><td>商品名称</td><td>降价记录</td><td>购买人数</td><td>设置人数</td><td>提醒人数</td><td>转化率</td><td>降价区间</td><td colspan="6" align="center">降价范围（价格区间 ： 设置人数 （百分比））</td><td>目前价格</td><td>目前状态</td></tr>
+{foreach from=$goods_list item=goods name=goods}
+<tr {if $smarty.foreach.goods.iteration % 2 eq 0}bgcolor="#D8D8D8"{/if}>
+<td><a href="{$WEB_ROOT}goods{$goods.goods_id}">{$goods.goods_name}</a></td>
+<td><a href="analyze_pricecut_inform_detail.php?goods_id={$goods.goods_id}&style_id={$goods.style_id}&start={$start}&end={$end}" target="_blank" >降价记录</a></td>
+<td style="color:red;">{$goods.sum_buy}</a></td>
+<td>{$goods.sum_base}</td>
+<td>{$goods.sum_inform}</td>
+<td ><font color="Red">{$goods.stat_buy|round:2}%</font> ({$goods.sum_buy}/{$goods.sum_base})</td>
+<td>{$goods.price_range}</td>
+{foreach from=$goods.range name=range item=range key=price}
+	<td title="{$goods.goods_name}">{if $price-$goods.price_range > 0}{$price-$goods.price_range}{else}1{/if}-{$price} : {$range} ({$range/$goods.sum_base*100|round:2}%)</td>
+{/foreach}
+{section name=filltd loop=6 start=$smarty.foreach.range.iteration step=1}
+<td></td>
+{/section}
+<td title="{$goods.goods_name}">￥{$goods.price}</td>
+<td title="{$goods.goods_name}">{$goods.status}</td>
+</tr>
+{/foreach}
+</table>
+
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

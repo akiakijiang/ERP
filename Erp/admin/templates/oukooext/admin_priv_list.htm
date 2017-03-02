@@ -1,0 +1,48 @@
+{include file="pageheader.htm"}
+
+<script type="text/javascript" src="js/overlib.js"></script>
+
+<div class="list-div">
+<table cellspacing='1' id="list-table">
+{foreach from=$priv_list item=priv}
+<tr>
+	<td width="18%" valign="top" class="first-cell" {if $priv.is_shield}style="color: #E3E3E3"{/if}>
+		<a href="javascript:void(0);" 
+			{if $priv.is_shield}style="color: #E1E3E2"{/if} onmouseout="nd();" 
+			onmouseover="
+				return overlib('{", "|implode:$priv.user_list|default:"没有人拥有该权限"}', 
+				STICKY, 
+				CLOSECLICK, 
+				CAPTION, '{$lang[$priv.action_code]}({$priv.action_code})', 
+				CLOSETEXT, '关闭',
+				WIDTH, 500,
+				CAPTIONSIZE, 2,
+				DONOTHING
+				)" 
+			>{$lang[$priv.action_code]}</a>
+	</td>
+	<td style="padding: 5px;">
+		{foreach from=$priv.children key=priv_list item=list}
+			<div style="width:200px; height: 20px; float:left;">
+				<a href="javascript:void(0);" 
+				{if $priv.is_shield}style="color: #E1E3E2"{/if} onmouseout="nd();" 
+				onmouseover="
+					return overlib('{", "|implode:$list.user_list|default:"没有人拥有该权限"}', 
+					STICKY, 
+					CLOSECLICK, 
+					CAPTION, '{$lang[$list.action_code]}({$list.action_code})', 
+					CLOSETEXT, '关闭',
+					WIDTH, 500,
+					CAPTIONSIZE, 2,
+					DONOTHING
+					)" 
+				>{$lang[$list.action_code]|default:$list.action_code}</a>
+			</div>
+		{/foreach}
+	</td>
+</tr>
+{/foreach}
+</table>
+</div>
+
+{include file="pagefooter.htm"}

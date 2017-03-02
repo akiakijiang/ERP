@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>查看退款信息</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css">
+
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+	<style type="text/css">
+	{literal}
+		.inner {
+			margin:5px auto; 
+			padding:5px; 
+			line-height:30px;
+			width: 90%;
+		}
+		
+		.expand {
+			background-color: #008000; 
+			color:#FFFFFF; 
+			cursor:pointer;
+			padding:3px;
+		}
+		
+		.disabled {
+			background-color: #C0C0C0; 
+			cursor: auto;
+		}
+	{/literal}
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	{literal}
+	
+	$(document).ready(function(){
+		
+		$('legend.expand').bind('click', function(event){
+			$(this).next().slideToggle('normal');
+		});
+		
+	});
+	{/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;" >
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;退款信息&nbsp;</span></legend>
+<form method="post" style="width:96%; margin:auto;">
+
+	{if $message}
+	<div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  {/if}
+    
+	<br />
+	<fieldset style="border: #FF7FFF 1px dashed;">
+			<legend class="expand">&nbsp;退款申请信息&nbsp;</legend>
+      
+    	<div>
+      <div style="float:right;">
+        <a href="refund_print.php?refund_id={$refund->refundId}" target="_blank">打印</a>&nbsp;
+        <a href="refund_edit.php?refund_id={$refund->refundId}">编辑</a>&nbsp;
+        <a href="refund_check.php?refund_id={$refund->refundId}">审核</a> &gt;
+      </div>
+    	<table class="inner">
+      <tr>
+      	<td width="120">退款申请单号</td>
+        <td><input type="text" value="{$refund->refundId}" readonly="readonly" />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" target="_blank">申请单状态: {$refund->statusName}</a></td>
+      </tr>
+      
+      <tr>
+        <td>类型</td>
+        <td>
+          <input type="text" value="{$refund->refundType->refundTypeName}" readonly="readonly" />
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>订单号</strong></td>
+        <td>
+        	<input name="info[order_sn]" type="text" value="{$order.order_sn}" readonly="readonly" /> 
+       		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="order_edit.php?order_id={$order.order_id}" target="_blank">订单状态: {$order.formated_order_status}, {$order.formated_pay_status}, {$order.formated_shipping_status}</a>
+        </td>
+      </tr>
+      
+      {if $original_order.order_sn != $order.order_sn}
+      <tr>
+        <td><strong>原始订单信息</strong></td>
+        <td>
+        	订单号： <a href="order_edit.php?order_id={$original_order.order_id}" target="_blank">{$original_order.order_sn}</a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          已支付: {$original_order.formated_real_paid}&nbsp;&nbsp;
+          抵用券抵用: {$original_order.formated_bonus}
+        </td>
+      </tr>
+      {/if}
+
+      <tr>
+        <td>外部订单号</td>
+        <td>{$order.taobao_order_sn}</td>
+      </tr>
+      <tr>
+        <td>原始订单的外部订单号</td>
+        <td>{$original_order.taobao_order_sn}</td>
+      </tr>
+
+			{if $order_refer_bonus}
+      <tr>
+        <td>订单关联红包</td>
+        <td>
+          <table class="inner" style="text-align:center" width="100%">
+          	<tr align="center" bgcolor="#E2F9FA">
+							<td>红包编号</td>
+              <td>红包金额</td>
+              <td>红包类型</td>
+              <td>时间限制</td>
+              <td>领取人</td>
+              <td>使用时间</td>
+              <td>使用订单</td>
+            </tr>
+            <!--{foreach from=$order_refer_bonus item=bonus}-->  
+            <tr align="center">
+              <td>{$bonus.gt_code}</td>
+              <td>{$bonus.gtc_value}</td>
+              <td>{$bonus.gtc_type_name}</td>
+              <td>
+              	<!--{if $bonus.gt_state == 1}-->
+                禁用
+              	<!--{elseif $bonus.gt_state == 2}-->
+                {$bonus.gtc_stime|date_format:"%Y-%m-%d %H:%M:%S"} - {$bonus.gtc_etime|date_format:"%Y-%m-%d %H:%M:%S"}
+              	<!--{elseif $bonus.gt_state == 3}-->
+                无时间限制启用
+              	<!--{elseif $bonus.gt_state == 4}-->
+                已经使用
+                <!--{/if}-->
+              </td>
+              <td>{if $bonus.user_id}{$bonus.user_name}{else}未领取{/if}</td>
+              <td>{if $bonus.gt_state == 4}{$bonus.used_timestamp|date_format:"%Y-%m-%d %H:%M:%S"}{else}未使用{/if}</td>
+              <td>{$bonus.used_order_sn}</td>
+            </tr>
+            <!--{/foreach}-->
+          </table>
+          
+        </td>
+      </tr>
+      {/if}
+            
+      <tr>
+        <td><strong>客户姓名</strong></td>
+        <td><input type="text" value="{$refund->customerUserName}" readonly="readonly" /></td>
+      </tr>
+      
+      <tr>
+        <td><strong>退款总金额</strong></td>
+        <td>
+        	{$refund->currency} <input id="refund_total_amount" value="{$refund->totalAmount|string_format:"%01.2f"}" readonly="readonly" size="10" />
+          <br />&nbsp;&nbsp;&nbsp;&nbsp; 
+          订单已支付: {$order.currency} {$order.real_paid} &nbsp;&nbsp;
+          累计退款金额:{$order.currency} {$order_total_refund_money} &nbsp;&nbsp;
+          抵用券抵用:{$order.currency} {$order.bonus}
+				</td>
+      </tr>
+      
+      <tr>
+        <td>退款方式</td>
+        <td><input value="{$refund->refundPaymentType->refundPaymentTypeName}" readonly="readonly" /></td>
+      </tr>
+      
+      <tr>
+        <td><strong>创建人</strong></td>
+        <td>{$refund->createdByUserLogin}</td>
+      </tr>
+      
+	    </table>
+    	</div>
+	</fieldset>
+        
+  {* if $original_order.order_sn != $order.order_sn *}
+  <br />
+  <br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+    <legend class="expand">&nbsp;订单 <a href="./order_edit.php?order_id={$original_order.order_id}">{$original_order.order_sn}</a> 商品明细 ← ← 入库单&nbsp;</legend>
+    <table class="inner" style="text-align:center">
+      <thead>
+        <tr align="center" bgcolor="#E2F9FA">
+          <th>编号</th>
+          <th>标识</th>
+          <th>发票号</th>
+            <th>商品名称</th>
+          <th>单价</th>
+          <th>数量</th>
+          <th>退换货入库数量</th>
+          <th>小计</th>
+        </tr>
+      </thead>
+      <tbody>
+        {foreach from=$original_order.goods_list item=goods}
+        <tr align="center">
+          <td>{$goods.rec_id}</td>
+          <td>{"<br>"|join:$goods.order_types}</td>
+          <td>{"<br>"|join:$goods.shipping_invoices}</td>
+          <td>{$goods.goods_name}</td>
+          <td>
+            {if $original_order.order_type_id == 'PURCHASE'}
+            {if view_provide_price($goods.category)}{$goods.goods_price}{else}N/A{/if}
+            {else}
+            {$goods.goods_price}
+            {/if}
+          </td>
+          <td>{$goods.goods_number}</td>
+          <td>{$goods.returned_number}</td>
+          <td>{$goods.total_price}</td>
+        </tr>
+        {/foreach}
+      </tbody>
+    </table>
+  </fieldset>
+  {* /if *}
+  
+        
+  <br />
+  <br />
+	<fieldset style="border: #FF7FFF 1px dashed;">
+			<legend class="expand">&nbsp;原订单退款明细&nbsp;</legend>
+      
+      <div> 
+      <table class="inner" style="text-align:center">
+        <tr align="center" bgcolor="#E2F9FA">
+        <th>商品名</th>
+        <th>退款金额</th>
+        <th>原因</th>
+        <th>备注</th>
+        <th>抵扣实收</th>
+        </tr>
+        
+      <!--{foreach from=$refund->goodsDetail item=item name="refund_detail_goods"}-->
+        <tr align="center">
+        <td>{$item->orderGoods->goods_name}</td>
+        <td>{$item->amount|string_format:"%01.2f"}</td>
+        <td>{$item->refundDetailReasonByRefundDetailId->reason}</td>
+        <td><input name="note_{$item->refundDetailId}" type="text" value="{$item->note}" readonly="readonly" /></td>
+        <td><input type="checkbox" name="refund_detail_id[]" value="{$item->refundDetailId}" {if $item->receivable == 'Y'}checked="checked"{/if} /></td>
+        </tr>
+      <!--{/foreach}-->
+      
+        <tr align="center">
+        <td>运费</td>
+        <td>{$refund->shippingAmount|string_format:"%01.2f"}</td>
+        <td></td>
+        <td></td>
+        <td><input type="checkbox" checked="checked" disabled="disabled" /></td>
+        </tr>
+        
+        <tr align="center">
+        <td>包装费</td>
+        <td>{$refund->packAmount|string_format:"%01.2f"}</td>
+        <td></td>
+        <td></td>
+        <td><input type="checkbox" checked="checked" disabled="disabled" /></td>
+        </tr>
+      </table>
+      
+      </div>
+	</fieldset>
+        
+        
+    
+        
+  <br />
+  <br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+      <legend class="expand">&nbsp;退款其它明细项&nbsp;</legend>
+      <div>
+      <table  class="inner" style="text-align:center">
+        <tr align="center" bgcolor="#E2F9FA">
+          <th>类别</th>
+          <th>退款金额</th>
+          <th>原因</th>
+          <th>备注</th>
+          <th>抵扣实收</th>
+        </tr>
+        
+      <!--{foreach from=$refund->othersDetail item=item name="refund_detail_others"}-->
+        <tr align="center">
+          <td>{$item->refundDetailTypeByRefundDetailId->description}</td>
+          <td>{$item->amount|string_format:"%01.2f"}</td>
+          <td>{$item->refundDetailReasonByRefundDetailId->reason}</td>
+          <td><input name="_note_{$item->refundDetailId}" type="text" value="{$item->note}" readonly="readonly" /></td>
+          <td><input name="refund_detail_id[]" type="checkbox" value="{$item->refundDetailId}" {if $item->receivable == 'Y'}checked="checked"{/if} /></td>
+        </tr>
+      <!--{/foreach}-->
+      
+      </table>
+      </div>
+  </fieldset>
+        
+  
+  
+        
+  <br />
+  <br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+      <legend class="expand">&nbsp;退款方式&nbsp;</legend>
+  		<div>
+      <table class="inner">
+      <tr><td>{$refund->refundPaymentType->refundPaymentTypeName}</td><td colspan="2">&nbsp;</td></tr>
+      
+      {if $refund->refundPaymentType->code == 'BANK'}
+      <tr><td>&nbsp;</td><td>|- 开户行：</td><td> <input readonly="readonly" value="{$refund->bankName}" size="30" /></td></tr>
+      <tr><td>&nbsp;</td><td>|- 银行账号：</td><td> <input readonly="readonly" value="{$refund->bankAccountNo}" size="30" /> </td></tr>
+      <tr><td>&nbsp;</td><td>|- 开户名：</td><td> <input readonly="readonly" value="{$refund->accountUserLogin}" size="30" /> </td></tr>
+      <tr><td>&nbsp;</td><td>|- 所在省(银行账户)：</td><td> <input readonly="readonly" value="{$refund->bankProvince}" size="30" /> </td></tr>
+      <tr><td>&nbsp;</td><td>|- 所在市(银行账户)：</td><td> <input readonly="readonly" value="{$refund->bankCity}" size="30" /> </td></tr>
+      
+      {elseif $refund->refundPaymentType->code == 'ALIPAY'}
+      <tr><td>&nbsp;</td><td>|- 客户姓名：</td><td> <input readonly="readonly" value="{$refund->accountUserLogin}" size="30" /> </td></tr>
+      <tr><td>&nbsp;</td><td>|- 支付宝账号：</td><td> <input readonly="readonly" value="{$refund->bankAccountNo}" size="30" /> </td></tr>
+      
+      {elseif $refund->refundPaymentType->code == 'OTHERS'}
+      <tr><td>&nbsp;</td><td>|- 退款信息：</td><td> <textarea readonly="readonly" cols="50" rows="5">{$refund->note}</textarea> </td></tr>
+      
+      {/if}
+      
+      </table>   
+   		</div>
+  </fieldset>
+  
+  <br /><br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  		<legend class="expand">&nbsp;理赔信息&nbsp;</legend>
+      <div>
+      <table class="inner">
+		    <tr>
+        	<td></td>
+          <td>
+          {foreach from=$responsible item=list}
+              <div>
+                  <span>责任方：</span>
+                  <span style="width:60px;display:inline-block">{$list.responsible_party_name}</span>
+                <span style="margin-left:80px;">损失金额：</span>
+                <span>{$list.compensation_amount}</span> 
+              </div>
+          {/foreach}
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span>售后类型：</span>
+            <span>{$claims_note}</span>
+          </td>
+        </tr>
+      </table> 
+      </div>
+  </fieldset>
+
+  <br />
+  <br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+      <legend class="expand">&nbsp;审核历史&nbsp;</legend>
+      <div>
+      <table class="inner" style="text-align:center">
+        <tr align="center" bgcolor="#E2F9FA">
+          <th>审核时间</th>
+          <th>审核人</th>
+          <th>部门</th>
+          <th>备注</th>
+        </tr>
+        
+      <!--{foreach from=$check_history item=item name="refund_check_history"}-->
+        <tr align="center">
+          <td>{$item->checkTime|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+          <td>{$item->user}</td>
+          <td>{$item->formated_dep}</td>
+          <td><input type="text" value="{$item->note}" readonly="readonly" /></td>
+        </tr>
+      <!--{/foreach}-->
+      
+      </table>
+      </div>
+  </fieldset>
+  
+   
+        
+	<br /><br />
+	<div style="text-align:center"><input type="submit" value="设置抵扣项" /></div>
+  <br />
+  
+	<input type="hidden" name="refund_id" value="{$refund->refundId}" />
+</form>
+</fieldset>
+</div>
+
+
+</body>
+</html>

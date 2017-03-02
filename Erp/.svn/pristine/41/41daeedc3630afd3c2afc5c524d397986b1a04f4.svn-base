@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="../js/js/jquery.js"></script>
+<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+<link rel="stylesheet" href="../misc/autocomplete.css" />
+<script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+<!-- 添加日期控件 -->
+<script type="text/javascript" src="../js/Calendar3.js"></script>
+{literal}
+<script type="text/javascript">
+
+function E(id) {
+    return document.getElementById(id);
+}
+
+
+</script>
+{/literal}
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>调整单</title> 
+
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<link href="../styles/vapply.css" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+	<div class="container" id="v-container">
+
+    <div class="container" id="search-container">
+    	<div class="box-title">
+    		<h1>-V订单展示</h1>
+    	</div>
+    	<div>
+
+            {foreach from=$return_just_now_order key=order_key item=order}
+    		<div class="order_box">
+
+    			<div class="order_info">
+    				<ul>
+    					<li><p>{$order.create_stmp}</p></li>
+    					<li><p>订单号:<a href="inventory_adjust_view_v3.php?act=view&order_id={$order.vorder_id}" class="vorder_id">{$order.vorder_id}</a></p></li>
+    					<li><p>{$order.party_name}</p></li>
+    					<li><p>{$order.facility_name}</p></li>
+    					<li><p>{$order.vorder_status}</p></li>
+    					<li><p>{$order.check_status}</p></li>
+    					<li><p>{$order.v_category}</p></li>
+    					
+    					<li>
+    						<p><a href="javascript:;" class="note_btn">审核意见</a></p>
+    						<ul class="note_nav note_nav_hidden">
+    						{foreach from=$order.notes key=notes_key item=notes}
+    						
+    							<li>{$notes.username}，{$notes.time}，{$notes.comment}</li>
+    						
+    						{/foreach}
+    					    </ul>
+    					</li>
+    					{if $order.delete == "1"}
+    					<li><p class="delete_order_btn" >取消订单</p></li>
+    					{/if}
+    					<li><p>共有{$order.goods_detail|@count}条记录</p></li>
+    				</ul>
+    				
+    			</div>  
+    			<div class="goods_info">
+    				<table class="goods_list">
+    					<tr>
+	    					<th>商家编码</th>
+	    					<th>商品条码</th>
+    						<th>商品名称</th>
+    						<th>商品状态</th>
+    						<th>商品序列号</th>
+    						<th>商品数量</th>
+    						<th>商品总价</th>
+    						<th>-V原因</th>
+    						<th>删除商品</th>
+    					</tr>
+    					{foreach from=$order.goods_detail key=goods_key item=goods}
+    					<tr>
+    						<td>{$goods.shopcode}</td>
+    						<td>{$goods.barcode}</td>
+    						<td>{$goods.goods_name}</td>
+    						<td>{$goods.goods_status}</td>
+    						<td>
+    						{if $goods.goods_type_id == "NON-SERIALIZED"}
+    							无序列号
+    						{else}
+    							{$goods.serial_number}
+    						{/if}</td>
+    						<td>{$goods.goods_number}</td>
+    						<td>{$goods.goods_amount}</td>
+    						<td>{$goods.reason}</td>
+    						<td>
+    							{if $goods.is_delete == "1"}
+    								<p>	已删除</p>
+    							{else}
+    								{if $order.delete == "1"}
+    									<p class="delete_goods_btn" id="delgoods_{$goods.rec_id}">删除</p>
+    								{else}
+    									<p> 未删除</p>
+    								{/if}
+    							{/if}
+    							
+    						</td>
+    					</tr>
+
+    					{/foreach}
+    					
+    					{assign var='len' value=$order.goods_detail|@count}
+    					{if $len == $limit_per_order}
+    					<tr>
+    						<td class="first_page"><a href="inventory_adjust_view_v2.php?act=view&order_id={$order.vorder_id}">商品数量太多，请移步这里</a></td>
+
+    					</tr>
+    					{/if}
+    				</table>
+    			</div>
+    		</div>
+    		{/foreach}
+
+    	</div>
+
+    </div>
+    <form action="inventory_adjust_apply_v3.php" method="POST" id="create_hidden">
+    	
+    </form>
+<script>
+{literal}
+$(document).ready(function(){
+	var pldr = $("#pldr");
+	var upload_modal = $("#upload_modal");
+	pldr.click(function(event){
+		event.stopPropagation();
+		upload_modal.animate({
+			"top":0,
+			"opacity":1
+		},"normal");
+	});
+	$(document).bind("click",function(e){
+		var target  = $(e.target);//表示当前对象，切记，如果没有e这个参数，即表示整个BODY对象
+		if(target.closest("#upload_modal").length == 0){
+			upload_modal.animate({
+				"top":"-30px",
+				"opacity":0
+			},"fast");
+		}
+	});
+
+	$(".note_btn").click(function(){
+		var i = $(".note_btn").index(this);
+		$(".note_nav").eq(i).toggleClass("note_nav_hidden");
+	});
+
+	$(".delete_order_btn").click(function(){
+		if(!confirm("你确定删除订单吗？删除后无法恢复。")){
+			return false;
+		}
+		var _this = $(this);
+		var data = "act=cancelorder&key=" + _this.parents(".order_info").find(".vorder_id").text();
+		$.ajax({
+			url:"inventory_adjust_apply_v3.php",
+			type:"get",
+			dataType:"json",
+			data:data,
+			success:function(data){
+				if (data.msg == "ok") {
+					alert("删除订单成功");
+					_this.parents(".order_info").parents('.order_box').remove();
+				}else{
+					alert(data.msg);
+				}
+			},
+			error:function(data){
+				alert("ajax error");
+			}
+		});
+	});
+
+	$(".delete_goods_btn").click(function(){
+		if(!confirm("你确定删除商品吗？删除后无法恢复。")){
+			return false;
+		}
+		var _this = $(this);
+		var idstr = ((_this.attr('id')).split("_"))[1];
+		var data = "act=deletegoods&key=" + idstr;
+		$.ajax({
+			url:"inventory_adjust_apply_v3.php",
+			type:"post",
+			dataType:"json",
+			data:data,
+			success:function(data){
+				if (data.msg != "ok") {
+					alert(data.msg);
+				}else{
+					_this.parents("td").html("<p>已删除</p>");
+				}
+			},
+			error:function(data){
+				alert("ajax error");
+			}
+		});
+	});
+
+
+});
+
+
+
+var process_request = '';
+var oldkeyword = '';
+var last_goods;
+var is_calling = false;
+var added_goods_list = new Array();
+var added_goods_list_page = 1;
+var added_goods_list_pagecount = 1;
+var added_goods_list_limit = 25;
+var need_check_style = false;
+var last_style;
+
+
+Array.prototype.remove=function(dx)
+{
+    if(isNaN(dx)||dx>this.length){return false;}
+    for(var i=0,n=0;i<this.length;i++)
+    {
+        if(this[i]!=this[dx])
+        {
+            this[n++]=this[i]
+        }
+    }
+    this.length-=1
+}
+Array.prototype.in_array=function(ele)
+{
+    for(var i=0,n=0;i<this.length;i++) {
+        if(this[i] == ele) {
+            return true;
+            break;
+        }
+    }
+    return false;
+}
+
+
+
+
+{/literal}
+</script>
+		<div id="oldkeyword"></div>
+
+	</div>
+</body>
+</html>

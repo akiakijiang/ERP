@@ -1,0 +1,4 @@
+分销商店铺,跨境商品ID,商品名称,商品编码,计量,价格,税率,是否组合,创建时间,最后更新
+{foreach from=$goods_list item=goods}
+="{$goods.nick}",="{$goods.product_id}",="{$goods.goods_name}","={$goods.outer_id}",="{$goods.unit}","={$goods.price}",="{$goods.rate}","={$goods.package_flag}",="{$goods.created_stamp}","{$goods.last_updated_stamp}"
+{/foreach}

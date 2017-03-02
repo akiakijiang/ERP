@@ -1,0 +1,213 @@
+<br style="clear:both;" />
+{foreach from=$service.rma_tracks item=track}
+
+<table cellpadding="0" cellspacing="5" style="width:99%;margin:0px auto; display:none;" class="rmatracker rmatracker_table">
+<form method="POST" action="rma_track_service_action.php">
+    <tr>
+    <th>售后机完全档案 
+    {if !$print_mode} 
+    <a href="print_rma_track.php?trackId={$track->trackId}&print=1&service_type={$service.service_type}" target="_blank"
+ style="float:right;color:red;font-weight:bold;font-size:14px;">
+    打印
+    </a> 
+    {/if}
+    </th>
+    </tr>
+    <tr>
+        <td>
+        机器品牌 <input type="text" name="brandName" value="{$track->brandName}" size="6" style="margin-right:15px;" />
+        机器型号 <input type="text" name="productName" value="{$track->productName}" size="30" style="margin-right:15px;" />
+        机器串号 <input type="text" name="serialNumber" value="{$track->serialNumber}" size="15" style="margin-right:15px;" />
+        原订单号 {$track->orderSn}
+        </td>
+    </tr>
+    <tr>
+        <td>
+        客户姓名 <input type="text" name="customerName" value="{$track->customerName}" size="5" style="margin-right:15px;" />
+        {if check_admin_priv('check_user_tel')}
+        联系方式 <input type="text" name="contactInfo" value="{$track->contactInfo}" style="margin-right:15px;" />
+        {else}
+        联系方式: ××××××
+        {/if}
+        </td>
+    </tr>
+    <tr>
+        <td>
+        受理时间： {$track->acceptDate|date_format:"%Y-%m-%d"}
+        受理人： {$track->createdUserByLogin}
+        退回包裹签收时间： {$track->receivedDate|date_format:"%Y-%m-%d"}
+        签收人： {$track->receivedUser}
+     </td>
+    </tr>
+    <tr>
+        <td>   
+        故障描述及客户要求：
+        {if $can_edit_track}
+        <input type="text" name="userComment" size="70" 
+        value="{$track->userComment}" />
+        {else}
+        {$track->userComment}
+        {/if}
+        {if $can_edit_track}
+        <br />
+        <input type="hidden" name="trackId" value="{$track->trackId}" />
+        <input type="hidden" name="act" value="edit_track" />
+        <input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+        <input type="submit" value="修改售后档案" class="button_1" />
+        {/if}
+        </td>
+    </tr>
+</form>
+<form method="POST" action="rma_track_service_action.php">
+    <tr><th>详细内容</th></tr>
+    <tr>
+        <td style="padding:5px;">
+        <p>
+        {if check_admin_priv('check_provider')}
+        供应商 <input type="text" name="supplierName" value="{$track->supplierName}" size="22" style="margin-right:15px;" />
+        {else}
+        供应商 : ××××××
+        {/if}
+        {if $service.service_type neq 7}
+        机头：(
+        {html_radios name="NOISE" options=$types_array.NOISE
+        checked=$track->trackAttribute.NOISE->value separator=" "}
+        )
+        {/if}
+        {*{$track->trackAttribute.BACK_CAP->value}*}
+        后盖：(<input type="text" size="1" name="BACK_CAP" 
+        value="{$track->trackAttribute.BACK_CAP->value}" /> 个) 
+        手写笔：(<input type="text" size="1" name="PEN" 
+        value="{$track->trackAttribute.PEN->value}" /> 支)
+        车载支架(<input  type="text" size="1" name="STAND"
+         value="{$track->trackAttribute.STAND->value}" />套)
+        </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <p>
+        <input type="checkbox" name="INVOICE" value="RECEIVED"
+        {if $track->trackAttribute.INVOICE->value == 'RECEIVED'}checked="true"{/if} value="RECEIVED"
+         /> 发票 
+        发票号码 <input type="text" name="INVOICE_NO" size="10" value="{$track->trackAttribute.INVOICE_NO->value}" />
+        
+        <input type="checkbox" name="COPY_OF_ID_CARD" style="margin-left:20px;" 
+        {if $track->trackAttribute.COPY_OF_ID_CARD->value == 'RECEIVED'}checked="true"{/if} value="RECEIVED"
+         /> 
+        身份证复印件 
+        
+        <input type="checkbox" name="WARRANTY_CARD" style="margin-left:20px;" 
+        {if $track->trackAttribute.WARRANTY_CARD->value == 'RECEIVED'}checked="true"{/if} value="RECEIVED" /> 
+        保修卡 
+        
+        保修标签
+        {html_checkboxes name="WARRANTY_TAB"
+         options=$types_array.WARRANTY_TAB 
+         checked=$track->trackAttribute.WARRANTY_TAB->value 
+         separator=" <span style=\"margin-left:10px;\"> </span> "}
+        </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <p>
+        <input type="radio" name="INSPECTION_FORM" 
+        {if $track->trackAttribute.INSPECTION_FORM->value == 'NO_DAP' }checked="true"{/if}
+         value="NO_DAP" /> 检测单(机头未收)
+         
+        第 <input type="input" name="INSPECTION_FORM_PAGE" size="1"
+         value="{$track->trackAttribute.INSPECTION_FORM_PAGE->value}" /> 联 
+        
+        <input type="radio" name="INSPECTION_FORM"
+        {if $track->trackAttribute.INSPECTION_FORM->value == 'DAP'}checked="true"{/if}
+         value="DAP" style="margin-left:30px;" /> DAP换机单(机头已收) 
+        </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <p>
+        存储卡1 (<input type="text" size="6" name="MEMORY_CARD1_NAME"
+         value="{$track->trackAttribute.MEMORY_CARD1_NAME->value}" /> 牌TF 
+        <input type="text" size="1" name="MEMORY_CARD1_CAP"
+          value="{$track->trackAttribute.MEMORY_CARD1_CAP->value}" /> G 
+        <input type="text" size="1" name="MEMORY_CARD1_NUMBER"
+          value="{$track->trackAttribute.MEMORY_CARD1_NUMBER->value}" />个)
+        
+        <b style="margin-left:20px;"></b>
+        
+        存储卡2 (<input type="text" size="6" name="MEMORY_CARD2_NAME"
+         value="{$track->trackAttribute.MEMORY_CARD2_NAME->value}" /> 牌TF 
+        <input type="text" size="1" name="MEMORY_CARD2_CAP"
+          value="{$track->trackAttribute.MEMORY_CARD2_CAP->value}" /> G 
+        <input type="text" size="1" name="MEMORY_CARD2_NUMBER"
+          value="{$track->trackAttribute.MEMORY_CARD2_NUMBER->value}" /> 个)
+        
+        <b style="margin-left:30px;"></b>
+        
+        电池(<input type="text" name="BATTERY1_CAP" size="3"
+          value="{$track->trackAttribute.BATTERY1_CAP->value}" /> mAh 
+        <input type="text" name="BATTERY1_NUMBER" size="1"
+          value="{$track->trackAttribute.BATTERY1_NUMBER->value}" /> 个)
+        
+        <b style="margin-left:30px;"></b>
+        
+        卡套(<input  type="text" size="1" name="CARD_SOCKET"
+          value="{$track->trackAttribute.CARD_SOCKET->value}" />个)
+        
+        </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <p>
+
+        外包装(
+        {html_radios name="OUTER_PACK" options=$types_array.OUTER_PACK
+        checked=$track->trackAttribute.OUTER_PACK->value separator=" "}
+        ) 
+        <b style="margin-left:30px;"></b>
+        内包装(
+        {html_radios name="INNER_PACK" options=$types_array.INNER_PACK
+        checked=$track->trackAttribute.INNER_PACK->value separator=" "}
+        
+        <input type="checkbox" name="MATERIALS_MISSED" value="Y"
+         {if $track->trackAttribute.MATERIALS_MISSED->value == 'Y'}checked="true"{/if}
+           /> 缺失)
+        
+        </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <p>
+        <input type="checkbox" name="ALL_RETURNED" value="Y" 
+         {if $track->trackAttribute.ALL_RETURNED->value == 'Y'}checked="true"{/if}
+          /> <span style="color:red;font-size:14px;font-weight:bold;">标配齐全</span>
+          
+        其他配件 
+        {html_checkboxes name="MATERIALS_RECEIVED"
+         options=$types_array.MATERIALS_RECEIVED 
+         checked=$track->trackAttribute.MATERIALS_RECEIVED->value 
+         separator="<span style=\"margin-left:18px;\"> </span>"}
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <p>
+        其他信息
+        <input type="text" name="OTHER_MATERIAL" size="70" value="{$track->trackAttribute.OTHER_MATERIAL->value}" />
+        {if $can_edit_track_attribute}
+        <br />
+        <input type="hidden" name="trackId" value="{$track->trackId}" />
+        <input type="hidden" name="act" value="edit_track_attribute" />
+        <input type="hidden" name="back" value="{$smarty.server.REQUEST_URI}" />
+        <input type="submit" value="修改详细信息" class="button_1" />
+        {/if}
+        </p>
+        </td>
+    </tr>
+</form>
+</table>
+{/foreach}

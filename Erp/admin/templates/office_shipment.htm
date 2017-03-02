@@ -1,0 +1,822 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>办公件管理</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+// <![CDATA[
+    var act = "{$act}";
+    var package_type = "{$update_value.package_type}";
+    // {literal}
+    $(document).ready(function(){
+    	$("#weight").css("display", "none");
+        if (act == 'insert') {
+            $("#left").attr("class","active");
+            $("#right").attr("class","item");
+        } else if (act == 'search') {
+            $("#left").attr("class", "item");
+            $("#right").attr("class", "active");
+        } if (act == "update") {
+            if (package_type == 2) {
+                $("#weight").css("display","");
+            }
+        }
+        $("select[name='end[province]']").attr("display", "");
+        Region.init();
+        Region1.init();
+       
+        $("select[name='package_type']").change(function(){
+            if ($(this).val() == 2) {
+                $("#weight").css("display","");
+            } else {
+                $("#weight").css("display", "none");
+            }
+        });
+        
+        $("#tracking_number").blur(function(){
+            var tra = $.trim($(this).val());
+            var shipping_id = $(':select[name="shipping_id"]').val();
+            var shipment_id = $("input[name='shipment_id'][type='hidden']").val();
+            var str = '';
+            if (shipment_id != undefined) {
+            	str += "&shipment_id=" + shipment_id;
+            }
+            if (shipping_id == 0) {
+                alert("请选择快递方式");
+            }
+            if (tra == '') {
+                alert("请输入快递单号");
+            } else {
+                //location.href= "office_shipment.php?request=ajax&act=check_tracking_number&" +'tracking_number=' + tra + '&shipping_id=' + shipping_id;
+                $.ajax({
+                    type: 'POST',
+                    url: 'office_shipment.php?request=ajax&act=check_tracking_number',  // 查询地址
+                    data: 'tracking_number=' + tra + '&shipping_id=' + shipping_id + str,
+                    dataType: 'json',
+                    error: function() { alert('快递单号检查失败，请重试'); },
+                    success: function(data) {
+                        if (data != null) {
+                            $("#check_tracking_number").attr("value", 1);
+                            alert("运单号已存在，请核实");
+                        }else {
+                            $("#check_tracking_number").attr("value", 0);
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+
+  // {/literal}
+// ]]>
+</script>
+<style type="text/css">
+{literal}
+    .left_name{
+        width:80px;
+    }
+    #text_content table tr td, #search_content table tr td{
+        height:30px;
+    }
+    #search_content table{
+        margin-left:15px;
+        width:90%;
+        height:85px;
+    }
+    #search_content{
+        height : 550px;
+    }
+{/literal}
+</style>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;办公件管理&nbsp;</span></legend> 
+<div class="menu-tab">
+    <div class="right-edge">&nbsp;</div>
+    <div class="active" id="right"><a href="office_shipment.php?act=search">办公件查询</a></div>
+    <div class="item" id="left"><a href="office_shipment.php?act=insert">办公件录入</a></div>
+    <div class="left-edge">&nbsp;</div>
+</div>
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}    
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="margin:20px auto;border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+<!--{if $act == "insert"}-->
+<div id="text_content">
+	<table style= "margin-left:50px;">
+		<tr>
+          <td  width="80">导入办公件：</td>
+          <td><input type="file" id="fileToUpload" name="fileToUpload"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id="batch_office_shipment" type="button" value="导入EXCEL" onclick="batch_office_shipment()"/>&nbsp;&nbsp;
+          <form id="lownload" action="office_shipment.php?type=download" method="post" style="float:right"> 
+            <a href="javascript:void(0)" onclick="download_model()" name="type" value="download" ><font size="3px">模版下载</font></a></form>
+        </td>
+        </tr>
+	</table>
+<form action="office_shipment.php?act=insert" method="post" onsubmit="return check_insert_form();">
+    <table style="margin-left:50px; margin-bottom:200px;">
+        <tr>
+            <td class="left_name">业务组织：</td>
+            <td><select name="party_id">
+                <option value="0">-请选择-</option>
+                <!--{foreach from=$party_list item=party}-->
+                <option value="{$party.party_id}">{$party.name}</option>
+                <!--{/foreach}-->
+                </select>
+            </td>
+
+        </tr>
+        <tr>
+            <td class="left_name">发货日期：</td>
+            <td><input type="text" name="date" id="date" value=""></input></td>
+        </tr>
+        <tr>
+            <td class="left_name">起始地址：</td>
+            <td >
+                <select name="start[province]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$province_list item=province}-->
+                    <option value="{$province.region_id}" label="{$province.region_name}">{$province.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <select name="start[city]" style="display:none"></select>
+                <select name="start[district]" style="display:none"></select>
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">目的地址：</td>
+            <td >
+                <select name="end[province]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$province_list item=province}-->
+                    <option value="{$province.region_id}" label="{$province.region_name}">{$province.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+               <select name="end[city]" style="display:none"></select>
+                <select name="end[district]" style="display:none"></select>
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">快递方式</td>
+            <td>
+                <select name="shipping_id">
+                <option value="0">-请选择-</option>
+                <!--{foreach from=$shipping_list item=shipping}-->
+                <option value="{$shipping.shipping_id}" label="{$shipping.shipping_name}">{$shipping.shipping_name}</option>
+                <!--{/foreach}-->
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">运单号：</td>
+            <td ><input type="text" name="tracking_number" value="" id="tracking_number"></input></td>
+        </tr>
+        <tr>
+            <td class="left_name">运单类型：</td>
+            <td >
+            <select name="package_type">
+                <option value="1">&nbsp;文件&nbsp;</option>
+                <option value="2">&nbsp;包裹&nbsp;</option>
+            </select>
+            <span id="weight" >重量：<input type="text" value="" name="weight" style="width:50px;"></input>（单位：kg）</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">备注：</td>
+            <td><input type="text" name="note" value="" style="width:300px;"></input></td>
+        </tr>
+        <tr>
+            <td><input type="hidden" name="action" value="add"></input>
+            <input type="hidden" id="check_tracking_number" value="0"></input>
+            </td>
+            <td><input type="submit" name="button" value="提交"></input></td>
+        </tr>
+    </table>
+</form>
+</div>
+<!--{elseif $act == "search"}-->
+<div id="search_content">
+<form id="search_form" action="office_shipment.php" method="POST">
+    <table>
+        <tr>
+            <td>业务组织：<select name="party_id">
+                <option value="0">-请选择-</option>
+                <!--{foreach from=$party_list item=party}-->
+                <option value="{$party.party_id}" {if $party.party_id == $smarty.request.party_id}selected="selected"{/if}>{$party.name}</option>
+                <!--{/foreach}-->
+                </select>&nbsp;&nbsp;发货日期：
+                <input type="text" name="start_shipping_date" id="start_shipping_date" value="{$smarty.request.start_shipping_date}"></input>
+                &nbsp;到&nbsp;
+                <input type="text" name="end_shipping_date" id="end_shipping_date" value="{$smarty.request.end_shipping_date}"></input>
+            </td>
+        </tr>
+        <tr>
+            <td> 快递方式
+                <select name="shipping_id">
+                <option value="0">-请选择-</option>
+                <!--{foreach from=$shipping_list item=shipping}-->
+                <option value="{$shipping.shipping_id}" label="{$shipping.shipping_name}" {if $shipping.shipping_id == $smarty.request.shipping_id}selected="selected"{/if}>
+                {$shipping.shipping_name}
+                </option>
+                <!--{/foreach}-->
+                </select>
+                &nbsp;&nbsp;运单号：<input type="text" name="tracking_number" value="{$smarty.request.tracking_number}"></input>
+                &nbsp;&nbsp;运单类型：
+                <select name="package_type">
+                    <option value="0">-请选择-</option>
+                    <option value="1" {if $smarty.request.package_type == 1}selected="selected"{/if}>&nbsp;文件&nbsp;</option>
+                    <option value="2" {if $smarty.request.package_type == 2}selected="selected"{/if}>&nbsp;包裹&nbsp;</option>
+                </select>&nbsp;&nbsp;
+                </td>
+            </tr>
+        <tr>
+            <td>起始地址：
+                <select name="start[province]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$province_list item=province}-->
+                    <option value="{$province.region_id}" label="{$province.region_name}">{$province.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <select name="start[city]" style="display:none"></select>
+                <select name="start[district]" style="display:none"></select>
+                &nbsp;&nbsp;目的地址：
+                <select name="end[province]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$province_list item=province}-->
+                    <option value="{$province.region_id}" label="{$province.region_name}">{$province.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <select name="end[city]" style="display:none"></select>
+                <select name="end[district]" style="display:none"></select>
+                &nbsp;&nbsp;<input type="hidden" name="action" value="search"></input>
+                <input type="hidden" name="act" value="search"></input>
+                 &nbsp;&nbsp;&nbsp;
+                <input type="checkbox" name="is_export" id="is_export" onclick="
+                    if(document.getElementById('is_export').checked) document.getElementById('submit_button').value='导出明细报表';else document.getElementById('submit_button').value='搜索';
+                ">导出报表
+                &nbsp;&nbsp;&nbsp;
+                <input type="submit" value="搜索" id="submit_button" name="submit"></input>
+                <!--
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="checkbox" name="is_export" id="is_export_search" value="no">-->
+            </td>
+        </tr>
+    </table>
+</form>
+    <!--{if $search_list}-->
+    <table class="bWindow" style="text-align:center;">
+        <tr class="odd">
+            <td>业务组织</td>
+            <td>发货日期</td>
+            <td>起始地址</td>
+            <td>到达地址</td>
+            <td>快递方式</td>
+            <td>快递单号</td>
+            <td>包裹类型</td>
+            <td>重量（单位：kg）</td>
+            <td style="width:50px;">备注</td>
+            <td>操作时间</td>
+            <td>操作人</td>
+            <td>操作</td>
+        </tr>
+        <!--{foreach from=$search_list item=item}-->
+         <tr class="{cycle values='even,odd'}">
+            <td>{$item.name}</td>
+            <td>{$item.shipping_date}</td>
+            <td>{$item.start_province_name}{$item.start_city_name}{$item.start_district_name}</td>
+            <td>{$item.end_province_name}{$item.end_city_name}{$item.end_district_name}</td>
+            <td>{$item.shipping_name}</td>
+            <td>{$item.tracking_number}</td>
+            <td><!--{if $item.package_type == 1}-->文件<!--{else if $item.package_type == 2}-->包裹<!--{/if}--></td>
+            <td>{$item.weight}</td>
+            <td>{$item.note}</td>
+            <td>{$item.action_time}</td>
+            <td>{$item.action_user}</td>
+            <td>
+                <a href="office_shipment.php?act=update&shipment_id={$item.shipment_id}" onclick="return action_check('update', this, {$item.shipment_id});" style="text-decoration:none;">修改</a>
+                <!--{if "delete_office_shipment"|check_admin_priv}-->&nbsp;&nbsp;
+                <a href="#" onclick="return action_check('delete', this, {$item.shipment_id});" style="text-decoration:none;">删除</a>
+                <!--{/if}-->
+            </td>
+        </tr>
+        <!--{/foreach}-->
+    </table>
+    <!--{else}-->
+       <!--{if $action == 'search'}-->
+       <p style="width:95%;text-align:center;">暂无符合条件的记录</p>
+       <!--{/if}-->
+    <!--{/if}-->
+</div>
+<!--{elseif $act == "update"}-->
+<div id="text_content">
+<form action="office_shipment.php?act=update_shipment" method="post" onsubmit="return check_insert_form();">
+    <table style="margin-left:50px; margin-bottom:200px;" id="remove">
+        <tr>
+            <td class="left_name">业务组织：</td>
+            <td><select name="party_id">
+                <option value="0">-请选择-</option>
+                <!--{foreach from=$party_list item=party}-->
+                <option value="{$party.party_id}" {if $party.party_id == $update_value.party_id}selected="selected"{/if}>{$party.name}</option>
+                <!--{/foreach}-->
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">发货日期：</td>
+            <td><input type="text" name="date" id="date" value="{$update_value.shipping_date}"></input></td>
+        </tr>
+        <tr>
+            <td class="left_name">起始地址：</td>
+            <td >
+                <select name="start[province]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$province_list item=province}-->
+                    <option value="{$province.region_id}" label="{$province.region_name}" {if $province.region_id == $update_value.start_province}selected="selected"{/if}>
+                    {$province.region_name}
+                    </option>
+                    <!--{/foreach}-->
+                </select>
+                <select name="start[city]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$start_city_list item=city}-->
+                    <option value="{$city.region_id}" label="{$city.region_name}" {if $city.region_id == $update_value.start_city}selected="selected"{/if}>{$city.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <!--{if $start_district_list}-->
+                <select name="start[district]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$start_district_list item=district}-->
+                    <option value="{$district.region_id}" {if $district.region_id == $update_value.start_district}selected="selected"{/if}>{$district.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <!--{else}-->
+                <select name="start[district]" style="display:none"></select>
+                <!--{/if}-->
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">目的地址：</td>
+            <td >
+                <select name="end[province]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$province_list item=province}-->
+                    <option value="{$province.region_id}" label="{$province.region_name}"{if $province.region_id == $update_value.end_province}selected="selected"{/if}>
+                    {$province.region_name}
+                    </option>
+                    <!--{/foreach}-->
+                </select>
+                <select name="end[city]">
+                    <option value="0">-请选择-</option>
+                    <!--{foreach from=$end_city_list item=end_city}-->
+                    <option value="{$end_city.region_id}" {if $end_city.region_id == $update_value.end_city}selected="selected"{/if}>{$end_city.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <!--{if $end_district_list}-->
+                <select name="end[district]">
+                    <!--{foreach from=$end_district_list item=end_district}-->
+                    <option value="{$end_district.region_id}" {if $end_district.region_id == $update_value.end_district}selected="selected"{/if}>{$end_district.region_name}</option>
+                    <!--{/foreach}-->
+                </select>
+                <!--{else}-->
+                <select name="end[district]" style="display:none"></select>
+                <!--{/if}-->
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">快递方式</td>
+            <td>
+                <select name="shipping_id">
+                <option value="0">-请选择-</option>
+                <!--{foreach from=$shipping_list item=shipping}-->
+                <option value="{$shipping.shipping_id}" label="{$shipping.shipping_name}" {if $shipping.shipping_id == $update_value.shipping_id}selected="selected"{/if}>{$shipping.shipping_name}</option>
+                <!--{/foreach}-->
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">运单号：</td>
+            <td ><input type="text" name="tracking_number" value="{$update_value.tracking_number}" id="tracking_number"></input></td>
+        </tr>
+        <tr>
+            <td class="left_name">运单类型：</td>
+            <td >
+            <select name="package_type">
+                <option value="1" {if $update_value.package_type == 1}selected="selected"{/if}>&nbsp;文件&nbsp;</option>
+                <option value="2" {if $update_value.package_type == 2}selected="selected"{/if}>&nbsp;包裹&nbsp;</option>
+            </select>
+            <span id="weight" >重量：<input type="text" value="{$update_value.weight}" name="weight" style="width:50px;"></input>（单位：kg）</span>
+           
+            </td>
+        </tr>
+        <tr>
+            <td class="left_name">备注：</td>
+            <td><input type="text" name="note" value="{$update_value.note}" style="width:300px;"></input></td>
+        </tr>
+        <tr>
+            <td><input type="hidden" name="action" value="update_shipment"></input>
+            <input type="hidden" id="check_tracking_number" value="0"></input>
+            <input type="hidden" name="shipment_id" value="{$update_value.shipment_id}"></input>
+            </td>
+            <td><input type="submit" name="button" value="提交"></input></td>
+        </tr>
+    </table>
+</form>
+</div>
+<!--{/if}--> 
+</fieldset>
+
+
+<script type="text/javascript">
+// <![CDATA[
+var act = '{$act}';
+// {literal}
+if (act == 'insert' || act == 'update') {
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "date",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+    });
+} else if (act == 'search') {
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_shipping_date",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+    });  
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_shipping_date",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+    }); 
+}
+function batch_office_shipment(){
+	$.ajaxFileUpload({
+		url:'batch_office_shipment.php',
+		secureuri:false,
+		fileElementId:'fileToUpload',
+		dataType: 'json',
+		success: function (data)
+        {
+        	if(data.message == null){
+        		alert("办公件批量导入成功");
+        	}else{
+        		alert(data.message);
+        	}
+        },
+        error: function(data,status,e){
+        	alert("方法调用错误，请联系erp组");
+        }
+	})
+}
+function action_check(act ,obj, shipment_id){
+    var str = "";
+    if (act == "update") {
+        str = "确定修改吗？";
+    } else if (act == 'delete') {
+        str = "确定删除吗？"
+    }
+    //location.href="office_shipment.php?request=ajax&"+"act=delete&shipment_id=" +shipment_id;
+    if (str != "") {
+        if(confirm(str)){
+            if (act == 'delete') {
+                $.ajax({
+                    type: 'POST',
+                    url: 'office_shipment.php?request=ajax',
+                    data: "act=delete&shipment_id=" +shipment_id,
+                    dataType: 'json',
+                    error: function(data) { 
+                        alert("删除失败，请重试，如有问题，请联系ERP组解决");
+                    },
+                    success: function(result){
+                        if (result == 'ok'){
+                            $(obj).parent().parent().remove();
+                        }
+                    }
+                });
+                return false;
+            } else {
+                return true;
+            }
+            
+        } else {
+            return false;
+        }
+    }
+}
+function check_insert_form(){
+    var party_id = $("select[name='party_id']").val();
+    if (party_id == 0) {
+        alert("请选择业务组织");
+        return false;
+    }
+    var start = $.trim($('#date').val());
+    if (start == '') {
+        alert("请选择发货时间");
+        return false;
+    }
+    var $p = $(':select[name="start[province]"]');
+    var $c = $(':select[name="start[city]"]');
+    var $d = $(':select[name="start[district]"]');
+    if ($.trim($p.val()) == '' || $p.val() == '0' || $.trim($c.val()) == '' || $c.val() == '0' || $.trim($d.val()) == '0') {
+        alert('请选择起始地址');
+        return false;
+    }
+    var $e_p = $(':select[name="start[province]"]');
+    var $e_c = $(':select[name="start[city]"]');
+    var $e_d = $(':select[name="start[district]"]');
+    if ($.trim($e_p.val()) == '' || $e_p.val() == '0' || $.trim($e_c.val()) == '' || $e_c.val() == '0' || $.trim($e_d.val()) == '0') {
+        alert('请选择目的地址');
+        return false;
+    }
+    var shipping_id = $(':select[name="shipping_id"]').val();
+    if (shipping_id == 0) {
+        alert("请选择快递方式");
+        return false;
+    }
+    var carrier_id  = get_carrier_id(shipping_id);
+    var tracking_number = $.trim($("input[name='tracking_number']").val());
+    if (tracking_number == '') {
+        alert("请填写快递单号");
+        return false;
+    }
+    if (!check_tracking_number_rule(carrier_id, tracking_number)) {
+        alert("快递单号与快递类型不匹配，请核实");
+        return false;
+    }
+    if ($("#check_tracking_number").val() == 1){
+        alert("运单号已存在，请核实");
+        return false;
+    }
+    var package_type = $(':select[name="package_type"]').val();
+    if (package_type == 2) {
+        var r = /^\d(\d+)?(.\d+)?$/;
+        var weight = $.trim($("input[name='weight']").val());
+        if(!r.test(weight)){
+            alert("请输入正确的首重，最大支持6为数重量（不含小数）");
+            return false;
+        }
+    }
+    var note = $.trim($("input[name='note']").val());
+    if (note == '') {
+        alert("请填写备注");
+        return false;
+    }
+    return true;
+}
+
+// 根据shipping_id得到carrier_id 
+function get_carrier_id(shipping_id) {
+	 var carrier_id;
+	 $.ajax({
+		 async:false,
+         type: 'POST',
+         url: 'ajax.php?act=get_carrier_id',
+         data: 'shipping_id=' + shipping_id,
+         dataType: 'json',
+         error: function() {
+        	 alert('ajax请求错误,根据shipping_id得到carrier_id失败:' + shipping_id); 
+        	 return false;
+         },
+         success: function(data) {
+        	 if(data) {
+        		 carrier_id = data;
+        	 } else {
+            	 alert('根据shipping_id得到carrier_id失败，找不到carrier_id：'+shipping_id);
+            	 return false;
+        	 }
+         }
+     });
+	 return carrier_id;
+}
+
+// 检查运单号规则 
+function check_tracking_number_rule (carrier_id,tracking_number) {
+    var result = false;
+    $.ajax({
+        async:false,
+        type: 'POST',
+        url: 'ajax.php?act=check_tracking_number',
+        data: 'carrier_id=' + carrier_id + '&tracking_number=' + tracking_number,
+        dataType: 'json',
+        error: function() {
+            alert('ajax请求错误,检查面单号规则失败:' + tracking_number); 
+        },
+        success: function(data) {
+            if(data['error']) {
+                alert(data['error']);
+            } else if(data == true) {
+                result = true;
+            } 
+        }
+    });
+    return result;
+}
+
+/**
+ * 改变地域的下拉框
+ */
+var Region = {
+    /** 
+     * WEB控件ID
+     */ 
+    regions : [
+            {name: 'start[province]', data:{type:2} }, // 省
+            {name: 'start[city]',     data:{type:3} }, // 市
+            {name: 'start[district]'},            // 区
+    ],
+    
+    expr : ':select[name="?"]',
+        
+    /**
+     * 初始化，即绑定事件
+     */
+    init : function() {
+        for (var i = 0; i < this.regions.length; i++) {
+            var node = $(this.expr.replace('?', this.regions[i].name));
+            node.bind('change', this.regions[i].data, this.change_region_list);
+            if (i > 0) {
+                var prev = $(this.expr.replace('?', this.regions[i-1].name));
+                var value = parseInt(prev.val());
+                if (isNaN(value) || value < 1 ) {
+                    if (i != 3) {
+                        node.hide();
+                    } else {
+                        node.show();
+                    }
+                } else {
+                    node.show();    
+                }
+            }                   
+        }
+    },
+
+    /**
+     * 改变下拉框
+     */
+    change_region_list : function(event) {
+        var $p = $(this);  // 父级元素
+        var pn = $p.attr('name');
+        var ln = Region.regions.length;
+        var last = false;
+        var next = 0;
+        // 如果到了最后一级则返回
+        for (var i=0; i<ln; i++) {
+            if (pn == Region.regions[i].name) {
+                next = i + 1;
+                if (i == ln -1) { last = true; }
+            }
+        }
+        
+        if (!last) {
+            $c = $(Region.expr.replace('?', Region.regions[next].name));     // 子级元素
+            for (var i=next; i<ln; i++) {
+                if (i != 3) {
+                    $(Region.expr.replace('?', Region.regions[i].name)).hide(); 
+                }
+            }
+        }
+        
+        
+        $c.unbind();
+        $.ajax({
+            type: 'POST',
+            url: 'ajax.php?request=ajax&act=get_regions',  // 查询地址
+            data: 'type=' + event.data.type + '&parent=' + $p.val(),
+            dataType: 'json',
+            error: function() { alert('查询地域失败'); },
+            success: function(data) {
+                if (data.regions && data.regions != '') {
+                    r = data.regions;
+                    var list = '<option value="0">-请选择-</option>';
+                    for (var i = 0; i < r.length; i++) {
+                        list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';     
+                    }
+                    $c.html(list).fadeIn();
+                    if (next + 1 < ln) {
+                        $c.bind('change', Region.regions[next].data, Region.change_region_list);
+                    }
+                }
+            }
+        }); 
+    }
+};
+
+/**
+ * 改变地域的下拉框
+ */
+var Region1 = {
+    /** 
+     * WEB控件ID
+     */ 
+    regions : [
+            {name: 'end[province]', data:{type:2} }, // 省
+            {name: 'end[city]',     data:{type:3} }, // 市
+            {name: 'end[district]'}                  // 区
+    ],
+    
+    expr : ':select[name="?"]',
+        
+    /**
+     * 初始化，即绑定事件
+     */
+    init : function() {
+        for (var i = 0; i < this.regions.length; i++) {
+            var node = $(this.expr.replace('?', this.regions[i].name));
+            node.bind('change', this.regions[i].data, this.change_region_list);
+            if (i > 0) {
+                var prev = $(this.expr.replace('?', this.regions[i-1].name));
+                var value = parseInt(prev.val());
+                if (isNaN(value) || value < 1 ) {
+                        node.hide();
+                } else {
+                    node.show();    
+                }
+            }                   
+        }
+    },
+
+    /**
+     * 改变下拉框
+     */
+    change_region_list : function(event) {
+        var $p = $(this);  // 父级元素
+        var pn = $p.attr('name');
+        var ln = Region1.regions.length;
+        var last = false;
+        var next = 0;
+        // 如果到了最后一级则返回
+        for (var i=0; i<ln; i++) {
+            if (pn == Region1.regions[i].name) {
+                next = i + 1;
+                if (i == ln -1) { last = true; }
+            }
+        }
+        
+        if (!last) {
+            $c = $(Region1.expr.replace('?', Region1.regions[next].name));     // 子级元素
+            for (var i=next; i<ln; i++) {
+                $(Region1.expr.replace('?', Region1.regions[i].name)).hide(); 
+            }
+        }
+        
+        
+        $c.unbind();
+        $.ajax({
+            type: 'POST',
+            url: 'ajax.php?request=ajax&act=get_regions',  // 查询地址
+            data: 'type=' + event.data.type + '&parent=' + $p.val(),
+            dataType: 'json',
+            error: function() { alert('查询地域失败'); },
+            success: function(data) {
+                if (data.regions && data.regions != '') {
+                    r = data.regions;
+                    var list = '<option value="0">-请选择-</option>';
+                    for (var i = 0; i < r.length; i++) {
+                        list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';     
+                    }
+                    $c.html(list).fadeIn();
+                    if (next + 1 < ln) {
+                        $c.bind('change', Region1.regions[next].data, Region1.change_region_list);
+                    }
+                }
+            }
+        }); 
+    }
+};
+function download_model(){
+    $("#lownload").submit();
+}
+
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>圆通</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:10pt;top:40px;left:70px;width:120px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:10pt;top:70px;left:70px;width:120px;">乐其</div>
+<div style="position:absolute;font-size:10pt;top:40px;left:150px;">
+	<span>
+		{if $goods}
+		商品-数量<br/>
+		{foreach from=$goods item=good}
+		{$good.sku_num}  ;
+		{/foreach}
+		{/if}
+	</span>
+</div>
+<div style="position:absolute;font-size:10pt;top:90px;left:50px;">{$order.company_address} </div>
+<div style="position:absolute;font-size:10pt;top:115px;left:20px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们,
+谢谢！</div>
+<div style="position:absolute;font-size:10pt;top:150px;left:60px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:20pt;top:180px;left:35px;">√</div>
+<div style="position:absolute;font-size: ;top:220px;left:40px;">{$order.goods_type}</div>
+
+<div style="position:absolute;font-size:13pt;top:40px;left:390px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:13pt;top:40px;left:510px;">{$order.city}</div>
+<!-- old way
+<div style="position:absolute;font-size:10pt;top:90px;left:400px;">
+{if $order.province != ''}{$order.province}{/if}
+</div>
+<div style="position:absolute;font-size:10pt;top:90px;left:520px;">
+{if $order.city != ''}{$order.city}{/if}
+</div>
+<div style="position:absolute;font-size:10pt;top:90px;left:600px;">
+{if $order.district != ''}{$order.district}{/if}
+</div>
+-->
+<div style="position:absolute;font-size:16pt;top:0px;left:565px;">
+{if $order.city != ''}<strong>{$order.city}</strong>{/if}
+<br/>
+{if $order.district != ''}<strong>{$order.district}</strong>{/if}
+</div>
+
+<div style="position:absolute;font-size:13pt;top:90px;left:400px;">
+{if $order.province != ''}{$order.province}{/if}
+&nbsp;&nbsp;&nbsp;&nbsp;
+{if $order.city != ''}{$order.city}{/if}
+&nbsp;&nbsp;&nbsp;&nbsp;
+{if $order.district != ''}{$order.district}{/if}
+</div>
+
+<div style="position:absolute;font-size:13pt;top:115px;left:340px;width:300px;">
+{$order.address}
+</div>
+<div style="position:absolute;font-size:11pt;top:150px;left:420px;">{$order.mobile} / {$order.tel}</div>
+<div style="position:absolute;font-size:10pt;top:360px;left:380px;">请检查包裹再签收，破损请拒收</div>
+<div style="position:absolute;font-size:8pt;top:315px;left:0px;">{$order.sendIDUser}{$order.sendIDCard}</div>
+<div style="position:absolute;font-size:10pt;top:315px;left:145px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:10pt;top:315px;left:200px;">
+{$smarty.now|date_format:"%Y　%m　%d"} 
+</div>
+<div style="position:absolute;font-size:10pt;top:360px;left:40px;">{$order.shipping_receiver_name}</div>
+
+
+{foreach from=$sinri_plus item=plus_text key=plus_type}
+<!-- 
+	SINRI PLUS 20140401 
+	圆通面单打印的时候打印上大头字（xx市，xx区）,和目前上海仓库中通快递大头字打印的一样，包括打印大头字内容和面单上的打印位置。
+	http://localhost/erp/admin/print_shipping_order3.php?order_id=9&service_goods_back=0&carrier_id=20
+-->
+	{if $plus_type=="rightdown_show_city"}
+		<div style="position:absolute;font-size:20pt;font-weight:bold;top:240px;left:500px;">{$plus_text}</div>
+	{/if}
+{/foreach}
+
+</body>
+</html>

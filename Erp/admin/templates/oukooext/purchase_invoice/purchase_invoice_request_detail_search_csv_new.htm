@@ -1,0 +1,5 @@
+{$smarty.request.provider_id|get_provider_name},"{$smarty.request.start_date|default:"起始"}至{$smarty.request.end_date|default:"至今"}"
+"出入库订单号","出入库时间","类型","商品代码","商品名称","串号","单价","数量","金额"
+{foreach from=$purchase_list item=purchase_list}
+"{$purchase_list.order_sn}#{$purchase_list.order_time|date_format:'%Y-%m-%d %T'}","{$purchase_list.created_stamp|date_format:'%Y-%m-%d %T'}","{if $purchase_list.order_sn|strpos:'-c' !== false}采购入库{/if}{if $purchase_list.order_sn|strpos:'-gt' !== false}采购退货{/if}","{$purchase_list.goods_id}#{$purchase_list.style_id}","{$purchase_list.goods_name}","{$purchase_list.serial_number}","￥{$purchase_list.goods_price|invoice_price_format}","{$purchase_list.quantity_on_hand_diff}","￥{$purchase_list.goods_price*$purchase_list.quantity_on_hand_diff|invoice_price_format}"
+{/foreach}

@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link href="styles/default.css" rel="stylesheet" type="text/css">
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>电教销量</title>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;电教销量报表&nbsp;</span></legend>
+
+
+	<div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+    <div class="item"><a href="edu_sale_item.php">销售明细</a></div>
+  	<div class="active"><a href="#">销向统计</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  	<form method="get">  
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td>商品名称</td>
+        <td colspan="2"><input type="text" name="keyword" value="{$filter.keyword}" /></td>
+			</tr>
+            
+    	<tr>
+      	<td>时间区间</td>
+        <td>
+            <input type="text" name="start" value="{$filter.start}" id="start" size="10" maxlength="20" /> <input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />
+            &nbsp; 到 &nbsp;
+            <input type="text" name="end" value="{$filter.end}" id="end" size="10" maxlength="20" /> <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+        </td>
+        <td>&nbsp;</td>
+		</tr>
+      
+    	<tr>
+      	<td width="120">送货地址</td>
+        <td>
+        	<select name="region" ><option value="">- ALL</option>{html_options options=$province_list selected=$filter.region}</select>
+        	&nbsp;&nbsp;&nbsp;&nbsp;查询方式 &nbsp;&nbsp;&nbsp;&nbsp;<select name="view">{html_options options=$view_list selected=$filter.view}</select>
+        	&nbsp;&nbsp;&nbsp;&nbsp;每页记录数 &nbsp;&nbsp;&nbsp;&nbsp;<select name="size">{html_options options=$page_size_list selected=$filter.size}</select>
+        </td>
+		<td>&nbsp;</td>
+		</tr>
+      
+      	<tr>
+        <td width="120">销售渠道</td>
+        <td>
+        	<select name="channel"><option value="">- ALL</option>{html_options options=$sales_channel_list selected=$filter.channel}</select>
+        </td>
+        <td>
+    		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="act" value="筛选" />   
+	  		&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="act" value="导出" />
+        </td>
+        </tr>
+		</table>
+    </form>
+  </div>
+  
+  
+  <br />
+  
+  
+<!--{if $list}-->
+  
+  <div style="clear:both;">
+  
+      <h3 style="color:#09F;">销量数据</h3>
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th>日期</th>
+          <th>商品名称</th>
+          <th>发往地</th>
+          <th>地区代码</th>
+          <th>数量/台</th>
+        </tr>
+    
+        <!--{foreach from=$list item=item}-->
+        
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$item->date}</td>
+          <td>{$item->goodsName}</td>
+          <td>{$item->region.region_name}</td>
+          <td>{$item->region.region_code}</td>
+          <td>{$item->saleQuantity}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+        
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td colspan="5" height="150">没有数据</td>
+        </tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <div style="clear:both;"><br /><br /></div>      
+			{$pagination}
+			<br />
+
+  </div>
+<!--{/if}-->
+  
+  <br />
+  
+</fieldset>
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+  button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+  button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

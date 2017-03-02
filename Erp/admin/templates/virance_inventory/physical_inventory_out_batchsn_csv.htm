@@ -1,0 +1,4 @@
+商品名,商品条码,库存状态,仓库名称,申请调整数量,批次号,订单,申请时间,类型,出库数量
+{foreach from=$already_out_goods item=item}
+{$item.goods_name},="{$item.barcode}",{$item.status_id},{$item.facility_name},{$item.goods_number},{$item.batch_sn},="{$item.order_sn}",{$item.order_time},{$item.order_type_id},{$item.out_num}
+{/foreach}

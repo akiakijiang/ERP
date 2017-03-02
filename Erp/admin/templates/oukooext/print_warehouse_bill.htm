@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+{literal}
+<style>
+body{background:#fff;}
+.tmain thead th{border-bottom:1px solid #000;}
+.tmain {margin-left:-50px;
+border-collapse:collapse;width:100%;clear:both;
+font-size:12pt;
+}
+.tmain td,.tmain th{border: solid 1px #000;}
+</style>
+{/literal}
+<title>东莞市乐其网络科技有限公司出入库单</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+{foreach from=$warehouse_bills item=bill name=bill}
+{section name=warehouse_bill_details_loop loop=$bill.warehouse_bill_details_count}
+<div align="center" style="width:18.4cm;margin:0 auto;height:12.5cm;">
+  <table class="tmain" style="margin-top:{if $smarty.foreach.bill.first && $smarty.section.warehouse_bill_details_loop.first}2{else}13{/if}px;">
+    <tr>
+      <td colspan="12" valign="top" align="center">
+        <p><strong style="font-size:15pt;">{if $bill.party=='SPECIAL'}睿谋科技（香港）有限公司{$bill.title}单
+        {else}东莞市乐其网络科技有限公司{$bill.title}单{/if}</strong></p>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="5"></td>
+      <td width="200">编号：{$bill.bill_batch_id}</td>
+    </tr>
+    <tr>
+      <td width="74" colspan="5">{$bill.partner_type}： {if $bill.order_type_id == 'SALE'}{$bill.consignee}{else}{$bill.partner_name}{/if}</td>
+      <td>日期：{$bill.print_date}</td>
+    </tr>
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+    <tr>
+      <td width="330">产品描述</td>
+      <td width="60">单位</td>
+      <td width="60">数量</td>
+      <td width="100">单价</td>
+      <td width="100">金额</td>
+      <td width="180">说明</td>
+    </tr>
+    {assign var="total" value=0}
+    {assign var=quantity_sum value=0}
+    {assign var=total_amount value=0}
+    {foreach from=$bill.details item=detail name=bill_detail}
+    {if ($smarty.foreach.bill_detail.iteration-1) >= 
+        (($smarty.section.warehouse_bill_details_loop.iteration-1)*$bill.size) 
+        && ($smarty.foreach.bill_detail.iteration-1) < 
+        (($smarty.section.warehouse_bill_details_loop.iteration)*$bill.size) }
+    <tr>
+      {if $bill.party=='SPECIAL'}
+      <td>{$detail.goods_name}</td>
+      {else}<td nowrap>{$detail.goods_name}</td>{/if}
+      <td>{$detail.uom}</td>
+      <td align="right" >{$detail.goods_number}</td>
+      <td align="right" >{$detail.goods_price}</td>
+      <td align="right" >{$detail.goods_amount}</td>
+      <td>{$detail.goods_desc}</td>
+    </tr>
+    {assign var=quantity_sum value=$quantity_sum+$detail.goods_number}
+    {assign var=total_amount value=$total_amount+$detail.goods_amount}
+    {assign var="total" value=$total+1}
+    {/if}
+    {/foreach}
+    {assign var="bill_detail_blank" value=$total-11}
+    {section name=blank loop=$bill_detail_blank*-1}
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+    {/section}
+    <tr>
+      <td></td>
+      <td></td>
+      <td align="right" >{$quantity_sum}</td>
+      <td></td>
+      <td colspan="10">合计金额：{$total_amount|string_format:"%.2f"}</td>
+    </tr>
+  </table>
+  <table class="tmain">
+    <tr>
+    {if $bill.order_type_id == 'SALE'}
+      <td width="200">制单：杨新</td>
+      <td width="200">发货人：罗斌</td>
+      <td width="200">复核：刘志刚</td>
+      <td width="200">审批：</td>
+    {elseif $bill.party=="SPECIAL"}
+      <td width="200">经办人：覃杰斌</td>
+      <td width="200">仓管员：刘彦兵</td>
+      <td width="200">审核：李超</td>
+      <td width="200">批准：</td>
+    {else}
+      <td width="200">经办人：伍敏</td>
+      <td width="200">仓管员：贯钢</td>
+      <td width="200">审核：谢志珍</td>
+      <td width="200">批准：</td>
+    {/if}
+    </tr>
+    <tr>
+      <td colspan="10">&nbsp;</td>
+    </tr>
+  </table>
+</div>
+<div STYLE="page-break-after: always;"></div>
+{if $smarty.request.print != 1}
+<span class="right" onclick="factory.printing.paperSize='ouku_invoice';this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+{/section}
+{/foreach}
+</body>
+</html>

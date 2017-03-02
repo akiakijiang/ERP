@@ -1,0 +1,61 @@
+<html>
+<head>
+<title>顺丰</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+{/if}
+{foreach from=$invoicePrint item=invoice } 
+<div style="position:absolute;font-size:12pt;top:60px;left:5px;letter-spacing:10px;"></div><!-- 月结帐号(is not it Customer Account?!) Original as none-->
+<!--<div style="position:absolute;font-size:10pt;top:90px;left:5px;">上海欧酷网络科技有限公司</div>-->
+<div style="position:absolute;font-size:10pt;top:90px;left:210px;">乐其</div>
+<div style="position:absolute;font-size:10pt;top:90px;left:2px;"><!--请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。否则概不负责。--></div>
+<div style="position:absolute;font-size:10pt;top:115px;left:2px;">{$start_addr.p}{$start_addr.c}{$start_addr.d}
+	<br>{$start_addr.addr}</div>
+	<!-- Original Place
+<div style="position:absolute;font-size:10pt;top:170px;left:1px;">0571</div>
+<div style="position:absolute;font-size:10pt;top:170px;left:128px;">28189819</div>-->
+<div style="position:absolute;font-size:10pt;top:170px;left:30px;">0571-28189819</div><!-- 电话 Original as 28189801-->
+<div style="position:absolute;font-size:10pt;top:240px;left:210px;">{$invoice.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:260px;left:1px;width:260px;line-height:200%;">{if $invoice.province != ''}{$invoice.province_name}{/if}{if $invoice.city != ''}{$invoice.city_name}{/if}{if $invoice.district != ''}{$invoice.district_name}{/if} &nbsp; {$invoice.address}</div>
+<!--
+<div style="position:absolute;font-size:10pt;top:290px;left:1px;width:260px;line-height:200%;">
+{$invoice.address}
+</div>
+-->
+<div style="position:absolute;font-size:10pt;top:315px;left:90px;">{$invoice.tel}</div>
+{if $order.insure_fee >= 1}
+<div style="position:absolute;font-size:18pt;top:320px;left:430px;"><strong>
+{$order.insure_fee|price_format}
+</strong>
+</div>
+<div style="position:absolute;font-size:25pt;top:310px;left:260px;">√</div><!-- 保价 -->
+{/if}
+<div style="position:absolute;font-size:14pt;top:385px;left:10px;font-weight:bolder;"></div>
+<div style="position:absolute;font-size:14pt;top:385px;left:220px;"><!--1--></div>
+<div style="position:absolute;font-size:12pt;top:15px;left:470px;font-weight:bolder;"><!--Seems to be area code 021FD--></div>
+<div style="position:absolute;font-size:30pt;top:40px;left:460px;"><!--√--></div><!--寄方付 -->
+<div style="position:absolute;font-size:30pt;top:40px;left:560px;">√</div><!--Third Party Pay -->
+<div style="position:absolute;font-size:12pt;top:90px;left:455px;letter-spacing:10px;">7698041295</div><!-- Seems to be Monthly payment Code -->
+<div style="position:absolute;font-size:12pt;top:130px;left:475px;line-height:100%">转769FF</div>
+<div style="position:absolute;font-size:12pt;top:415px;left:460px;">
+	<!--本人签收，送货前电话联系<br>-->
+	{if $order.start_shipping_time != 0 || $order.end_shipping_time != 0}
+		{if $order.start_shipping_time != 0}{$order.start_shipping_time}点{else}-{/if}至{if $order.end_shipping_time != 0}{$order.end_shipping_time}点{else}-{/if}配送
+	{/if}
+</div>
+{/foreach}
+</body>
+<!--
+	请ERP同学在财务管理-销售发票管理-打印补寄发票界面，业务组ECCO，调整下顺丰面单打印信息，
+	寄件地址改为杭州市滨江区江虹路611号1号楼402室，
+	电话改为0571-28189826，
+	收件人的详细信息，地区代码目的地处为空，
+	付款方式改为第三方付，
+	月结账号处改为7698041295 ，
+	第三方付款地区改为转769FF；
+-->
+</html>

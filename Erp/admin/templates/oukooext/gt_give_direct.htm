@@ -1,0 +1,393 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>抵用券发送</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+ 	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+ 	<!--{literal}-->
+  
+  <style type="text/css">
+	.tip{ color: #888; }
+	.require{ color: #F00; }
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	
+	$(function(){
+		// 表单提示时禁用按钮
+		$('form').find(':button:enabled').attr('disabled', false);
+		$('form').bind('submit', function(){
+			$(this).find(':button:enabled').attr('disabled', true);
+		});
+		
+		init();		
+		
+		// 切换状态更改 开始时间和结束时间选项
+		$(':select[name="gtc[gtc_state]"]').bind('change', function(){
+				var v = $(this).val();
+				change_time_limit_input(v);
+		});
+		
+		// 切换party_id更改可限制的分类项
+		$(':select[name="gtc[party_id]"]').bind('change', function(){
+				var v = $(this).val();
+				change_cat_limit_selector(v);
+		});
+		
+		// 切换type_id更改发送抵用券的填写项
+		$(':select[name="gtc[gtc_type_id]"]').bind('change', function(){
+				var v = $(this).val();
+				$.get('gt_give_direct.php?act=change_type', {type_id : v}, change_type_input);
+		});
+		
+		// 绑定检查用户事件
+		$('#check_user').bind('click', function(){
+				var users = $.trim($(':input[name="gt[user_name]"]').val());
+				if (users != '') {
+					$.ajax({
+						type: 'POST',
+						url: 'gt_give_direct.php?act=check_user',
+						data: 'users=' + users,
+						dataType: 'json',
+						success: function(response) {
+							if (response.inexistent.length > 0) {
+								u = new Array();
+								for (var i = 0; i < response.inexistent.length; i++) {
+									u.push(response.inexistent[i]);
+								}
+								alert('！不存在用户:' + u.join(','));
+							} else {
+								alert('没问题');
+							}
+						}
+					});
+				}
+		});
+		
+		// 绑定检查订单号事件
+		$('#check_order').bind('click', function(){
+				var orders = $.trim($(':input[name="gt[order_sn]"]').val());
+				if (orders != '') {
+					$.ajax({
+						type: 'POST',
+						url: 'gt_give_direct.php?act=check_order',
+						data: 'orders=' + orders,
+						dataType: 'json',
+						success: function(response) {
+							if (response.inexistent.length > 0) {
+								u = new Array();
+								for (var i = 0; i < response.inexistent.length; i++) {
+									u.push(response.inexistent[i]);
+								}
+								alert('！不存在订单号:' + u.join(','));
+							} else {
+								alert('没问题');
+							}
+						}
+					});
+				}
+		});
+		
+	});
+
+	/**
+	 * 初始化
+	 */
+	function init() {
+		change_time_limit_input($(':select[name="gtc[gtc_state]"]').val());
+		change_cat_limit_selector($(':select[name="gtc[party_id]"]').val());
+		$.get('gt_give_direct.php?act=change_type', {type_id : $(':select[name="gtc[gtc_type_id]"]').val()}, change_type_input);
+	}
+	
+	/**
+	 * 修改抵用券类型后， 关联的订单号和用户
+	 */
+	function change_type_input(require) {
+		// 需要填写订单号
+		if (require && require == 'Y') {
+			$('#check_type_order').attr('checked', true);
+			$('#check_type_user').attr('checked', false)
+		} else {
+			$('#check_type_order').attr('checked', false);
+			$('#check_type_user').attr('checked', true);
+		}
+	}
+	
+	function change_cat_limit_selector(v) {
+			var v = parseInt(v), 
+			    c = $(':select[name="gtc[gtc_date_for_top_cat_id]"]');
+					
+			if (isNaN(v) || v <= 0) {
+				opt = '<option value="">N/A</option>';
+				c.html(opt);
+				c.attr('disabled', true);
+			}
+			else {
+				c.attr('disabled', false);
+				$.ajax({
+					type: 'GET',
+					url: 'gt_give_direct.php?act=change_party',
+					data: 'party_id=' + v,
+					dataType: 'json',
+					success: function(response) {
+						opt = '';
+						for ( var i = 0; i < response.length; i++) {
+							opt += '<option value="'+ response[i].cate_id +'">'+ response[i].cate_name +'</option>';
+						}
+						c.html(opt);
+					}
+			  });	
+			}
+	}
+	
+	function change_time_limit_input(v) {
+		v = parseInt(v);
+		switch (v) {
+			// 有时间限制
+			case 2 :
+				var date = new Date()
+				stime = date.getFullYear() + '-' + (date.getMonth()+1) + '-' + date.getDate();
+				date.setFullYear(date.getFullYear() + 1);
+				etime = date.getFullYear() + '-' + (date.getMonth()+1) + '-' + date.getDate();
+				$(':input[name="gtc[gtc_daw_stime]"]').val(stime).attr('disabled', false);
+				$(':input[name="gtc[gtc_daw_etime]"]').val(etime).attr('disabled', false);
+				break;
+			
+			// 无时间限制
+			case 3 :
+			default :
+				$(':input[name="gtc[gtc_daw_stime]"]').val('N/A').attr('disabled', true);
+				$(':input[name="gtc[gtc_daw_etime]"]').val('N/A').attr('disabled', true);
+				break;
+		}	
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit() {		
+		do {
+			// 验证		
+			// 成功后提交
+			$('#form').submit();
+		} while (false);
+		
+		return;	
+	}
+	// ]]>
+	</script>
+  
+ 	<!--{/literal}-->
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;抵用券发送&nbsp;</span></legend>
+  
+ 	<form method="post" id="form">  
+
+
+	<div style="clear:both;"> 
+  <h4>|— 红包信息</h4>
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">启用网站 <span class="require"> * </span></td>
+        <td>
+        	<select name="gtc[party_id]">
+          <option value="">- 请选择</option>
+          {html_options options=$party_id_list selected=$gtc.party_id}
+          </select>
+				</td>
+			</tr>
+      
+    	<tr>
+      	<td>类型 <span class="require"> * </span></td>
+        <td>
+        	<select name="gtc[gtc_type_id]">
+          <option value="">- 请选择</option>
+          {html_options options=$bonus_type_list selected=$gtc.gtc_type_id}
+          </select>
+          &nbsp;
+        	<span class="tip">用于反映该红包是由哪种情况生成的</span>
+				</td>
+			</tr>
+      
+    	<tr>
+      	<td>金额 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="gtc[gtc_value]" value="{$gtc.gtc_value}" size="12" />
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          金额类型： <select name="gtc[gtc_type]" disabled="disabled"><option value="value">金额</option><option value="percent">百分比</option></select>
+        </td>
+			</tr>
+      
+    	<tr>
+      	<td>状态 <span class="require"> * </span></td>
+        <td>
+        	<select name="gtc[gtc_state]">
+          <option value="">- 请选择</option>
+          {html_options options=$gtc_state_list selected=$gtc.gtc_state}
+          </select>
+        </td>
+			</tr>
+      
+    	<tr>
+      	<td>开始时间</td>
+        <td>
+					<input type="text" name="gtc[gtc_daw_stime]" value="{$gtc.gtc_daw_stime}" size="12" id="start" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />
+          &nbsp;
+        	<span class="tip">如果是有时间限制的请填写</span>
+        </td>
+			</tr>
+      
+    	<tr>
+      	<td>结束时间</td>
+        <td>
+        	<input type="text" name="gtc[gtc_daw_etime]" value="{$gtc.gtc_daw_etime}" size="12" id="end" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+        </td>
+			</tr>
+      
+    	<tr>
+      	<td>备注 <span class="require"> * </span></td>
+        <td>
+        	<textarea name="gt[gt_comment]" style="width:350px; height:60px;">{$gtc.gtc_comment}</textarea>
+        </td>
+			</tr>
+        
+		</table>
+  </div>
+  <br />
+
+
+	<div style="clear:both;"> 
+  <h4>|— 限制使用</h4>
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">限定使用的分类</td>
+        <td>
+        	<select name="gtc[gtc_date_for_top_cat_id]"></select>
+          &nbsp;
+        	<span class="tip">限定红包必须使用在哪些商品分类上</span>
+				</td>
+			</tr>
+      
+    	<tr>
+      	<td>限定使用的最少金额</td>
+        <td>
+        	<input type="text" name="gtc[gtc_data_goods_amount_limit]" value="{$gtc.gtc_value}" size="12" />
+          &nbsp;
+        	<span class="tip">限定订单必须达到该金额才能使用该红包</span>
+				</td>
+			</tr>
+        
+		</table>
+  </div>
+  <br />
+
+  
+	<div style="clear:both;"> 
+  <h4>|— 发给用户</h4>
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">
+        	<input type="radio" name="check_type" value="user" id="check_type_user" />
+        	<label for="check_type_user">用户名 <span class="require"> * </span></label>
+				</td>
+        <td>
+        	<textarea name="gt[user_name]" style="width:350px; height:60px;">{$gt.user_name}</textarea>
+				</td>
+        <td>
+					<span class="tip">可以输入多个用户的用户名，每行一个或者用逗号隔开 <br /><br /> 你可以点击<input id="check_user" type="button" value="检查">该按钮来检查用户是否存在</span>
+        </td>
+			</tr>
+      
+    	<tr>
+      	<td width="120">
+        	<input type="radio" name="check_type" value="order" id="check_type_order" />
+        	<label for="check_type_order">订单号 <span class="require"> * </span></label>
+				</td>
+        <td>
+        	<textarea name="gt[order_sn]" style="width:350px; height:60px;">{$gt.order_sn}</textarea>
+				</td>
+        <td>
+					<span class="tip">可以输入多个订单的订单，每行一个或者用逗号隔开 <br /><br /> 你可以点击<input id="check_order" type="button" value="检查">该按钮来检查订单是否存在</span>
+        </td>
+			</tr>
+      
+    	<tr>
+      	<td>数量 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="gt[number]" value="{$gt.number}" size="8" />
+        </td>
+			</tr>
+      
+		</table>
+  </div>
+  
+  
+  <br /><br /><br />
+	<div style="text-align:center"><input type="button" value="发送红包" onclick="apply_submit(this);" /></div>
+  <br />
+  
+  <input type="hidden" name="act" value="done" />
+  
+  </form>
+  
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="misc/autocomplete.js"></script>
+	  
+	<script type="text/javascript" src="js/json2.js"></script>
+	<script type="text/javascript" src="js/v3.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<style type="text/css">
+	{literal}
+	body{
+		font-size: 14px;
+	}
+	table{
+		font-size: 13px;
+		width: 95%;
+		margin:0px auto
+	}
+	table th,table td{
+	    font-weight: normal;
+	    text-align: center;
+	    border:1px solid #62B4E8;
+	}
+	table td{
+	    padding:6px 0;
+	}
+
+	table th{
+	    padding:10px 0;
+	    background: #62B4E8;
+	    color:#fff;
+	}
+	h1{
+		font-size: 1.5em;
+		color:#333;
+		text-align: center;
+		margin:10px 0;
+	}
+	.button{
+				border:none;
+				outline: none;
+			    display: block;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 3px !important;
+			    color: #fff !important;
+			    width: 50px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	.submit{
+				border:none;
+				outline: none;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 2px !important;
+			    color: #fff !important;
+			    width: 80px;
+			    height:30px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	
+	.simpEditBtn{
+		width: auto;
+		margin:3px;
+	}
+	
+	.simpNewBtn{
+		width: auto;
+		margin:3px;
+	}
+	
+	.simpDelBtn{
+		width: auto;
+		margin:3px;
+	}
+	
+	.button:hover { 
+	                background: #3da1d1;
+	                transition:all .2s;
+	                -o-transition:all .2s;
+	                }
+	                
+	.button:active {
+	                position: relative;
+	                top:1px;
+	                }
+	input[type="text"]{
+                display: inline-block;
+                height: 32px;
+                line-height: 32px;
+                width: 100px;
+                padding:10px 5px;
+                color: #333;
+                border-radius: 3px;
+                -o-border-radius: 3px;
+                border:1px solid #b1b1b1;
+                outline: none; /* for chorme & safari's default effect */
+            }
+    .msg{
+        width: 80%;
+    	padding:5px 0 5px 40px;
+    	margin:10px auto;
+    	display: none;
+    	
+    }
+    .msg-success{
+    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+    	background-position: 10px center;
+        border-color: #9adf8f;
+        color: #556652;
+        
+    }
+    .msg-error{
+    	background: url('img/cross_circle.png') #ffcece no-repeat;
+    	background-position: 10px center;
+        border-color: #df8f8f;
+        color: #665252;
+    }
+    .redtr{
+    	background-color: #ffcece;
+    }
+    .importantNote{
+        color:red;
+        font-size:16px;
+        padding:5px 0 5px 40px;
+    }
+    a {
+	  color: black;
+	  font-size:15px;
+	}
+	a:hover{color:#62B4E8;font-size:15px;}
+    {/literal}
+	</style>
+</head>
+<body>
+
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="wyeth_report.php?flag=1"><sapn>>>>首页</sapn></a>&nbsp;
+	<a href="wyeth_report.php?user_level=1&flag=1">>>>新会员</a>&nbsp;
+	<a href="wyeth_report.php?user_level=2&flag=1">>>>老会员未购买</a>&nbsp;
+	<a href="wyeth_report.php?user_level=3&flag=1">>>>老会员已购买</a></tr>
+
+	<br>
+	<span><h1>惠氏报表数据</h1></span>
+	
+	<p class="msg msg-success">{$message_success}</p>
+	<p class="msg msg-error">{$message_error}</p>
+	<form>
+	<table>
+	<tr>
+		<td>
+		 	店铺类型：
+			 <select name="shop" id="shop">
+		     {html_options options=$shop_list selected=$smarty.request.shop}
+		    </select> 
+			
+			
+			 <span style="margin-top:13px;margin-left:250px;width:90px;height:20px;">查询起始时间：
+			 <input  style="width:100px;height:20px" id="start_time" name="start_time" value="{$smarty.request.start_time}"></span>
+			 <span style="margin-top:13px;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" /></span>
+			
+			 <span style="margin-top:10px;margin-left:23px;width:110px">查询结束时间：
+			 <input style="width:100px;height:20px" id="end_time" name="end_time" value="{$smarty.request.end_time}"></span>
+			 <span style="margin-top:13px;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" /></span>
+		</td>
+		<td>
+			 <input type="submit" class="submit" value="搜索" style='font-size:10px'>&nbsp;
+			 <input type="submit" class="submit" name="type" value="数据导出CSV" style='font-size:10px' >
+			 <input type="hidden" name="user_level" value="{$smarty.request.user_level}">
+		</td>
+	</tr>
+	</table>
+    </form>
+    
+	<form action="wyeth_report.php" method="post">
+		<table>
+			<thead>
+				<tr>
+					<th>时间</th>
+					<th>总和</th>
+					<th>孕期</th>
+					<th>0-6M</th>
+					<th>7-12M</th>
+					<th>13-36M</th>
+					<th>其他</th>
+			</thead>
+			{foreach from=$user_list key=k item=user}
+			<tr>
+				<td>{$user.last_updated_stamp}</td>
+				<td>{$user.total}</td>
+				<td>{$user.pregnant_days}</td>
+				<td>{$user.pregnant_0_6}</td>
+				<td>{$user.pregnant_7_12}</td>
+				<td>{$user.pregnant_13_36}</td>
+				<td>{$user.pregnant_others}</td>
+				
+			</tr>
+			{/foreach}
+			<tr>
+				<td colspan="11" style="text-align:right;padding-right:20px;">{$Pager}</td>
+			</tr>
+		</table>
+	</form>
+<script>
+// <![CDATA[
+    var message_success = "{$message_success}";
+    var message_error = "{$message_error}";
+//{literal}
+$(document).ready(function(){
+	var msg_success = $(".msg-success");
+	var msg_error = $(".msg-error");
+	if(message_success != ""){
+		msg_success.fadeIn("normal");
+		msg_error.hide();
+	}
+	if(message_error != ""){
+		msg_error.fadeIn("normal");
+		msg_success.hide();
+	}
+	
+	
+	
+	var simpEditBtn = $(".simpEditBtn");
+	var simpNewBtn = $(".simpNewBtn");
+	var simpDelBtn = $(".simpDelBtn");
+	
+	simpEditBtn.click(function(){
+		var that = $(this);
+		var simp_key = that.parent().parent().find(".key").val();
+		var simp_appkey = that.parent().parent().find(".appkey").val();
+		var simp_appsecret = that.parent().parent().find(".appsecret").val();
+		var simp_uin = that.parent().parent().find(".uin").val();
+		var data = "application_key=" + simp_key + "&app_key=" + simp_appkey +"&app_secret="+simp_appsecret+"&uin="+simp_uin;
+		if( simp_appkey == "" || simp_appsecret == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=update_kjg_shop',
+				success:function(data){
+					alert("修改成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("修改失败");
+				}
+			});
+		}
+	});
+	simpDelBtn.click(function(){
+		var that = $(this);
+		var simp_key = that.parent().parent().find(".key").val();
+		var data = "application_key=" + simp_key ;
+		if( simp_key == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=delete_kjg_shop',
+				success:function(data){
+					alert("删除成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("删除失败");
+				}
+			});
+		}
+	});
+	simpNewBtn.click(function(){
+		var simp_nick=document.getElementById("shop_id_select").value; 
+		var that = $(this);
+		var simp_appkey = that.parent().parent().find(".shop_key").val();
+		var simp_appsecret = that.parent().parent().find(".shop_secret").val();
+		var simp_uin = that.parent().parent().find(".shop_uin").val();
+		
+		var data = "nick=" + simp_nick + "&app_key=" + simp_appkey +"&app_secret="+simp_appsecret+"&uin="+simp_uin;
+		if( simp_appkey == "" || simp_appsecret == ""){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=insert_kjg_shop',
+				success:function(data){
+					alert("新建成功");
+					window.location.href ='haiguan_shop_info.php';
+				},
+				error:function(data){
+					alert("新建失败");
+				}
+			});
+		}
+	});
+	
+	
+	/*商店搜索*/
+	$('#shop_id_select').autocomplete('haiguan_shop_info.php?request=ajax&act=get_select_shop', {
+		dataType : 'json',
+		minChars: 0,
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.nick);
+		},
+		formatResult : function(row) {
+			return(row.nick);
+		}
+	}).result(function(event, row, formatted) {
+		$(':input[name="shopnick"]').val(row.nick);
+	});
+	
+});
+//{/literal}
+// ]]>
+</script>
+	
+</body>
+
+{literal}
+	<script type="text/javascript">
+      $(function(){
+    	  Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "start_time",
+	        button            : "startTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+	      Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "end_time",
+	        button            : "endTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+      });
+</script>
+{/literal}
+</html>

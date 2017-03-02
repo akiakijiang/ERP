@@ -1,0 +1,4 @@
+时间,总和,孕期,0-6M,7-12M,13-36M,其他
+{foreach from=$user_list item=user}
+="{$user.last_updated_stamp}",="{$user.total}",="{$user.pregnant_days}","={$user.pregnant_0_6}",="{$user.pregnant_7_12}","={$user.pregnant_13_36}","={$user.pregnant_others}"
+{/foreach}

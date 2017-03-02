@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>顺丰[保乐力加电商服务上海仓]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:12pt;top:0px;left:80px;font-size:40px;">{$order.diff}</div>
+<div style="position:absolute;font-size:12pt;top:60px;left:5px;letter-spacing:10px;">7698041295</div> <!-- 集团账号 -->
+<!--  <div style="position:absolute;font-size:11pt;top:90px;left:5px;">上海乐其网络科技有限公司</div>-->
+<div style="position:absolute;font-size:11pt;top:90px;left:210px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:11pt;top:115px;left:2px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:11pt;top:170px;left:1px;">{$tel_qh}</div>
+<div style="position:absolute;font-size:11pt;top:170px;left:68px;">{$tel_dh}</div>
+<!--至此为寄件人信息-->
+
+
+<div style="position:absolute;font-size:11pt;top:240px;left:210px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:11pt;top:260px;left:1px;width:260px;line-height:200%;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:11pt;top:315px;left:125px;">{$order.mobile}<br />{$order.tel}</div>
+<div style="position:absolute;font-size:11pt;top:385px;left:1px;">食品&nbsp;&nbsp;(订单号：{$order.taobao_order_sn})</div>
+<div style="position:absolute;font-size:14pt;top:385px;left:220px;">1</div>
+<div style="position:absolute;font-size:15pt;top:10px;left:480px;font-weight:bolder;">021LK</div><!--原寄地-->
+<div style="position:absolute;font-size:30pt;top:50px;left:460px;">√</div><!--寄方付 -->
+<div style="position:absolute;font-size:30pt;top:50px;left:580px;">√</div><!--第三方付 -->
+<div style="position:absolute;font-size:12pt;top:115px;left:475px;letter-spacing:10px;">7698041295</div> <!-- 集团账号 -->
+<div style="position:absolute;font-size:12pt;top:140px;left:475px;line-height:100%"><!--电子产品<br />只能验收外观不得试机--></div>
+<div style="position:absolute;font-size:20pt;top:420px;left:560px;">本人签收<br></div>
+<div style="position:absolute;font-size:20pt;top:305px;left:495px;line-height:100%">{$smarty.now|date_format:"%m-%d"}</div>
+
+</body>
+</html>

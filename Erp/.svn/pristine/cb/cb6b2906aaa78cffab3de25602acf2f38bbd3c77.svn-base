@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品标识维护</title>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<link href="styles/default.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+//<![CDATA[
+// {literal}
+function check_export_form() {
+    var begin_time = $.trim($('#start_validity_time').val());
+    var end_time = $.trim($('#end_validity_time').val());
+    if (begin_time == '') {
+        alert("请输入开始时间");
+        return false;
+    }
+    if (end_time == '') {
+        alert("请输入结束时间");
+        return false;
+    }
+    $('#export').submit();
+}
+// {/literal}
+//]]>
+</script>
+</head>
+<body>
+ <fieldset style="-moz-border-radius:6px; margin:auto;width:1000px;height:450px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;商品标识维护&nbsp;</span></legend>
+  <form action="goods_identify.php?act=upload" enctype="multipart/form-data" method="post">
+	    <fieldset style="border: #FF7FFF 1px dashed;margin:auto;margin-top:30px;width:900px"><legend>&nbsp;使用说明&nbsp;</legend>
+	    <table class="sb" > 
+	     <tr><td>1.导入EXCEL文件sheet命名为"商品标识"</td></tr>
+	     <tr><td>2.导入EXCEL文件需填写商品条码、产地、材料、类型、工艺、品名、颜色、号型、执行标准</td></tr>
+	 	</table>
+	 	<input type="file" style="margin-top:5px;margin-bottom:5px;" size="30" name="excel"/>
+		<input type="submit" value="导入"/></br>
+		<div style="color:red">{$load_message}</div>
+		</fieldset>
+  </form>
+  
+  <form action="goods_identify.php" id="export">
+	    <fieldset style="border: #FF7FFF 1px dashed;margin:auto;margin-top:30px;width:900px"><legend>&nbsp;打印次数统计&nbsp;</legend>
+	    <table>
+	       <tr>
+		     <td> 起始时间 ：</td>
+		     <td> <input style="width:120px;margin-top:5px" id="start_validity_time" name="start_validity_time" value="{$smarty.request.start_validity_time}"><input type="button" value="..." id="start_validity_time_trigger"> </td>
+		   </tr>
+		   <tr>
+		     <td>  终止时间 ：</td>
+		     <td> <input style="width:120px;margin-top:5px" id="end_validity_time" name="end_validity_time" value="{$smarty.request.end_validity_time}"><input type="button" value="..." id="end_validity_time_trigger"></td>
+		   </tr>
+		   <tr>
+			<td>
+			  <input type="button" value="导出" onclick="check_export_form()"></input>
+			</td>
+		   </tr> 
+		   <tr>
+		    <td>
+        	<input type="hidden" name="act" value="export_print_history" />
+        	<input type="hidden" name="csv" value="历史打印CSV" />
+			</td>
+		   </tr>
+	    </table>
+	    <div style="color:red">{$export_message}</div>
+	    </fieldset>
+  </form>
+ </fieldset>
+ {literal}
+	<script type="text/javascript">//<![CDATA[
+	                                          
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "start_validity_time",
+	          button            : "start_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "end_validity_time",
+	          button            : "end_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      //]]>
+	</script>
+ {/literal}
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<!--
+ * Created on 2011-5-28
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+-->
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>供应商退货</title>
+  <link href="../styles/default.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <script type="text/javascript" >
+  
+  var view = '{$view}';
+  {literal}
+    $(document).ready(function(){
+      /**
+       * 商品搜索
+       */
+      $('#goods_name_select').autocomplete('supplier_return_goods_request.php?request=ajax&act=search_goods', {
+          dataType : 'json',
+          minChars: 0,
+          mustMatch: false,
+          formatItem : function(row, i, max, value, term) {
+              return(row.goods_name);
+          },
+          formatResult : function(row) {
+              return(row.goods_name);
+          }
+      }).result(function(event, row, formatted) {
+          $('#goods_id').val(row.goods_id);
+          $('#style_id').val(row.style_id);
+      });      
+
+
+       /**
+        * 供应商检索
+        */
+       $('#original_provider_select').autocomplete('supplier_return_goods_request.php?request=ajax&act=search_providers', {
+           dataType : 'json',
+           minChars: 0,
+           mustMatch: true,
+           formatItem : function(row, i, max, value, term) {
+               return(row.provider_name);
+           },
+           formatResult : function(row) {
+               return(row.provider_name);
+           }
+       }).result(function(event, row, formatted) {
+           $('#provider_id').val(row.provider_id);
+       });
+
+       
+    }); 
+  	
+    function returnAction(obj){
+       var requestId = obj.id ;
+       location.href = 'supplier_return_goods_request.php?act=return&requestId=' + requestId ;
+    }
+
+    function cancelAction(obj){
+    	var requestId = obj.id ;
+        location.href = 'supplier_return_goods_request_list.php?view=purchase&act=cancle&supRetReqId=' + requestId ;
+    }
+
+    function editAction(obj){
+    	var requestId = obj.id ;
+        location.href = 'supplier_return_goods_request.php?act=edit&requestId=' + requestId ;
+    }
+    
+    function passAction(obj){
+    	var requestId = obj.id ;
+    	location.href = 'supplier_return_goods_request.php?act=update&status=PASS&requestId=' + requestId ;
+    }
+    
+    function initAction(obj){
+    	var requestId = obj.id ;
+    	location.href = 'supplier_return_goods_request.php?act=init&requestId=' + requestId ;
+    }
+    
+    function denyAction(obj){
+    	var requestId = obj.id ;
+    	location.href = 'supplier_return_goods_request.php?act=update&status=DENY&requestId=' + requestId ;
+    }
+    
+    function complateAction(obj){
+    	var requestId = obj.id ;
+    	location.href = 'supplier_return_goods_request.php?act=complate&status=COMPLETION&requestId=' + requestId ;
+    }
+    function chkDateformat(){
+       var start_date = document.getElementById('from_date');
+       var end_date = document.getElementById('to_date');
+       pattern_date = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
+       if(start_date.value != ''){
+    	   if(!pattern_date.test(start_date.value)){
+        	   alert('起始输入的时间格式不对，请重新输入。');
+        	   start_date.select();
+        	   return false;
+    	   }
+       }
+
+       if(end_date.value != ''){
+    	   if(!pattern_date.test(end_date.value)){
+        	   alert('结束输入的时间格式不对，请重新输入。');
+        	   end_date.select();
+        	   return false;
+    	   }
+       }
+
+    }
+    {/literal}
+    {if $view == 'purchase'}
+	    {if $cg_supplier_return_check}
+	    	var cg_supplier_return_check = {$cg_supplier_return_check};
+	    {else}
+	   		var cg_supplier_return_check = false;
+	    {/if}
+    {literal}
+   	//全选或取消选择checkbox
+    function clickAll(value) {
+    	if (value == "click") {
+    		$("#click").html("取消");
+    		$("#click").val("clear");
+	    	$("input[name='group']").each(function() {
+	    		if(this.disabled == false) {
+	    			this.checked=true;
+	    		}
+	    	});
+    	} else {
+    		$("#click").html("全选");
+    		$("#click").val("click");
+    		$("input[name='group']").each(function() {
+	    		if(this.disabled == false) {
+	    			this.checked=false;
+	    		}
+	    	});
+    	}
+    }
+    //批量通过
+    function group_pass() {
+    	if(!cg_supplier_return_check) {
+    		alert("对不起，您没有相关的权限！^_^  cg_supplier_return_check");
+    		return;
+    	}
+    	var action = "";
+    	var i = 0;
+    	$("input[name='group']").each(function() {
+    		if(this.checked) {
+    			action += $(this).val() + ';';
+    			i++;
+    		}
+    	});
+    	if(i == 0) {
+    		alert("没有选择任何商品");
+    		return;
+    	}
+    	
+       	if(confirm("确定要批量审批通过这" + i + "个商品吗？")) {
+       		action = action.substring(0, action.length-1);
+       		// location.href = 'supplier_return_goods_request.php?act=update_group&status=PASS&action=' + action ;
+          $.ajax({
+            type: "POST",
+            //url : "/Erp/admin/supplier_return/supplier_return_goods_request.php?act=update_group",
+            url : "../../admin/supplier_return/supplier_return_goods_request.php?act=update_group",
+
+            data: "status=PASS" + "&action=" + action,
+            error: function (){
+              alert("批量修改失败！ajax报错");
+            },
+            success : function (result){
+              alert("批量修改成功！");
+              var search = document.getElementById('submit');
+              search.click();
+            }
+          });
+
+       	} else {
+       		return;
+       	}
+
+    	
+    }
+    //批量弃审
+    function group_abandon() {
+    	if(!cg_supplier_return_check) {
+    		alert("对不起，您没有相关的权限！^_^  cg_supplier_return_check");
+    		return;
+    	}
+    	var action = "";
+    	var i = 0;
+    	$("input[name='group']").each(function() {
+    		if(this.checked) {
+    			action += $(this).val() + ';';
+    			i++;
+    		}
+    	});
+    	if(i == 0) {
+    		alert("没有选择任何商品");
+    		return;
+    	}
+    	
+       	if(confirm("确定要批量审批弃审这" + i + "个商品吗？")) {
+       		action = action.substring(0, action.length-1);
+       		//location.href = 'supplier_return_goods_request.php?act=init_group&action=' + action ;
+          $.ajax({
+            type: "POST",
+            //url : "/Erp/admin/supplier_return/supplier_return_goods_request.php?act=init_group",
+            url : "../../admin/supplier_return/supplier_return_goods_request.php?act=init_group",
+            data: "status=PASS" + "&action=" + action,
+            error: function (){
+              alert("批量修改失败！");
+            },
+            success : function (result){
+              alert("批量修改成功！");
+              var search = document.getElementById('submit');
+              search.click();
+            }
+          });
+       	} else {
+       		return;
+       	}
+    	  	
+    }
+    //批量否决
+    function group_deny() {
+    	if(!cg_supplier_return_check) {
+    		alert("对不起，您没有相关的权限！^_^  cg_supplier_return_check");
+    		return;
+    	}
+    	var action = "";
+    	var i = 0;
+    	$("input[name='group']").each(function() {
+    		if(this.checked) {
+    			action += $(this).val() + ';';
+    			i++;
+    		}
+    	});
+    	if(i == 0) {
+    		alert("没有选择任何商品");
+    		return;
+    	}
+    	
+    	if(confirm("确定要批量审批否决这" + i + "个商品吗？")) {
+    		action = action.substring(0, action.length-1);
+        //location.href = 'supplier_return_goods_request.php?act=update_group&status=DENY&action=' + action ;
+        $.ajax({
+            type: "POST",
+            //url : "/Erp/admin/supplier_return/supplier_return_goods_request.php?act=update_group",
+            url : "../../admin/supplier_return/supplier_return_goods_request.php?act=update_group",
+            data: "status=DENY" + "&action=" + action,
+            error: function (){
+              alert("批量修改失败！");
+            },
+            success : function (result){
+              alert("批量修改成功！");
+              var search = document.getElementById('submit');
+              search.click();
+            }
+          });
+       	} else {
+       		return;
+       	}
+    }
+    
+	function export_excel(type,batch_order_id){
+		if(type=="batch_gt_sn" ){
+			$("#batch_gt_id_excel").val(batch_order_id);
+			document.excel_form.submit();
+		}else if(type == "request_id"){
+			$("#request_id_excel").val(batch_order_id);
+			document.excel_form.submit();
+		}
+		$("#batch_gt_id_excel").val('');
+		$("#request_id_excel").val('');
+	}
+    
+  {/literal}
+  {/if}
+  </script>
+ </head>
+ <body>
+ 
+  <!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	//	window.setTimeout(function(){
+	//		$('#message').slideUp("slow");
+	//	}, 3000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+  
+  <fieldset style="-moz-border-radius:6px;padding:10px;">
+  <p style="color:red;">{$error}</p>
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;{if 'purchase' == $view}B2B出库申请一览{elseif 'facility' == $view}B2B出库仓库操作{/if}&nbsp;</span></legend>
+    <fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:14px; color:#2A1FFF;">&nbsp;检索&nbsp;</span></legend>
+     <form action="supplier_return_goods_request_list.php" id="searchForm" onsubmit="return chkDateformat();">  
+       <table style="width: 60%">
+          <tr >
+            <td style="width:140px; min-width: 50px;">商品名：</td>
+            <td style="width:360px;">
+                <input type="text" id='goods_name_select' name='goods_name_select' value='{$goods_name}' style="width: 360px;"/>
+                <input type="hidden" id="goods_id" name="goods_id" value="{$goods_id}" />
+                <input type="hidden" id="style_id" name="style_id" value="{$style_id}" />
+            </td>
+            <td style="width:140px; min-width: 65px;">&nbsp;&nbsp;审核状态:</td>
+            <td>
+                <select name="check_status">
+                  <option value="INIT" {if $check_status == "INIT"}selected{/if}>未审核</option>
+                  <option value="PASS" {if $check_status == "PASS"}selected{/if}>审核通过</option>
+                  <option value="DENY" {if $check_status == "DENY"}selected{/if}>审核未通过</option>
+                  <option value="" {if $check_status == ""}selected{/if}>全部</option>
+                </select>
+            </td>
+            <td style="width:140px; min-width:65px;">&nbsp;&nbsp;操作状态:</td>
+            <td>
+                <select name="status">
+                  <option value="CREATED" {if $status == "CREATED"}selected{/if}>开始退还</option>
+                  <option value="EXECUTING" {if $status == "EXECUTING"}selected{/if}>已部分退还</option>
+                  <option value="COMPLETION" {if $status == "COMPLETION"}selected{/if}>已全部退还</option>
+                  <option value="CANCELLATION" {if $status == "CANCELLATION"}selected{/if}>已取消</option>
+                  <option value="" {if $status == ""}selected{/if}>全部</option>
+                </select>
+            </td>
+          </tr>
+          <tr style="margin-top:20px;">
+          	<td style="width:140px;margin-top:20px; min-width: 80px;">-gt申请号：</td>
+          	<td><input type="text" id="input_supplier_return_id" name="input_supplier_return_id" value="{$input_supplier_return_id}" style="width: 360px;"/></td>
+          </tr>
+          <tr style="margin-top:20px;">
+            <td style="width:140px;margin-top:20px; min-width: 80px;">-gt订单号：</td>
+            <td><input type="text" id="input_order_sn" name="input_order_sn" value="{$input_order_sn}" style="width: 360px;"/></td>
+          </tr>
+          <tr style="height: 38px;">
+            <td style="width:140px; min-width: 80px;">采购供应商：</td>
+            <td colspan="3">
+                <input type="hidden" id='provider_id' name='provider_id' value="{$provider_id}" />
+                <input type="text" id="original_provider_select" name="original_provider_select" value="{$provider_name}" style="width: 360px;"/>
+            </td>
+          </tr>
+          <tr>
+            <td style="width:140px; min-width: 80px;">操作时间：</td>
+            <td colspan="3">
+               <input type="text" id='from_date' name='from_date' value='{$from_date}'/><input type="button" id="from_date_trigger" name="from_date_trigger" value="..."/>
+               &nbsp; &nbsp; &nbsp; ~~ &nbsp; &nbsp; &nbsp;
+               <input type="text" id='to_date' name='to_date' value='{$to_date}'/><input type="button" id="to_date_trigger" name="to_date_trigger" value="..."/>
+            </td>
+          </tr>
+          <tr>
+            <td style="width:140px; min-width: 80px;">退货仓库：</td>
+            <td>
+              <select id="facility" name="facility" >
+                 <option label="-- 请选择仓库 --" value="0" selected="selected" >-- 请选择仓库  --</option>
+                 {html_options options=$facilitys }
+              </select> 
+              <input type="hidden" id="input_facility_id" value='{$input_facility_id}' />
+            </td>        
+          </tr>
+
+          <tr>
+            <td colspan="4" align="right"><input type="submit" id="submit" value=" 检 索 "/>&nbsp;&nbsp;&nbsp;&nbsp;
+            {if $view == 'purchase'}<input type="submit" name="csv" value="导出CSV" />{/if}
+            </td>
+          </tr>
+       </table>
+       <input type="hidden" name="act" value="search"/>
+       <input type="hidden" name="view" value="{$view}" />
+      </form>
+    </fieldset>  
+    <br/>
+    
+    {if $check_status == 'INIT' && $view == 'purchase' && $cg_supplier_return_check}
+    	<button id="group_pass" onclick="group_pass();">批量审批通过</button> <button id="group_deny" onclick="group_deny();">批量审批否决</button>
+    {else}
+     <button id="group_pass" onclick="group_pass();" disabled='disabled'>批量审批通过</button> 
+     <button id="group_deny" onclick="group_deny();" disabled="disabled">批量审批否决</button>
+     <sub>查询条件为【未审核】时该按钮可用</sub>
+    {/if}
+    {if $check_status == "PASS" && $view == 'purchase' && $cg_supplier_return_check}
+		<button id="abandon" onclick="group_abandon();" style="margin-left: 25px;">批量审批弃审</button>
+	{else}
+	    <button id="abandon" onclick="group_abandon();" style="margin-left: 25px;" disabled="disabled">批量审批弃审</button> 
+	    <sub>查询条件为【审核通过】时该按钮可用</sub>
+	{/if}
+    
+    {if $requestList }
+    <table style="border: 1px;" class="bWindow">
+      <tr>
+         <td>No.</td>
+         <td>-gt申请号</td>
+         {if $view == 'purchase' && ($check_status == "INIT" || $check_status == "PASS") && $cg_supplier_return_check}
+      	 	<td style="width: 25px;">
+      	 		<a href="javascript:void(0);" id="click" value="click" onclick="clickAll(this.value);">全选</a>
+      	 	</td>
+         {else}
+         {/if} 
+
+        
+          {if $view =='purchase' && $cg_supplier_return_complete} 
+            <td>部分完结</td>
+          {else}
+  
+          {/if}
+
+         <td>-gt订单号</td>
+         <td>商品名</td>
+         <td>商品条码</td>
+         <td>箱规</td>
+         <td>货物批次</td>
+         <td>仓库</td>
+         <td>库存状态</td>
+         <td>类型</td>
+         <td>预退出库数</td>
+         <td>已退数量</td>
+         {if 'purchase' == $view}
+         <td>退货价格</td>
+         {/if}
+         <td>调整价格</td>
+         <td>预定状态</td>
+         <td style="width: 65px;">审核状态</td>
+         <td>审核人</td>
+         <td>操作状态</td>
+         <td>申请时间</td>
+         <td style="width:50px;" >操作状态 </td>
+         <td>出库时间 </td> 
+         <td>-c订单号</td>
+         <td style="width:100px;">退货原因</td>
+         <td>申请人</td>
+      </tr>
+      {foreach from=$requestList item=req name="taobaoGoodsList" key=picihao}
+      <tr>
+      	 
+         <td rowspan="{$req.count}">{$smarty.foreach.taobaoGoodsList.iteration}</td>
+         <td rowspan="{$req.count}">
+          <p>
+          {if $req.is_batch}
+          <a href="../batch_gt_statistics.php?batch_gt_sn={$picihao}" target='_blank'>{$picihao}</a>
+          <br/>
+          <input style="margin-top:15px" type="button" value="导出B2B批次订单" onclick="export_excel('batch_gt_sn',{$picihao});"/>
+          {else}
+          {$picihao}
+           <br/>
+          <input style="margin-top:15px" type="button" value="导出B2B订单" onclick="export_excel('request_id',{$picihao});"/>
+          {/if}
+          </p>
+         </td>
+        
+          {if $view == 'purchase' && ($check_status == "INIT" || $check_status == "PASS") && $cg_supplier_return_check}
+            <td>
+              {if $check_status == "INIT" && $view == 'purchase' && $cg_supplier_return_check}
+                {if $req.check_status == 'INIT' && $view == 'purchase' && $cg_supplier_return_check && $req.status == 'CREATED'}
+                  &nbsp;<input type="checkbox" name="group" value='{$req.supplier_return_id}'>&nbsp; 
+                {else}
+                  &nbsp;<input type="checkbox" name="group" value='{$req.supplier_return_id}' disabled="disabled">&nbsp;
+                {/if}
+              {/if}
+
+              {if $check_status == "PASS" && $view == 'purchase' && $cg_supplier_return_check}
+                {if $req.status == 'CREATED' && $cg_supplier_return_check}
+                  <input type="checkbox" name="group" value='{$req.supplier_return_id}'>
+                {else}
+                  <input type="checkbox" name="group" value='{$req.supplier_return_id}' disabled="disabled">
+                {/if} 
+              {/if}
+            </td>
+          {else}
+  
+          {/if} 
+
+          {if $view =='purchase' && $cg_supplier_return_complete}
+            <td>
+              {if $view =='purchase' && $cg_supplier_return_complete && $req.check_status == "PASS" && $req.status == 'EXECUTING'}
+                <a id='{$req.supplier_return_id}' href='#' onclick="javascript:complateAction(this);">完结</a>
+              {/if}
+            </td>
+          {else}
+          
+          {/if}
+         
+         <td>
+           {$req.order_sn}
+         </td>
+         <td>
+           {$req.product_name}
+         </td>
+         <td>
+           {$req.barcode}
+         </td>
+         <td>{$req.spec}</td>
+		     <td>{$req.batch_sn}</td>
+         <td>{$req.facility_name}</td>
+         <td>
+            {if $req.status_id == 'INV_STTS_AVAILABLE'}全新{elseif $req.status_id == 'INV_STTS_USED'}二手 
+             {elseif $req.status_id == 'INV_STTS_DEFECTIVE'}次品{elseif $req.status_id == ''}未知{/if}
+         </td>
+         <td>
+            {if  $req.order_type_id == 'SUPPLIER_RETURN'}退还给供应商
+            {elseif $req.order_type_id == 'SUPPLIER_SALE'} SUPPLIER_SALE 
+            {elseif $req.order_type_id == ''}未知{/if}
+         </td>
+         <td>{$req.return_order_amount}</td> <!-- 申请出库数--> 
+         <td>{$req.new_out_num }</td> <!-- 已退数量--> 
+
+         {if 'purchase' == $view}
+          <td>{$req.unit_price}</td>
+         {/if}
+         <td>{$req.price_diff}</td>
+         <td>{$req.reserve_status}</td>
+         <td> 
+           {if $req.check_status == 'INIT' && $view == 'purchase' && $cg_supplier_return_check && $req.status == 'CREATED'}
+            <a id='{$req.supplier_return_id}' href='#' onclick="javascript:passAction(this);">审核通过</a> &nbsp;&nbsp;&nbsp;
+            <a id='{$req.supplier_return_id}' href='#' onclick="javascript:denyAction(this);">审核否决</a> 
+           {elseif $req.check_status == 'INIT' && $view == 'purchase' && !$cg_supplier_return_check && $req.status == 'CREATED'}等待审核
+           {elseif $req.check_status == 'INIT' && ($view == 'facility' || ($view == 'purchase' && $req.status == 'CANCELLATION'))}未审核
+           {elseif $req.check_status == 'PASS' && $view == 'purchase'}已通过&nbsp;&nbsp;&nbsp;{if $req.status == 'CREATED' && $cg_supplier_return_check}<a id='{$req.supplier_return_id}' href='#' onclick="javascript:initAction(this);">弃审</a>{/if}
+           {elseif $req.check_status == 'PASS' && $view == 'facility'}已通过
+           {elseif $req.check_status == 'DENY'}已否决
+           {else}&nbsp; &nbsp;{/if}
+         </td>
+         <td>{$req.check_user}</td>
+         <td>{if $req.check_status == 'PASS'}
+              {if $req.status == 'CREATED'}开始退还{elseif $req.status == 'EXECUTING'}已部分退还
+              {elseif $req.status == 'COMPLETION'}已全部退还{elseif $req.status == 'CANCELLATION'}已取消
+              {elseif $req.status == ''}未知{/if}
+             {elseif $req.check_status == 'INIT'}
+              {if $req.status == 'CANCELLATION'}已取消
+              {else}未开始操作{/if}
+             {else}未开始操作{/if}
+         </td>
+         <td>{$req.created_stamp} </td>
+         <td>
+           {if 'purchase' == $view && $req.check_status == 'INIT'}
+              {if $req.status == 'CREATED'}
+                {if !$req.order_sn}
+               	<a id='{$req.supplier_return_id}' href='#' onclick="javascript:editAction(this);">编辑</a> &nbsp;
+               	{/if}
+  			        <a id='{$req.supplier_return_id}' href='#' onclick="javascript:cancelAction(this);">取消退货</a> 
+              {elseif $req.status == 'CANCELLATION'}已取消
+              {/if}
+           {elseif 'purchase' == $view && $req.check_status == 'PASS'}
+              {if $req.status == 'CREATED'}未开始操作
+              {elseif $req.status == 'EXECUTING'}仓库已经在操作
+              {elseif $req.status == 'COMPLETION'}已操作完毕
+              {elseif $req.status == 'CANCELLATION'}已取消
+              {else}&nbsp; &nbsp;
+              {/if}
+           {elseif 'facility' == $view && $req.check_status == 'PASS'}
+             {if ($req.status == 'CREATED' || $req.status == 'EXECUTING') && $req.reserve_status == 'Y'}
+              <a id='{$req.supplier_return_id}' href='#' onclick='javascript:returnAction(this);'>供应商退货</a>
+             {elseif $req.status != 'COMPLETION' && $req.status != 'CANCELLATION'}
+                <p>未预定</p>
+             {/if} 
+             {if $req.status == 'COMPLETION' || $req.status == 'CANCELLATION'}供应商退货{/if}
+           {elseif 'facility' == $view && $req.check_status == 'INIT'}
+             {if $req.status == 'CANCELLATION'}供应商退货{/if}
+           {elseif 'facility' == $view && $req.check_status == 'DENY'}供应商退货
+           {else}未开始操作{/if}
+         </td>
+         <td>
+            {if $req.status == 'EXECUTING' ||  $req.status == 'COMPLETION'}{$req.new_out_time}{/if}</td>
+         <td>
+            {if $req.status  == 'COMPLETION' || $req.status == 'EXECUTING'}
+               {$req.c_order_sn}
+            {else}
+              <p></p>
+            {/if}
+         </td>
+         <td>{$req.note}</td>
+         <td>{$req.created_user_by_login}</td></tr>
+   
+      {/foreach}
+      <tr align="center"><td colspan="24">{$pager}</td></tr>
+    </table>
+    {/if}
+  </fieldset>
+  
+  <form method="POST" name="excel_form">
+	<input type="hidden" name="batch_gt_id_excel" id="batch_gt_id_excel"/>
+	<input type="hidden" name="request_id_excel" id="request_id_excel"/>
+	<input type="hidden" name="csv" value="导出CSV"/>
+	<input type="hidden" name="act" value="search"/>
+  </form>
+  
+  {literal}
+  <script type="text/javascript">//<![CDATA[
+    Zapatec.Calendar.setup({
+  	    weekNumbers       : false,
+  	    electric          : false,
+  	    inputField        : "from_date",
+  	    button            : "from_date_trigger",
+  	    ifFormat          : "%Y-%m-%d",
+  	    daFormat          : "%Y-%m-%d"
+      });
+    Zapatec.Calendar.setup({
+  	    weekNumbers       : false,
+  	    electric          : false,
+  	    inputField        : "to_date",
+  	    button            : "to_date_trigger",
+  	    ifFormat          : "%Y-%m-%d",
+  	    daFormat          : "%Y-%m-%d"
+     });
+  //]]>
+  
+  var input_facility_id = $("#input_facility_id").val();
+   if(input_facility_id){
+    $("#facility option").each(function(){
+      var id = $(this).val(); 
+      if( id == input_facility_id){
+        $(this).attr("selected",true); 
+      }
+    }); 
+  }
+  </script>
+  {/literal}
+ </body>
+</html>

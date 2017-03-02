@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库设施管理</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+<script type="text/javascript" src="misc/thickbox.js"></script>
+<link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+<link rel="stylesheet" type="text/css" href="misc/thickbox.css" />
+
+<style type="text/css">
+<!--{literal}-->
+.tip {
+	color: #888;
+}
+
+.require {
+	color: #F00;
+}
+
+.btn-edit {
+	cursor: pointer;
+	color: blue;
+}
+
+.modal-wrap {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	background-color: rgba(0, 0, 0, .5);
+	display: none;
+}
+
+.mc-edit {
+	width: 300px;
+	padding: 10px;
+	background-color: #fff;
+	border-radius: 3px;
+	margin: 100px auto;
+}
+
+.form-group {
+	margin: 10px 0;
+}
+<!--{/literal}-->
+</style>
+
+<script type="text/javascript">
+	// <![CDATA[
+	{literal}
+	$(document).ready(function(){
+		var FACILITY_ID = "";
+		$(".btn-edit").live("click",function(){
+			var that = $(this);
+			var facilityId = that.parent().parent().attr('id');
+			var facilityName = that.parent().parent().attr('iname');
+			FACILITY_ID = facilityId;
+			$(".mw-edit").show();
+		});
+
+		$(".btn-edit-cancel").live("click",function(e){
+			e.preventDefault();
+			$(".mw-edit").hide();
+		});
+	});
+	function facility_remove(doc) 
+	{
+		var $td = $(doc).parent().parent();
+		var facilityId = $td.attr('id');
+		var facilityName = $td.attr('iname');
+		if(confirm("确认要停用“"+facilityName+"”逻辑仓？")){
+			$.ajax({
+				type: 'POST',
+				url: 'facility_manage.php?request=ajax&act=remove_facility',
+				data: 'facility_id=' + facilityId,
+				dataType: 'json', 
+				success : function(data){	//成功返回值
+					flag=data; 
+					if(!flag){
+						alert("停用失败，请重试");
+					}else{
+						alert("已停用成功，现在看到的只是缓存而已");
+					}
+				},
+				error : function(data){
+					alert('停用失败，请联系ERP');
+				}
+			});
+		}
+		
+	}
+	 {/literal}
+	// ]]>
+	</script>
+
+</head>
+<body>
+	<div class="modal-wrap mw-edit">
+		<div class="modal-content mc-edit">
+			<div class="form-group">
+				<label for="facilityName">仓库名：</label> <input type="text"
+					name="facilityName" id="facilityName" value="" />
+			</div>
+			<div class="form-group">
+				<button class="btn-edit-ok">确认</button>
+				<button class="btn-edit-cancel">取消</button>
+			</div>
+		</div>
+	</div>
+	<!--{if $message}-->
+	<div id="message" style="border: #7F9F00 2px solid; padding: 5px; text-align: center;"> {$message}</div>
+	<!--{/if}-->
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;仓库设施管理&nbsp;</span>
+		</legend>
+
+		<div style="clear: both;">
+			<h3 style="color: #09F;">添加逻辑仓</h3>
+			<form method="post" id="form" action="facility_manage.php">
+				<input type="hidden" name="facility[container_id]" value="" /> <input
+					type="hidden" name="facility[facility_type_id]" value="74438" />
+				<table cellpadding="5" cellspacing="1">
+					<tr>
+						<td width="120">所属组织 <span class="require"> * </span></td>
+						<td>
+						<select name="facility[owner_party_id]">{html_options options=$party_options_list} </select> &nbsp;<span class="tip">一个物理仓库设施只能属于一个组织</span></td>
+					</tr>
+					<tr>
+						<td>逻辑仓名称 <span class="require"> * </span></td>
+						<td>
+							<input type="text" name="facility[facility_name]" value="" /> &nbsp;&nbsp;<span style="color: red;">不能创建同名仓库</span>
+						</td>
+					</tr>
+					<tr>
+						<td>是否外包仓 <span class="require"> * </span></td>
+						<td>
+							<select id="is_out_ship" name="facility[is_out_ship]">
+								<option value="N">否</option>
+								<option value="Y">是</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>物理仓 <span class="require"> * </span></td>
+						<td>
+							<select id="physical_facility" name="facility[physical_facility]"> 
+							{foreach from=$physical_facility_list item=physical_facility_name}
+								<option value="{$physical_facility_name}"
+									{if $smarty.request.facility.physical_facility==$physical_facility_name || 
+									(!$smarty.request.facility.physical_facility && $physical_facility_name=='其他仓')}selected="selected"{/if}>
+									{$physical_facility_name}
+								</option> 
+							{/foreach}
+						</select> <input type="submit" value="添加逻辑仓库" /></td>
+					</tr>
+
+				</table>
+
+				<input type="hidden" name="act" value="add" />
+			</form>
+		</div>
+
+		<br />
+		<div style="clear: both;">
+
+			<h3 style="color: #09F;">仓库列表</h3>
+			<table class="bWindow odd" style="margin-top: 10px;">
+				<tr>
+					<th width="25%">逻辑仓名称</th>
+					<th width="15%">所属组织</th>
+					<th width="15%">是否外包</th>
+					<th width="15%">物理仓</th>
+					<th width="15%">创建时间</th>
+					<th width="15%">操作</th>
+				</tr>
+
+				<!--{foreach from=$facility_list item=facility}-->
+				<tr align="center" bgcolor="#f9f9f9" id="{$facility.facility_id}"
+					iname='{$facility.facility_name}'>
+					<td align="left" style="padding-left: 10px;">{$facility.facility_name}</td>
+					<td>{$facility.ownerPartyName}</td>
+					<td>{if $facility.is_out_ship == 'Y'}<strong>是</strong>{else}否{/if}
+					</td>
+					<td>{$facility.physical_facility}</td>
+					<td>{$facility.CREATED_STAMP|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+					<td>
+						<!-- <span class="btn-edit">编辑</span>&nbsp;&nbsp; -->
+						<a href="javascript:void(0);" onclick="facility_remove(this)">停用</a>
+					</td>
+				</tr>
+				<!--{/foreach}-->
+
+			</table>
+		</div>
+
+	</fieldset>
+
+</body>
+</html>

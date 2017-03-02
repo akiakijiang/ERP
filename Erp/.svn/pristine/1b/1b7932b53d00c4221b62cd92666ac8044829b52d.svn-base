@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>B2B订单明细</title>
+
+</head>
+<body>
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+基础信息表
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>B2B批次号</th>
+<th>单据编码</th>
+<th>计划出库日期</th>
+<th>实际出库日期</th>
+<th>其他出库原因</th>
+<th>出库类型</th>
+<th>运输公司</th>
+<th>快递单号</th>
+<th>收件人</th>
+<th>手机</th>
+<th>固定电话</th>
+<th>邮编</th>
+<th>外部预留单号</th>
+<th>外部出库单号</th>
+<th>网店</th>
+<th>收货详细地址</th>
+<th>备注</th>
+</tr>
+	
+<tr align="center">
+<td>{$batch_gt_info.batch_gt_sn}</td>
+<td>{$batch_gt_info.document_id}</td>
+<td>{$batch_gt_info.plan_out_time}</td>
+<td>{$batch_gt_info.actual_out_time}</td>
+<td>{$batch_gt_info.other_reason}</td>
+<td>{$batch_gt_info.out_type}</td>
+<td>{$batch_gt_info.shipping_company}</td>
+<td>{$batch_gt_info.tracking_number}</td>
+<td>{$batch_gt_info.consignee}</td>
+<td>{$batch_gt_info.tel}</td>
+<td>{$batch_gt_info.mobile}</td>
+<td>{$batch_gt_info.zipcode}</td>
+<td>{$batch_gt_info.outer_remain_sn}</td>
+<td>{$batch_gt_info.outer_out_sn}</td>
+<td>{$batch_gt_info.distribution_name}</td>
+<td>{$batch_gt_info.address}</td>
+<td>{$batch_gt_info.postscript}</td>
+</tr>
+</table>
+
+<div style="clear:both;color:red;align:center;font-size:18px" >
+详细信息表
+</div>
+<table class="bWindow" style="margin-top:10px">
+
+<tr>
+<th>B2B批次号</th>
+<th>仓库</th>
+<th>商品</th>
+<th>条码</th>
+<th>商品状态</th>
+<th>单价</th>
+<th>申请数</th>
+<th>出库数</th>
+<th>供应商</th>
+<th>操作人</th>
+<th>备注</th>
+<th>创建时间</th>
+<th>erp订单号</th>
+</tr>
+{foreach from=$supplier_reutrn_list item=supplier_return}
+<tr align="center">
+<td>{$supplier_return.batch_gt_sn}</td>
+<td>{$supplier_return.facility_name}</td>
+<td>{$supplier_return.goods_name}</td>
+<td>{$supplier_return.barcode}</td>
+<td>{$supplier_return.status_id}</td>
+<td>{$supplier_return.unit_price}</td>
+<td>{$supplier_return.return_order_amount}</td>
+<td>{$supplier_return.storage_amount}</td>
+<td>{$supplier_return.provider_name}</td>
+<td>{$supplier_return.created_user_by_login}</td>
+<td>{$supplier_return.note}</td>
+<td>{$supplier_return.created_stamp}</td>
+<td>{$supplier_return.order_sn}</td>
+</tr>
+
+{/foreach}
+</table>
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>串号跟踪</title>
+    <link href="styles/default.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="misc/jquery.js"></script>
+    
+    <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+    <script type="text/javascript" src="misc/autocomplete.js"></script>
+    <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  
+  	<script type="text/javascript">
+	// <![CDATA[
+	
+	var WEB_ROOT = '{$WEB_ROOT}';
+	
+	//{literal}
+	$(document).ready(function(){
+		/**
+		 * 商品搜索
+		 */
+		$('#order_goods_add_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+			dataType : 'json',
+			minChars: 1,
+			delay: 1000,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#order_goods_add_goods_id').val(row.goods_id);
+			change_goods_style_select_list(row.goods_id);
+		});
+		
+	});
+	
+	/**
+	 * 更改样式选择的下拉项
+	 *
+	 * @param int goods_id 商品ID 
+	 */
+	function change_goods_style_select_list(goods_id)
+	{
+		var $e = $('#order_goods_add_style_id');
+		
+		$.ajax({
+				beforeSend : function(){
+					$e.attr('disabled', true);	
+				},
+				async : false,
+				dataType : "json",
+				data: "goods_id=" + goods_id,
+				url : WEB_ROOT + "admin/ajax.php?act=search_goods_styles",
+				type : 'POST',
+				success : function(response) {
+					if (response.length) {	
+						var tpl = '';
+						for (var i = 0; i < response.length; i++) {
+							tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+						}
+					} else {
+						tpl = '<option value="0">N/A</option>';	
+					}
+					$e.html(tpl);
+				},
+				complete : function() {
+					$e.attr('disabled', false);
+				}
+		});
+	}
+	
+	function apply_submit()
+	{
+		var $button = $(this);
+		var $form = $('#form');
+		
+		if ($.trim($form.find(':input[name="serialnum_track[track_number]"]').val()) == '') {
+			alert('请输入跟踪码');
+			return false;
+		}
+		
+		if ($.trim($form.find(':input[name="serialnum_track[goods_id]"]').val()) == '') {
+			alert('请选择产品');
+			return false;
+		}
+		
+		var quantity = $form.find(':input[name="serialnum_track[quantity]"]').val();
+		if ($.trim(quantity) == '' || !/^(\+|-)?\d+(\.\d+)?$/.test(quantity)) {
+			alert('请输入正确的数量');
+			return false;
+		}
+		
+		if (parseInt(quantity) > 50 && !confirm('一箱的数量大于50了，您确定吗？')) {
+			return false;
+		}
+		
+		$form.submit();
+	}
+	//{/literal}
+	
+	// ]]>
+	</script>
+  
+    <!-- Loading Calendar JavaScript files -->
+    <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+    <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+    <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<style type="text/css">
+<!--{literal}-->
+body {
+	font-family: 'Microsoft YaHei', monospace;
+}
+tr td {
+	padding: 3px 0px;
+}
+<!--{/literal}-->
+</style>
+
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;串号跟踪管理&nbsp;</span></legend>
+  
+	<div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+  	<div class="active"><a href="#">串号生成</a></div>
+    <div class="item"><a href="serialnum_track.php">串号跟踪查询</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  	<h3 style="color:#09F; margin: 0px auto; float: left;">串号生成</h3>
+    </div>
+    
+    
+ 	<form method="post" id="form">  
+
+	<div style="clear:both;"> 
+    <!-- <h3 style="color:#09F;">串号生成</h3> -->
+  	<table style="margin-top: 10px; border-collapse: collapse;">
+      <tr>
+      	<td width="120">外箱条码 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="serialnum_track[track_number]" value="{$serialnum_track.track_number}" size="30" />  &nbsp;<span class="tip">请扫描货箱上面的跟踪码</span>
+        </td>
+	  </tr>
+        
+      <tr>
+      	<td>产品 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" id="order_goods_add_select" size="60" /> #<input type="text" name="serialnum_track[goods_id]" id="order_goods_add_goods_id" size="5" readonly="readonly" style="border:none;" /> &nbsp;&nbsp;
+            样式 <select id="order_goods_add_style_id" name="serialnum_track[style_id]"><option value="0">N/A</option></select> &nbsp;
+		</td>
+      </tr>
+      
+      <tr>
+      	<td>&nbsp;</td>
+        <td><span class="tip">请输入产品名，如果自动提示没有响应您的输入，请尝试按向下方向键</span></td>
+      </tr>
+      
+        
+      <tr>
+      	<td>数量 <span class="require"> * </span></td>
+        <td>
+        	<input type="text" name="serialnum_track[quantity]" value="{$serialnum_track.quantity}" size="10" />
+        </td>
+	  </tr>
+      
+		<tr>
+      	<td>生产日期 <span class="require"> * </span> </td>
+        <td>
+            <input type="text" name="serialnum_track[production_date]" id="production_date" value="{$serialnum_track.production_date}" size="22" /><input type="button" id="production_date_trigger" value="日历" style="border:#960 1px solid;" />
+        </td>
+		</tr>
+        
+	</table>
+  </div>
+  
+    <br /><br /><br />
+    
+  <div style="text-align:center"><input type="button" value="生成" onclick="apply_submit(this);" /></div>
+  
+  <input type="hidden" name="act" value="generate" />
+  </form>
+  
+  <br />
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "production_date",
+	button            : "production_date_trigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S"
+});
+// {/literal}
+// ]]>
+</script>
+
+
+</body>
+</html>

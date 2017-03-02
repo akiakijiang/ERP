@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>中通</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:10pt;top:50px;left:70px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:10pt;top:50px;left:270px;">{$order.from_city}</div>
+<div style="position:absolute;font-size:10pt;top:50px;left:240px;">{$order.company_address}</div>
+<div style="position:absolute;font-size:10pt;top:80px;left:70px;">
+请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:10pt;top:153px;left:96px;">乐其</div>
+<div style="position:absolute;font-size:12pt;top:170px;left:40px;">{$order.c_tel}</div>
+<div style="position:absolute;font-size:10pt;top:250px;left:80px;">{$order.goods_type}</div>
+<div style="position:absolute;font-size:10pt;top:335px;left:15px">乐其</div>
+<div style="position:absolute;font-size:10pt;top:347px;left:5px"></div>
+<div style="position:absolute;font-size:10pt;top:360px;left:65px">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+
+<div style="position:absolute;font-size:10pt;top:50px;left:450px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:12pt;top:50px;left:630px;">{$order.city}</div>
+<div style="position:absolute;font-size:10pt;top:105px;left:440px;width:260px;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}(订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:12pt;top:170px;left:450px;">{$order.mobile|default:$order.tel}</div>
+<div style="position:absolute;font-size:12pt;top:211px;left:640px;width:70px;letter-spacing:6px;">{$order.zipcode}</div>
+<div style="position:absolute;font-size:12pt;top:261px;left:640px;width:70px;letter-spacing:6px;">胡耀民</div>
+<div style="position:absolute;font-size:35pt;top:205px;left:330px;width:300px;font-weight:bold;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}</div>
+<div style="position:absolute;font-size:11pt;top:290px;left:180px;">请检查包裹再签收，<br>破损请拒收</div>
+<div style="position:absolute;font-size:10pt;top:370px;left:200px;">乐其</div>
+<div style="position:absolute;font-size:10pt;top:385px;left:200px;">331082198408154715</div>
+
+{foreach from=$sinri_plus item=plus_text key=plus_type}
+	{if $plus_type=="20140514_DGZT_01" }
+		<div style="position:absolute;font-size:20pt;top:210px;left:40px">已验视</div>
+	{/if}
+	{if $plus_type=="20140710_SHZT_01" }
+		<div style="position:absolute;font-size:20pt;top:360px;left:720px">{$plus_text}</div>
+	{/if}
+{/foreach}
+
+</body>
+</html>

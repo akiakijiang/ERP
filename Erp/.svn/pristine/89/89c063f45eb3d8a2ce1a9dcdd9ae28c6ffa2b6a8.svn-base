@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>客服回访分析</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;客服回访统计&nbsp;</span></legend>
+  
+  <form method="get" id="form1" >
+	<div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      日期区间 ：<input type="text" id="start" name="start" value="{$smarty.request.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+      <input type="text" id="end" name="end" value="{$smarty.request.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" /> 
+      &nbsp;&nbsp; <select name="type">{html_options options=$type_list selected=$type}</select> : <input type="text" name="search_name" value="{$smarty.request.search_name}" />
+      &nbsp;&nbsp; 订单状态：
+        <select name="order_status">
+            <option value="-1" >所有</option>
+            <option value="0" >未确认</option>
+            <option value="1" >确认</option>
+            <option value="2" >取消</option>
+        </select>
+      &nbsp;&nbsp;<input type="submit" act="search" class="smt" value="查询" />
+      &nbsp;&nbsp;<input type="submit" name="csv" class="smt" value="导出" />
+        <input type="hidden" name="act" value="search" />
+  </div>
+  </form>
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">客服回访统计</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sales_invoice_table">
+        <tr>
+          <th width="40">No.</th>
+          <th width="">订单号</th>
+          <th width="">订单状态</th>
+          {if $type == 'feedback'}
+          <th width="">回访人员</th>
+          <th width="">回访时间</th>
+          {else}
+          <th width="">销售人员</th>
+          <th width="">销售时间</th>
+          {/if}
+        </tr>
+        
+        <!--{foreach from=$feedback_list item=feedback name="feedbackList"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+          <td>{$smarty.foreach.feedbackList.iteration}</td>
+          <td><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$feedback.order_id}" target="_blank" >{$feedback.order_sn}</a></td>
+          <td>
+              {if $feedback.order_status eq '0'}未确认
+              {elseif $feedback.order_status eq '1'}确认
+              {elseif $feedback.order_status eq '2'}取消{/if}
+          </td>
+          <td>{$feedback.handle_person}</td>
+          <td>{$feedback.handle_time}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+            <tr><td colspan="11" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        
+      </table>
+      {$pager}
+      <br />
+  </div>
+  
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

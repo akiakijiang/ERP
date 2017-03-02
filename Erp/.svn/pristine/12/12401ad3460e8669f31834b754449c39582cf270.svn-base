@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品列表</title>
+</head>
+{literal}
+<style type="text/css">
+#table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 14px;
+}
+
+#table th {
+	background: #ffffff;
+	border-bottom: 1px solid #CCC;
+	padding: 4px;
+	text-align: center;
+}
+
+#table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+	text-align: left;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+</style>
+{/literal} 
+<body>
+<table id="table">
+	<tr>
+		<th>使用指南</th>
+	</tr>
+	<tr>
+		<td><a href="#">1.查看商品,请先选择分类,在某类别下查找具体商品,输入商品名称(可以不是全称),进行查找</a></td>
+	</tr>
+	<tr>
+		<td><a href="#">2.添加商品时,必须输入商品名称与警告库存,同时不能添加样式</a></td>
+	</tr>
+	<tr>
+		<td><a href="#">3.编辑商品时,可以添加样式</a></td>
+	</tr>
+	<tr>
+		<td><a href="#">4.添加样式时,举例:手机的颜色是红色,此价格是500.00,不能再添加此手机是红色的样式</a></td>
+	</tr>
+</table>
+</body>
+{literal}
+<script type="text/javascript">
+	var obj = document.getElementById("table");
+	for ( var i = 0; i < obj.rows.length; i++) {
+		obj.rows[i].onmouseover = function() {
+			this.style.background = "#bbdde5";
+		}
+		obj.rows[i].onmouseout = function() {
+			this.style.background = "";
+		}
+	}
+</script>
+{/literal}
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+
+  <!-- Thickbox -->    
+  <link href="../misc/thickbox.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/thickbox.js"></script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <script type="text/javascript">
+	{literal}
+	$(document).ready(function(){
+		$('.expand').bind('click', function(){
+			$(this).next().toggle();
+		});
+	});
+	{/literal}
+	</script>  
+
+    <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>淘宝店铺数据统计</title>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝店铺数据统计&nbsp;</span></legend>
+
+
+	<div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+    <div class="item"><a href="{if $statistics}taobao_statistics_bysales.php?act=筛选&start={$filter.start}&end={$filter.end}{else}taobao_statistics_bysales.php{/if}">按销售人员统计</a></div>
+  	<div class="active"><a href="#">店铺概况统计</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  	<form method="get">  
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td>时间区间</td>
+        <td>
+           <input type="text" name="start" value="{$filter.start}" id="start" size="10" maxlength="20" /> <input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />
+           &nbsp; 到 &nbsp;
+           <input type="text" name="end" value="{$filter.end}" id="end" size="10" maxlength="20" /> <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+        </td>
+        <td>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="act" value="筛选" />   
+	  		&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="act" value="导出" {if !$list}disabled="disabled"{/if} />
+        </td>
+        <td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="taobao_statistics.php?act=筛选&start={$filter.start}&end={$filter.end}&day=-1">前一天</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="taobao_statistics.php?act=筛选&start={$filter.start}&end={$filter.end}&day=1">后一天</a>
+        </td>
+		</tr>
+	</table>
+    </form>
+  </div>
+  
+  
+  <br />
+  
+  
+<!--{if $statistics}-->
+  
+  <div style="clear:both;">
+  
+      <h3 style="color:#09F;">店铺数据统计</h3>
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr bgcolor="#f8f8f8">
+          <th width="260">店铺名称</th>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <th>{$shop.nick}</th>
+          <!--{/foreach}-->
+        </tr>
+        
+        <tr align="center">
+          <td align="left">&nbsp;咨询数量</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].total_consulting} 条</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;咨询人数</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].total_referee} 人</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;回复数量</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].total_reply_count} 条</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;回复字数</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].total_reply_length} 字</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;平均响应时间</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].avg_respond} 秒</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;最长响应时间</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>
+            {if $shop_id != 'summarize' && $statistics[$shop_id].max_respond > 0}
+            <a href="taobao_consult_detail.php?act=max_respond&shop_id={$shop_id}&start={$filter.start}&end={$filter.end}&keepThis=true&TB_iframe=true&height=400&width=800" class="thickbox" title="显示该段咨询记录">{$statistics[$shop_id].max_respond} 分钟</a>
+            {else}
+            {$statistics[$shop_id].max_respond} 分钟
+            {/if}
+          </td>
+          <!--{/foreach}-->
+        </tr>
+        
+        <tr align="center">
+          <td align="left">&nbsp;响应时间大于3分钟的回复数</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>
+            {if $shop_id != 'summarize' && $statistics[$shop_id].long_respond > 0}
+            <a href="taobao_consult_detail.php?act=long_respond&shop_id={$shop_id}&start={$filter.start}&end={$filter.end}&keepThis=true&TB_ifreame=true&height=400&width=800" class="thickbox" title="显示这些咨询记录">{$statistics[$shop_id].long_respond|default:0} 条</a>
+            {else}
+            {$statistics[$shop_id].long_respond|default:0} 条
+            {/if}
+          </td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;已付款订单</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].paid_order|default:0} 单</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;16点前付款的未发货订单</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].not_shipped_count|default:0} 单</td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;16点前付款且仓库有货的未发货订单</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>{$statistics[$shop_id].in_stock_count|default:0} 单</td>
+          <!--{/foreach}-->
+        </tr>
+        
+        <tr align="center">
+          <td align="left">&nbsp;退款申请响应时间超过24小时未备注的订单</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>
+            {if $shop_id != 'summarize' && $statistics[$shop_id].unrefund > 0}
+            <a href="javascript:void(0);" class="expand">{$statistics[$shop_id].unrefund}</a>
+            <div class="expand" style="display:none;">{foreach from=$statistics[$shop_id].unrefund_order_list item=o}<p><a href="../order_edit.php?order_id={$o.order_id}" target="_blank">{$o.order_sn}</a></p>{/foreach}</div>
+            {else}
+            {$statistics[$shop_id].unrefund|default:0} 单
+            {/if}
+          </td>
+          <!--{/foreach}-->
+        </tr>
+
+        <tr align="center">
+          <td align="left">&nbsp;付款超过48小时未发货且未备注的订单数</td>
+          <!--{foreach from=$taobao_shop_list key=shop_id item=shop}-->
+          <td>
+            {if $shop_id != 'summarize' && $statistics[$shop_id].unfilled > 0}
+            <a href="javascript:void(0);" class="expand">{$statistics[$shop_id].unfilled} 单</a>
+            <div class="expand" style="display:none;">{foreach from=$statistics[$shop_id].unfilled_order_list item=o}<p><a href="../order_edit.php?order_id={$o.order_id}" target="_blank">{$o.order_sn}</a></p>{/foreach}</div>
+            {else}
+            {$statistics[$shop_id].unfilled|default:0} 单
+            {/if}
+          </td>
+          <!--{/foreach}-->
+        </tr>
+      </table>
+      
+  </div>
+<!--{/if}-->
+  
+  <br />
+  
+</fieldset>
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+  button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+  button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

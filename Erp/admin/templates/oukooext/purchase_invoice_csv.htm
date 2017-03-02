@@ -1,0 +1,4 @@
+发票号,发票金额
+{foreach from=$invoices item=invoice}
+{$invoice.invoice_no},{$invoice.purchase_paid_amount},
+{/foreach}

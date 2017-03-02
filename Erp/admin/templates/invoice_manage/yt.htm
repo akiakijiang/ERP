@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>圆通</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+	<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+{/if}
+<table>
+
+{foreach from=$invoicePrint item=invoice } 
+<tr>
+<div style="position:absolute;font-size:10pt;top:40px;left:70px;">乐其</div>
+<div style="position:absolute;font-size:10pt;top:70px;left:70px;">{if $SINRI_FROM_COMPANY eq "HZCGP"}<!--上海乐麦网络科技有限公司-->{else}东莞市乐其网络科技有限公司{/if}</div>
+<div style="position:absolute;font-size:10pt;top:80px;left:70px;">{$start_addr.p}　　　{$start_addr.c}　　　  　{$start_addr.d}</div>
+<div style="position:absolute;font-size:10pt;top:120px;left:30px;">{$start_addr.addr}</div>
+<div style="position:absolute;font-size:10pt;top:140px;left:60px;">{$start_addr.tel}</div>
+<div style="position:absolute;font-size:20pt;top:180px;left:35px;"></div>
+<div style="position:absolute;font-size:10pt;top:230px;left:40px;"></div>
+<div style="position:absolute;font-size:10pt;top:40px;left:390px;">{$invoice.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:40px;left:520px;">{$invoice.city_name}</div>
+<div style="position:absolute;font-size:10pt;top:80px;left:400px;">{if $invoice.province != ''}{$invoice.province_name}{/if}</div>
+<div style="position:absolute;font-size:10pt;top:80px;left:520px;">{if $invoice.city != ''}{$invoice.city_name}{/if}</div>
+<div style="position:absolute;font-size:10pt;top:80px;left:600px;">{if $invoice.district != ''}{$invoice.district_name}{/if}</div>
+<div style="position:absolute;font-size:10pt;top:100px;left:340px;width:300px;">{$invoice.address}</div>
+<div style="position:absolute;font-size:10pt;top:140px;left:435px;">{$invoice.tel}</div>
+<div style="position:absolute;font-size:10pt;top:165px;left:580px;"></div>
+<div style="position:absolute;font-size:20pt;top:205px;left:560px;"></div>
+<div style="position:absolute;font-size:10pt;top:315px;left:160px;">乐其</div>
+<div style="position:absolute;font-size:10pt;top:315px;left:210px;">{$smarty.now|date_format:"%Y　%m　%d"}</div>
+<div style="position:absolute;font-size:10pt;top:320px;left:170px;"></div>
+</tr>
+{/foreach}
+</table>
+</body>
+<!--
+	业务组金宝贝，雀巢，雀巢母婴，保乐力加，百事，大王，每伴，百威，支付方式为blackmores-京东，调整下圆通面单打印信息，
+	单位名称改为上海乐麦网络科技有限公司，
+	寄件地址改为杭州市滨江区江虹路611号1号楼402室，
+	电话改为0571-28189826；
+-->
+</html>

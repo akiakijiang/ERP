@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>快递单号查询</title>
+
+</head>
+<body>
+<form>
+查询快递单号在数据库里的数据<br>
+<textarea name="bill_no" style="width:100px;height:50px" ></textarea>
+<input type="submit" name="submit" value="搜索">
+</form>
+
+<table class="bWindow" style="width:800px">
+<tr>
+<th>快递单号</th>
+<th>代收货款金额</th>
+<th>手续费</th>
+<th>快递费</th>
+{foreach from=$orders item=order}
+<tr>
+  <td>{$order.bill_no}</td>
+  <td>{$order.real_order_amount}</td>
+  <td>{$order.proxy_amount}</td>
+  <td>{$order.real_shipping_fee}</td>
+</tr>
+{/foreach}
+</body>
+</html>

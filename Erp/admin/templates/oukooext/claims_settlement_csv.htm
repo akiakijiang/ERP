@@ -1,0 +1,4 @@
+"责任理赔编码","时间","外部订单号","ERP订单号","顾客姓名",业务组","分销商名称","赔付方式","赔付金额","运费","责任方","是否已理赔","售后类型","面单号","备注",
+{foreach from=$claims_settlements item=claims_settlement}
+"{$claims_settlement.compensation_id}","{$claims_settlement.created_stamp}","{$claims_settlement.taobao_order_sn}","{$claims_settlement.order_sn}","{$claims_settlement.consignee}","{$claims_settlement.party_name}","{$claims_settlement.distributor_name}","{$claims_settlement.compensation_type}","{$claims_settlement.compensation_amount}","{$claims_settlement.freight}","{$claims_settlement.responsible_party}{if $claims_settlement.facility_name}/{$claims_settlement.facility_name}{/if}","{$claims_settlement.is_claim}","{$claims_settlement.note}","{$claims_settlement.tracking_number}","{$claims_settlement.NOTE}"
+{/foreach}

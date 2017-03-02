@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>采购提成</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+<form action='purchaser_performance.php'>
+开始时间：
+<input style="width:90px" id="start_time" name="start_time" value="{if $smarty.request.start_time != ''}{$smarty.request.start_time}{else}{$start}{/if}"><input type="button" value="..." id="start_time_trigger">
+截止时间:
+<input style="width:90px" id="end_time" name="end_time" value="{if $smarty.request.end_time != ''}{$smarty.request.end_time}{else}{$end}{/if}"><input type="button" value="..." id="end_time_trigger">
+<input type="submit" value="搜索">
+<input type="hidden" name="act" value="search">
+</form>
+<br>
+<table class="bWindow">
+<tr>
+	<th>采购负责人</th>
+	<th>A:销售毛利</th>
+	<th>B:上周库存折旧</th>
+	<th>C:这周库存折旧</th>
+	<th>D:单件固定成本</th>
+	<th>E:当周本金</th>
+	<th>F:库存优先级折损</th>
+	<th>G:供应商退货折损</th>
+	<th>H:缺票临时账面损失</th>
+	<th>H1:销售订单进价金额</th>
+	<th>业绩利润:A+B-C-D-F+G-H</th>
+</tr>
+<tr>
+	<th>汇总</th>
+	<th>{$total_summary.A}</th>
+	<th>{$total_summary.B}</th>
+	<th>{$total_summary.C}</th>
+	<th>{$total_summary.D}</th>
+	<th>{$total_summary.E}</th>
+	<th>{$total_summary.F}</th>
+	<th>{$total_summary.G}</th>
+	<th>{$total_summary.H}</th>
+	<th>{$total_summary.H1}</th>
+	<th>{$total_summary.A+$total_summary.B-$total_summary.C-$total_summary.D-$total_summary.F+$total_summary.G-$total_summary.H}</th>
+</tr>
+{foreach from=$summary_by_purchaser item=purchaser}
+<tr align='center'>
+	<td><a href='#{$purchaser.purchaser}'>{$purchaser.purchaser}</td>
+	<td>{$purchaser.A}</td>
+	<td>{$purchaser.B}</td>
+	<td>{$purchaser.C}</td>
+	<td>{$purchaser.D}</td>
+	<td>{$purchaser.E}</td>
+	<td>{$purchaser.F}</td>
+	<td>{$purchaser.G}</td>
+	<td>{$purchaser.H}</td>
+	<td>{$purchaser.H1}</td>
+	<td>{$purchaser.A+$purchaser.B-$purchaser.C-$purchaser.D-$purchaser.F+$purchaser.G-$purchaser.H}</td>
+</tr>
+{/foreach}
+</table>
+
+{foreach from=$purchasers item=purchaser}
+<a id={$purchaser.purchaser}>
+<table class="bWindow">
+	<caption><h1>{$purchaser.purchaser}</h1></caption>
+	<tr>
+		<th>供应商</th>
+		<th>A:销售毛利</th>
+		<th>B:上周库存折旧</th>
+		<th>C:这周库存折旧</th>
+		<th>D:单件固定成本</th>
+		<th>E:当周本金</th>
+		<th>F:库存优先级折损</th>
+		<th>G:供应商退货折损</th>
+		<th>H:缺票临时账面损失</th>
+		<th>H1:销售订单进价金额</th>
+		<th>业绩利润:A+B-C-D-F+G-H</th>
+	</tr>
+	<tr>
+		<th>汇总</th>
+		<th>{$purchaser.total.A}</th>
+		<th>{$purchaser.total.B}</th>
+		<th>{$purchaser.total.C}</th>
+		<th>{$purchaser.total.D}</th>
+		<th>{$purchaser.total.E}</th>
+		<th>{$purchaser.total.F}</th>
+		<th>{$purchaser.total.G}</th>
+		<th>{$purchaser.total.H}</th>
+		<th>{$purchaser.total.H1}</th>
+		<th>{$purchaser.total.A+$purchaser.total.B-$purchaser.total.C-$purchaser.total.D-$purchaser.total.F+$purchaser.total.G-$purchaser.total.H}</th>
+	</tr>
+	{foreach from=$purchaser.providers item=provider}
+		{if $provider.A+$provider.B-$provider.C-$provider.D-$provider.F+$provider.G-$provider.H != 0}
+		<tr align='center'>
+			<td>{$provider.provider_name}</td>
+			<td>{$provider.A}</td>
+			<td>{$provider.B}</td>
+			<td>{$provider.C}</td>
+			<td>{$provider.D}</td>
+			<td>{$provider.E}</td>
+			<td>{$provider.F}</td>
+			<td>{$provider.G}</td>
+			<td>{$provider.H}</td>
+			<td>{$provider.H1}</td>
+			<td>{$provider.A+$provider.B-$provider.C-$provider.D-$provider.F+$provider.G-$provider.H}</td>
+		</tr>
+		{/if}
+	{/foreach}
+</table>
+</a>
+{/foreach}
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_time",
+        button            : "start_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_time",
+        button            : "end_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

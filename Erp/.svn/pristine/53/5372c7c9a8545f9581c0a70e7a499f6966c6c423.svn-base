@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>订单导入</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+	<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			// 表格变色
+			$("#table tr").hover(
+					function() {
+							if (this.cells[0].tagName != "TH") {
+									$(this).addClass('hover');
+							}
+					}, 
+					function(){
+							if (this.cells[0].tagName != "TH") {
+									$(this).removeClass('hover');
+							}
+					}
+			);
+			
+	});
+	
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+<div style="margin:20px auto; width:960px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;订单导入&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+	{* 消息提示 *}
+  <!--{if $message}-->
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#message').slideUp("slow");
+		}, 4000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center; overflow:hidden;">
+	   {$message}
+	</div>
+  <!--{/if}-->
+
+
+	{* 导入报告 *}
+<!--{if $imported_list}-->
+	<br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;生成订单列表&nbsp;</legend>
+  <div>
+	<table class="inner" id="table">
+        <tr align="center" class="th">
+          <th>序号</th>
+          <th>ERP订单号</th>
+          <th>订单编号</th>
+          <th>订单总金额</th>
+        </tr>
+        
+        <!--{foreach from=$imported_list item=item name="importedList"}-->
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.importedList.iteration}</td>
+        	<td><a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+            <td>{$item.taobao_order_sn}</td>
+            <td>{$item.order_amount}</td>
+		</tr>
+        <!--{/foreach}-->
+        
+	</table>
+  </div>
+  </fieldset>
+  <br />
+<!--{/if}-->
+
+
+
+	{* 文件上传 *}
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;上传CSV&nbsp;</legend>
+  		<div><form id="f_upload" method="post" enctype="multipart/form-data">
+      
+      <table class="inner">
+        <tr>
+          <td align="center">请选择要导入的CSV文件</td>
+          <td>
+          	<input type="file" name="excel" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+          	<input type="submit" value="导入" />
+            <input type="hidden" name="act" value="upload" />
+          </td>
+        </tr>
+      </table>
+      
+  		</form></div>    
+  </fieldset>
+
+
+  <br />
+</div>
+</fieldset>
+</div>
+
+
+</body>
+</html>

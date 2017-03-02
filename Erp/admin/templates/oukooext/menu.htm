@@ -1,0 +1,89 @@
+<STYLE type=text/css>
+{literal}
+BODY {
+	FONT-SIZE: 11px; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+#admin_nav {
+	BORDER-RIGHT: #cccccc 0px solid; PADDING-RIGHT: 0px; BORDER-TOP: #cccccc 1px solid; PADDING-LEFT: 0px; FONT-WEIGHT: bold; BACKGROUND: #f9f9f9; FLOAT: left; PADDING-BOTTOM: 0px; MARGIN: 0px; BORDER-LEFT: #cccccc 1px solid; LINE-HEIGHT: 22px; PADDING-TOP: 0px; BORDER-BOTTOM: #cccccc 1px solid; LIST-STYLE-TYPE: none
+}
+#admin_nav UL {
+	BORDER-RIGHT: #cccccc 0px solid; PADDING-RIGHT: 0px; BORDER-TOP: #cccccc 1px solid; PADDING-LEFT: 0px; FONT-WEIGHT: bold; BACKGROUND: #f9f9f9; FLOAT: left; PADDING-BOTTOM: 0px; MARGIN: 0px; BORDER-LEFT: #cccccc 1px solid; LINE-HEIGHT: 22px; PADDING-TOP: 0px; BORDER-BOTTOM: #cccccc 1px solid; LIST-STYLE-TYPE: none
+}
+#admin_nav UL UL {
+	BORDER-RIGHT: #cccccc 0px solid; BORDER-TOP: #cccccc 0px solid; BORDER-LEFT: #cccccc 1px solid; BORDER-BOTTOM: #cccccc 1px solid
+}
+#admin_nav A {
+	BORDER-RIGHT: #cccccc 1px solid; DISPLAY: block; WIDTH: 85px; COLOR: #333333; TEXT-ALIGN: center; TEXT-DECORATION: none;
+}
+#admin_nav A:hover {
+	COLOR: #FF8000;
+}
+#admin_nav A.selected {
+	BACKGROUND: url(../images/arrow.gif) no-repeat right 50%;
+	color: red;
+}
+#admin_nav LI {
+	FLOAT: left; WIDTH: 85px;background-color: #F2F0EE;border-right: 1px solid #ccc;
+}
+#admin_nav LI.selected a {
+	color: red;
+}
+#admin_nav LI UL {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; FONT-WEIGHT: normal; LEFT: -999em; PADDING-BOTTOM: 0px; MARGIN: 0px; WIDTH: 150px; PADDING-TOP: 0px; POSITION: absolute
+}
+#admin_nav LI LI {
+	WIDTH: 150px;
+}
+#admin_nav LI UL A {
+	PADDING-RIGHT: 12px; BORDER-TOP: #cccccc 1px solid; PADDING-LEFT: 12px; PADDING-BOTTOM: 0px; WIDTH: 126px; LINE-HEIGHT: 19px; PADDING-TOP: 0px; TEXT-ALIGN: left;
+	PADDING-TOP: 3px; PADDING-TOP: 3px;
+}
+#admin_nav LI UL UL {
+	MARGIN: -20px 0px 0px 149px
+}
+#admin_nav LI:hover UL UL {
+	LEFT: -999em
+}
+#admin_nav LI.sfhover UL UL {
+	LEFT: -999em
+}
+#admin_nav LI:hover UL {
+	LEFT: auto
+}
+#admin_nav LI LI:hover UL {
+	LEFT: auto
+}
+#admin_nav LI.sfhover UL {
+	LEFT: auto
+}
+#admin_nav LI LI.sfhover UL {
+	LEFT: auto
+}
+#admin_nav LI:hover {
+	BACKGROUND: #f5e3c0
+}
+#admin_nav LI.sfhover {
+	BACKGROUND: #FFFFFF
+}
+{/literal}
+</STYLE>
+
+<SCRIPT type="text/javascript">
+{literal}
+
+sfHover = function() {
+	var sfEls = document.getElementById("admin_nav").getElementsByTagName("LI");
+	for (var i=0; i<sfEls.length; i++) {
+		sfEls[i].onmouseover=function() {
+			this.className+=" sfhover";
+		}
+		sfEls[i].onmouseout=function() {
+			this.className=this.className.replace(new RegExp(" sfhover\\b"), "");
+		}
+	}
+}
+if (window.attachEvent) window.attachEvent("onload", sfHover);
+
+
+{/literal}
+</SCRIPT>

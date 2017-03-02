@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>打印拣货单</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+		// 多选打印事件
+		$('.print').bind('click', function(event){
+			$checked = $(':checkbox:checked');
+			if ($checked.length) {
+				var ids = new Array();
+				$checked.each(function(i){
+					ids.push(this.value);
+				});	
+				hidden_print('shipment_print.php?print=1&shipment_id=' + ids.join(','));
+			} else {
+				alert('没有选中项');
+				return false;
+			}
+		});
+	});
+
+	/**
+	 * 打印
+	 */
+	function hidden_print(url) {
+    	window.print_frame.location.href = url;
+	}
+	
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find(':checkbox:enabled').each(function(i){
+			this.checked = true;
+		});
+	}
+
+	/**
+	 * 反选
+	 */
+	function select_reverse(node, type)
+	{
+		node = node ? node : document ;
+		if (type == 'disabled') {
+			expr = ':checkbox:disabled';
+		} else {
+			expr = ':checkbox:enabled';
+		}
+		$(node).find(expr).each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;打印拣货单&nbsp;</span></legend>
+  
+  <form name="input" action="shipment_list_for_input_shipment.php" method="post">
+    <label for="taobao_order_sn_input">请输入淘宝订单号，以换行分隔（请小心输入）</label></br>
+    <textarea name ="taobao_order_sn_list" rows="10" cols="30"></textarea>
+    <input type ="submit" value ="提交">
+  </form>
+  
+
+  {if $total > 0}
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">待拣货列表</h3>
+      <div style="float:right;"> 共有 <strong>{$total}</strong> 条记录 &nbsp;&nbsp;</div>
+      <div style="margin-top:10px; clear:both;">
+        <input type="button" value="全选" onclick="select_all('#table');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#table');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="print" value="打印拣货单" />
+      </div>
+      <br />
+      
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+        <tr>
+          <th width="30">No.</th>
+          <th>选择</th>
+          <th>发货单</th>
+          <th>订单号</th>
+          <th>淘宝订单号</th>
+          <th>客户名</th>
+          <th>下单时间</th>
+          <th>确认时间</th>
+          <th>预订时间</th>
+          <th>预定发货时间</th>
+          <th>操作</th>
+        </tr>
+        
+        <!--{foreach from=$list item=shipment name="shipmentList"}-->
+        <!--{foreach from=$shipment.order_list item=order name="orderList"}-->
+        <tr align="center" {if $smarty.foreach.shipmentList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+        
+		  <!--{if $smarty.foreach.orderList.first}-->
+          <td rowspan="{$shipment.order_list|@count}">{$smarty.foreach.shipmentList.iteration}</td>
+          <td rowspan="{$shipment.order_list|@count}">
+          	{if !$shipment.printed}
+          	<input type="checkbox" name="checked[]" value="{$shipment.SHIPMENT_ID}" />
+            {else}
+          	<input type="checkbox" name="checked[]" value="{$shipment.SHIPMENT_ID}" disabled="disabled" />
+            {/if}
+          </td>
+          <td rowspan="{$shipment.order_list|@count}">{$shipment.SHIPMENT_ID}</td>
+          <!--{/if}-->
+          
+          <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td>{$order.taobao_order_sn}</td>
+          <td>{$order.consignee}</td>
+          <td>{$order.order_time}</td>
+          <td>{$order.confirm_time}</td>
+          <td>{$order.reserved_time}</td>
+          <!--<td>{$order.order_status|get_order_status}，{$order.pay_status|get_pay_status}，{$order.shipping_status|get_shipping_status}</td>-->
+          <td>{$order.handle_time}</td>
+          <!--{if $smarty.foreach.orderList.first}-->
+          <td rowspan="{$shipment.order_list|@count}">
+            {if $shipment.is_merge_shipment && !$shipment.printed}
+            <a href="{$url|add_param_in_url:"act":"split"|add_param_in_url:"shipment_id":$shipment.SHIPMENT_ID}">取消合并发货</a><br/><br/>
+            {/if}
+            <a href="javascript:void(0);" onclick="hidden_print('shipment_print.php?print=1&shipment_id={$shipment.SHIPMENT_ID}')">打印</a>
+          </td>
+          <!--{/if}-->
+          
+        </tr>
+        <!--{/foreach}-->
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+      
+	  {$pagination}
+  
+  
+      <div style="margin-top:10px; clear:both;">
+        <input type="button" value="全选" onclick="select_all('#table');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#table');" /> &nbsp;&nbsp;
+        <input type="button" value="选中已打印的" onclick="select_reverse('#table', 'disabled');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" class="print" value="打印拣货单" />
+      </div>
+      
+        
+  </div>
+  <br />
+  
+  {else}
+  <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录</h4></div>
+  <br /><br />
+  {/if}
+
+  
+  <br /><br />
+</fieldset>
+
+
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+
+</body>
+</html>

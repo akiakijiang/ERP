@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>商品管理</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css"/>
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap.min.css" type="text/css"/>
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap-theme.min.css" type="text/css"/>
+  <script type="text/javascript" src="styles/bootstrap/js/jquery.min.js"></script>
+  <!-- // <script type="text/javascript" src="misc/jquery.js"></script> -->
+  <script type="text/javascript" src="styles/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <!-- Loading Calendar JavaScript files -->
+  <link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+  <script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+  <script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+  {literal}
+    <style type="text/css">
+      body{
+        font-size: 16px !important;
+        overflow-x:hidden; 
+      }
+      .Calendar{
+        top:340px;
+      }
+    </style>
+  {/literal}
+  <script type="text/javascript">
+  // <![CDATA[
+  // {literal}
+  var property={
+      divId:"demo",
+      needTime:true,
+      yearRange:[1970,2030],
+      week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+      month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+      format:"yyyy-MM-dd hh:mm:ss"
+  };
+  
+  $(document).ready(function(){
+    // 日历
+    canva1=$.createGooCalendar("date",property);
+      canva1.setDate({});
+      var valid_from = document.getElementById("valid_from").value;
+        if (valid_from != null && valid_from != '') {
+            document.getElementById("date").value = valid_from;
+        }
+      
+      
+      // 绑定滑动效果
+      $('legend.expand').bind('click', function(event){
+          $(this).next().slideToggle('normal');
+      });
+
+      /**
+       * 表单提交验证
+       */
+      $('#form').bind('submit', function(event){
+          if ($.trim($(':input[name="row[distributor_id]"]').val()) == '') {
+            alert('请选择分销商');
+            return false; 
+          }
+          
+          // 检查价格是否输入正确
+          var price = $.trim($(':input[name="row[price]"]').val());
+          if (price == '' || !/^\d+(\.\d+)?$/.test(price)) {
+            alert('请输入正确的价格');  
+            return false;
+          }
+          
+          // 检查返利金额是否输入正确
+          var rebate_amount = $.trim($(':input[name="row[rebate_amount]"]').val());
+          if (rebate_amount == '' || !/^\d+(\.\d+)?$/.test(rebate_amount)) {
+            alert('请输入正确的返利金额');  
+            return false;
+          }
+      });
+     $('#main_goods').autocomplete('gifts_manage/gifts_manage.php?request=ajax&act=search_goods', {
+            dataType : 'json',
+            minChars: 0,
+            mustMatch: false,
+            formatItem : function(row, i, max, value, term) {
+                return(row.goods_name);
+            },
+            formatResult : function(row) {
+                return(row.goods_name);
+            }
+        }).result(function(event, row, formatted) {
+            $("#goods_id").val(row.goods_id);
+            $("#style_id").val(row.style_id);
+            $("#cat_id").val(row.cat_id);
+        });
+     
+     $('#search_main_goods').autocomplete('gifts_manage/gifts_manage.php?request=ajax&act=search_goods', {
+           dataType : 'json',
+           minChars: 0,
+           mustMatch: false,
+           formatItem : function(row, i, max, value, term) {
+               return(row.goods_name);
+           },
+           formatResult : function(row) {
+               return(row.goods_name);
+           }
+       }).result(function(event, row, formatted) {
+           $("#search_goods_id").val(row.goods_id);
+            
+           $("#search_cat_id").val(row.cat_id);
+       });
+     
+  });
+  
+  // {/literal}
+  // ]]>
+  </script>
+</head>
+<body>
+  <div class="main">
+    <fieldset>
+<!--       <legend class="header_background">
+        <h3>&nbsp;商品管理&nbsp;</h3>
+      </legend> -->
+      <div class="main_content">
+        {if $smarty.request.message || $message}
+        <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$smarty.request.message}
+        {$message}
+        </div>
+        {/if}
+	      <br />
+        <fieldset class="top_circle_main_fenxiao">
+          <legend class="expand expand_font_size">&nbsp;{if $edit}编辑{else}添加{/if}&nbsp;
+          </legend>
+          <form method="post" id="form" class="form-horizontal">
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">商品名</label>
+              <div class="col-sm-2">
+                <!--{if $edit}-->
+                {$edit.goods_name}
+                <input type="hidden" name="row[distribution_sale_price_id]" value="{$edit.distribution_sale_price_id}" />
+                <!--{else}-->
+                <input type="text" class="form-control text_width" name="main_goods" id="main_goods" size="80" value=""/>
+                
+                <input type="hidden" name="row[goods_id]" id="goods_id" value=""></input>
+                <input type="hidden" name="row[style_id]" id="style_id" value=""></input>
+                <input type="hidden" name="row[cat_id]" id="cat_id" value=""></input>
+                <!--{/if}-->
+              </div>
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-2 control-label font_size">分销商</label>
+              <div class="col-sm-2">
+                <select name="row[distributor_id]" class="form-control text_width" {if $edit}disabled="disabled"{/if}>
+                  <option>- 请选择</option>
+                  {html_options options=$distirbutor_list selected=$edit.distributor_id}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">售价</label>
+              <div class="col-sm-2">
+                <input name="row[price]" type="text" class="form-control text_width" value="{$edit.price}" size="6" />
+              </div>
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-2 control-label font_size">返利金额</label>
+              <div class="col-sm-2">
+                <input name="row[rebate_amount]" type="text" class="form-control text_width" value="{$edit.rebate_amount}" size="6" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">运费金额</label>
+              <div class="col-sm-2">
+                <input name="row[shipping_fee]" type="text" class="form-control text_width" value="{$edit.shipping_fee}" size="6" />
+              </div>
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-2 control-label font_size">调整金额</label>
+              <div class="col-sm-2">
+                <input name="row[adjust_fee]" type="text" class="form-control text_width" value="{$edit.adjust_fee}" size="6" />
+              </div>
+            </div>
+            <div class="form-group">
+            	<label class="col-sm-2 control-label font_size">币种</label>
+              <div class="col-sm-2">
+                <select name="row[currency]" class="form-control text_width">
+                  <option>- 请选择</option>
+                  {html_options options=$currency_list selected=$edit.currency}
+                </select>
+              </div>
+              <label class="col-sm-2 control-label font_size">开始启用时间</label>
+              <div class="col-sm-3">
+                <input name="row[valid_from]" type="text" class="form-control text_width" value="{$edit.valid_from}" id="date" size="21" ></input>
+                <input id="valid_from" type="hidden" value="{$edit.valid_from}"></input>
+              </div>
+            </div>
+            <!-- <div style="float:right;"><a href="?act=add">添加</a></div>          -->
+             <div class="form-group">
+              <div class="col-sm-2 col-sm-offset-5">
+                <input type="submit" class="btn btn-primary btn-sm" value=" {if $smarty.request.act == 'update'}更新{else}创建{/if} "  />
+                <input type="hidden" name="act" value="{if $smarty.request.act == 'update'}update_submit{else}add_submit{/if}" />
+              </div>
+            </div>
+  	     </form>
+        </fieldset>
+        <fieldset class="bottom_circle_main_fenxiao">
+          <legend class="expand expand_font_size">&nbsp;商品列表&nbsp;</legend>  
+            <div>  
+              <div class="inner form_margin col-sm-9 col-sm-offset-4">
+                <form method="get" id="form2" class="form-horizontal">
+                  <span class="col-sm-5 sale_price_margin_right"><label class="col-sm-5 control-label font_size">商品名：</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="search_main_goods" class="form-control" id="search_main_goods" size="50" value=""/>            
+                      <input type="hidden" name="search_goods_id" id="search_goods_id" value="0"></input>
+                      <input type="hidden" name="search_cat_id" id="search_cat_id" value=""></input>
+                    </div>
+                  </span>
+                  <span class="col-sm-5"><label class="col-sm-5 control-label font_size">按分销商：</label>
+                    <div class="col-sm-7">
+                      <select name="distributor_id" class="form-control">
+                  	    <option>- 请选择</option>
+                      	{html_options options=$distirbutor_list selected=$filter.distributor_id}
+                      </select>&nbsp;&nbsp;
+                    </div>
+                  </span>
+                  <span class="col-sm-2">
+                    <input type="submit" class="btn btn-default btn-sm" value="筛选" />
+                    <input type="hidden" name="act" value="search" />
+                  </span> 
+                </form>  
+              </div>    
+              <!--{if $list}--> {* 如果有列表数据 *}
+              <div style="color:white">.</div>
+              <form method="post" id="form">
+                <table class="inner table table-condensed table_hover">
+                  <tr align="center" class="table_header">
+                    <th>商品编码</th>
+                    <th>商品名</th>
+                    <th>分销商</th>
+                    <th>售价</th>
+                    <th>返利</th>
+                    <th>运费</th>
+                    <th>调整金额</th>
+                    <th>币种</th>
+                    <th>启用时间</th>
+                    <th>操作</th>
+                  </tr>
+                  <!--{foreach from=$list item=item}-->
+      		        <tr class="table_content">
+      		          <td>{$item.product_code}</td>
+              			<td>{$item.goods_name}</td>
+              			<td>{$item.distributor_name}</td>
+              			<td>{$item.price}</td>
+                    <td>{$item.rebate_amount}</td>
+                    <td>{$item.shipping_fee}</td>
+                    <td>{$item.adjust_fee}</td>
+                    <td>{$item.currency}</td>
+                    <td>{$item.valid_from}</td>
+              			<td>
+              			<!-- <a href="?act=update&id={$item.distribution_sale_price_id}&distributor_id={$item.distributor_id}">编辑</a> -->  
+              			</td>
+      		        </tr>
+            		  <!--{/foreach}-->
+                </table> 
+              </form>
+            </div>
+            <!--{else}--> {* 如果没有数据 *}   
+            <div style="text-align:center"><h4>无相关数据, 请选择分销商</h4></div>
+          <!--{/if}--> 
+  	    </fieldset>
+        <br />
+      </div>
+    </fieldset>
+  </div>
+
+</body>
+</html>

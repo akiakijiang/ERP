@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>预定订单缺货界面</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="styles/reserve_lack_item.css"> 
+     </head>
+    <body>
+    	
+    	<div id="main_content">
+    		<div id="black_hover_up"></div>
+    		<div id="black_hover_down"></div>
+    		<form id="search_item" name="search_item" action="reserve_lack_item.php" method="POST">
+    		<label for="facility">仓库：</label>
+    		<select id="facility" name="facility">
+                {foreach from=$facility_from_Mysql key=k item=value}
+    			    <option value="{$value.FACILITY_ID}" class="for_select">{$value.FACILITY_NAME}</option>
+                {/foreach}
+    		</select><br>
+    		<label for="party">组织：</label>
+    		<select id="party" name="party">
+                {foreach from=$party_from_Mysql key=k item=value}
+    			    <option value="{$value.PARTY_ID}" class="for_select">{$value.NAME}</option>
+                {/foreach}
+    		</select><br>
+    		<label for="goods_barcode">商品条码：</label>
+    		<input type="text" id="goods_barcode" name="goods_barcode" />
+    		<input type="submit" value="提交查询"/>
+	    	</form>
+	    	<hr>
+	    	<div id="display">
+	    		<p>组织：</p>
+	    		<p>仓库：</p>
+	    		<p>商品条码：</p>
+	    		<p>商品名称：</p>
+	    		<p>订单所需库存数：</p>
+	    		<p>现有库存数：</p>
+	    		<p>准确已预订数：</p>
+	    		<p>准确可预订数：</p>
+	    		<p>缺库存：</p>
+	    		<p>product_id：</p>
+	    		<p>stock_quantity：</p>
+	    		<p>available_to_reserved：</p>
+	    		<p>diff：</p>
+	    	</div>
+    	</div>
+    	<script type="text/javascript" src="misc/jquery.js"></script>
+    	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+    	<script type="text/javascript">
+    	// <![CDATA[
+        //{literal}
+    	$(document).ready(function(){
+    		$("#black_hover_up").slideUp(1000);
+    		$("#black_hover_down").animate({height:"0"},1000);
+    	});
+    	//{/literal}
+        //]]>
+    	</script>
+    </body>
+</html>	

@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>库存查询</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+<body>
+<form method="POST">
+商品类别：
+<select name="goods_cagetory">
+<option value="1" {if $smarty.request.goods_cagetory == 1}selected{/if}>手机</option>
+<option value="2" {if $smarty.request.goods_cagetory == 2}selected{/if}>手机配件</option>
+<option value="3" {if $smarty.request.goods_cagetory == 3}selected{/if}>健康电子</option>
+<option value="4" {if $smarty.request.goods_cagetory == 4}selected{/if}>DVD</option>
+<option value="5" {if $smarty.request.goods_cagetory == 4}selected{/if}>电教产品</option>
+</select>
+品牌：
+<select name="brand_id">
+  <option value="0">所有</option>
+	{html_options options=$brands selected=$smarty.request.brand_id}
+</select>
+全新：
+<select name="is_new">
+<option value="0">所有</option>
+<option value="NEW" {if $smarty.request.is_new == "NEW"}selected{/if}>全新</option>
+<option value="SECOND_HAND" {if $smarty.request.is_new == "SECOND_HAND"}selected{/if}>二手</option>
+</select>
+<input type="hidden" name="act" id="act" value="check">
+<br /><br />
+<textarea name="goods_sn_text" cols="100" rows="10">{$smarty.request.goods_sn_text}
+</textarea><br />
+<input type="submit" value="核对" />
+</form>
+<div style="text-align:right;">cost time {$cost_time}</div>
+<br>
+<br>
+{if $smarty.request.act == 'check' && !$lost_goods && !$norecordgoods }<div style="color:green;">核对完成，没有问题</div>{/if}
+<table cellpadding="3">
+<tr valign="top">
+<td width="50%">
+{if $lost_goods}
+<table class="bWindow">
+<caption><h3 style="color:red;font-size:13px;">系统中有, 实际库存没有</h3></caption>
+<thead><tr><th>商品名</th><th>串号</th></tr></thead>
+<tbody>
+{foreach from=$lost_goods item=goods}
+<tr><td><a href="detail_info.php?order_id={$goods.order_id}" target="_blank">{$goods.goods_name}</a></td><td>{$goods.erp_goods_sn}</td></tr>
+{/foreach}
+</tbody>
+</table>
+{/if}
+
+</td>
+
+<td width="50%">
+{if $norecordgoods}
+<table class="bWindow">
+<caption><h3 style="color:orange;font-size:13px;">系统中没有, 实际库存有</h3></caption>
+<thead><tr><th>商品名</th><th>串号</th></tr></thead>
+<tbody>
+{foreach from=$norecordgoods item=goods}
+<tr><td><a href="detail_info.php?order_id={$goods.order_id}" target="_blank">{$goods.goods_name}</a></td><td>{$goods.erp_goods_sn}</td></tr>
+{/foreach}
+</tbody>
+</table>
+{/if}
+</td>
+</tr>
+</table>
+
+
+
+</body>
+</html>

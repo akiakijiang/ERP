@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="styles/css/supplier.css" media="all" />
+<title>供应商信息</title>
+{literal}
+<script type="text/javascript">
+
+function create_new_contact_person_node(){
+	var provider_brand_person_id = document.createElement("li");
+	provider_brand_person_id.innerHTML = "<input type=\"hidden\" name=\"provider_brand_person_id[]\" />";
+	
+	var contact_person_name = document.createElement("li");
+	contact_person_name.innerHTML = "<strong>联系人：</strong><input type=\"text\" name=\"contact_person_name[]\" />";
+	
+	var contact_person_sex = document.createElement("li");
+	contact_person_sex.innerHTML = "<strong>性别：</strong><select name=\"contact_person_sex[]\"><option value=\"1\" {if $list.sex == 1}selected=\"selected\"{/if}>男</option><option value=\"2\" {if $list.sex == 2}selected=\"selected\"{/if}>女</option></select>";
+	
+	var contact_person_phone_no = document.createElement("li");
+	contact_person_phone_no.innerHTML = "<strong>电话：</strong><input type=\"text\" name=\"contact_person_phone_no[]\" />";
+	
+	var contact_person_email = document.createElement("li");
+	contact_person_email.innerHTML = "<strong>Email：</strong><input type=\"text\" name=\"contact_person_email[]\" />";
+	
+	var contact_person_qq = document.createElement("li");
+	contact_person_qq.innerHTML = "<strong>QQ：</strong><input type=\"text\" name=\"contact_person_qq[]\" />";
+	
+	var contact_person_msn = document.createElement("li");
+	contact_person_msn.innerHTML = "<strong>MSN：</strong><input type=\"text\" name=\"contact_person_msn[]\" />";
+	
+	var contact_person_birthday = document.createElement("li");
+	contact_person_birthday.innerHTML = "<strong>生日：</strong><input type=\"text\" name=\"contact_person_birthday[]\" />";
+	
+	var contact_person_marriage_status = document.createElement("li");
+	contact_person_marriage_status.innerHTML = "<strong>婚姻状态：</strong><select name=\"contact_person_marriage_status[]\">	<option value=\"1\" {if $list.marriage_status == 1}selected=\"selected\"{/if}>已婚</option><option value=\"2\" {if $list.marriage_status == 2}selected=\"selected\"{/if}>未婚</option></select>";
+	
+	var contact_person_education = document.createElement("li");
+	contact_person_education.innerHTML = "<strong>教育程度：</strong><input type=\"text\" name=\"contact_person_education[]\" />";
+	
+	var contact_person_work_time = document.createElement("li");
+	contact_person_work_time.innerHTML = "<strong>就业时间：</strong><input type=\"text\" name=\"contact_person_work_time[]\" />";
+	
+	var contact_person_taboo = document.createElement("li");
+	contact_person_taboo.innerHTML = "<strong>禁忌：</strong><input type=\"text\" name=\"contact_person_taboo[]\" />";
+	
+	var contact_person_notes = document.createElement("li");
+	contact_person_notes.innerHTML = "<strong>备注：</strong><textarea name=\"contact_person_notes[]\" ></textarea>";
+	
+	var new_blank = document.createElement("li");
+
+	var container = document.getElementById("contact_person");
+	var after = document.getElementById("contact_person_after");
+	container.insertBefore(provider_brand_person_id, after);
+	container.insertBefore(contact_person_name, after);
+	container.insertBefore(contact_person_sex, after);
+	container.insertBefore(contact_person_phone_no, after);
+	container.insertBefore(contact_person_email, after);
+	container.insertBefore(contact_person_qq, after);
+	container.insertBefore(contact_person_msn, after);
+	container.insertBefore(contact_person_birthday, after);
+	container.insertBefore(contact_person_marriage_status, after);
+	container.insertBefore(contact_person_education, after);
+	container.insertBefore(contact_person_work_time, after);
+	container.insertBefore(contact_person_taboo, after);
+	container.insertBefore(contact_person_notes, after);
+	container.insertBefore(new_blank, after);
+	
+}
+
+function set_visible(id, value) {
+	document.getElementById(id).style.display=value;
+}
+
+</script>
+{/literal}
+</head>
+
+<body>
+<div id="supplier">
+<h1>品牌信息</h1>
+<form action="provider_brand_action.php" method="post" id="data_form">
+<ul>
+<li><strong>供应商名：</strong><input type="text" name="provider_name" value="{$brand.provider_name}" /></li>
+<li><strong>渠道类型：</strong>
+	<select name="provider_type">
+	{$brand.provider_type}
+	</select>
+</li>
+
+<li><strong>品牌：</strong><input type="text" name="brand" value="{$brand.brand}" /></li>
+<li><strong>公司地址：</strong><input type="text" name="company_address" value="{$brand.company_address}" /></li>
+</ul>
+
+<ul>
+<li><hr style="width: 450px;" size="1" color="red" /></li>
+<li><a href="javascript:set_visible('contact_person', '')">显示联系人</a>&nbsp;&nbsp;
+<a href="javascript:set_visible('contact_person', 'none')">隐藏联系人</a></li>
+</ul>
+
+<ul id="contact_person">
+{if $provider_brand_id > 0}
+{foreach from=$brand.contact_people item=list key=key}
+<li><input type="hidden" name="provider_brand_person_id[]" value="{$list.provider_brand_person_id}" /></li>
+<li><strong>联系人：</strong><input type="text" name="contact_person_name[]" value="{$list.name}" /></li>
+<li><strong>性别：</strong>
+	<select name="contact_person_sex[]">
+		<option value="1" {if $list.sex == 1}selected="selected"{/if}>男</option>
+		<option value="2" {if $list.sex == 2}selected="selected"{/if}>女</option>
+	</select>
+</li>
+<li><strong>电话：</strong><input type="text" name="contact_person_phone_no[]" value="{$list.phone_no}" /></li>
+<li><strong>Email：</strong><input type="text" name="contact_person_email[]"  value="{$list.email}" /></li>
+<li><strong>QQ：</strong><input type="text" name="contact_person_qq[]"  value="{$list.qq}" /></li>
+<li><strong>MSN：</strong><input type="text" name="contact_person_msn[]"  value="{$list.msn}" /></li>
+<li><strong>生日：</strong><input type="text" name="contact_person_birthday[]" value="{$list.birthday}" /></li>
+<li><strong>婚姻状态：</strong>
+	<select name="contact_person_marriage_status[]">
+		<option value="1" {if $list.marriage_status == 1}selected="selected"{/if}>已婚</option>
+		<option value="2" {if $list.marriage_status == 2}selected="selected"{/if}>未婚</option>
+	</select>
+</li>
+<li><strong>教育程度：</strong><input type="text" name="contact_person_education[]"  value="{$list.education}" /></li>
+<li><strong>就业时间：</strong><input type="text" name="contact_person_work_time[]" value="{$list.work_time}" /></li>
+<li><strong>禁忌：</strong><input type="text" name="contact_person_taboo[]"  value="{$list.taboo}" /></li>
+<li><strong>备注：</strong><textarea name="contact_person_notes[]" >{$list.notes}</textarea></li>
+{/foreach}
+{else}
+<li><input type="hidden" name="provider_brand_person_id[]" value="{$list.provider_brand_person_id}" /></li>
+<li><strong>联系人：</strong><input type="text" name="contact_person_name[]" /></li>
+<li><strong>性别：</strong>
+	<select name="contact_person_sex[]">
+		<option value="1" {if $list.sex == 1}selected="selected"{/if}>男</option>
+		<option value="2" {if $list.sex == 2}selected="selected"{/if}>女</option>
+	</select>
+</li>
+<li><strong>电话：</strong><input type="text" name="contact_person_phone_no[]" /></li>
+<li><strong>Email：</strong><input type="text" name="contact_person_email[]"  /></li>
+<li><strong>QQ：</strong><input type="text" name="contact_person_qq[]"  /></li>
+<li><strong>MSN：</strong><input type="text" name="contact_person_msn[]"  /></li>
+<li><strong>生日：</strong><input type="text" name="contact_person_birthday[]" /></li>
+<li><strong>婚姻状态：</strong>
+	<select name="contact_person_marriage_status[]">
+		<option value="1" {if $list.marriage_status == 1}selected="selected"{/if}>已婚</option>
+		<option value="2" {if $list.marriage_status == 2}selected="selected"{/if}>未婚</option>
+	</select>
+</li>
+<li><strong>教育程度：</strong><input type="text" name="contact_person_education[]"  /></li>
+<li><strong>就业时间：</strong><input type="text" name="contact_person_work_time[]" /></li>
+<li><strong>禁忌：</strong><input type="text" name="contact_person_taboo[]"  /></li>
+<li><strong>备注：</strong><textarea name="contact_person_notes[]" ></textarea></li>
+{/if}
+<li><a href="javascript:create_new_contact_person_node()">增加新的联系人</a></li>
+</ul>
+
+<p class="okbutton">
+	{if $action != 'view'}
+	<input type="button" value="确定" class="ok" onclick="document.getElementById('data_form').submit()" />
+	<input type="button" value="重置" onclick="document.getElementById('data_form').reset()"  />
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	{/if}
+	{if $provider_brand_id > 0}
+	<input type="hidden" name="action" value="mod" />
+	<a href="brand_manage.php" style="color: red; font-size: 16px; font-weight: bold;">不修改，返回品牌管理列表</a>
+	{else}
+	<input type="hidden" name="action" value="add" />
+	{/if}
+</p>
+
+	<input type="hidden" name="provider_brand_id" value="{$provider_brand_id}" />
+</form>
+</div>
+
+<div style="height: 100px;">&nbsp;</div>
+
+</body>
+</html>

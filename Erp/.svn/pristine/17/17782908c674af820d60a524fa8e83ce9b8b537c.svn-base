@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>淘宝直销商品</title>
+<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../misc/jquery.js"></script>
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+<link href="../misc/thickbox.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../misc/thickbox.js"></script>
+</head>
+<body>
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;淘宝直销商品&nbsp;</span>
+		</legend>
+		<div style="clear: both;">
+			<form method="post" id="conditionForm">
+				<table>
+					<tr>
+						<td>淘宝后台商品名称：<input type="text" name="goods_name"
+							value="{$goods_name}" /></td>
+						<td>商家编码：<input type="text" name="outer_id"
+							value="{$outer_id}" /></td>
+						<td>商店名： 
+							<select name="application_nicks">
+								<option value="ALL">不选</option> {html_options options=$application_list selected=$application_nicks }
+							</select>
+						</td>
+						<td>商家编码状态: 
+							<select name="outer_status"> {html_options options=$status_list selected=$smarty.request.outer_status }
+						</select>
+						</td>
+						<td>商品状态: 
+							<select name="approve_status"> {html_options options=$approve_status_list selected=$smarty.request.approve_status }
+						</select>
+						</td>
+						<td>
+							<input type="hidden" name="act" id="act" value="search" />
+							<input type="hidden" name="page" value="1" />
+						 	<input	type="submit" value="搜索" onclick="$('#act').val('search');" />
+						 	<input type="submit" value="导出csv" onclick="$('#act').val('csv');" />
+						 </td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<br />
+		<div style="clear: both;">
+			<h3 style="color: #09F;">淘宝直销商品</h3>
+
+			<table class="bWindow" style="margin-top: 10px;"
+				id="goods_list_table">
+				<tr>
+					<th width="30">No.</th>
+					<th>商店名</th>
+					<th>商品名称 (商品编码)</th>
+					<th>淘宝后台商品名称</th>
+					<th>淘宝价格</th>
+					<th>淘宝数量</th>
+					<th>商品上传后的状态</th>
+					<th>商家编码状态</th>
+					<th>最后更新时间</th>
+				</tr>
+				<!--  {if $taobao_items_list != null} -->
+				<!-- {foreach from=$taobao_items_list item=taobao_items name="taobaoItemsList"} -->
+				<tr align="center" class="{cycle values='odd,even'}">
+					<td>{$smarty.foreach.taobaoItemsList.iteration}</td>
+					<td>{$taobao_items.nick}</td>
+					<td><a href="../taobao_sync_inventory_list.php?outer_id={$taobao_items.outer_id}&goods_name={$taobao_items.gName}&goods_id={$taobao_items.goods_id}&style_id={$taobao_items.style_id}&inv_type=zhixiao&type=all&keepThis=true&TB_iframe=true&height=500&width=900" class="thickbox" title="库存同步情况">
+							{$taobao_items.gName}&nbsp;&nbsp;({$taobao_items.outer_id})
+          				</a>
+          			</td>
+					<td>{$taobao_items.title}</td>
+					<td>{$taobao_items.price}</td>
+					<td>{$taobao_items.quantity}</td>
+					<td>{$taobao_items.approve_status}</td>
+					<td><font {if $taobao_items.outer_status== '错误'} color="red"{/if}>{$taobao_items.outer_status}</font></td>
+					<td>{$taobao_items.last_update_timestamp}</td>
+				</tr>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="9" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+				<tr align="center">
+					<td colspan="9">{$pager}</td>
+				</tr>
+			</table>
+
+			<br />
+		</div>
+
+	</fieldset>
+</body>
+</html>

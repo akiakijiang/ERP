@@ -1,0 +1,236 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>拆分订单</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<!-- <script type="text/javascript" src="misc/jquery.js"></script> -->
+    <script type="text/javascript" src="misc/jquery1.11.min.js"></script>
+	
+	
+	<style>
+	{literal}
+		body {
+			font-family: Helvetica, Tahoma, Arial, "Microsoft YaHei", "微软雅黑", sans-serif;
+		}
+		.row.one_good {
+		    border-bottom:1px dashed #999;	
+		    padding-top:10px;
+        }
+        .row.one_good:last-child {
+		    border-bottom:none;	
+        }
+        h2 {
+            font-size:22px;	
+        }
+        .row-order-info {
+            font-size:18px;	
+        }
+        .btn-chaifen {
+        	width:160px;
+            position:relative;
+            left:50%;
+            margin-left:-80px;
+            margin-top:20px;
+        }
+        .goods_info {
+        	color:#337AB7;
+        }
+        .msg-content {
+			width:960px;
+		    margin:10px auto;
+	     	padding:5px;
+		    border:#7F9F00 2px solid;   
+		    text-align:center;
+        }
+    {/literal}
+	</style>
+	
+	<script>
+	// <![CDATA[
+	    var $check_discount = "{$check_discount}";
+	  //{literal}
+	  $(document).ready(function(){
+		  if(!$check_discount) {
+			  confirm("商品级别优惠券 + 订单级别优惠券 ！= -1*抵用券，请修改优惠券之后再拆分！");
+			  window.close();
+		  }
+		  
+	  });
+	    	    
+		function submit_post(){
+			$("#split").attr('disabled',true);
+			var radios = $("input[type='radio']");
+			var name_prev = $("input[type='radio']:first").attr("name"); 
+			var name_now = ""; 
+			var checked = false; 
+			var success_flag = true; 
+			var prev_radio = null; 
+			radios.each(function(){
+				name_now = $(this).attr("name");
+				if(name_now != name_prev){
+					name_prev = name_now; 
+					if(checked == false){
+						alert("存在商品没有选择仓库");
+						$("#split").attr('disabled',false);
+						success_flag = false; 
+						if(prev_radio != null){
+							prev_radio.focus(); 
+						}
+						return false; 
+					}
+					checked = false; 
+				}
+				if($(this).prop("checked") == true){
+					checked = true; 
+				}
+				prev_radio = $(this); 
+			}); 
+			if(success_flag == false){
+				return false; 
+			}
+			$("#split_form").submit();
+		}
+	//{/literal}
+	//]]>
+	</script>
+	
+</head>
+
+<body>
+	<!--{if $message}-->
+	<div class="msg-content">
+		{$message}
+	</div>
+	<!--{/if}-->
+	<div style="margin:20px auto; width:960px;border:#337AB7 2px solid;padding:10px;">
+	<h2>
+	订单信息
+	</h2>
+	    <div class="row row-order-info">
+	   		<div class="col-md-4">
+	   			<p>原始订单号：{$order_sn}</p> 
+	   		</div>
+	   		<div class="col-md-4">
+	   			<p>淘宝订单号：{$taobao_order_sn}</p>
+	   		</div>
+	   		<div class="col-md-4">
+	   			<p>原始仓库：{$facility_name}</p>
+	   		</div>
+	    </div>
+	    	<h2>
+		   	商品信息
+		   	</h2>
+	    <form style="padding:15px;" method="post" id="split_form">
+		   	<!--{if $goods_list} -->
+		   
+		   	<!--{foreach from=$goods_list key=key item=goods name="groupList"}-->
+		    <div class="row one_good">
+                <div class="row">
+                	<div class="col-md-5">
+                		<p class="goods_info">商品名：{$goods[0].goods_name}</p>
+                	</div>
+                	<div class="col-md-3">
+                		<p class="goods_info">商品数量：{$goods[0].need_number}</p>
+                	</div>
+                	<div class="col-md-4">
+                		<p class="goods_info">商品价格：{$goods[0].goods_price}</p>
+                	</div>
+                </div>
+		   		<!-- {foreach from=$goods item=good} -->
+		   		<div class="row">
+		   			<div class="col-md-3">
+		   				<p>仓库：{$good.facility_name}</p>
+		   			</div>
+		   			<div class="col-md-2">
+		   				<!-- {if $good.available > 0 } -->
+		   					<p style='color:green;'>可用库存：{$good.available}</p>
+		   				<!-- {else} -->
+							<p style='color:red;'>可用库存：{$good.available}</p>
+		   				<!-- {/if} -->
+		   			</div>
+		   			<div class="col-md-1">
+		   				<input type="radio" name="product_list[{$good.product_id}_{$good.order_goods_id}]" value="{$good.facility_id}_{$good.product_id}_{$good.order_goods_id}">
+		   			</div>
+		   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][goods_id]" value="{$good.goods_id}"/>
+		   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][style_id]" value="{$good.style_id}"/>
+		   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][need_number]" value="{$good.need_number}"/>
+		   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][goods_price]" value="{$good.goods_price}"/>
+		   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][product_id]" value="{$good.product_id}"/>
+		   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][order_goods_id]" value="{$good.order_goods_id}"/>
+		   		</div>
+		   		<!-- {/foreach} -->
+		   		</div>
+		   	<!-- {/foreach} -->
+		   	
+		   	<!-- {else} -->	
+		   	<div style="text-align:center;color:red;"><h4>该订单的商品都没足够库存了</h4></div>
+		   	<!-- {/if} --> 
+		   	<!-- {if $product_number} -->
+		   			<p style="color:#337AB7;text-align:center;margin-top:10px;color:red;">以下商品在所有仓库都库存不足，请谨慎操作！</p>
+		   			 
+
+						    <!--{foreach from=$goods_no_inventory_list key=key item=goods name="groupList"}-->
+						    <div class="row one_good">
+				                <div class="row">
+				                	<div class="col-md-5">
+				                		<p class="goods_info">商品名：{$goods[0].goods_name}</p>
+				                	</div>
+				                	<div class="col-md-3">
+				                		<p class="goods_info">商品数量：{$goods[0].need_number}</p>
+				                	</div>
+				                	<div class="col-md-4">
+				                		<p class="goods_info">商品价格：{$goods[0].goods_price}</p>
+				                	</div>
+				                </div>
+						   		<!-- {foreach from=$goods item=good} -->
+						   		<div class="row">
+						   			<div class="col-md-3">
+						   				<p>仓库：{$good.facility_name}</p>
+						   			</div>
+						   			<div class="col-md-2">
+						   				<p>可用库存：{$good.available}</p>
+
+						   			</div>
+						   			<div class="col-md-1">
+										<!-- {if $org_facility_id == $good.facility_id} -->	
+											<input type="radio" checked="true" name="product_list[{$good.product_id}_{$good.order_goods_id}]" value="{$good.facility_id}_{$good.product_id}_{$good.order_goods_id}">
+										<!-- {else} -->	
+		    								<input type="radio" name="product_list[{$good.product_id}_{$good.order_goods_id}]" value="{$good.facility_id}_{$good.product_id}_{$good.order_goods_id}">
+		   								<!-- {/if} --> 
+						   			</div>
+
+						   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][goods_id]" value="{$good.goods_id}"/>
+						   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][style_id]" value="{$good.style_id}"/>
+						   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][need_number]" value="{$good.need_number}"/>
+						   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][goods_price]" value="{$good.goods_price}"/>
+						   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][product_id]" value="{$good.product_id}"/>
+						   			<input type="hidden" name="check[{$good.facility_id}][{$good.product_id}_{$good.order_goods_id}][order_goods_id]" value="{$good.order_goods_id}"/>
+						   		</div>
+						   		<!-- {/foreach} -->
+						   		</div>
+						   	<!-- {/foreach} -->
+
+		   		<!-- {/if} -->
+		   	<!-- {if $can_split && !$have_child_order}-->
+			   	<input type="hidden" name="act" value="split_order"/>  
+			   	<input type="hidden" name="order_sn" value="{$order_sn}"></input>
+			   	<input type="hidden" name="order_id" value="{$order_id}"></input>
+			   	<input type="button" value="拆分" id="split" class="btn btn-flat btn-primary btn-chaifen" onclick="submit_post()"/>
+		   	<!--{elseif !$can_split}  -->
+		   	   <div class="row" style="color:red;text-align:center">
+		   	   		原订单不是未确认状态，不能拆单，请先点击“重新编辑“订单再拆单
+		   	   </div>
+		   	<!--{else} -->
+		   	<div class="row" style="color:red;">
+		  		原订单已经拆分为如下的订单：
+		   	   	<!-- {foreach from=$child_orders item=child_order} -->
+		   	   		<a href="order_edit.php?order_id={$child_order.order_id}" target="_blank">{$child_order.order_sn}</a>   &nbsp;	   	   		
+		   	   	<!-- {/foreach} -->	
+		   	   	不能继续拆分
+		   	</div>
+		   	<!--{/if}  -->
+	   </form>
+	</div>
+</body>
+</html>

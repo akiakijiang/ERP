@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<title>创建采购开票清单</title>
+<!-- Autocomplete -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+<!-- Autocomplete /-->
+<script type="text/javascript">
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+// <![CDATA[
+$(document).ready(function(){
+	/**
+	 * 供应商
+	 */
+	$('#autocomplete_provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+		minChars: 0,
+		mustMatch: true,
+		dataType : 'json',
+		formatItem : function(row, i, max, value, term) {
+			return(row.provider_name);
+		},
+		formatResult : function(row) {
+			return(row.provider_name);
+		}
+	}).result(function(event, row, formatted) {
+		// 将隐藏域的值设为供应商的id
+		$('#provider_id').val(row.provider_id);
+	});
+	
+});
+// ]]>
+{/literal}
+</script>
+</head>
+
+<body>
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+<p>创建开票清单</p>
+<p>供应商：
+	<input id="autocomplete_provider" name="provider_name" value="{$smarty.session.in_storage.provider_name}" size="45" />
+	<input type="hidden" id="provider_id" name="provider_id" value="{$smarty.session.in_storage.provider_id}" />
+</p>
+<p>备注：</p>
+<p>
+	<textarea name="note" cols="45" rows="5"></textarea>
+</p>
+<p>
+	<input type="submit" value="创建开票清单" />
+</p>
+<input type="hidden" name="action" value="purchase_invoice_request_add">
+</form>
+</body>
+</html>

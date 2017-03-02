@@ -1,0 +1,162 @@
+<!-- $Id: shipping_list.htm 7205 2007-03-16 03:17:31Z liry $ -->
+{include file="pageheader.htm"}
+{insert_scripts files="../js/utils.js,listtable.js"}
+<!-- start payment list -->
+<div class="list-div" id="listDiv">
+<p style="margin-left:10px;font-weight:bold;font-size:14px;">
+<input type="button" class="button" value="增加新的货运方式" onclick="document.getElementById('new').style.display='';document.getElementsByName('shipping_name')[0].focus()" style="float:right;margin-top:0;">
+	<a href="?act=list&support_cod=0&support_no_cod=1" style='margin:0 5px;{if $smarty.request.support_cod == 0 && $smarty.request.support_no_cod == 1}color:red{/if};'>[先款后货]</a>
+	<a href="?act=list&support_cod=1&support_no_cod=0" style='margin:0 5px;{if $smarty.request.support_cod == 1 && $smarty.request.support_no_cod == 0}color:red{/if};'>[货到付款]</a>
+	<a href="?act=list&self_list=1" style='margin:0 5px;{if $self_lists || $citys || $smarty.request.region_id}color:red{/if};'>[自提点]</a>
+</p>
+
+ <form action="shipping.php" method="POST" style="clear:both;">
+ <table id="new" style="display:none;">
+  <tr>
+   <th>{$lang.shipping_name}</th>
+{*  <th width="10%">配送方式</th>*}
+    <th>{$lang.shipping_desc}</th>
+    <th>转送地址</th>
+    <th nowrap="true">{$lang.insure}</th>
+    <th nowrap="true">货到付款</th>
+    <th nowrap="true">先款后货</th>
+    {*<th nowrap="true">支持镖局</th>*}
+    <th nowrap="true">默认快递</th>
+    <th nowrap="true">显示顺序</th>
+    <th>{$lang.handler}</th>
+  </tr>
+  <tr>
+  <td><input style="width:95%" name="shipping_name" value=""></td>
+  <td><input style="width:95%" name="shipping_desc" value=""></td>
+  <td><input style="width:95%" name="midway_address" value=""></td>
+  <td align="right"><input style="text-align:right;width:80px" name="insure" value="0"></td>
+  <td align="center"><select name="support_cod"><option value="1">是</option><option value="0" >否</option></select></td>
+  <td align="center"><select name="support_no_cod"><option value="1">是</option><option value="0" >否</option></select></td>
+  {*<td align="center"><select name="support_biaoju"><option value="1">是</option><option value="0" >否</option></select></td>*}
+  <td align="center">
+  <select name="default_carrier_id">
+  <option value="0">无</option>
+  {foreach from=$carrier_ids key=key item=carrier_id}
+  <option value="{$carrier_id}">{$carrier_names[$key]}</option>
+  {/foreach}
+  </select>
+  </td>
+  <td align="center"><input style="text-align:center;width:80px" name="shipping_order" value="0"></td>
+  <td align="center"><input type="submit" class="button" value="增加"><input type="button" class="button" value="删除" onclick="document.getElementById('new').style.display='none'"></td>
+  </tr>
+  </table>
+  <input type="hidden" name="shipping_code" value="common">
+  <input type="hidden" name="back_url" value="{$smarty.server.REQUEST_URI}">
+  <input type="hidden" name="act" value="add">
+  </form>
+
+{if $nav}
+<p style="margin-left:10px;"><a href="?act=list&parent_id={$nav.parent_id}">{$nav.parent_name}</a>[{$nav.parent_total}个城市]{if $nav.region_id}&nbsp;&nbsp;&nbsp;&nbsp;&gt;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?act=list&region_id={$nav.region_id}">{$nav.region_name}</a>[已开通{$nav.this_total}个自提点]{/if}</p>
+{/if}
+  {if $add}
+  <p style="color:red;font-size:14px;margin-left:10px;">
+    下面是新增加的自提点，请[设置区域]。
+  </p>
+  {/if}
+{if $modules}	
+<table cellspacing='1' cellpadding='3'>
+  <tr>
+    <th>{$lang.shipping_name}</th>
+    <th width="33%">{$lang.shipping_desc}</th>
+    <th width="33%">自提转送地址</th>
+    <th>相关选项</th>
+    <th>{$lang.handler}</th>
+  </tr>
+
+	{foreach from=$modules item=module name=modName}
+  <tr>
+    <td class="first-cell" nowrap="true">
+      <span onclick="listTable.edit(this, 'edit_name', '{$module.shipping_id}'); return false;">{$module.shipping_name|default:"未填"}</span><br/>
+		先款后货[<span onclick="listTable.editselect(this, 'edit_support_cod', '{$module.shipping_id}', new Array('是', '否'), new Array(1, 0), '{$module.support_cod}', '40px'); return false;">{if $module.support_no_cod==1}{$lang.yes}{else}{$lang.no}{/if}</span>]<br />
+	 货到付款[<span onclick="listTable.editselect(this, 'edit_support_no_cod', '{$module.shipping_id}', new Array('是', '否'), new Array(1, 0), '{$module.support_no_cod}', '40px'); return false;">{if $module.support_cod==1}{$lang.yes}{else}{$lang.no}{/if}</span>]				
+	 <br />
+	 使用的组织
+	 <span onclick="listTable.editselect(this, 'edit_party_id', '{$module.shipping_id}', new Array({$party_names}), new Array({$party_ids}), '{$module.party_id}', '80px'); return false;">{$module.party_name}</span>
+	</td>
+    <td>
+      正常：<span onclick="listTable.edit(this, 'edit_desc', '{$module.shipping_id}','textarea'); return false;">{$module.shipping_desc|default:"未填"}</span>
+      <br />
+      禁止：<span onclick="listTable.edit(this, 'edit_disabled_desc', '{$module.shipping_id}','textarea'); return false;">{$module.shipping_disabled_desc|default:"未填"}</span>
+    </td>
+    <td>
+
+      姓名：<span onclick="listTable.edit(this, 'edit_contact_name', '{$module.shipping_id}'); return false;">{$module.contact_name|default:"未填"}</span><br/>
+
+      Email：<span onclick="listTable.edit(this, 'edit_contact_email', '{$module.shipping_id}'); return false;">{$module.contact_email|default:"未填"}</span><br/>
+
+      手机：<span onclick="listTable.edit(this, 'edit_contact_phone', '{$module.shipping_id}'); return false;">{$module.contact_phone|default:"未填"}</span><br/>    	
+      地址：<span onclick="listTable.edit(this, 'edit_midway_address', '{$module.shipping_id}','textarea'); return false;">{$module.midway_address|default:"未填"}</span><br/>
+      自提时间：<span onclick="listTable.edit(this, 'edit_self_work_time', '{$module.shipping_id}','textarea'); return false;">{$module.self_work_time|default:"未填"}</span>
+    </td>
+    <td>
+      {$lang.insure}：<span onclick="listTable.edit(this, 'edit_insure', '{$module.shipping_id}'); return false;">{$module.insure}</span><br />
+      默认快递：<span onclick="listTable.editselect(this, 'edit_default_carrier', '{$module.shipping_id}', new Array('无', '{"', '"|implode:$carrier_names}'), new Array('0', '{"', '"|implode:$carrier_ids}'), '{$module.default_carrier_id}', '60px'); return false;">{if $module.name != ''}{$module.name}{else}无{/if}</span><br />
+      显示顺序：<span onclick="listTable.edit(this, 'edit_order', '{$module.shipping_id}'); return false;">{$module.shipping_order}</span>
+	   </td>
+    <td align="center" nowrap="true">
+      {if $module.enabled == 1}
+      <a href="javascript:confirm_redirect(lang_removeconfirm,'shipping.php?act=uninstall&id={$module.shipping_id}')">挂起</a><br />
+      {else}
+      <a href="shipping.php?act=install&id={$module.shipping_id}">发布</a><br />
+      {/if}
+      <a href="shipping_area.php?act=list&shipping={$module.shipping_id}">{$lang.shipping_area}</a>
+      <!--<a href="shipping.php?act=delete&id={$module.shipping_id}" onclick="return confirm('确认要删除吗？');">删除</a>-->
+    </td>
+  </tr>
+  {/foreach}
+</table>
+{/if}
+    {if $self_lists}
+    <table cellspacing='1' cellpadding='3'>
+      <tr>
+    {foreach from=$self_lists key=key item=self_list name=p}
+      <td style="font-size:14px;padding:10px;">
+      <strong><a href='?act=list&parent_id={$self_list.parent_id}'>{$self_list.parent_name}</a><span style="font-weight:normal;font-size:12px;">[{$self_list.total}个城市]</span></strong>
+      </td>
+    {if $smarty.foreach.p.iteration%5 == 0 && !$smarty.foreach.p.first }  
+    </tr>
+    <tr>
+    {/if}
+    {/foreach}
+      </tr>
+    </table>
+    {/if}
+    {if $citys}
+		
+    <table cellspacing='1' cellpadding='3'>
+    {foreach from=$citys key=key item=city name=citys}
+      <td style="font-size:14px;padding:10px;">
+      <strong><a href='?act=list&region_id={$city.region_id}'>{$city.region_name}</a><span style="font-weight:normal;font-size:12px;">[{$city.total}个]</span></strong>
+      </td>
+    {if $smarty.foreach.p.iteration%5 == 0 && !$smarty.foreach.p.first }  
+    </tr>
+    <tr>
+    {/if}
+    {/foreach}
+      </tr>
+    </table>
+    {/if}
+
+</div>
+<!-- end payment list -->
+<script type="Text/Javascript" language="JavaScript">
+<!--
+{literal}
+
+onload = function()
+{
+    // 开始检查订单
+    startCheckOrder();
+}
+
+
+
+{/literal}
+//-->
+</script>
+{include file="pagefooter.htm"}

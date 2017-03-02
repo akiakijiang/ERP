@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>顺丰(乐贝蓝光货到付款)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!--<div style="background:url(templates/oukooext/image/ku.jpg) top left no-repeat;height:500px;border:solid 1px #FF0000;">-->
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:12pt;top:65px;left:5px;letter-spacing:10px;">0216303909</div>
+<!--<div style="position:absolute;font-size:10pt;top:90px;left:5px;">上海欧酷网络科技有限公司</div>-->
+<div style="position:absolute;font-size:10pt;top:90px;left:210px;">乐贝蓝光</div>
+<div style="position:absolute;font-size:10pt;top:115px;left:2px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:10pt;top:170px;left:1px;">0571</div>
+<!--<div style="position:absolute;font-size:10pt;top:170px;left:68px;">63542610</div>-->
+<div style="position:absolute;font-size:10pt;top:170px;left:128px;">89852006</div>
+<div style="position:absolute;font-size:10pt;top:240px;left:210px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:260px;left:1px;width:260px;line-height:200%;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:10pt;top:315px;left:90px;">{$order.mobile}<br />{$order.tel}</div>
+{if $order.insure_fee >= 1}
+<div style="position:absolute;font-size:25pt;top:310px;left:260px;">√</div><!-- 保价 -->
+<div style="position:absolute;font-size:18pt;top:320px;left:430px;"><strong>
+{$order.insure_fee|price_format}
+</strong>
+</div>{/if}<!-- 保价 -->
+<!--<div style="position:absolute;font-size:10pt;top:325px;left:170px;">{$order.mobile}</div>已经移到上面  -->
+<div style="position:absolute;font-size:14pt;top:385px;left:10px;font-weight:bolder;">配件&nbsp;&nbsp;(订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:14pt;top:385px;left:220px;">1</div>
+{if !$smarty.request.service_goods_back}
+<div style="position:absolute;font-size:12pt;top:115px;left:360px;">0216303909</div>
+<div style="position:absolute;font-size:12pt;top:150px;left:375px;font-weight:bolder;">{$order.order_amount|price_format}</div>
+<div style="position:absolute;font-size:25pt;top:115px;left:260px;">√</div><!--代收货款 -->
+<div style="position:absolute;font-size:11pt;top:150px;left:267px;"><strong>代收货款</strong></div>
+{/if}
+<div style="position:absolute;font-size:12pt;top:15px;left:470px;font-weight:bolder;">021FD</div>
+<div style="position:absolute;font-size:30pt;top:40px;left:460px;">√</div><!--寄方付 -->
+<div style="position:absolute;font-size:12pt;top:90px;left:475px;letter-spacing:10px;">0216303909</div>
+<div style="position:absolute;font-size:12pt;top:130px;left:475px;line-height:100%">电子产品<br>只能验收外观不得试机</div>
+<div style="position:absolute;font-size:10pt;top:415px;left:460px;">
+    本人签收，送货前电话联系<br />
+    {if $order.start_shipping_time != 0 || $order.end_shipping_time != 0}
+        {if $order.start_shipping_time != 0}{$order.start_shipping_time}点{else}-{/if}至{if $order.end_shipping_time != 0}{$order.end_shipping_time}点{else}-{/if}配送
+    {/if}
+</div>
+<!--</div>-->
+</body>
+</html>

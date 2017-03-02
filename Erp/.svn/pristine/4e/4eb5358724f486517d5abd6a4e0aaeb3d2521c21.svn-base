@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>中粮店铺库存比例设置</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<script type="text/javascript" src="misc/jquery.js"></script> 
+	{literal}
+	<style>
+		body {
+			font-family: Helvetica, Tahoma, Arial, "Microsoft YaHei", "微软雅黑", sans-serif;
+		}
+		.row.group {
+		    border-bottom:1px dashed #999;	
+		    padding-top:10px;
+        }
+        h2 {
+            font-size:22px;	
+        }
+        .row-order-info {
+            font-size:18px;	
+        }
+        .btn-edit {
+        	width:80px;
+        	height:32px;
+            position:relative;
+            left:55%;
+            margin-left:-80px;
+            margin-top:00px;
+        }
+        .goods_info {
+        	color:#337AB7;
+        }
+        .msg-content {
+			width:960px;
+		    margin:10px auto;
+	     	padding:5px;
+		    border:#7F9F00 2px solid;   
+		    text-align:center;
+        }
+	</style>
+	
+	<script type="text/javascript">
+		function aaa(q){
+			//alert($("."+group_id).val());
+			alert(q);
+		}
+		
+		$(document).ready(function(){
+			$(".btn-edit").click(function(event){
+				var  data = {};
+				$
+				
+			});
+		});
+	
+	</script>
+	{/literal}
+	
+</head>
+
+<body>
+	<!--{if $message}-->
+	<div class="msg-content">
+		{$message}
+	</div>
+	<!--{/if}-->
+	<div style="margin:20px auto; width:960px;border:#337AB7 2px solid;padding:10px;">
+	
+	   	<h2>
+	   	中粮店铺信息
+	   	</h2>
+	    <!-- <form style="padding:15px;"> -->
+		   	<!--{if $shop_groups} -->
+		   
+		   	<!--{foreach from=$shop_groups key=key item=shops name="groupList"}-->
+		   	<form>
+		    <div class="row group" style="padding:15px;">
+                <div class="row">
+                <!-- {if $key==''} -->
+                	<div class="col-md-5">
+                		<p class="group_info">无分组店铺:</p>
+                	</div>
+                <!-- {else} -->
+                	<div class="col-md-5">
+                		<p class="group_info">组名：{$key}</p>
+                	</div>
+                	<div>
+                		<input type="hidden" name="act" value="edit"/>
+			   			<input type="hidden" name="group_id" value="{$key}"/>  
+			   			<input type="submit" value="修改" class="btn btn-flat btn-primary btn-edit" />
+			   		</div>
+			   	<!-- {/if} -->
+                </div>
+		   		<!-- {foreach from=$shops item=shop} -->
+		   		<div class="row">		   		
+		   			<div class="col-md-4">
+                		<p class="nick">店铺名称：{$shop.nick}</p>
+                		<input type="hidden" name="taobao_shop_conf_id" value="{$shop.taobao_shop_conf_id}" />
+                	</div>
+                	<!-- {if $shop.group_id != ''} -->
+		   			<div class="col-md-3">
+		   				<p>库存比例：<input type="text" size="5" id="inventory_ratio" name="inventory_ratio[{$shop.taobao_shop_conf_id}]" value="{$shop.inventory_ratio}" /></p>
+		   			</div>
+		   			<div class="col-md-2">
+		   				<p>是否为主店铺：</p>
+		   			</div>
+		   			<div class="col-md-1">
+		   				<input type="radio" name="is_main" value="{$shop.taobao_shop_conf_id}"  {if $shop.is_main == 'Y'}checked{/if}/>
+		   			</div>
+		   			<!-- {/if} -->
+		   		</div>		   		
+		   		<!-- {/foreach} -->
+
+		   		</div>
+		   		</form>
+		   		
+		   	<!-- {/foreach} -->
+		   	<!-- {/if} --> 
+	   <!-- </form> -->
+	</div>
+
+	<script>
+
+	</script>
+
+</body>
+</html>

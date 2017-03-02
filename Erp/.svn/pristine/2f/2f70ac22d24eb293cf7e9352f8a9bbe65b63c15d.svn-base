@@ -1,0 +1,52 @@
+{include file="pageheader.htm"}
+
+{insert_scripts files="style/zapatec/utils/zapatec.js, style/zapatec/zpcal/src/calendar.js, style/zapatec/zpcal/lang/calendar-en.js"}
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<form name="form" method="post">
+<div class="form-div">
+    <img src="images/icon_search.gif" width="26" height="22" border="0" alt="SEARCH" />
+    {$lang.search_comment} 
+    开始时间： <input style="width:90px" id="exportStartCalendar" name="start_date" value="{$filter.start_date}"><input type="button" value="..." id="exportStartTrigger"> &nbsp;&nbsp;
+    结束时间： <input style="width:90px" id="exportEndCalendar" name="end_date" value="{$filter.end_date}"><input type="button" value="..." id="exportEndTrigger"> &nbsp;&nbsp;
+    <select name="type" id="type">
+      <option value="">--分类--</option>
+      <option value="goods">商品咨询</option>
+      <option value="shipping">物流配送</option>
+      <option value="payment">支付问题</option>
+      <option value="postsale">保修及发票</option>
+      <option value="complaint">投诉建议</option>
+    </select>&nbsp;&nbsp;
+    <input type="hidden" name="act" value="export" />
+    <input type="submit" value="导出CSV" />
+</div>
+
+</form>
+
+<script type="text/javascript">
+//<![CDATA[
+	{literal}
+  /**
+   * 日期选择弹出框
+   */
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "exportStartCalendar",
+		button            : "exportStartTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "exportEndCalendar",
+		button            : "exportEndTrigger",
+		ifFormat          : "%Y-%m-%d",
+		daFormat          : "%Y-%m-%d"
+	});
+	{/literal}
+//]]>
+</script>
+
+{include file="pagefooter.htm"}

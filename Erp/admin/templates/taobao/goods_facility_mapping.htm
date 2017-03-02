@@ -1,0 +1,1038 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title> 商品转仓规则管理 </title>
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <link rel="stylesheet" type="text/css" href="../styles/goodschange.css">
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+  <!-- Calendar -->
+  <link rel="stylesheet" type="text/css" href="../js/style/calendar/GooCalendar.css"/>
+  <script type="text/javascript" src="../js/style/calendar/GooFunc.js"></script>
+  <script type="text/javascript" src="../js/style/calendar/GooCalendar.js"></script>
+  <!-- Calendar /-->
+  {literal}
+  <style>
+  .btn{
+    background: rgba(100,149,237,.9);
+    display: inline-block;
+    padding: 6px 12px;
+    color:white;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+  </style>
+  {/literal}
+  <script type="text/javascript"><!--
+    // <![CDATA[
+    var WEB_ROOT = '{$WEB_ROOT}';
+    var page = '{$goods_facility_mapping_page}';
+    var outer='{$goods.outer_id}';
+    var start_can_update='{$goods_facility_mapping.start_can_update}';
+
+       // var province='{$province}';
+    // var city='{$city}';
+
+    // {literal}
+    function E(id) {return document.getElementById(id);}
+    function ES(name) {return document.getElementsByName(name);}
+    var property={
+      divId:"demo",
+      needTime:true,
+      yearRange:[1970,2030],
+      week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+      month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+      format:"yyyy-MM-dd hh:mm:ss"
+    };
+
+
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+          $(this).next().slideToggle('normal');
+        }); 
+        
+        canva1=$.createGooCalendar("start_time",property);
+        canva2=$.createGooCalendar("end_time",property);
+        
+        /**
+         * 搜索商品或者套餐
+         */
+         $('#goods_name').autocomplete('goods_facility_mapping.php?act=search_goods_and_taocan', {
+          dataType : 'json',
+          minChars: 0,
+          mustMatch: false,
+          formatItem : function(row, i, max, value, term) {
+            return(row.goods_name);
+          },
+          formatResult : function(row) {
+            return(row.goods_name);
+          }
+        }).result(function(event, row, formatted) {
+          $('#goods_name').val(row.goods_name);
+          $("#goods_name").attr("goodsId",row.goods_id);
+
+          $('#hid_type').val(row.type);
+          var type = row.type;
+          if(type == 'taocan') {
+            $('#hid_tc_code').val(row.outer_id);
+            $("#goods_name").attr("outerIds",row.outer_id);
+            $('#hid_outer_id').val('');
+          } else {
+            $('#hid_outer_id').val(row.outer_id);
+            $("#goods_name").attr("outerIds",row.outer_id);
+            $('#hid_tc_code').val('');
+          }
+        });
+
+        $('#search_goods_name').autocomplete('goods_facility_mapping.php?act=search_goods_and_taocan', {
+          dataType : 'json',
+          minChars: 0,
+          mustMatch: false,
+          formatItem : function(row, i, max, value, term) {
+            return(row.goods_name);
+          },
+          formatResult : function(row) {
+            return(row.goods_name);
+          }
+        }).result(function(event, row, formatted) {
+          $('#search_goods_name').val(row.goods_name);
+          $("#search_goods_name").attr("goodsId",row.goods_id);
+
+          $('#search_type').val(row.type);
+          var type = row.type;
+          if(type == 'taocan') {
+            $('#search_tc_code').val(row.outer_id);
+            $("#goods_name").attr("outerIds",row.outer_id);
+            $('#search_outer_id').val('');
+          } else {
+            $('#search_outer_id').val(row.outer_id);
+            $("#search_goods_name").attr("outerIds",row.outer_id);
+            $('#search_tc_code').val('');
+          }
+        });
+
+        Region.init();
+
+      });
+// 选择地区
+
+/**
+     * 改变地域的下拉框
+     */
+     var Region = {
+      /** 
+       * WEB控件ID
+       */ 
+       regions : [
+          {name: 'order[province]', data:{type:2} }, // 省
+          {name: 'order[city]',     data:{type:3} } // 市
+          // {name: 'order[district]'}                  
+          ],
+
+          expr : ':select[name="#"]',
+
+      /**
+       * 初始化，即绑定事件
+       */
+       init : function() 
+       {
+
+        $(this.expr.replace('#', this.regions[0].name)).bind('change', this.regions[0].data, this.change_region_list);  
+        $(this.expr.replace('#', this.regions[1].name)).bind('change', this.regions[1].data, this.change_region_list);  
+      },
+      
+      /**
+       * 改变下拉框
+       */
+       change_region_list : function(event) 
+       {
+          var $p = $(this);  // 父级元素，省
+          var pn = $p.attr('name');// order[city] or order[province]
+          var ln = Region.regions.length;
+          var last = false;
+          var next = 0;
+          
+          // 如果到了最后一级则返回
+          for (var i=0; i<ln; i++) {
+            if (pn == Region.regions[i].name) {
+              next = i + 1;
+              if (i == ln -1) { last = true; 
+              }
+            }
+          }
+          
+          if (!last) {
+            $c = $(Region.expr.replace('#', Region.regions[next].name));   // 子级元素
+            for (var i=next; i<ln; i++) {
+              $(Region.expr.replace('#', Region.regions[i].name)).hide(); 
+            }
+          }
+
+          $c.unbind();
+          $.ajax({
+            type: 'POST',
+            url: WEB_ROOT + 'admin/ajax.php?act=get_regions',  // 查询地址
+            data: 'type=' + event.data.type + '&parent=' + $p.val(),
+            dataType: 'json',
+            error: function() {alert('查询地域失败'); },
+            success: function(data) {
+              if (data.regions && data.regions != '') {
+                r = data.regions;
+                var list = '<option value="0">-所有市-</option>';
+                for (var i = 0; i < r.length; i++) {
+                  var region_type = event.data.type;
+                  list += '<option value="'+ r[i].region_id +'" id="'+ r[i].region_name+' " provid="'+ $p.val() + '">'+ r[i].region_name+'</option>';   //获取所有地区
+                }
+                $c.html(list).fadeIn();
+                if (next + 1 < ln) {
+                  $c.bind('change', Region.regions[next].data, Region.change_region_list);
+                }
+              }
+            }
+          });  
+        }
+
+      };
+  var region_Id = new Array();//省ID数组
+  var p_num_1=new Array();
+  var p_num_2=new Array();
+  var p_ID=new Array();//市所在的省ID
+  var regioncity_Id = new Array();//市ID数组
+  var region_num = new Array();//省-辅助
+  var regioncity_num=new Array();//市-辅助
+// 添加区域
+function add_city(){
+
+  var province=document.getElementsByName('order[province]')[0];
+        var provName=province.options[province.selectedIndex].id;//获取省名称
+        var city=document.getElementsByName('order[city]')[0];
+        var cityName=city.options[city.selectedIndex].id;//城市的name
+        var pId = city.options[city.selectedIndex].getAttribute('provid');//城市带有省的ID
+
+        $(".addProvince ul li").each(function(){
+          var region=$(this).find('p').next().val();
+          region_Id.push(region);
+        });
+
+        $(".addCity ul li").each(function(){
+          var regioncity=$(this).find('p').next().attr('provid');
+          p_ID.push(regioncity);
+        });
+        $(".addCity ul li").each(function(){
+          var cityid=$(this).find('p').next().val();
+          regioncity_Id.push(cityid);
+        });
+
+
+        if(cityName==''&&provName!=''){ //如果没有选择城市
+          console.log('省');
+
+          var region_names=provName;
+          var region_ids=province.options[province.selectedIndex].value;
+          var region_types=1;
+          p_num_1=[];
+          for(var a=0;a <= p_ID.length;a++){//需要遍历市的数组
+            if(region_ids == p_ID[a]){//如果省的ID 和 遍历过的市pID一致
+                p_num_1.push('e');//则给数组添加一个元素
+                break;
+              }
+            }
+            if(p_num_1.length!=0){
+              alert('该省所含市已存在，请重新选择');
+            }else{
+             var len = region_Id.length;
+             if (len==0) {
+              $(".addProvince ul").append('<li><p>'+region_names+'<span class=\"del\" onclick=\"delete_region(this)\">×</span></p>'+
+                '<input type=\"hidden\" name="region_ids[]" value=\"'+region_ids+'\"/>'+
+                '<input type=\"hidden\" name="region_names[]" value=\"'+region_names+'\"/>'+
+                '<input type=\"hidden\" name="region_types[]" value=\"'+region_types+'\"/>'+
+                '</li>');
+              region_Id.push(region_ids);
+            }else{
+                   region_num =[];//清空数组
+                   for(var i=0;i<len;i++){ 
+                     if (region_Id[i] == region_ids) {
+                      alert('该省份已添加');
+                      region_num.push('e');
+                      break;
+                    }
+                  }
+                  if (region_num.length==0) {
+                    $(".addProvince ul").append('<li><p>'+region_names+'<span class=\"del\" onclick=\"delete_region(this)\">×</span></p>'+
+                      '<input type=\"hidden\" name="region_ids[]" value=\"'+region_ids+'\"/>'+
+                      '<input type=\"hidden\" name="region_names[]" value=\"'+region_names+'\"/>'+
+                      '<input type=\"hidden\" name="region_types[]" value=\"'+region_types+'\"/>'+
+                      '</li>');
+                    region_Id.push(region_ids);
+                  }
+                }    
+              }   
+            }
+            else if(cityName!=''&&provName!=''){ 
+          console.log('市');//添加城市
+          var region_names=cityName;
+          var region_ids=city.options[city.selectedIndex].value;
+          var region_types=2;
+          p_num_2=[];
+          for(var b=0;b<=region_Id.length;b++){//需要遍历省的ID数组
+            if(pId == region_Id[b]){//如果市所在省的ID 和 遍历过的省ID一致
+              p_num_2.push('e');
+            }
+          }
+          if(p_num_2.length!=0){
+            alert('该市所在省已存在，请重新选择');
+          }else{
+           var len_2 = regioncity_Id.length;
+           if (len_2==0) {
+            $(".addCity ul").append('<li><p>'+region_names+'<span class=\"del\" onclick=\"delete_region(this)\">×</span></p>'+
+              '<input type=\"hidden\" name="region_ids[]" value=\"'+region_ids+'\" provid=\"'+pId+'\"/>'+
+              '<input type=\"hidden\" name="region_names[]" value=\"'+region_names+'\"/>'+
+              '<input type=\"hidden\" name="region_types[]" value=\"'+region_types+'\"/>'+
+              '</li>');
+            regioncity_Id.push(region_ids);
+            p_ID.push(pId);
+          }else{
+                   regioncity_num =[];//清空数组
+                   for(var i=0;i<len_2;i++){ 
+                     if (regioncity_Id[i] == region_ids) {
+                      alert('该城市已添加');
+                      regioncity_num.push('e');
+                      break;
+                    }
+                  }
+                  if (regioncity_num.length==0) {
+                    $(".addCity ul").append('<li><p>'+region_names+'<span class=\"del\" onclick=\"delete_region(this)\">×</span></p>'+
+                      '<input type=\"hidden\" name="region_ids[]" value=\"'+region_ids+'\" provid=\"'+pId+'\"/>'+
+                      '<input type=\"hidden\" name="region_names[]" value=\"'+region_names+'\"/>'+
+                      '<input type=\"hidden\" name="region_types[]" value=\"'+region_types+'\"/>'+
+                      '</li>');
+                    regioncity_Id.push(region_ids);
+                    p_ID.push(pId);
+                  }
+                }    
+              }   
+            }
+            else{
+              alert('请至少选择一项');
+            }
+            region_Id=[]; 
+            p_ID=[];  
+            regioncity_Id=[]; 
+          }
+ // 删除区域 
+ function delete_region(obj){
+   var item =  $(obj).parent().next().val();
+   var item_2= $(obj).parent().next().attr('provid');
+   if(item_2){
+    regioncity_Id.splice(jQuery.inArray(item,regioncity_Id),1); 
+    p_ID.splice(jQuery.inArray(item_2,p_ID),1); 
+  }else{ 
+    region_Id.splice(jQuery.inArray(item,region_Id),1); 
+  }
+  $(obj).parent().parent().remove();
+
+}
+   // 添加商品
+   var num = new Array();
+   var outer_Ids =new Array();
+
+
+
+   function add_goods(){
+     $(".somegoods ul li").each(function(){
+          var goods_id=$(this).find('p').next().val();  //已存在商品的outer_id
+          outer_Ids.push(goods_id);
+        });
+
+      var goods = $('#goods_name').val();//商品名称
+
+      if (goods!='') {
+           var outer_ids=$('#goods_name').attr('outerIds');//outerID
+              var len = outer_Ids.length;//数组长度
+              if (len==0) {
+                $(".somegoods ul").append('<li><p>'+goods+'<span class=\"del\" onclick=\"delete_goods(this)\">×</span></p>'+
+                  '<input type=\"hidden\" name=\"outer_ids[]\" value=\"'+outer_ids+'\"/>'+
+                  '<input type=\"hidden\" name=\"goods_names[]\" value=\"'+goods+'\"/>'+
+                  '</li>');
+                outer_Ids.push(outer_ids);
+              }else{
+                   num =[];//清空数组
+                   for(var i=0;i<len;i++){ 
+                     if (outer_Ids[i] == outer_ids) {
+                      alert('该商品已添加');
+                      num.push('e');
+                      break;
+                    }
+                  }
+                  if (num.length==0) {
+                    $(".somegoods ul").append('<li><p>'+goods+'<span class=\"del\" onclick=\"delete_goods(this)\">×</span></p>'+
+                      '<input type=\"hidden\" name=\"outer_ids[]\" value=\"'+outer_ids+'\"/>'+
+                      '<input type=\"hidden\" name=\"goods_names[]\" value=\"'+goods+'\"/>'+
+                      '</li>');
+                    outer_Ids.push(outer_ids);
+                  }
+                }
+
+              }else{
+                alert('请至少选择一个商品');
+              }
+              
+              outer_Ids=[];
+            }
+
+    // 删除商品 
+    function delete_goods(obj){
+      var item =  $(obj).parent().next().val(); 
+      outer_Ids.splice(jQuery.inArray(item,outer_Ids),1); 
+      $(obj).parent().parent().remove();  
+
+    }
+
+
+    function formsubmit(){
+
+      var distributor_id =$("#distributor_id").val();
+      var goods_name= $("#goods_name").val();
+      var facility_id= $("#facility_id").val();
+      var shipping_id= $("#shipping_id").val();
+      var start_time= $("#start_time").val();
+      var end_time= $("#end_time").val();
+      var can_update= $("#can_update").val();
+      
+      if(!page){
+       if(''==goods_name || null==goods_name){
+        alert('商品名称还未添加。。。');
+        return false;
+      }
+    }
+    if(page){
+      if ( ! $('.somegoods ul').is(':has(li)') ) {
+       alert('商品名称还未添加。。。');
+       return false;
+     }
+     if ( ! $('.addProvince ul').is(':has(li)')&&! $('.addCity ul').is(':has(li)') ) {
+       alert('区域还未选择。。。');
+       return false;
+     }
+
+   }
+
+   if(''==facility_id || null == facility_id ){
+    alert('仓库名称还未添加。。。');
+    return false;
+  }
+  if(!page){
+   if(''==shipping_id || null == shipping_id ){
+    alert('快递方式名称还未添加。。。');
+    return false;
+  }
+}
+if(''==start_time || null==start_time ){
+  alert('生效开始时间还未选择。。。');
+  return false;
+}
+if(!checkDateTime(start_time)){
+  alert('输入生效开始时间格式要正确。。。');
+  return false;
+}
+if(''==end_time || null==end_time ){
+  alert('生效结束时间还未选择。。。');
+  return false;
+}
+
+var facility_name = $("#facility_id").find("option:selected").text();
+document.getElementById('facility_name').value = facility_name;
+var shipping_name = $("#shipping_id").find("option:selected").text();
+document.getElementById('shipping_name').value = shipping_name; 
+  // s_time = s_time.replace(/[-,:,\s]/g, '');
+  // e_time =  e_time.replace(/[-,:,\s]/g, '');
+var now_time = new Date().format("yyyy-MM-dd hh:mm:ss"); 
+
+if(!page){
+      if( now_time > start_time){
+       alert("不能添加过期时间，生效开始时间必须大于【"+now_time+"】");
+       return false;
+      }else{
+           if(start_time >=  end_time ){
+             alert('结束时间必须大于开始时间');
+             return false;
+           }
+      }
+}else{
+      if (start_can_update!=='N'){ 
+        if( now_time > start_time){
+             alert("不能添加过期时间，生效开始时间必须大于【"+now_time+"】");
+             return false;
+        }else if(start_time >=  end_time ){
+               alert('结束时间必须大于开始时间');
+               return false;
+          }
+      }else{
+         if(now_time > end_time){
+            alert("不能添加过期时间，生效结束时间必须大于【"+now_time+"】");
+            return false;
+         }else if(start_time >= end_time){
+            alert('结束时间必须大于开始时间');
+            return false;
+        }
+    }
+}
+}
+
+    //清空输入的数据
+    function clear_input(){
+      document.getElementById('goods_name').value ='';
+      document.getElementById('facility_id').value ='';
+      document.getElementById('shipping_id').value ='';
+      document.getElementById('distributor_id').value ='';
+      document.getElementById('facility_name').value ='';
+      document.getElementById('shipping_name').value ='';
+      document.getElementById('hid_outer_id').value ='';
+      document.getElementById('hid_tc_code').value ='';
+      document.getElementById('start_time').value ='';
+      document.getElementById('end_time').value ='';
+      document.getElementById('hid_type').value ='';
+      document.getElementById("all-city").innerHTML='';
+      document.getElementById("all-province").innerHTML='';
+      document.getElementById("all-goods").innerHTML='';
+    }
+    //日期大小的判断
+    function comptime(){
+
+      var start_time = document.getElementById('start_time').value;
+      var end_time  = document.getElementById('end_time').value;
+      start_time = start_time.replace(/[-,:,\s]/g, '');
+      end_time =  end_time.replace(/[-,:,\s]/g, '');
+      if(start_time >=  end_time ){
+        return false;
+      }
+    }
+    
+    //时间格式检查
+    function checkDateTime(str){
+      var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})( )(\d{2})(:)(\d{2})(:)(\d{2})$/);
+      if(r == null){
+        return false;
+      }else{
+        return true;
+      }
+    }
+
+  /**
+   * 切换按钮的等待状态
+   */    
+   function waiting($button, status)
+   {
+    if (status == 'en') {
+      $button.attr('disabled', false);
+    } else {
+      $button.attr('disabled', true);
+    }
+  }
+
+  //删除确认
+  function delete_confirm(){
+    return confirm("确认删除么？");
+  }
+
+  // 判断是否选中商品、套餐，即是否传递outer_id或hid_tc_code到后台
+  function judge(){
+    var hid_type = $('#hid_type').val();
+    if (hid_type=='taocan') {
+      var hid_tc_code = $('#hid_tc_code').val();
+      if (hid_tc_code=='') {
+        alert('请选中下拉框中套餐（缺少hid_tc_code）');
+        return false;
+      };
+    }else if(hid_type=='item'){
+      var hid_outer_id = $('#hid_outer_id').val();
+      if (hid_outer_id=='') {
+        alert('请选中下拉框中商品（缺少outer_id）');
+        return false;
+      };
+    }else{
+      return false;
+    }
+  }
+    // {/literal}
+    // ]]>
+    --></script>
+    <!-- <link href="Level1_Arial.css" rel="stylesheet" type="text/css" /> -->
+  </head>
+  <body>
+   <!--{if $tip}-->
+   <script type="text/javascript">
+  // <![CDATA[
+  // {literal}
+  window.setTimeout(function(){
+    $('#tip').slideUp("slow");
+  }, 3000);
+
+  // {/literal}
+  // ]]>
+
+
+  </script>
+
+  <div id="tip" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+    {$tip}
+  </div>
+  <!--{/if}-->
+  <!-- ====================================商品转仓规则==================================== -->
+  {if !$goods_facility_mapping_page}
+
+  <div style="width:1400px;" >
+    <fieldset style="border: rgba(220,220,220,.8) 2px solid;">
+     <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;转仓规则管理&nbsp;</span></legend>
+     <div style="width:96%; margin:auto;">
+      <!--{if $message}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+        window.setTimeout(function(){$('#message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+        </script>
+        <div id="message" style="border:rgba(220,220,220,.8) 2px solid; padding:5px; text-align:center;">
+          {$message}
+        </div>
+        <!--{/if}-->
+        <br/>
+
+        <div class="tab-title">
+          <div><a class="selected" style="text-decoration:none;color:black;font-size:20px" href="goods_facility_mapping.php">商品转仓规则</a></div>
+          <div ><a  class="item" href="goods_facility_mapping.php?add_area=1">商品-区域转仓规则</a></div>
+        </div>
+
+        <div class="text">
+          <p><span style="color:blue">商品转仓规则说明：</span>用于设置一个订单中的商品一旦包含<span class="red-text">某个商品</span>，并且该商品设定了需要使用<span class="red-text">指定的仓库</span>、<span class="red-text">指定的快递</span>发货，同步淘 宝订单时就选用该仓库该快递。</p>
+        </div>
+
+        <fieldset style="border: rgba(2,23,2,.5) 1px dashed;">
+         <legend class="expand">&nbsp;{if !$goods_facility_mapping}添加商品转仓规则{elseif $view_only == 'N'}编辑商品转仓规则{elseif $view_only == 'Y'}查看商品转仓规则{/if}&nbsp;</legend>
+         <div style="display:block;" id="s1">
+           <form method="post" id="myform" enctype="multipart/form-data" onsubmit="return formsubmit()">
+             <table style="margin-left: 60px;width: 100%">
+              <tr>
+               <td style="width:100px;">商品名称:</td>
+               <td>&nbsp;<input type="text" style="width:270px;" id="goods_name" name="goods_name" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N' } disabled="true" {elseif $goods_facility_mapping.can_update == 'Y' && $view_only == 'N'} disabled="true" {/if} value="{$goods_facility_mapping.goods_name}" />
+                 <input type="hidden" name ='hid_tc_code' id="hid_tc_code"  value=""/>
+                 <input type="hidden" name="hid_type"     id="hid_type"     value=""/>
+                 <input type="hidden" name="hid_outer_id" id="hid_outer_id" value='{$goods_facility_mapping.outer_id}'/>
+               </td>
+             </tr>
+             <tr>
+               <td style="width:100px;">店铺名称:</td>
+               <td>&nbsp;<select id="distributor_id" name="distributor_id" style="width:275px;" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                 {if $goods_facility_mapping.distributor_id }
+                 <option value="{$goods_facility_mapping.distributor_id}">{$goods_facility_mapping.distributor_name}
+                 </option>  
+                 {/if}
+                 <option value="">所有店铺</option> 
+                 {html_options  options=$available_distributor selected =  $smarty.request.available_distributor}</select>
+               </td>
+             </tr>
+             <tr>
+               <td style="width:100px;">仓库名称:</td>
+               <td>&nbsp;<select id="facility_id" name="facility_id" style="width:275px;" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                <option value="{$goods_facility_mapping.facility_id}">{ if $goods_facility_mapping.facility_name}{$goods_facility_mapping.facility_name}{else}请选择仓库{/if}</option> 
+                {html_options  options=$available_facility selected =  $smarty.request.available_facility }</select>
+                <input type="hidden" name="facility_name" id="facility_name" />
+              </td>
+            </tr>
+            <tr>
+             <td style="width:100px;">快递方式名称:</td>
+             <td>&nbsp;<select id="shipping_id" name="shipping_id" style="width:275px;" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+              <option value="{$goods_facility_mapping.shipping_id}">{ if $goods_facility_mapping.shipping_name}{$goods_facility_mapping.shipping_name}{else}请选择快递{/if}</option> 
+
+              {html_options  options=$available_shipping selected =  $smarty.request.available_shipping }</select>
+              <input type="hidden" name="shipping_name" id="shipping_name" />
+            </td>
+          </tr>
+          <tr>
+           <td style="width:100px;">生效时间：</td>
+           <td style="padding:5px;">
+            <input type="text" value="{$goods_facility_mapping.start_time}" id="start_time" name="start_time" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}></input>&nbsp;到&nbsp;
+            <input type="text" value="{$goods_facility_mapping.end_time}"   id="end_time"   name="end_time"   {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} ></input>
+          </td>
+        </tr>
+      </table>
+      <input type="hidden" name="can_update" id="can_update" value="{$goods_facility_mapping.can_update}"/>
+      <input type="hidden" name="hid_mapping_id" id="hid_mapping_id" value="{$goods_facility_mapping.mapping_id}"/>
+      <input type="hidden" name="act" id="act" value="insert"/>
+      <input type="hidden" name="algorithm" id="algorithm" value="ONCE_CONTAIN"/>
+      <table style="margin-left: 200px;">
+        <tr>
+          <td>
+           {if !$goods_facility_mapping}
+           <input class="big-button btn" type="submit" value=" 添加商品转仓规则" onclick="return judge()"/>&nbsp;&nbsp;&nbsp; 
+           <input class="small-button" type="button" value="清空"  onclick=" clear_input()"/>
+           {elseif $view_only == 'N'}
+           <input class="big-button" type="submit" value="编辑商品转仓规则"  />&nbsp;&nbsp;&nbsp;
+           <a href="goods_facility_mapping.php" ><input class="small-button" type="button" value="返回" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
+           {elseif $view_only == 'Y' }
+           <a href="goods_facility_mapping.php" ><input class="small-button" type="button" value="返回" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
+           {/if}
+         </td>
+       </tr>
+     </table>
+     <br/>
+   </form>
+ </div>
+</fieldset>
+
+<!-- 商品转仓规则一览表 -->   
+<fieldset style="border: rgba(2,23,2,.5) 1px dashed;">
+ <legend class="expand">&nbsp;商品转仓规则列表&nbsp;</legend>
+ <table style="width: 100%" id="dataTab">
+  <tr>
+   <td style="width: 9%;"><strong>开始时间</strong></td>
+   <td style="width: 9%;"><strong>结束时间</strong></td>
+   <td style="width: 9%;"><strong>商品名称</strong></td>
+   <td style="width: 9%;"><strong>店铺名称</strong></td>
+   <td style="width: 9%;"><strong>仓库名称</strong></td>
+   <td style="width: 9%;"><strong>快递名称</strong></td>
+   <td style="width: 9%"><strong>操作人</strong></td>
+   <td style="width: 9%"><strong>操作时间</strong></td>
+   <td style="width: 11%"><strong>操作</strong></td>
+ </tr> 
+ {foreach from=$goods_facility_mapping_list  item= mapping_list}
+ <tr class="{cycle values='odd,even'}">
+   <td>{$mapping_list.start_time}</td>
+   <td>{$mapping_list.end_time}</td>
+   <td>{$mapping_list.goods_name}</td>
+   <td>{$mapping_list.distributor_name}</td>
+   <td>{$mapping_list.facility_name}</td>
+   <td>{$mapping_list.shipping_name}</td>
+   <td>{$mapping_list.last_updated_by}</td>
+   <td>{$mapping_list.last_updated_stamp}</td>
+   <td>
+     <a href="?act=update&mapping_id={$mapping_list.mapping_id}&view_only=Y" >查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+     <a href="?act=update&mapping_id={$mapping_list.mapping_id}&view_only=N" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+     <a href="?act=delete&mapping_id={$mapping_list.mapping_id}" onclick="return delete_confirm()">删除</a>
+   </td>
+ </tr>
+ {/foreach}       
+</table>
+</fieldset> <br/>
+<!-- 商品转仓规则搜索 -->
+  <fieldset style="border: rgba(2,23,2,.5) 1px dashed;">
+      <legend class="expand">&nbsp;商品转仓规则搜索&nbsp;</legend>
+      <form action="goods_facility_mapping.php" method="post" style="margin-top:10px;margin-bottom:20px;">
+          <table style="width: 100%">
+              <tr>
+                  <td style="width:20%">
+                      <span>店铺名称：</span>
+                      <select name="search_shop">
+                        <option value="">所有店铺</option> 
+                        {html_options  options=$available_distributor selected =  $search_distributor_id}
+                      </select>
+                  </td>
+                  <td style="width:20%">
+                      <span>商品名称：</span>
+                      <input type="text" id="search_goods_name" name="search_goods_name" value="" />
+                      <input type="hidden" name ='search_tc_code' id="search_tc_code"  value="" />
+                      <input type="hidden" name="search_type"     id="search_type"     value="" />
+                      <input type="hidden" name="search_outer_id" id="search_outer_id" value="" />
+                  </td>
+                  <td style="width:30%">
+                      <span>仓库名称：</span>
+                      <select name="search_facility">
+                        <option value="">所有仓库</option> 
+                        {html_options  options=$available_facility selected =  $search_facility_id}
+                      </select>
+                  </td>
+                  <td style="width:30%">
+                      <input type="submit" value="搜索" />
+                      <input type="hidden" name="act" value="goods_facility_search" />
+                  </td>
+              </tr>
+          </table>
+      </form>
+      <table style="width: 100%" class="dataTab">
+      <tr>
+           <td style="width: 9%;"><strong>开始时间</strong></td>
+           <td style="width: 9%;"><strong>结束时间</strong></td>
+           <td style="width: 9%;"><strong>商品名称</strong></td>
+           <td style="width: 9%;"><strong>店铺名称</strong></td>
+           <td style="width: 9%;"><strong>仓库名称</strong></td>
+           <td style="width: 9%;"><strong>快递名称</strong></td>
+           <td style="width: 9%"><strong>操作人</strong></td>
+           <td style="width: 9%"><strong>操作时间</strong></td>
+           <td style="width: 11%"><strong>操作</strong></td>
+      </tr> 
+ {foreach from=$search_goods_facility_list  item= search_list}
+ <tr class="{cycle values='odd,even'}">
+   <td>{$search_list.start_time}</td>
+   <td>{$search_list.end_time}</td>
+   <td>{$search_list.goods_name}</td>
+   <td>{$search_list.distributor_name}</td>
+   <td>{$search_list.facility_name}</td>
+   <td>{$search_list.shipping_name}</td>
+   <td>{$search_list.last_updated_by}</td>
+   <td>{$search_list.last_updated_stamp}</td>
+   <td>
+     <a href="?act=update&mapping_id={$search_list.mapping_id}&view_only=Y" >查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+     <a href="?act=update&mapping_id={$search_list.mapping_id}&view_only=N" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+     <a href="?act=delete&mapping_id={$search_list.mapping_id}" onclick="return delete_confirm()">删除</a>
+   </td>
+ </tr>
+ {/foreach}       
+      </table>
+  </fieldset> <br/>
+</div>
+</fieldset>
+</div>
+{/if}
+<!-- ======================================商品+区域转仓规则====================================== -->
+{if $goods_facility_mapping_page}
+<div style="width:1400px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;转仓规则管理&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+    <!--{if $message}-->
+    <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+        window.setTimeout(function(){$('#message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+        </script>
+        <div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+          {$message}
+        </div>
+        <!--{/if}-->
+        <br/>
+        <div class="tab-title">
+          <div><a class="item" style="text-decoration:none;color:black;font-size:20px" href="goods_facility_mapping.php">商品转仓规则</a></div>
+          <div ><a  class="selected" href="goods_facility_mapping.php?add_area=1" >商品-区域转仓规则</a></div>
+        </div>
+        <div class="text">
+          <p><span style="color:blue">商品 - 区域转仓规则说明：</span>用于设置当一个订单中包含的所有商品都存在于<span class="red-text">某一个仓库</span>的设定的<span class="red-text">商品列表</span>中，并且订单收货地址包含于该仓库设定的<span class="red-text">区域列表</span>，就选用该仓库发货</p>
+        </div>
+        <fieldset style="border: #FF7FFF 1px dashed;">
+          <legend class="expand">&nbsp;{if !$goods_facility_mapping}添加商品转仓规则{elseif $view_only == 'N'}编辑商品转仓规则{elseif $view_only == 'Y'}查看商品转仓规则{/if}&nbsp;</legend>
+          <div style="display:block;" id="s1">
+            <form method="post" id="myform" enctype="multipart/form-data" onsubmit="return formsubmit()">
+              <table style="margin-left: 60px;width: 90%" id="table-2">
+                <tr>
+                 <td style="width:120px;" ><span class="nes" style="color:red">*</span>商品名称:</td>
+                 <td>&nbsp;
+                  <input type="text" style="width:270px;" id="goods_name" name="goods_name" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} value="{$goods_facility_mapping.goods_name}" goodsId="" outerIds=""/>
+                  <input type="hidden" name ='hid_tc_code' id="hid_tc_code"  value=""/>
+                  <input type="hidden" name="hid_type"     id="hid_type"     value=""/>
+                  <input type="hidden" name="hid_outer_id" id="hid_outer_id" value='{$goods_facility_mapping.outer_id}'/>
+                  <p id="add" class="buttom" onclick="add_goods()">添加</p>
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td class="somegoods">
+                    <ul class="list" id="all-goods"> 
+                     {foreach from=$goods_facility_mapping.goods_list  item= goods}
+                     <li><p>{$goods.goods_name}{if $goods_facility_mapping.can_update == 'Y'&& $view_only == 'N'}
+                        <span class="del" onclick="delete_goods(this)">×</span> {/if}</p>
+                      <input type="hidden" name="outer_ids[]" value="{$goods.outer_id}"/>
+                      <input type="hidden" name="goods_names[]" value="{$goods.goods_name}"/>
+                    </li>
+                    {/foreach}
+                    </ul>
+                </td>
+              </tr>
+            <tr>
+             <td style="width:120px;"><span class="nes">*</span>店铺名称:</td>
+             <td>&nbsp;<select id="distributor_id" name="distributor_id" style="width:275px;marggin-left: 10px;" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+               {if $goods_facility_mapping.distributor_id }
+               <option value="{$goods_facility_mapping.distributor_id}">{$goods_facility_mapping.distributor_name}</option> 
+               {/if}
+               <option value="">所有店铺</option> 
+               {html_options  options=$available_distributor selected =  $smarty.request.available_distributor}</select>
+             </td>
+           </tr>
+             <tr>
+               <td style="width:120px;"><span class="nes">*</span>区域名称:</td>
+               <td>
+                <select class="pro" name="order[province]" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                  <option value="">-请选择-</option>
+                  <!--{foreach from=$province_list item=item}-->
+                  <option value="{$item.region_id}" id="{$item.region_name}">{$item.region_name}</option> <!--{/foreach}-->
+                </select>省 &nbsp;&nbsp;
+                <select name="order[city]" style="display:none" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                 <option value="{$item.region_id}" id="{$item.region_name}" >{$item.region_name}</option>
+                 <!-- <option id="{$item.region_name}">-所有城市-</option> -->
+               </select> &nbsp;&nbsp;
+               <p id="addCity" class="buttom"  onclick="add_city()">添加</p>
+               <!-- <select name="order[district]" style="display:none"><option>-请选择-</option></select> -->
+             </td>
+           </tr>
+           <tr>
+            <td style="width:120px;"><span class="unnes">*</span>省份:</td>
+            <td class="addProvince">
+              <ul class="list" id="all-province"> 
+                {foreach from=$goods_facility_mapping.region_list  item= region}
+                {if $region.region_type== '1'}
+                <li><p>{$region.region_name}{if $goods_facility_mapping.can_update == 'Y'&& $view_only=='N'}
+                  <span class="del" onclick="delete_region(this)" >×</span> {/if}</p>
+                  <input type="hidden" name="region_ids[]" value="{$region.region_id}"/>
+                  <input type="hidden" name="region_names[]" value="{$region.region_name}"/>
+                  <input type="hidden" name="region_types[]" value="{$region.region_type}"/>
+                </li>
+                {/if}
+                {/foreach}  
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td style="width:120px;"><span class="unnes">*</span>城市:</td>
+            <td class="addCity">
+              <ul class="list" id="all-city">
+                <!-- {debug} -->
+                
+                {foreach from=$goods_facility_mapping.region_list  item= region}
+                {if $region.region_type== '2'}
+                <li><p>{$region.region_name}{if $goods_facility_mapping.can_update == 'Y'&& $view_only=='N'}<span class="del" onclick="delete_region(this)">×</span>{/if}</p>
+                  <input type="hidden" name="region_ids[]" value="{$region.region_id}" provid="{$region.parent_id}"/>
+                  <input type="hidden" name="region_names[]" value="{$region.region_name}"/>
+                  <input type="hidden" name="region_types[]" value="{$region.region_type}"/>
+                </li>
+                {/if}
+                {/foreach}
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td style="width:120px;"><span class="nes">*</span>仓库名称:</td>
+            <td>&nbsp;<select id="facility_id" name="facility_id" style="width:275px;" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+            <option value="{$goods_facility_mapping.facility_id}">{ if $goods_facility_mapping.facility_name}{$goods_facility_mapping.facility_name}{else}请选择仓库{/if}</option> 
+            {html_options  options=$available_facility selected =  $smarty.request.available_facility }</select>
+            <input type="hidden" name="facility_name" id="facility_name" />
+          </td>
+        </tr>
+              <tr>
+                <td style="width:120px;"><span class="unnes">*</span>快递方式名称:</td>
+                <td>&nbsp;<select id="shipping_id" name="shipping_id" style="width:275px;" {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                { if  $goods_facility_mapping.shipping_id == null || $goods_facility_mapping.shipping_id == 0}
+                <option selected ="selected" value='' >请选择快递</option> 
+                {else}
+                <option value='' >请选择快递</option>
+                <option selected ="selected" value="{$goods_facility_mapping.shipping_id}">{$goods_facility_mapping.shipping_name}</option> 
+                { /if} 
+                {html_options  options=$available_shipping selected =  $smarty.request.available_shipping }</select>
+                <input type="hidden" name="shipping_name" id="shipping_name" />
+              </td>
+            </tr>
+            <tr>
+              <td style="width:120px;"><span class="nes">*</span>生效时间：</td>
+              <td style="padding:5px;">
+              <input type="hidden" value="{$goods_facility_mapping.start_time}" name="start_time">
+              <input type="text" value="{$goods_facility_mapping.start_time}" id="start_time" name="start_time" {if ($goods_facility_mapping.can_update == 'N' && $view_only == 'N')||$goods_facility_mapping.start_can_update=='N'}disabled="true"{/if} ></input>&nbsp;到&nbsp;
+              <input type="text" value="{$goods_facility_mapping.end_time}"   id="end_time"   name="end_time"   {if $goods_facility_mapping.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} ></input>
+            </td>
+          </tr>
+        </table>
+            <input type="hidden" name="can_update" id="can_update" value="{$goods_facility_mapping.can_update}"/>
+            <input type="hidden" name="hid_mapping_id" id="hid_mapping_id" value="{$goods_facility_mapping.mapping_id}"/>
+            <input type="hidden" name="act" id="act" value="insert"/>
+            <input type="hidden" name="algorithm" id="algorithm" value="ALL_CONTAIN"/>
+            <table style="margin-left: 200px;"><tr><td>
+             {if !$goods_facility_mapping}
+             <input class="big-button" type="submit" value=" 添加商品-区域转仓规则 "/>&nbsp;&nbsp;&nbsp; 
+             <input class="small-button" type="button" value="清空"  onclick=" clear_input()"/>
+             {elseif $view_only == 'N'}
+             <input class="big-button" type="submit" value="编辑商品-区域转仓规则"  />&nbsp;&nbsp;&nbsp;
+             <a href="goods_facility_mapping.php?add_area=1" ><input class="small-button"  type="button" value="返回" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
+             {elseif $view_only == 'Y' }
+             <a href="goods_facility_mapping.php?add_area=1" ><input class="small-button"  type="button" value="返回" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
+             {/if}
+           </td></tr>
+         </table>
+           <br/>
+         </form>
+       </div>
+      </fieldset>
+                       <!-- 商品转仓规则一览表 -->   
+                       <fieldset style="border: #FF7FFF 1px dashed;">
+                         <legend class="expand">&nbsp;商品-区域转仓规则列表&nbsp;</legend>
+                         <table style="width: 100%" id="dataTab">
+                          <tr>
+                           <td style="width: 9%;"><strong>开始时间</strong></td>
+                           <td style="width: 9%;"><strong>结束时间</strong></td>
+                           <td style="width: 9%;"><strong>商品名称</strong></td>
+                           <td style="width: 9%;"><strong>店铺名称</strong></td>
+                           <td style="width: 9%;"><strong>区域名称</strong></td>
+                           <td style="width: 9%;"><strong>仓库名称</strong></td>
+                           <td style="width: 9%;"><strong>快递名称</strong></td>
+                           <td style="width: 9%"><strong>操作人</strong></td>
+                           <td style="width: 9%"><strong>操作时间</strong></td>
+                           <td style="width: 11%"><strong>操作</strong></td>
+                         </tr> 
+                         {foreach from=$goods_region_facility_mapping_list  item= mapping_list}
+                         <tr class="{cycle values='odd,even'}">
+                          <td class="rule_start_time">{$mapping_list.start_time}</td>
+                          <td>{$mapping_list.end_time}</td>
+                          <td>
+                            {foreach from=$mapping_list.goods_list  item= goods}
+                            {$goods.goods_name}</br>
+                            {/foreach}
+                          </td>  
+                          <td >{$mapping_list.distributor_name}</td>
+                          <td>
+                            <span style="font-weight:bold">省：</span>  <br/>
+                            {foreach from=$mapping_list.region_list  item= region}
+                            {if $region.region_type == 1  }
+                            {$region.region_name}<br/>
+                            {/if}
+                            {/foreach}
+                            <span style="font-weight:bold">市：</span>  <br/>
+                            {foreach from=$mapping_list.region_list  item= region}
+                            {if $region.region_type == 2  }
+                            {$region.region_name}<br/>
+                            {/if}
+                            {/foreach}
+
+                          </td>    
+                          <td>{$mapping_list.facility_name}</td>
+                          {if $mapping_list.shipping_name}
+                          <td>{$mapping_list.shipping_name}</td>
+                          {else}
+                          <td> </td>
+                          {/if}
+                          <td>{$mapping_list.last_updated_by}</td>
+                          <td>{$mapping_list.last_updated_stamp}</td>
+                          <td>
+                           <a href="?add_area=1&act=update&mapping_id={$mapping_list.mapping_id}&view_only=Y&algorithm=ALL_CONTAIN">查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                           <a href="?add_area=1&act=update&mapping_id={$mapping_list.mapping_id}&view_only=N&algorithm=ALL_CONTAIN">编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                           <a href="?add_area=1&act=delete&mapping_id={$mapping_list.mapping_id}&algorithm=ALL_CONTAIN" onclick="return delete_confirm()">删除</a>
+                         </td>
+                       </tr>
+                       {/foreach}       
+                     </table>
+                   </fieldset> <br/>
+                 </div>
+               </fieldset>
+             </div>
+             {/if}
+           </body>
+           </html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>销售发票汇总结果</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<script type="text/javascript">
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+{/literal}
+</script>
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="        搜索        ">
+<input type="submit" value="导出CSV" name="csv">
+<input type="hidden" name="act" value="search">
+</form>
+<br>
+
+<table class="bWindow">
+<caption><h2>实际开票状况(含税)</h2></caption>
+<tr>
+<th></th>
+<th>普通发票</th>
+<th>专业发票</th>
+<th>手工发票</th>
+<th>汇总</th>
+</tr>
+<tr align="center">
+<td>正数发票金额</td>
+<td>{$invoice.positive_total.NORM}</td>
+<td>{$invoice.positive_total.SPEC}</td>
+<td>{$invoice.positive_total.HAND}</td>
+<td>{$invoice.positive_total.TOTAL}</td>
+</tr>
+<tr align="center">
+<td>正废发票金额</td>
+<td>{$invoice.positive_canceled.NORM}</td>
+<td>{$invoice.positive_canceled.SPEC}</td>
+<td>{$invoice.positive_canceled.HAND}</td>
+<td>{$invoice.positive_canceled.TOTAL}</td>
+</tr>
+<tr align="center">
+<td>负数发票金额</td>
+<td>{$invoice.negative_total.NORM}</td>
+<td>{$invoice.negative_total.SPEC}</td>
+<td>{$invoice.negative_total.HAND}</td>
+<td>{$invoice.negative_total.TOTAL}</td>
+</tr>
+<tr align="center">
+<td>负废发票金额</td>
+<td>{$invoice.negative_canceled.NORM}</td>
+<td>{$invoice.negative_canceled.SPEC}</td>
+<td>{$invoice.negative_canceled.HAND}</td>
+<td>{$invoice.negative_canceled.TOTAL}</td>
+</tr>
+<th>总计</th>
+<th>{$invoice.positive_total.NORM-$invoice.positive_canceled.NORM+$invoice.negative_total.NORM-$invoice.negative_canceled.NORM}</th>
+<th>{$invoice.positive_total.SPEC-$invoice.positive_canceled.SPEC+$invoice.negative_total.SPEC-$invoice.negative_canceled.SPEC}</th>
+<th>{$invoice.positive_total.HAND-$invoice.positive_canceled.HAND+$invoice.negative_total.HAND-$invoice.negative_canceled.HAND}</th>
+<th>{$invoice.TOTAL}</th>
+</table>
+</body>
+
+<table class="bWindow">
+<caption><h2>应该开票金额</h2></caption>
+<tr align="center">
+	<td>B2C销售商品金额</td>
+	<td>{$goods_price}</td>
+</tr>
+<tr align="center">
+	<td>B2C运费</td>
+	<td>{$shipping_fee}</td>
+</tr>
+<tr align="center">
+	<td>B2C红包</td>
+	<td>{$bonus}</td>
+</tr>
+<tr align="center">
+	<td>销售退回金额</td>
+	<td>-{$t_goods_amount}</td>
+</tr>
+<tr align="center">
+	<th>汇总</th>
+	<th>{$goods_price+$shipping_fee+$bonus-$t_goods_amount}</th>
+</tr>
+</table>
+<h2>差额(应该开-实际开): {$goods_price+$shipping_fee+$bonus-$t_goods_amount-$invoice.TOTAL}</h2>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

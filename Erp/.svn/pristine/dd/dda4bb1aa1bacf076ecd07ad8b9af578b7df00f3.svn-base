@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+{literal}
+<style>
+*,dl{font-size:13px;}
+dd{margin-left:10px;font-weight:bold;}
+table{background:#ccc;}
+td{background:#fff; padding:3px;}
+</style>
+{/literal}
+<title>留言统计数据</title>
+</head>
+
+<body>
+<form>
+仓库：
+<select name="facility_id" onchange="javascript:location.href='analyze_shipping.php?facility_id=' + this.options[this.selectedIndex].value">
+<option value="">所有</option>
+{html_options options=$facility_list selected=$smarty.request.facility_id }
+</select>  <br/><br/>
+统计开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+统计结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<select name="repliedby">{html_options options=$repliedby_users selected=$smarty.request.repliedby}</select>
+<!--<input type="radio" name="isoutwork" value="0" /> 工作时间
+<input type="radio" name="isoutwork" value="1" /> 非工作时间-->
+<input type="submit" name="查看" />
+</form>
+<h3>从{$start}到{$end} 的统计数据</h3>
+
+<dl><dt>发货数据自动统计</dt>
+<dd>配货 {$count_dp}</dd>
+<dd>出库 {$count_dc}</dd>
+<dd>发货 {$count_shipping}</dd>
+</dl>
+
+<dl>
+<dt>发货快运数据统计</dt>
+{foreach from=$carrier_count item=count key=carrier_name}
+<dd>{$carrier_name}：{$count}</dd>
+{/foreach}
+</dl>
+
+<dl>
+<dt>发货商品数据统计</dt>
+{foreach from=$goods_name_count item=count key=goods_name}
+<dd>{$goods_name}：{$count}</dd>
+{/foreach}
+</dl>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "startCalendar",
+  button            : "startTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+  weekNumbers       : false,
+  electric          : false,
+  inputField        : "endCalendar",
+  button            : "endTrigger",
+  ifFormat          : "%Y-%m-%d",
+  daFormat          : "%Y-%m-%d"
+});
+//]]>
+</script>
+{/literal}
+</body>
+</html>

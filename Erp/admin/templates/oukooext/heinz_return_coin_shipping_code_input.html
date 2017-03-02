@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>亨氏退换货订单  — 物流码填写</title>
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <style type="text/css">
+  {literal}
+  #order_package_list td,#order_package_list th{
+  	text-align: center;
+  }
+  .delete_group_btn{
+  	cursor: pointer;
+  	color:#d63b3f;
+  }
+  {/literal}
+  </style>
+	<script type="text/javascript">
+	// <![CDATA[
+							
+	var WEB_ROOT = '{$WEB_ROOT}';
+
+	// {literal}
+
+			
+	// 载入执行
+	$(document).ready(function(){
+		
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+			
+			// 绑定添加商品按钮事件
+			$('#order_goods_add_btn').bind('click', order_goods_add);
+			$('#order_sn_btn').bind('click', load);	
+
+	});
+
+	
+	/**
+	 * 添加退款商品明细
+	 */
+	function order_goods_add(event)
+	{
+
+		// 添加按钮
+		var $button = $('#order_goods_add_btn');
+		waiting($button);
+		
+		
+		// 判断是否输入了shipping_code
+		var shipping_code = $.trim($('#shipping_code').val());
+		if (shipping_code.length!=12) {
+			alert('请输入正确的物流码：若没有物流码，请填写12位数，且物流码确保不等');
+			waiting($button, 'en');
+			return;
+		} 
+
+		// 判断是否输入了product_id
+		var product_id = $.trim($('#product_id').val());
+		if (product_id == '') {
+			alert('请输入正确的商品条码');
+			waiting($button, 'en');
+			return;
+		}
+		var order_id = $.trim($('#orderId').val());
+		// 添加商品到列表
+		var tpl = "<tr id=\"aaa\" align=\"center\" ix=\"" + shipping_code +"\">" +
+							"  <td><input name=\"order_goods[" + shipping_code + "][product_id]\" type=\"text\" value=\"" + product_id + "\" /></td>" +
+   						    "  <td><input name=\"order_goods[" + shipping_code + "][shipping_code]\" type=\"text\" value=\"" + shipping_code + "\" /></td>" +
+  						 	"  <td> " +
+							"    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this)\">删除</a>" +
+							"    <input name=\"order_goods[" + shipping_code + "][order_id]\" type=\"hidden\" value=\"" + order_id + "\" />" +
+							"    <input name=\"order_goods[" + shipping_code + "][product_id]\" type=\"hidden\" value=\"" + product_id + "\" />" +
+							"  </td>" +
+							"</tr>";				
+												
+			$('#order_goods_list').append(tpl); 
+			
+			shipping_code = $('#shipping_code').val('');
+			product_id = $('#product_id').val('');
+			
+			waiting($button, 'en');		
+	}
+
+
+	/**
+	 * 删除商品
+	 *
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function order_goods_remove(doc, type) 
+	{
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		$tr.remove();
+								
+		// 从已添加堆栈中删除该商品
+		for (var i = 0; i < order_goods_array.length; i++ ) {
+			if (order_goods_array[i].goods_style_id == id) {
+				order_goods_array.splice( i, 1);
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	
+	/**
+	 * 申请提交
+	 */
+	function apply_submit()
+	{
+		$button = $(this);
+		waiting($button);
+		
+		do {						
+			
+			$('#form').submit();
+			waiting($button, 'en');
+
+			
+		} while (false);
+		
+		waiting($button, 'en');
+		return;	
+	}
+
+
+
+	/**
+	 * 载入原订单商品和信息
+	 */
+	function load() 
+	{
+			var order_sn = $.trim($('#order_sn').val());
+			if (order_sn == '') {
+				alert('请先输入原订单号');
+			}else{
+				location.href = "heinz_return_coin_shipping_code_input.php?order_sn="+order_sn+"&act=search";
+			}
+	}	
+	
+
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+ 
+<div style="margin:20px auto; width:100%;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;亨氏退换货订单&nbsp;</span></legend>
+<form method="post" id="form" style="width:96%; margin:auto;">
+
+	
+	<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;{if !$message}display:none;{/if}">
+	{$message}
+	</div>
+	
+  	<div>
+  	<table class="inner">
+  		 <tr>
+          <td width="120">退货订单号</td>
+          <td>
+          	<input type="text" id="order_sn" value="{$order_before.order_sn}" name="show_info[order_sn]" size="24" /> &nbsp;&nbsp;&nbsp;&nbsp;
+          	<input type="button" id="order_sn_btn" value="加载" />
+          </td>
+          <td style="color:red">注意事项：1、页面功能--亨氏退亨币订单物流码填写； 2、原订单信息中，红色标注的物流码为不可用； 3、点击退货订单号，即可填写物流码。
+          </td>
+        </tr>
+  	</table>
+  	</div>
+<br />
+	  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;30天内未处理的订单（点击处理）&nbsp;</legend>
+  		<div>
+      <table class="inner">
+      
+      <tr class="expand" style="color:gray">
+      {if $order_sn_list}
+        {foreach from=$order_sn_list item=list}
+        	<td align="center"><a href="./heinz_return_coin_shipping_code_input.php?act=search&order_sn={$list.order_sn}" >{$list.order_sn}</a>   </td>   	 
+      	 {/foreach}
+       {/if}
+         </tr>
+        
+      </table>
+  		</div>    
+  		<br />
+  </fieldset>
+
+
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;原订单信息&nbsp;</legend>
+  		<div>
+      <table class="inner">
+        <tr>
+        	  <td align="center">原订单号</td>
+			  <td align="center">商品名</td>
+			   <td align="center">商品数量</td>
+			  <td align="center">商家编码</td>
+			  <td align="center">商品条码</td>
+			  <td align="center">原订单物流码</td>
+			  <td align="center">订单时间</td>
+        </tr>
+        {if $goods_list}
+			{foreach from=$goods_list item=goods}
+			<tr class="expand" style="color:gray">	 
+			  <th>{$goods.order_sn}</th>
+			  <th>{$goods.goods_name}</th>
+			  <th>1</th>
+			  <th>{$goods.goods_id}</th>
+			  <th>{$goods.product_id}</th>
+			  {if $goods.number >= 2}<th style="color:red">{$goods.shipping_code}</th>
+			  {else}<th>{$goods.shipping_code}</th>{/if}
+			  <th>{$goods.order_time}</th>
+			</tr>
+			{/foreach}
+			{/if}
+      </table>
+  		</div>    
+  		<br />
+  </fieldset>
+  
+  <br /><br />
+   <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;退货订单信息&nbsp;</legend>
+  		<div>
+      <table class="inner">
+        <tr>
+        	  <td align="center">退货订单号</td>
+			  <td align="center">商品名</td>
+			  <td align="center">商品数量</td>
+			  <td align="center">商家编码</td>
+			  <td align="center">商品条码</td>
+			  <td align="center">退货时间</td>
+        </tr>
+        {if $goods_list}
+			{foreach from=$return_goods_list item=return_goods}
+			<tr class="expand" style="color:gray">	 
+			  <th>{$return_goods.order_sn}</th>
+			  <th>{$return_goods.goods_name}</th>
+			  <th>{$return_goods.goods_number}</th>
+			  <th>{$return_goods.goods_id}</th>
+			  <th>{$return_goods.product_id}</th>
+			  <th>{$return_goods.order_time}</th>
+			</tr>
+			{/foreach}
+			{/if}
+      </table>
+  		</div>    
+  </fieldset>
+  
+
+	<br />
+	<br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+      <legend class="expand">&nbsp;添加商品&nbsp;</legend>
+  	  <div>      
+        <br />
+	      <div class="inner" style="text-align:center; padding-right:20px; border-bottom:#FF7FFF 1px dashed;">
+	      商品条码： <input id="product_id" type="text" size="10" value="" />  
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(没有物流码，请填写12位数，且物流码确保不等) &nbsp;&nbsp;
+	     物流码 ： <input id="shipping_code" type="text" size="20" value="" />  
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	        <input type="hidden" name="orderId" id='orderId' value="{if $orderID}{$orderID}{/if}" />
+	      <input id="order_goods_add_btn" type="button" value="添加" />
+	      </div>
+      
+	      <table id="order_goods_list" class="inner">
+	      
+	        <tr align="center" bgcolor="#E2F9FA">
+	          <th>商品编码</th>
+	          <th>物流码</th>
+	          <th width="200px">操作</th>
+	        </tr>
+
+	      </table>
+	   </div>       
+         
+	<br /><br />
+	<div style="text-align:center"><input type="button" value="创建" onclick="apply_submit(this);" /></div>
+  <br />
+   
+  <input type="hidden" name="act" value="insert_shipping_code" />
+  <input type="hidden" name="party_id" id="party_id" value="{$smarty.session.party_id}" />
+</form>
+</fieldset>
+</div>
+
+</body>
+</html>

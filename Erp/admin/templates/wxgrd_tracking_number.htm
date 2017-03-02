@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>万象物流隔日达运单导入ERP</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: left;
+	}
+	.margin {
+	line-height:18px;
+	width: 100%;
+}
+	<!--{/literal}-->
+</style>
+</head>
+<body>
+<div style="margin: 20px auto; width: 960px;" align="left">
+<fieldset style="border: #D43FAA 2px solid;"><legend><span
+	style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;万象物流隔日达运单导入ERP&nbsp;</span></legend>
+<div style="width: 96%; margin: auto;">
+<fieldset style="border: #FF7FFF 1px dashed;margin-top:15px"><legend
+	class="expand">&nbsp;使用说明&nbsp;</legend>
+ <table class="margin"> 
+     <tr>
+     <td>1.需要在导入的EXCEL文件里准备<strong>淘宝订单号、运单号</strong>。</td>
+     </tr>
+      <tr>
+     <td>2.EXCEL文件sheet命名为"<strong>万象物流运单号导入</strong>"。</td>
+     </tr>
+ </table>
+</fieldset>
+
+
+<fieldset style="border: #FF7FFF 1px dashed;margin-top:15px"><legend
+	class="expand">&nbsp;万象物流隔日达运单导入ERP&nbsp;</legend>
+    <form action="wxgrd_tracking_number.php?act=action_out" id="upload" enctype="multipart/form-data" method="POST">
+     <table class="inner">
+        <tr>
+          <td>导入EXCEL文件
+		  <td><input type="file" size="30" name="excel">
+		  <input type="submit" value="执行"></td>
+        </tr>
+     </table>
+</form>
+<fieldset style="border: #FF7FFF 1px dashed;margin-top:15px"><legend
+	class="expand">&nbsp;出现异常的订单展示&nbsp;</legend>
+	{if $flag == true}
+	 <DIV style = "color:red;">同步成功！</DIV>
+	{else}
+	 <DIV>{$final_out}</DIV>
+	 <DIV>
+	 <!--{foreach from=$error_out item=error}-->
+	  {$error}<br/>
+	 <!-- {/foreach} -->
+	 </DIV>
+	{/if}
+	
+</fieldset>
+</fieldset>
+
+</body>
+</html>

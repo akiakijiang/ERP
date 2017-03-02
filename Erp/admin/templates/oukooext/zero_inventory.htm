@@ -1,0 +1,5 @@
+业务组织,产品重要性,商家编码,商品条码,商品名称,仓库,可用库存量,类目,是否上架
+{foreach from=$zero_inventory_list item=inventory_list}
+{$inventory_list.name},{$inventory_list.product_importance},{$inventory_list.outer_id},{$inventory_list.barcode},{$inventory_list.goods_name},{$inventory_list.facility_name},{$inventory_list.available_inventory},{$inventory_list.cat_name},{$inventory_list.is_on_sale}
+{/foreach}
+  

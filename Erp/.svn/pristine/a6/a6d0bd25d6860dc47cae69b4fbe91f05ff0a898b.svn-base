@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head> 
+<body>
+    {if $taobao_attr}
+    <div style="text-align:center;">
+    {$bp} 
+    <p style="width:740px;margin:10px auto;font-weight:bold;font-size:16px;color:#c00;text-align:left;line-height:150%;">
+    <div style="margin: 10px auto; width: 740px; font-size: 16px; text-align: left; line-height: 150%;"> {$taobao_attr}</div>
+    </p>
+    </div>
+    {elseif $seller_note}
+    <div style="text-align:center;">
+    {$bp} 
+    <p style="width:740px;margin:10px auto;font-weight:bold;font-size:16px;color:#c00;text-align:left;line-height:150%;">{$seller_no
+te}</p>
+    </div>
+    {/if}
+    <div style="text-align:center;">
+        {foreach from=$gallery item=img}
+        <img src="http://img.ouku.com/imgs/l/{$img.img_url}" alt="商品图片" style="margin:5px 0;"/><br/>
+        {/foreach}
+    </div>
+    {$cs}
+ <table cellpadding="5" border="1" cellspacing="0"  width="740" align="center" style="font-size:12px; border:1px #F0F0F0 solid;	border-collapse:collapse;border-spacing:0;">
+     {if $top_cat_id != 1}
+   {assign  var="s" value=""}
+  <!--{foreach name=best_list from=$properties item=goods}-->
+  {if $goods.title}
+      {if $s eq "1"}
+          {*</td></tr>*}
+          {assign  var="s" value=""}
+      {/if}
+      <tr><td colspan="2"  style="color:#ff6f00;border:1px #F0F0F0 solid; border-top:0;border-left:0; height:20px; font-size:14px;background-color:#F8F8F8">{$goods.title}</td></tr>
+  {elseif $goods.add}
+      {if $s eq ""}
+          <tr><td  colspan="2" align="center" style="color:#666;border:1px #F0F0F0 solid; border-top:0;border-left:0; height:20px;background-color:#F8F8F8">
+          {assign  var="s" value="1"}
+      {/if}
+      [{$goods.add}]
+  {elseif $goods.tag}
+      {if $s eq "1"}
+          </td></tr>
+          {assign  var="s" value=""}
+      {/if}
+       <tr><td >{$goods.tag}</td><td >{$goods.value}</td></tr>
+  {elseif $goods.name}
+      {if $s eq "1"}
+         </td></tr>
+      {assign  var="s" value=""}
+      {/if}
+      <tr><td >{$goods.name}</td><td >{$goods.value}</td></tr>
+  {/if}
+  <!-- {/foreach} -->
+  {else}
+
+  {foreach from=$properties item=one}
+            {if $one.child}
+            <tr>
+                <th colspan="2">{$one.attr_name}</th>
+            </tr>
+            {foreach from=$one.child item=two}
+                {if $two.child}
+                {foreach from=$two.child item=three}
+                <tr>
+                    <td style="width:20%;text-align:right;background:#f8f8f8;">{$three.attr_name}</td><td>{$three.attr_value}</td>
+                </tr>    
+                {/foreach}
+                {else}
+                <tr>
+                    <td style="width:20%;text-align:right;background:#f8f8f9;">{$two.attr_name}</td><td>{$two.attr_value}</td>
+                </tr>    
+                {/if}
+                {/foreach}
+                {/if}
+            {/foreach}
+            {/if}
+
+  </table>
+  
+  
+<br/>
+<P align=center><IMG  src="http://img1.oukoo.com/upimg/ouku/Image/taobao/tail-1.png" align=absMiddle></P>
+<P align=center><IMG  src="http://img1.oukoo.com/upimg/ouku/Image/taobao/tail-2.png" align=absMiddle></P>
+<P align=center><IMG  src="http://img1.oukoo.com/upimg/ouku/Image/taobao/tail-3.png" align=absMiddle></P>
+<P> </P>
+<P>&nbsp; </P>
+<P align=center><IMG height=271 src="http://img1.oukoo.com/upimg/ouku/Image/taobao/tail-4(1).png" width=740 useMap=#Map1 border=0></P>
+<P>&nbsp;<MAP name=Map1><AREA shape=RECT coords=2,5,732,286 href="{if $smarty.request.cc == cc}http://shop60278016.taobao.com/shop/xshop/wui_page-21997689.htm{else}http://oksm.mall.taobao.com/shop/xshop/wui_page-20181875.htm{/if}"></AREA></MAP>
+</P>
+  
+</body>
+</html>

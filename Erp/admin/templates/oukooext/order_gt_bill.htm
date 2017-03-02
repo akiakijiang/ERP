@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>供应商退款记录列表</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+
+{/literal}
+</script>
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+编号：
+<input style="width:60px" name="bill_id_search" value="{$smarty.request.bill_id_search}">
+支票号：
+<input style="width:60px" name="cheque" value="{$smarty.request.cheque}">
+<br><br>
+汇入方：
+<select name="pay_id">
+	<option value="0"></option>
+	<!--{foreach from=$payments item=payment}-->
+	<option value="{$payment.pay_id}" {if $smarty.request.pay_id == $payment.pay_id}selected="selected"{/if}>{$payment.pay_name}</option>
+	<!--{/foreach}-->
+</select>
+汇入金额：
+<input style="width:90px" name="amount" value="{$smarty.request.amount}">
+
+凭证时间：
+<select name="voucher_year_search">
+	<option value="0">所有</option>
+	{section name=foo start=2007 loop=$next_year}
+	<option value="{$smarty.section.foo.index}" {if $smarty.section.foo.index==$smarty.request.voucher_year_search}selected="selected"{/if} >
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>年
+<select name="voucher_month_search">
+	<option value="0">所有</option>
+	{section name=foo start=1 loop=13}
+	<option value="{$smarty.section.foo.index}" {if $smarty.section.foo.index==$smarty.request.voucher_month_search}selected="selected"{/if} >
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>月&nbsp;&nbsp;
+凭证号：
+<input style="width:90px" name="voucher_no_search" value="{$smarty.request.voucher_no_search}">
+<br><br>
+<input type="hidden" name="act" value="search">
+<input type="submit" value="      搜索      ">
+<input type="hidden" name="flag_gt" value="1">
+</form>
+<br>
+<table class="bWindow">
+<caption><h2>供应商退款记录</h2>
+<br><a href="inward_remittance_bill_new.php?flag_gt=1" target="" class="Pager">创建供应商退款记录</a>
+<br><br></caption>
+<tr>
+<th>编号</th>
+<th>汇入时间</th>
+<th>支票号</th>
+<th>汇入金额</th>
+<th>B2C实收金额</th>
+<th>C2C实收金额</th>
+<th>总实收</th>
+<th>凭证号</th>
+<th>操作</th>
+</tr>
+<!--{foreach from=$bills item=bill}-->
+<tr align="center">
+<td>{$bill.id}</td>
+<td>{$bill.date}</td>
+<td>{$bill.cheque}</td>
+<td>{$bill.paid}</td>
+<td>{$bill.paid_b2c}</td>
+<td>{$bill.paid_c2c}</td>
+<td>{$bill.paid_sum}</td>
+<td>
+{if empty($bill.voucher_no)}
+<form>
+<select name="voucher_year">
+{section name=foo start=2007 loop=$next_year}
+	<option value="{$smarty.section.foo.index}" {if ($bill.voucher_year==$smarty.section.foo.index)}selected="selected"{/if}>
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>年
+<select name="voucher_month">
+{section name=foo start=1 loop=13}
+	<option value="{$smarty.section.foo.index}"  {if ($bill.voucher_month==$smarty.section.foo.index)}selected="selected"{/if}>
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>月&nbsp;&nbsp;-
+<input style="width:60px" name="voucher_no" value=""><br>
+<input type="hidden" name="bill_id" value="{$bill.id}">
+<input type="hidden" name="flag_gt" value="1">
+<input type="hidden" name="amount" value="{$smarty.request.amount}">
+<input type="hidden" name="date" value="{$smarty.request.date}">
+<input type="hidden" name="voucher_year_search" value="{$smarty.request.voucher_year_search}">
+<input type="hidden" name="voucher_month_search" value="{$smarty.request.voucher_month_search}">
+<input type="hidden" name="page" value="{$smarty.request.page}">
+<input type="hidden" name="act" value="update_voucher_no">
+<input type="submit" value="添加凭证号">
+</form>
+{else}
+{$bill.voucher_year}年{$bill.voucher_month}月&nbsp;&nbsp;-&nbsp;&nbsp;{$bill.voucher_no}
+{/if}
+</td>
+<td><a href="inward_remittance_bill_detail.php?bill_id={$bill.id}" target="" class="Pager">查看</a></td>
+</tr>
+<!--{/foreach}-->
+<td colspan="6" align="center" style="border-right:0"><font color="red">供应商退款记录</font>{$pager}</td>
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

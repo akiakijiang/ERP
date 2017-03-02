@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>批拣单详情页</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: center;
+	}
+	<!--{/literal}-->
+</style>
+</head>
+<body>
+<h2>批拣单详情页</h2>
+批拣单号：{$smarty.request.batch_pick_sn} &nbsp;&nbsp;&nbsp;&nbsp; 
+<a href="batch_pick_detail.php?act=null&batch_pick_sn={$batch_pick_sn}">返回</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="batch_pick_detail.php?act=shipment&batch_pick_sn={$batch_pick_sn}">发货单号</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
+<a href="batch_pick_detail.php?act=grouding_barcode&batch_pick_sn={$batch_pick_sn}">库位条码</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+<br/><br/>
+	<table class="bWindow" style="margin-top:10px;width:1200px;">
+		<tr>
+			<th>发货单号</th>
+			<th>商品名</th>
+			<th>库位条码</th>
+			<th>预定个数</th>
+			<th>出库个数</th>
+			<th>是否完成</th>
+		</tr>
+		{assign var=count_lb value=0}
+		{assign var=location_barcode value=""}
+		{assign var=shipmentId value=0}
+        {foreach from=$shipment_list item=shipment name = "shipment"}
+        {assign var=total_shipment value=0}
+        <!--{if $type == 'shipment'}-->
+		<tr>
+		{if $shipment.count_shipment > 0}
+		{assign var=count value=$shipment.count_shipment}
+		{else}
+		{assign var=count value=1}
+		{/if}
+		    <!--{if $shipmentId != $shipment.shipment_id}-->
+			<td rowspan="{$count}">{$shipment.shipment_id}</td>
+		    <!--{/if}-->
+			<td>{$shipment.goods_name}</td>
+			<td>{$shipment.location_barcode}</td>
+			<td>{$shipment.reserved_quantity}</td>
+			<td>{$shipment.out_quantity}</td>
+			<td>{if $shipment.status_id == 'Y'}完成{else}未完成{/if}</td>
+		</tr>
+		{assign var=shipmentId value=$shipment.shipment_id}
+		<!--{/if}-->
+		<!--{if $type == 'grouding_barcode' }-->
+		 <tr>
+		{if $shipment.barcode_number > 1}
+		{assign var=count value=$shipment.barcode_number}
+		{else}
+		{assign var=count value=1}
+		{/if}
+			<td>{$shipment.shipment_id}</td>
+			<td>{$shipment.goods_name}</td>
+			<!--{if $location_barode != $shipment.location_barcode}-->
+			<td rowspan="{$count}">{$shipment.location_barcode}</td>
+			<!--{/if}-->
+			<td>{$shipment.reserved_quantity}</td>
+			<td>{$shipment.out_quantity}</td>
+			<td>{if $shipment.status_id == 'Y'}完成{else}未完成{/if}</td>
+		</tr>
+		{assign var=location_barode value=$shipment.location_barcode}
+		<!--{/if}-->
+		<!--{if $type == 'default' }-->
+		   <tr>
+			<td>{$shipment.shipment_id}</td>
+			<td>{$shipment.goods_name}</td>
+			<td>{$shipment.location_barcode}</td>
+			<td>{$shipment.reserved_quantity}</td>
+			<td>{$shipment.out_quantity}</td>
+			<td>{if $shipment.status_id == 'Y'}完成{else}未完成{/if}</td>
+		   </tr>
+		<!--{/if}-->
+		{/foreach}
+	</table>
+</body>
+</html>

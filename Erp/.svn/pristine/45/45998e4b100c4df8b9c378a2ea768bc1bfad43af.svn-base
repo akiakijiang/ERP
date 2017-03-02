@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>订单导入</title>
+    <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+    <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+    <script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+    
+    $(document).ready(function(){
+            // 绑定滑动效果
+            $('legend.expand').bind('click', function(event){
+                $(this).next().slideToggle('normal');
+            });
+            
+            // 绑定全选事件
+            $(':checkbox.enabled').attr('checked', $('#checkall').attr('checked'));
+            $('#checkall').bind('click', function(){
+                $(':checkbox.enabled').attr('checked', $(this).attr('checked'));
+            });
+            
+            // 绑定反选事件
+            $('#checkrev').bind('click', function(){
+                $(':checkbox.enabled').each(function(i, n){
+                    var $i = $(this);
+                    $i.attr('checked', !$i.attr('checked'));
+                });
+            });
+            
+            // 表格变色
+            $("#table tr").hover(
+                    function() {
+                            if (this.cells[0].tagName != "TH") {
+                                    $(this).addClass('hover');
+                            }
+                    }, 
+                    function(){
+                            if (this.cells[0].tagName != "TH") {
+                                    $(this).removeClass('hover');
+                            }
+                    }
+            );
+            
+            // 导入按钮
+            $('#import').bind('click', function(){
+                var len = $(':checkbox.enabled:checked').length;
+                if (len < 1) {
+                    alert('没有选中项');
+                    return;
+                }
+                if (len > 20) {
+                    alert('一次性不能选20多个，不然会把系统搞挂的')   ;
+                    return;
+                }
+                
+                $('#f_import').submit();
+            });
+    });
+    
+    // {/literal}
+    // ]]>
+    </script>
+</head>
+<body>
+
+
+<div style="margin:20px auto; width:960px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;订单导入&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+    {* 消息提示 *}
+    <!--{if $message}-->
+  <script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+        window.setTimeout(function(){
+            $('#message').slideUp("slow");
+        }, 10000);
+    // {/literal}
+    // ]]>
+    </script>
+    <div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center; overflow:hidden;">
+    {$message}
+    </div>
+  <!--{/if}-->
+
+
+    {* 导入报告 *}
+<!--{if $imported_list}-->
+    <br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;生成订单列表&nbsp;</legend>
+  <div>
+            <table class="inner" id="table">
+        <tr align="center" class="th">
+            <th>序号</th>
+          <th>订单号</th>
+          <th>淘宝订单号</th>
+          <!-- <th>分销采购订单号</th> -->
+          <th>店铺名称</th>
+          <th>订单总金额</th>
+          <th>送货方式</th>
+          <th>支付方式</th>
+        </tr>
+        
+        <!--{foreach from=$imported_list item=item name="importedList"}-->
+        <tr align="center" class="{cycle values='odd,even'}">
+            <td>{$smarty.foreach.importedList.iteration}</td>
+            <td><a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+          <td>{$item.taobao_order_sn}</td>
+          <!-- <td>{$item.distribution_purchase_order_sn}</td> -->
+          <td>{$item.distributor_name}</td>
+          <td>{$item.order_amount}</td>
+          <td>{$item.shipping_name}</td>
+          <td>{$item.pay_name}</td>
+        </tr>
+        <!--{/foreach}-->
+        
+            </table>
+  </div>
+  </fieldset>
+  <br />
+<!--{/if}-->
+
+
+
+    {* 文件上传 *}
+    <br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;上传EXCEL&nbsp;</legend>
+        <div><form id="f_upload" method="post" enctype="multipart/form-data">
+      
+      <table class="inner">
+        <tr>
+          <td >指定订单要导入到的仓库 </td>
+          <td>
+            <select name="facility_id">
+               <option label="-- 请选择仓库 --" value="0" selected="selected">-- 请选择仓库 --</option>
+               {html_options options=$available_facility }
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td >指定导入订单支付方式 </td>
+          <td>
+            <select name="pay_id">
+               <option label="-- 请选择支付方式 --" value="0" selected="selected">-- 请选择支付方式 --</option>
+               {html_options options=$pay_list }
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td >请选择要导入的Excel文件</td>
+          <td>
+            <input type="file" name="excel" size="50" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" value="导入" />
+            <input type="hidden" name="act" value="upload" />
+          </td>
+        </tr>
+      </table>
+      
+        </form></div>    
+  </fieldset>
+
+
+
+    {* 导入数据查询 *}
+    <br /><br />
+  <fieldset style="border:#FF7FFF 1px dashed;"> 
+  <legend class="expand">&nbsp;已导入数据&nbsp;</legend>
+  <div>
+  
+      <div class="inner" style="text-align:right; padding-right:20px; ">
+      <form id="f_filter" method="get">
+        显示模式：  <select name="view">{html_options options=$view_type_list selected=$filter.view}</select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+            每页显示记录：  <select name="size">{html_options options=$page_size_list selected=$filter.size}</select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        <input type="submit" value="筛选" /> <input type="hidden" name="act" value="search" />&nbsp;
+      </form>
+      </div>
+    
+<!--{if $order_list}--> {* 如果有订单数据 *}
+      <form id="f_import" method="post" action="temp_order_import.php">
+            <input type="hidden" name="act" value="import" />
+            <table class="inner" id="table">
+        <tr align="center" class="th">
+          <th><input type="checkbox" id="checkall" checked="checked" /></th>
+            <th>序号</th>
+          <th>淘宝订单号</th>
+          <!-- <th>采购订单号</th> -->
+          <th>店铺名称</th>
+          <th>订单总金额</th>
+          <th>快递费</th>
+          <th>支付宝账号</th>
+          <th>导入时间</th>
+            <!--{if $filter.view == 'IMPORTED'}-->
+          <th>生成订单号</th>
+              <!--{/if}-->
+          <th width="70">操作</th>
+        </tr>
+        
+        <!--{foreach from=$order_list item=item name="orderList"}-->
+                <tr align="center" class="{cycle values='odd,even'}">
+            {if $item.errno > 0}
+          <td bgcolor="#CCCCCC"><a href="javascript:void(0);" title="{$item.errmsg}">X</a></td>
+          {elseif $item.deleted == 'Y' || $item.imported == 'Y'}
+          <td><a href="javascript:void(0);" title="已删除或生成订单">O</a></td>
+                    {else}
+          <td><input type="checkbox" class="enabled" name="checked[]" value="{$item.taobao_order_sn}" /></td>
+          {/if}
+            <td>{$smarty.foreach.orderList.iteration}</td>
+            <td>{$item.taobao_order_sn}</td>
+            <!-- <td>{$item.distribution_purchase_order_sn}</td> -->
+            <td>{$item.distributor_name}</td>
+            <td>{$item.order_amount}</td>
+            <td>{$item.shipping_fee}</td>
+            <td>{$item.alipay_account}</td>
+            <td>{$item.created}</td>
+              <!--{if $filter.view == 'IMPORTED'}-->
+          <td><a href="temp_order_import_detail.php?order_id={$item.refer_order_id}" target="_blank">{$item.refer_order_sn}</a></td>
+            <!--{/if}-->
+          <td>
+            <a href="temp_order_import_detail.php?order_id={$item.order_id}&keepThis=true&TB_iframe=true&height=550&width=800" class="thickbox" title="查看订单详情, 单号[{$item.taobao_order_sn}]" {if $item.errno > 0}style="border:#960 1px solid; padding:1px; background-color:#960; color:#FFF; text-decoration:none;"{/if}>详细</a>
+            &nbsp;&nbsp;
+            {if $item.imported == 'Y' || $item.deleted == 'Y'}删除{else}<a href="temp_order_import.php?act=delete&order_id={$item.order_id}">删除</a>{/if}
+          </td>
+                </tr>
+        
+        {if !$smarty.foreach.orderList.last}
+        
+        {if $smarty.foreach.orderList.iteration % 10 == 0}  {* 如果不是表末行，每隔10行显示一个分隔符 *}
+        <tr><td colspan="9"><hr /><td></td>
+        {/if}
+        
+        {else}
+        
+        <tr align="center" bgcolor="#E2F9FA">   {* 表末行 *}
+            <td><input type="checkbox" id="checkrev" /></td>
+          <td colspan="8"> (* 如果订单项不能选，请检查该项数据是否有问题) </td>
+                </tr>
+        
+        {/if}
+        
+        <!--{/foreach}-->
+      </table>
+      </form>  
+      
+      {$pagination}  {* 分页 *}
+  </div>
+    </fieldset>       
+
+
+    <br /><br />
+    <div style="text-align:center"><input type="button" id="import" value="将选中项导入订单" /></div>
+  
+<!--{else}--> 
+  
+    <div style="text-align:center"><h4>无相关数据</h4></div>
+ 
+<!--{/if}--> {* 如果有订单数据 *}
+
+  <br />
+</div>
+</fieldset>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>下分销订单</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css"></link>
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+ <script type="text/javascript" src="misc/thickbox.js"></script>
+	<script type="text/javascript">
+	var WEB_ROOT = '{$WEB_ROOT}';
+</script>
+</head>
+
+<body>
+<!--{if $message}-->
+	<div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;"><legend
+	class="expand">&nbsp;跨境购商品批量导入&nbsp;</legend>	
+	<form id="upload" method="post" enctype="multipart/form-data" action="batchGoodsOrder.php" onsubmit="return check_form()">
+		<div style='color:red'>此页面为跨境购商品批量导入，导入模板见右下：</div>
+		<div style='color:red'>跨境商品ID和店铺为必填项，请规范操作！</div>
+		<br />
+		<div style='color:red'><B>申报系统仓库为：宁波保达电子商务有限公司，宁波保税区嘉里大通物流有限公司，百世物流科技（宁波保税区）有限公司</B></div>
+      &nbsp;
+      &nbsp;
+      <br />
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="upload" />
+    </form>
+    <br />
+    <div>
+	    <div style="float: right; margin-right: 100px;">
+	    <form method="post" enctype="multipart/form-data" action="download_model.php?act=download_model_kjgGoods">
+	        <div style='color:red'>模板已更新，请下载后解压</div>
+	    	<!-- <input type="submit" value="批量导入模板下载"/> -->
+	    	<a href="template_batchGoodsOrder.rar">批量导入模板下载</a>
+	    </form>
+	    </div>
+	</div>
+    <br/>
+    <br/>
+</fieldset> 
+</div>
+</body>
+</html>

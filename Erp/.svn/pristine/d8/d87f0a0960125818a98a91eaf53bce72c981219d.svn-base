@@ -1,0 +1,522 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css"></link>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css"></link>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>返点管理</title>
+</head>
+<body>
+<script type="text/javascript">
+// <![CDATA[
+	var party_id = '{$smarty.session.party_id}';
+	var WEB_ROOT = '{$WEB_ROOT}';
+	var order_goods_list = '{$order_goods}';
+// {literal}	
+	window.setTimeout(function(){
+	    $('#message').slideUp("slow");
+	}, 5000);
+	// 初始化变量		
+	// 已添加的订单商品
+	var order_goods_array = new Array();
+	
+	var rebate_goods_array = new Array();
+	$(document).ready(function(){
+		$('#distributor').bind('focus', function(){
+			get_distributor(party_id);
+		});
+		// 绑定添加商品按钮事件
+		$('#order_goods_add_btn').bind('click', order_goods_add);
+		
+		
+		$("#item_type").bind('change', function(){
+			var item_type = $("#item_type").val();
+			if (item_type == "gifts_goods") {
+				var p = "<span>赠品："+ "<input type=\"text\" id=\"rebate_goods_add_select\" size=\"60\" />"+
+					"赠品数量：<input type=\"text\" id=\"rebate_goods_num\" name=\"rebate_goods_num\" value=\"\" size=\"10\"></input>"+
+					"<input type=\"hidden\" id=\"rebate_goods_style_id\"/>&nbsp;&nbsp;"+
+					"<input id=\"rebate_goods_add_btn\" type=\"button\" value=\"添加赠品\" />"+
+					"<table id=\"rebate_goods_list\" class=\"bWindow\" style=\"width:50%\">"+
+					"<tr align=\"center\">"+
+					"<th>商品名称</th>"+
+					"<th>商品数量</th>"+
+					"<th width=\"40\">操作</th>"+
+					"</tr></table></span>";
+				$("#item_type").parent().find("span").remove();
+				$("#item_type").after(p);
+				$('#rebate_goods_add_select').autocomplete('distribution_order.php?request=ajax&act=search_goods', {
+					dataType : 'json',
+					minChars: 0,
+					mustMatch: false,
+					formatItem : function(row, i, max, value, term) {
+						return(row.goods_name);
+					},
+					formatResult : function(row) {
+						return(row.goods_name);
+					}
+				}).result(function(event, row, formatted) {
+					$('#rebate_goods_style_id').val(row.goods_id + '_' + row.style_id);
+				});
+				$('#rebate_goods_add_btn').bind('click', order_goods_add);
+			}
+		});
+		
+		/**
+		 * 商品搜索
+		 */
+		$('#order_goods_add_select').autocomplete('distribution_order.php?request=ajax&act=search_goods', {
+			dataType : 'json',
+			minChars: 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#order_goods_add_goods_style_id').val(row.goods_id + '_' + row.style_id);
+		});
+		if (order_goods_list) {
+			var list = eval("(" + order_goods_list + ")");
+			$.each(list,function(key,val){
+				order_goods_add_callback(val, "order_goods_add");
+			});
+		}
+	});
+	/**
+	 * 添加商品明细
+	 */
+	function order_goods_add(event)
+	{
+		var type1 = $.trim($(this).val());
+		if (type1 == "添加赠品") {
+			// 添加按钮
+			var $button = $('#rebate_goods_add_btn');
+			waiting($button);
+			
+			// 取得传入的订单商品id
+			var id = $('#rebate_goods_style_id').val();
+			//检查赠品数量
+			var num = $.trim($("#rebate_goods_num").val());
+			var reg = /^[1-9]([0-9]*)?$/;
+			if (!num || num == '' || num == 0 || !reg.test(num)) {
+				alert("请填写赠品数量");
+				waiting($button, 'en');
+				return false;
+			}
+		} else {
+			// 添加按钮
+			var $button = $('#order_goods_add_btn');
+			waiting($button);
+			
+			// 取得传入的订单商品id
+			var id = $('#order_goods_add_goods_style_id').val();
+		}
+		
+		if (!id) {
+			alert('该商品的数据错误');
+			waiting($button, 'en');
+			return;
+		}
+		
+		var t = id.split('_');
+		goods_id = Number(t[0]);
+		style_id = Number(t[1]);
+		// 查询出该商品详情并添加到列表
+		$.ajax({
+			type: 'POST',
+			url: 'distribution_order.php?request=ajax&act=add_goods',
+			data: 'goods_id=' + goods_id + '&style_id=' + style_id + '&goods_number=0',
+			dataType: 'json',
+			success: function(data){
+				order_goods_add_callback(data, type1);
+			},
+			error: function() { 
+				waiting($button, 'en'); 
+				alert('查询该商品数据失败'); 
+			}
+		});
+		
+	}
+	// 添加商品到列表
+	function order_goods_add_callback(data, type1) {
+		var num = 0;
+		var str = "";
+		var goods_style_id = data.goods_id+"_"+data.style_id;
+		if (type1 == "添加赠品") {
+			var $button = $('#rebate_goods_add_btn');
+			var num = $.trim($("#rebate_goods_num").val());
+			str = "  <td>" + num + "</td>" +
+			"  <td> " +
+			"    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this, '添加赠品')\">删除</a>" +
+			"    <input name=\"rebate_goods[" + goods_style_id + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+			"    <input name=\"rebate_goods[" + goods_style_id + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+			"    <input name=\"rebate_goods[" + goods_style_id + "][goods_name]\" type=\"hidden\" value=\"" + data.goods_name + "\" />" +
+			"    <input name=\"rebate_goods[" + goods_style_id + "][goods_number]\" type=\"hidden\" value=\"" + num + "\" />" +
+			"  </td>" ;
+		} else {
+			var $button = $('#order_goods_add_btn'); 
+			str =  "<td> " +
+				"    <a href=\"javascript:void(0);\" onclick=\"order_goods_remove(this, '添加')\">删除</a>" +
+				"   <input name=\"order_goods[" + goods_style_id + "][goods_id]\" type=\"hidden\" value=\"" + data.goods_id + "\" /> " +
+				"    <input name=\"order_goods[" + goods_style_id + "][style_id]\" type=\"hidden\" value=\"" + data.style_id + "\" />" +
+				"    <input name=\"order_goods[" + goods_style_id + "][goods_name]\" type=\"hidden\" value=\"" + data.goods_name + "\" />"+
+			"</td>" ;
+		}
+		if (data.error) {
+			alert(data.error);
+			waiting($button, 'en');
+			return;
+		}
+		//var amount = money_format(data.shop_price * num);
+		var goods_style_id = data.goods_id + '_' + data.style_id;
+		var g = {goods_style_id:goods_style_id, price:0, number:parseInt(num)};
+		
+		var tpl = "<tr id=\"aaa\" align=\"center\" ix=\"" + goods_style_id +"\">" +
+							"  <td>" + data.goods_name + "</td>" + str +
+							"</tr>";				
+
+		if (cart_add(g, type1)) {
+			if (type1 == "添加赠品"){
+				$('#rebate_goods_list').append(tpl); 
+			} else {
+				$('#order_goods_list').append(tpl); 
+			}
+		}
+		waiting($button, 'en');
+	}
+	/**
+	 * 删除商品
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function order_goods_remove(doc, type) {
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		$tr.remove();
+		
+		if (type == "添加赠品") {
+			arr = rebate_goods_array;
+		} else {
+			arr = order_goods_array;
+		}
+		// 从已添加堆栈中删除该商品
+		for (var i = 0; i < arr.length; i++ ) {
+			if (arr[i].goods_style_id == id) {
+				if (type == "添加赠品") {
+					rebate_goods_array.splice( i, 1); 
+				} else {
+					order_goods_array.splice( i, 1); 
+				}
+				break;
+			}
+		}
+	}
+	/**
+	 * @return boolean 返回商品是否存在了
+	 */
+	function cart_add(g, type) {
+		var arr = new Array();
+		if (type == "添加赠品") {
+			arr = rebate_goods_array;
+		} else {
+			arr = order_goods_array;
+		}
+		// 判断该商品是否存在了
+		for (var i = 0; i < arr.length; i++ ) {
+			// 商品存在则更改数量
+			if (arr[i].goods_style_id == g.goods_style_id) {
+				// 更改显示的商品数
+				var expr = "tr[ix='"+ g.goods_style_id +"']";
+				
+				if (type == "添加赠品 ") {
+					var tr = $('#rebate_goods_list').find(expr);
+				} else {
+					var tr = $('#order_goods_list').find(expr);
+				}
+				td = tr.children('td');
+				return false;
+			}
+		}
+		
+		// 该商品还没有添加
+		if (type == "添加赠品") {
+			rebate_goods_array.push(g);
+		} else {
+			order_goods_array.push(g);
+		}
+		return true;
+	}
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status){
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+	/**
+	* 分销商搜索
+	*/
+	function get_distributor(party_id) {
+		$('#distributor').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_distributor', {
+			extraParams : {party_id:party_id},
+			dataType : 'json',
+			minChars: 1,
+			delay: 1000,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.name);
+			},
+			formatResult : function(row) {
+				return(row.name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#distributor_id').val(row.distributor_id);
+		});
+	}
+	/**
+	* 检查表单
+	*/
+	function check_form(act_type) {
+		$("#act").attr("value", act_type);
+		if (act_type == "add") {
+			var item_type = $("#item_type").val();
+			if (item_type == "gifts_goods") {
+				var rebate_goods_list = $("#rebate_goods_list").find("tr");
+				var rebate_goods_num = rebate_goods_list.length -1;
+				if ( rebate_goods_num =="" || rebate_goods_num <= 0) {
+					alert("请选择赠品");
+					return false;
+				}
+			} else {
+				var item_type_value = $.trim($("#item_type_value").val());
+				var reg = /^(-)?[1-9]([0-9]*)?(.[0-9]{1,2})?$/;
+				if (!item_type_value || item_type_value == '' || !reg.test(item_type_value)) {
+					alert("请输入合法返点金额");
+					return false;
+				}
+			}
+			var note = $.trim($('#note').val());
+			if (note == '' || !note) {
+				alert('请填写活动形式');
+				return false;
+			}
+		}
+		var buyer_payment = $.trim($("#buyer_payment").val());
+		var order_goods_num = $("#order_goods_list").find("tr").length-1;
+		if (order_goods_num > 0 && buyer_payment == '') {
+			var goods_total_num = $.trim($("#goods_total_num").val());
+			if (goods_total_num == '' || goods_total_num <= 0) {
+				alert("请填写商品总数量");
+				return false;
+			}
+		}
+		var start = $("#startTime").val();
+		var end = $("#endTime").val();
+		if (start != '' && end != '' && end < start) {
+			alert("日期终止时间大于起始时间，请重新选择");
+			return false;
+		}
+		$("#form").submit();
+	}
+// {/literal}
+// ]]>
+</script>
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;返点管理&nbsp;</span></legend>
+	<div class="menu-tab">
+  		<div class="right-edge">&nbsp;</div>
+    	<div class="item"><a href="rebate.php?act=select_total">返点查询</a></div>
+  		<div class="active"><a href="account_rebate.php">返点核算</a></div>
+  		<div class="left-edge">&nbsp;</div>
+    </div>
+    
+    <div style="clear:both;"> 
+	  	<form method="post" action="" id="form">  
+		<p>出库日期：
+		<input type="text" id="startTime" name="startTime" value="{$smarty.request.startTime}" style="width:80px;"></input>&nbsp;到&nbsp;
+       	<input type="text" id="endTime" name="endTime" value="{$smarty.request.endTime}" style="width:80px;"></input>
+       	订单状态：<select style="height:21px;width:100px" name="order_status">
+				<option value="-1">所有状态</option>
+				<!--{foreach from=$_CFG.adminvars.order_status key=key item=order_status}-->
+				<option value="{$key}" {if $smarty.request.order_status != null && $smarty.request.order_status == $key}selected{/if}>{$order_status}</option>
+				<!--{/foreach}-->
+				</select>
+		收款状态：<select style="height:21px;width:100px" name="pay_status">
+				<option value="-1">所有状态</option>
+				<!--{foreach from=$_CFG.adminvars.pay_status key=key item=pay_status}-->
+				<option value="{$key}" {if $smarty.request.pay_status != null && $smarty.request.pay_status == $key}selected{/if}>{$pay_status}</option>
+				<!--{/foreach}-->
+				</select>
+		发货状态：<select style="height:21px;width:100px" name="shipping_status">
+				<option value="-1">所有状态</option>
+				<!--{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}-->
+				<option value="{$key}" {if $smarty.request.shipping_status != null && $smarty.request.shipping_status == $key}selected{/if}>{$shipping_status}</option>
+				<!--{/foreach}-->
+			</select>
+	    </p>
+        <div class="inner" >
+	         	商品 ：  <input type="text" id="order_goods_add_select" size="60" />
+	         	<input type="hidden" id="order_goods_add_goods_style_id" />&nbsp;&nbsp;
+	         	<input id="order_goods_add_btn" type="button" value="添加" />
+        </div>
+        <br/>
+		<table id="order_goods_list" class="bWindow" style="width:50%">
+		  <tr align="center">
+		    <th>商品名称</th>
+		    <th width="40">操作</th>
+		  </tr>
+		</table>
+		<p>商品总数量：<input type="text" id="goods_total_num" name="goods_total_num" value="{$smarty.request.goods_total_num}" style="width:70px;"></input>
+			分销商：<input type="text" value="{$smarty.request.distributor_name}" id="distributor" name="distributor_name" style="width:240px;"></input>
+	        	<input type="hidden" value="{$smarty.request.distributor_id}" id="distributor_id" name="distributor_id"></input>
+	                   买家实付金额：<input type="text" name="buyer_payment" id="buyer_payment"value="{$smarty.request.buyer_payment}"></input>
+			&nbsp;&nbsp;<input type="button" name="search" id="search" value="搜索" onclick="check_form('search');"></input>
+			<input type="button" name="export" id="export" value="导出" onclick="check_form('export');"></input>
+			<input type="hidden" name="act" id="act" value=""></input>
+	    </p>
+	    <!--{if $goods_list}-->
+	    <p>返点类型：
+	    	<select name="item_type" id="item_type">
+	    		<option value="goods_rebate" {if $smarty.request.buyer_payment != ''}disabled="disabled"{/if}>单个商品返点金额</option>
+	    		<option value="order_rebate" {if $smarty.request.buyer_payment == ''}disabled="disabled"{/if}>订单返点金额</option>
+	    		<option value="gifts_goods" {if $smarty.request.buyer_payment == ''}disabled="disabled"{/if}>送赠品</option>
+	    	</select>&nbsp;&nbsp;
+	    	<span>返点金额：<input type="text" value="" name="item_type_value" id="item_type_value"></input></span>
+	    </p>
+	    <p>活动形式：<input type="text" name="note" id="note" value=""></input>
+	    	<input type="button" name="add" id="add" value="添加" onclick="check_form('add');"></input>
+	    </p>
+	    <!--{/if}-->
+	    </form>
+	    
+	    <!--{if $goods_list}-->
+	    <table class="bWindow" style="text-align:center;">
+	    	<tr>
+	    		<td>ERP订单号</td>
+	    		<td>下单时间</td>
+	    		<td>出库时间</td>
+	    		<td>淘宝订单号</td>
+	    		<td>采购订单号</td>
+	    		<td>订单状态</td>
+	    		<td>分销商</td>
+		    	<!--{if $smarty.request.buyer_payment == ''}-->
+	    		<td>商品名称</td>
+	    		<td>商品单价</td>
+	    		<td>商品数量</td>
+	    		<!--{else}-->
+	    		<td>买家实付金额</td>
+	    		<!--{/if}-->
+	    		<td>是否核算返点</td>
+	    		<td>返点金额/赠品</td>
+	    		<td>活动形式</td>
+	    	</tr>
+	    	<!--{foreach from=$goods_list item=item key=key}-->
+	    	<tr>
+	    		<td>{$item.order_sn}</td>
+	    		<td>{$item.order_time}</td>
+	    		<td>{$item.inventory_time}</td>
+	    		<td>{$item.taobao_order_sn}</td>
+	    		<td>{$item.distribution_purchase_order_sn}</td>
+	    		<td><!--{if $item.order_sn}-->
+					<!--{foreach from=$_CFG.adminvars.order_status key=key item=order_status}-->
+					<!--{if $key == $item.order_status}-->{$order_status}<!--{/if}-->
+			        <!--{/foreach}-->
+			        <!--{foreach from=$_CFG.adminvars.pay_status key=key item=pay_status}-->
+					<!--{if $key == $item.pay_status}-->{$pay_status}<!--{/if}-->
+			        <!--{/foreach}-->
+			        <!--{foreach from=$_CFG.adminvars.shipping_status key=key item=shipping_status}-->
+					<!--{if $key == $item.shipping_status}-->{$shipping_status}<!--{/if}-->
+			        <!--{/foreach}--><!--{/if}-->
+			    </td>
+	    		<td>{$item.name}</td>
+	    		<!--{if $smarty.request.buyer_payment == ''}-->
+	    		<td>{$item.goods_name}</td>
+	    		<td>{$item.goods_price|string_format:'%.2f'}</td>
+	    		<td>{$item.goods_number}</td>
+	    		<!--{else}-->
+	    		<td>{$item.buyer_payment|string_format:'%.2f'}</td>
+	    		<!--{/if}-->
+	    		<td>{if $item.rebate_detail_amount}是{else}{if $item.gift_goods_name}是{else}否{/if}{/if}</td>
+	    		<td>{if $item.rebate_detail_amount != 0}{$item.rebate_detail_amount |string_format:'%.2f'}{else}{$item.gift_goods_name}{/if}{$item.gift_goods_name}</td>
+	    		<td>{$item.rebate_item_note}</td>
+	    	</tr>
+	    	<!--{/foreach}-->
+	    </table><br/>
+	    {$pagination}<br />
+	    <!--{/if}-->
+	</div>
+</fieldset>
+<script type="text/javascript">
+	// <![CDATA[
+	{literal}
+	Zapatec.Calendar.setup({
+	    weekNumbers       : false,
+	    electric          : false,
+	    inputField        : "startTime",
+	    button            : "startTime",
+	    ifFormat          : "%Y-%m-%d",
+	    daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+	    weekNumbers       : false,
+	    electric          : false,
+	    inputField        : "endTime",
+	    button            : "endTime",
+	    ifFormat          : "%Y-%m-%d",
+	    daFormat          : "%Y-%m-%d"
+	});
+	{/literal}
+	// ]]>
+	</script>
+</body>
+</html>
+
+
+

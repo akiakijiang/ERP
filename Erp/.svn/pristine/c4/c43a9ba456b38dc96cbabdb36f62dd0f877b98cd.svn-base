@@ -1,0 +1,4 @@
+"业务组","分类","商品名称","商家编码","商品条码","sku条码","商品货号","样式","保质期","商品价格","商品重量","箱规","商品单位","商品长度","商品宽度","商品高度","商品体积","耗材名称","警告库存","商品税率","货币种类","产品重要性","批次号维护",
+{foreach from=$list item=goods}
+"{$goods.name}","{$goods.cat_name}","{$goods.goods_name}","{$goods.outer_id}","{$goods.goods_barcode}","{$goods.sku_barcode}","{$goods.goods_code}","{$goods.color}","{$goods.goods_warranty}","{$goods.price}","{$goods.goods_weight}","{$goods.spec}","{$goods.unit_name}","{$goods.goods_length}","{$goods.goods_width}","{$goods.goods_height}","{$goods.goods_volume}","{$goods.goods_consumable}","{$goods.warn_number}","{$goods.added_fee}","{$goods.currency}","{$goods.product_importance}","{$goods.is_maintain_batch_sn}",
+{/foreach}

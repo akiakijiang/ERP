@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>【双11专用】订单批量处理</title>
+{literal}
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+.table, td,th {
+	border:1px solid #cccccc;
+	border-collapse:collapse;
+	line-height: 30px;
+}
+.table .table_2 td{
+    border:1px solid #FFFFFF;
+	border-collapse:collapse;
+    line-height: 20px;
+}
+body {
+	font-family: "宋体";
+	font-size: 12px;
+	margin-right: auto;
+	margin-left: auto;
+}
+#show_edid{
+	margin-right: auto;
+	margin-left: auto;
+}
+</style>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript" src="../../admin/misc/jquery.js"></script>  
+<script type="text/javascript" src="../../admin/misc/jquery.ajaxQueue.js"></script>
+
+<script type="text/javascript" src="../../admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="../../admin/misc/autocomplete.css" />
+<script type="text/javascript">
+function search_sub(){
+	var fenxiao = $.trim($('#fenxiao').val());
+    var facility_id = $.trim($('#facility_id').val());
+    var is_jzh = $.trim($('#is_jzh').val());
+    var outer_id = $.trim($('#outer_id_hidden').val());
+    var goods_number = $.trim($('#goods_number').val());
+    var is_tc = $.trim($('#is_tc').val());
+    /*
+    if (outer_id == null || outer_id == '') {
+    	alert("请输入商家编码!");
+    	return;
+    }
+    */
+    if (isNaN(goods_number)) {
+    	alert("数量必须是数字:"+ goods_number);
+        return;
+    }
+    window.location.href = 'order_batch_validate_double11.php?act=list&fenxiao='+fenxiao+'&facility_id='+facility_id
+    +'&is_jzh='+is_jzh+'&outer_id='+outer_id+'&goods_number='+goods_number+'&is_tc='+is_tc;
+}
+
+function act_commit() {
+	var to_facility_id = $.trim($('#to_facility_id').val());
+    var action_type = $.trim($('#action_type').val());
+    if (action_type == "1" && to_facility_id == "89054427") {
+    	alert("转到上海协同仓的订单，只能取消，不能确认！");
+    	return false;
+    }
+    
+    if(action_type == "2" && !confirm("真的要取消吗？")) {
+        return false;
+    }
+    return true;
+    
+}
+
+$(document).ready(function(){
+	/**
+	 * 商家编码搜索
+	 */
+	$('#outer_id').autocomplete('order_batch_validate_double11.php?request=ajax&act=search_outer_id', {
+	    dataType : 'json',
+	    minChars: 0,
+	    mustMatch: false,
+	    formatItem : function(row, i, max, value, term) {
+	        return(row.outer_id);
+	    },
+	    formatResult : function(row) {
+	        return(row.outer_id);
+	    }
+	}).result(function(event, row, formatted) {
+		$('#outer_id_hidden').val(row.outer_id);
+	    $('#is_tc').val(row.is_tc);
+	});
+});
+
+</script>
+{/literal}
+</head>
+<body>
+<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+	<legend><span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;【双11专用】订单批量处理&nbsp;</span></legend>
+    <div>
+</div>
+    <form id="form3" name="form3" method="post" action="order_batch_validate.php?act=list">
+      <p>仓库:
+        
+       <select name="facility_id" id="facility_id">
+       	   <option value=-1 {if $facility_id eq -1}selected="selected"{/if}>--全部--</option>
+       	   	{foreach from=$facility_list key=key item=facility}
+				<option value="{$key}" {if $facility_id eq $key}selected="selected"{/if}>{$facility}</option>
+			{/foreach}
+	   </select>
+      
+      &nbsp;&nbsp;&nbsp;&nbsp;省份:
+       <select name="is_jzh" id="is_jzh">
+        <option value=-1 {if $is_jzh eq -1}selected="selected"{/if}>--全部--</option>
+		<option value=1 {if $is_jzh eq 1}selected="selected"{/if}>--江浙沪--</option>
+		<option value=2 {if $is_jzh eq 2}selected="selected"{/if}>--非江浙沪--</option>
+	   </select>
+      
+	     &nbsp;&nbsp;&nbsp;&nbsp;商家编码：
+	    <input type="text" name="outer_id" id="outer_id">
+	    <input type="hidden" name="outer_id_hidden" id="outer_id_hidden">
+	    <input type="hidden" name="is_tc" id="is_tc">
+	    上次搜索：{$outer_id}
+	    
+	    &nbsp;&nbsp;&nbsp;&nbsp; 数量(不填则不限制)：
+	    <input type="text" name="goods_number" id="goods_number" value={$goods_number}>
+
+	    {if $fenxiao_order_batch_validate==true} 
+	            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分销类型
+	      <select name="fenxiao" id="fenxiao">
+	       <option value=-1 {if $fenxiao eq -1}selected="selected"{/if}>--全部--</option>
+		   <option value=1 {if $fenxiao eq 1}selected="selected"{/if}>直销</option>
+		   <option value=2 {if $fenxiao eq 2}selected="selected"{/if}>分销</option>
+	   	  </select>
+	    {/if}
+	    &nbsp;&nbsp;&nbsp;&nbsp;<input type="button" name="search_status" onclick="search_sub();" value="搜索" />
+	  </p>
+    </form>
+<br />
+<br />
+  <form id="form1" name="form1" method="post" action="order_batch_validate_double11.php?act=validate" onsubmit="return act_commit();">
+  	 转仓至：
+       <select name="to_facility_id" id="to_facility_id">
+       	   <option value=-1 >--不需要转仓--</option>
+       	   	{foreach from=$facility_list key=key item=facility}
+				<option value="{$key}">{$facility}</option>
+			{/foreach}
+	   </select>
+	 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;批量操作：
+       <select name="action_type" id="action_type">
+       	   <option value=1 >--批量确认--</option>
+		   <option value=2 >--批量取消--</option>
+	   </select>
+	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="提交">&nbsp;&nbsp;<b>一共{$count_orders}个订单</b>
+	 <br><br>
+	<table width="100%" class="table" cellpadding="0px" cellspacing="0px">
+	    <caption {if $message eq ''}style="display:none"{/if}>{$message}</caption>
+		<tr>
+			<th align="center">订单号</th>
+			<th align="center">下订单时间</th>
+			<th align="center">收件人</th>
+			<th align="center">收件地址</th>
+			<th align="center">付货方式</th>
+			<th align="center">订单状态</th>
+		</tr>
+		{foreach from=$orders item=item}
+		<tr>
+		   <td align="center">
+		    	<table class="table_2" cellpadding="0px" cellspacing="0px">
+					<tr>
+						<td align="center"><a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+					</tr>
+					<tr>
+						<td align="center">{$item.taobao_order_sn}<input type="hidden" name="orders[]" id="orders[]" value="{$item.order_id}"></input></td>
+					</tr>
+				</table>
+		   </td>
+		   <td align="center">{$item.order_time}</td>
+		   <td align="center">
+		   		<table class="table_2" cellpadding="0px" cellspacing="0px">
+					<tr>
+						<td align="center">{$item.consignee}</td>
+					</tr>
+					<tr>
+						<td align="center">{if $item.mobile eq ''}{$item.tel}{else}{$item.mobile}{/if}</td>
+					</tr>
+				</table>
+		   </td>
+		   <td align="center">{$item.country_name}{$item.province_name}{$item.city_name}{$item.district_name}{$item.address}</td>
+		   <td align="center">{$item.pay_name}</td>
+		   <td align="center">{$item.order_status_name},{$item.pay_status_name},{$item.shipping_status_name}</td>
+		</tr>
+		{foreachelse}
+		<tr>
+			<td colspan="6" align="center">无信息</td>
+		</tr>
+		{/foreach}
+
+		
+	</table>
+
+	 
+	</form>
+</fieldset>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>开票清单列表（新）</title>
+<link href="{$WEB_ROOT}admin/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" /> 
+<link href="{$WEB_ROOT}admin/styles/bootstrap/css/bootstrap-datetimepicker.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" type="text/css" />  
+<script type="text/javascript" src="{$WEB_ROOT}admin/styles/bootstrap/js/jquery.min.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/styles/bootstrap/js/bootstrap.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/styles/bootstrap/js/bootstrap-datetimepicker.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<style type="text/css">
+<!--{literal}-->
+		.form-group{
+			padding-left: 10px;
+			margin-top:20px;
+		}
+		.btn-primary{
+			background-color: #3295DD;
+		}
+		.btn-primary:hover{
+			background-color: #3295DD;
+		}
+		.search{
+			margin-top:20px;
+			margin-left: 50px;
+		}
+		#new_list{
+			margin:15px 15px;
+			text-align: center;
+		}
+		.table{
+			width:100%;
+			height:auto;
+			margin-top:18px;
+			margin-bottom:18px;
+			font-size:12px;
+		}
+		.table thead{
+			background-color: #3295DD;
+			color:#fff;
+		}
+		.table th,td{
+			text-align:center;
+		}
+<!--{/literal}-->
+	</style>
+<script type="text/javascript">
+	var WEB_ROOT = '{$WEB_ROOT}';
+<!--{literal}-->
+	$(document).ready(function(){
+		/**
+	    * 供应商
+	    */
+	    $('#autocomplete_provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+	        minChars: 0,
+	        mustMatch: true,
+	        dataType : 'json',
+	        formatItem : function(row, i, max, value, term) {
+	            return(row.provider_name);
+	        },
+	        formatResult : function(row) {
+	            return(row.provider_name);
+	        }
+	    }).result(function(event, row, formatted) {
+	        // 将隐藏域的值设为供应商的id
+	        $('#provider_id').val(row.provider_id);
+	    });
+	    $('#autocomplete_provider_new').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+	        minChars: 0,
+	        mustMatch: true,
+	        dataType : 'json',
+	        formatItem : function(row, i, max, value, term) {
+	            return(row.provider_name);
+	        },
+	        formatResult : function(row) {
+	            return(row.provider_name);
+	        }
+	    }).result(function(event, row, formatted) {
+	        // 将隐藏域的值设为供应商的id
+	        $('#provider_id_new').val(row.provider_id);
+	    });
+	    /**
+	     * 日历
+	     */
+	    $(".date").datetimepicker({
+	    	minView: "month", //选择日期后，不会再跳转去选择时分秒 
+　　        format: "yyyy-mm-dd", //选择日期后，文本框显示的日期格式 
+　　        autoclose:true //选择日期后自动关闭
+		});
+	    /**
+	     * 新建开票清单表单验证
+	     */
+	    $("#new_request").bind("click",function(){
+	    	var provider_name = $("#autocomplete_provider_new").val();
+	    	if(provider_name == '' || provider_name == null){
+	    		alert("请输入供应商名称！");
+	    		return false;
+	    	}
+	    });
+	});
+	//导出清单明细
+	function export_excel(purchase_invoice_request_id,provider_name){
+        $("#purchase_invoice_request_id_excel").val(purchase_invoice_request_id);
+        $("#provider_name").val(provider_name);
+        document.excel_form.submit();
+    }
+<!--{/literal}-->
+</script>
+</head>
+<body>
+	<form class="form-inline" action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_request_list_new.php" method="post">
+		<div class="form-group">
+			<label for="invoice_request_id">开票清单号</label>
+			<input type="text" name="invoice_request_id" class="form-control input-sm" value="{$smarty.request.invoice_request_id}" placeholder="开票清单号" />
+		</div>	
+		<div class="form-group">
+			<label for="autocomplete_provider">供应商</label>
+			<input type="text" name="provider_name" id="autocomplete_provider" class="form-control input-sm" value="{$smarty.request.provider_name}" placeholder="供应商" />
+			<input type="hidden" name="provider_id" id="provider_id" />
+		</div>
+		<div class="form-group">
+			<div class="input-group date">
+				<input type="text" name="start_date" class="form-control input-sm" value="{$start_time}" placeholder="开始日期" />
+				<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group date">
+				<input type="text" name="end_date" class="form-control input-sm" value="{$end_time}" placeholder="结束日期" />
+				<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group">
+				<div class="input-group-addon">状态</div>
+				<select class="form-control  input-sm" name="status">
+					<option value="" >所有</option>
+					<option value="INIT" {if $smarty.request.status == "INIT"}selected{/if}>未确认</option>
+					<option value="CONFIRM" {if $smarty.request.status == "CONFIRM"}selected{/if}>确认</option>
+					<option value="CANCEL" {if $smarty.request.status == "CANCEL"}selected{/if}>取消</option>
+					<option value="CLOSE" {if $smarty.request.status == "CLOSE"}selected{/if}>关闭</option>
+				</select>
+			</div>
+		</div>
+		<input type="hidden" name="act" value="search" />	
+		<button type="submit" class="btn btn-primary btn-sm search">搜索</button>
+	</form>
+	<div id="new_list"><a href="#" data-toggle="modal" data-target="#myModal">新建开票清单</a></div>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   		<div class="modal-dialog">
+      		<div class="modal-content">
+         		<div class="modal-header">
+            		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                  		&times;
+            		</button>
+            		<h4 class="modal-title" id="myModalLabel">
+               			新建开票清单
+            		</h4>
+         		</div>
+         		<div class="form-horizontal">
+         			<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_request_list_new.php" method="post">
+         				<div class="form-group">
+    						<label for="autocomplete_provider_new" class="col-sm-2 control-label">供应商</label>
+    						<div class="col-sm-8">
+      							<input type="text" class="form-control" id="autocomplete_provider_new" placeholder="供应商">
+      							<input type="hidden" name="provider_id" value="{$purchase_invoice_request->supplierId}" id="provider_id_new" />
+    						</div>
+    					</div>
+    					<div class="form-group">
+    						<label for="note" class="col-sm-2 control-label">备注</label>
+    						<div class="col-sm-8">
+      							<textarea name="note" id="note" placeholder="备注" rows="3" cols="51"></textarea>
+    						</div>
+  						</div>
+  				<div class="modal-footer">
+  					<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">关闭</button>
+  					<button type="submit" id="new_request" class="btn btn-primary btn-sm">创建开票清单</button>
+  					<input type="hidden" name="act" value="purchase_invoice_request_add" />
+  				</div>
+         			</form>
+         		</div>
+      		</div>
+		</div>
+	</div>
+	<div class="table">
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>开票清单号</th>
+					<th>供应商</th>
+					<th>创建时间</th>
+					<th>创建人</th>
+					<th>状态</th>
+					<th>去税总额</th>
+					<th>带税总额</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach from=$purchase_invoice_request_list item=list}
+				<tr>
+					<td><a href="purchase_invoice_request_detail_new.php?purchase_invoice_request_id={$list.purchase_invoice_request_id}" target="_blank">{$list.purchase_invoice_request_id}</a></td>
+					<td>{$list.provider_name}</td>
+					<td>{$list.created_stamp}</td>
+					<td>{$list.created_user}</td>
+					<td>
+						{if $list.status == 'INIT'}未确认
+						{elseif $list.status == 'CONFIRM'}已确认
+						{elseif $list.status == 'CANCEL'}取消
+						{else $list.status == 'CLOSE'}关闭
+						{/if}
+					</td>
+					<td>￥{$list.total_net_cost|erp_price_format}</td>
+					<td>￥{$list.total_cost|erp_price_format}</td>
+					<td><input type="button" class="btn btn-primary btn-xs" onclick="export_excel('{$list.purchase_invoice_request_id}','{$list.provider_name}');" value="导出开票清单" {if $list.status == "INIT"}disabled{/if} /></td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+		{$pagination}
+	</div>
+	<form method="POST" name="excel_form">
+	    <input type="hidden" name="purchase_invoice_request_id_excel" id="purchase_invoice_request_id_excel"/>
+	    <input type="hidden" name="provider_name" id="provider_name"/>
+	</form>
+</body>
+</html>

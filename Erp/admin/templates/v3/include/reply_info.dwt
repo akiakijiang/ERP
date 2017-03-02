@@ -1,0 +1,82 @@
+<!-- 咨询回复 -->
+
+<div class="service_talk {if !$service.review_remark}no_comment{/if}">
+	<h3>客户留言</h3>
+    <div class="summary "><span class="s_first">{$service.apply_datetime}</span><strong>{$service.apply_username}</strong><span>{if $service.review_remark}{$service.apply_reason}{/if}</span></div>
+    <div class="s_content {if $service.review_remark}c_reply{/if}">{$service.apply_reason}</div>
+</div>
+
+<div class="service_talk {if !$service.review_remark}no_comment{/if}">
+	<!-- {if $service.review_remark} -->
+    <div class="summary"><span class="s_first">{$service.review_datetime}</span><strong class="reply">{$service.review_username}</strong><span>{if $service.service_comments}{$service.review_remark}{/if}</span></div>
+	<div class="s_content {if $service.review_remark}c_reply{/if}">{$service.review_remark}<br /><a href="#" class="edit">修改回复</a></div>
+	<div class="operate" {if $smarty.foreach.comments.last && !$service.service_comments}last='1'{else}last='0'{/if}>
+    <span sId='{$service.service_id}'>
+    {if ($service.service_type == 1 || $service.service_type == 2) && $service.service_status == 0}<a href="#" class="pop agree" actVal='update_status' type='{$service.service_type}' status='1'>同意退回</a>{/if}
+    {if $service.service_type == 6 && $service.service_status == 0 && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='2'>审核通过</a>{/if}
+    {if ($service.back_shipping_status == 0 || $service.back_shipping_status == 5) && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='3' >审核未通过</a>{/if}
+    {if ((!$service.change_order_info && $service.service_type == 1) || ($service.service_type == 2 && !$service.service_pay_status)) && $service.service_status != 3}<a href="#" class="pop" actVal='back_or_change' status='{$service.service_status}' type='{if $service.service_type == 1}2{/if}{if $service.service_type == 2}1{/if}'>{if $service.service_type == 1}换货申请改为退货申请{/if}{if $service.service_type == 2}退货申请改为换货申请{/if}</a>{/if}
+    {if ($service.outer_check_status == 24 || $service.inner_check_status == 33) && $service.service_call_status == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status="-1" call='2'>检测未通过已回访</a>{/if}
+    </span>
+    <input type="submit" class="givePost button_1" value="发表回复" {if $service.review_remark}style='display:none;'{/if}><strong {if $service.review_remark}style='display:none;'{/if}></strong>
+    </div>   
+    <!-- {else} -->
+    {*客服要求去掉保价回复框和按钮*}
+    <div class="write"><textarea name="review_remark"></textarea></div>
+   	<div class="operate">
+        <span sId='{$service.service_id}'>
+            {if ($service.service_type == 1 || $service.service_type == 2) && $service.service_status == 0}<a href="#" class="pop agree" actVal='update_status' type='{$service.service_type}' status='1'>同意退回</a>{/if}
+            {if $service.service_type == 6 && $service.service_status == 0 && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='2'>审核通过</a>{/if}
+    {if ($service.back_shipping_status == 0 || $service.back_shipping_status == 5) && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='3' >审核未通过</a>{/if}
+    {if ((!$service.change_order_info && $service.service_type == 1) || ($service.service_type == 2 && !$service.service_pay_status)) && $service.service_status != 3}<a href="#" class="pop" actVal='back_or_change' status='{$service.service_status}' type='{if $service.service_type == 1}2{/if}{if $service.service_type == 2}1{/if}'>{if $service.service_type == 1}换货申请改为退货申请{/if}{if $service.service_type == 2}退货申请改为换货申请{/if}</a>{/if}
+    {if ($service.outer_check_status == 24 || $service.inner_check_status == 33) && $service.service_call_status == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status="-1" call='2'>检测未通过已回访</a>{/if}
+    </span>
+    <input type="submit" class="givePost button_1" value="发表回复"><strong></strong>
+    </div>
+    <!-- {/if} -->
+    <input type="hidden" name="act"  value="reply" />   
+   	<input type="hidden" name="service_id" value="{$service.service_id}" />      
+    <input type="hidden" name="service_type" value="{$service.service_type}" />
+    <input type="hidden" name="service_status" value="{$service.service_status}" />    
+</div>
+
+<!-- {foreach from=$service.service_comments item=comment name=comments} -->
+<div class="service_talk {if !$comment.reply}no_comment{/if}">
+    <div class="summary "><span class="s_first">{$comment.post_datetime}</span><strong>{$comment.post_username}</strong><span>{if $comment.reply}{$comment.post_comment}{/if}</span></div>
+    <div class="s_content {if $comment.reply}c_reply{/if}">{$comment.post_comment}</div>
+</div>
+<div class="service_talk {if !$comment.reply}no_comment{/if}">
+	<!-- {if $comment.reply} -->
+    <div class="summary "><span class="s_first">{$comment.replied_datetime}</span><strong class="reply">{$comment.replied_username}</strong><span>{if !$smarty.foreach.comments.last}{$comment.reply}{/if}</span></div>
+	<div class="s_content {if $comment.reply}c_reply{/if}">{$comment.reply}<br /><a href="#" class="edit">修改回复</a></div>
+    <div class="operate" {if $smarty.foreach.comments.last}last='1'{else}last='0'{/if}>
+    	<span sId='{$service.service_id}'>
+           {if ($service.service_type == 1 || $service.service_type == 2) && $service.service_status == 0}<a href="#" class="pop agree" actVal='update_status' type='{$service.service_type}' status='1'>同意退回</a>{/if}
+           {if $service.service_type == 6 && $service.service_status == 0 && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='2'>审核通过</a>{/if}
+    {if ($service.back_shipping_status == 0 || $service.back_shipping_status == 5) && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='3' >审核未通过</a>{/if}
+    {if ((!$service.change_order_info && $service.service_type == 1) || ($service.service_type == 2 && !$service.service_pay_status)) && $service.service_status != 3}<a href="#" class="pop" actVal='back_or_change' status='{$service.service_status}' type='{if $service.service_type == 1}2{/if}{if $service.service_type == 2}1{/if}'>{if $service.service_type == 1}换货申请改为退货申请{/if}{if $service.service_type == 2}退货申请改为换货申请{/if}</a>{/if}
+    {if ($service.outer_check_status == 24 || $service.inner_check_status == 33) && $service.service_call_status == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status="-1" call='2'>检测未通过已回访</a>{/if}
+    </span>
+    <input type="submit" class="givePost button_1" value="发表回复" {if $service.review_remark}style='display:none;'{/if}><strong {if $service.review_remark}style='display:none;'{/if}></strong>
+    </div>   
+    <!-- {else} -->
+    <div class="write"><textarea name="reply"></textarea></div>
+   	<div class="operate">
+    <span sId='{$service.service_id}'>
+        {if ($service.service_type == 1 || $service.service_type == 2) && $service.service_status == 0}<a href="#" class="pop agree" actVal='update_status' type='{$service.service_type}' status='1'>同意退回</a>{/if}
+        {if $service.service_type == 6 && $service.service_status == 0 && $service.check == 1}{$service.check}nihao<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='2'>审核通过</a>{/if}
+    {if ($service.back_shipping_status == 0 || $service.back_shipping_status == 5) && $service.check == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status='3' >审核未通过</a>{/if}
+    {if ((!$service.change_order_info && $service.service_type == 1) || ($service.service_type == 2 && !$service.service_pay_status)) && $service.service_status != 3}<a href="#" class="pop" actVal='back_or_change' status='{$service.service_status}' type='{if $service.service_type == 1}2{/if}{if $service.service_type == 2}1{/if}'>{if $service.service_type == 1}换货申请改为退货申请{/if}{if $service.service_type == 2}退货申请改为换货申请{/if}</a>{/if}
+    {if ($service.outer_check_status == 24 || $service.inner_check_status == 33) && $service.service_call_status == 1}<a href="#" class="pop" actVal='update_status' type='{$service.service_type}' status="-1" call='2'>检测未通过已回访</a>{/if}
+    </span>
+    <input type="submit" class="givePost button_1" value="发表回复"><strong></strong>
+    </div>  
+    <!-- {/if} -->
+	<input type="hidden" name="act"  value="reply_comment" /> 
+    <input type="hidden" name="service_id" value="{$service.service_id}" />
+    <input type="hidden" name="service_type" value="{$service.service_type}" />
+    <input type="hidden" name="service_status" value="{$service.service_status}" />
+	<input type="hidden" name="service_comment_id" value="{$comment.service_comment_id}" />    
+</div>
+<!-- {/foreach} -->
+

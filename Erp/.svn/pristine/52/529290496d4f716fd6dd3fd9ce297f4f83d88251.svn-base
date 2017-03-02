@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>库存查询</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+<form>
+商品类别：
+<select name="goods_cagetory">
+<option value="-1">所有</option>
+<option value="1" {if $smarty.request.goods_cagetory == 1}selected{/if}>手机</option>
+<option value="2" {if $smarty.request.goods_cagetory == 2}selected{/if}>手机配件</option>
+<option value="3" {if $smarty.request.goods_cagetory == 3}selected{/if}>健康电子</option>
+<option value="4" {if $smarty.request.goods_cagetory == 4}selected{/if}>DVD</option>
+</select>
+时间：
+<input style="width:90px" id="start_time" name="start_time" value="{if $smarty.request.start_time != ''}{$smarty.request.start_time}{else}{$start}{/if}"><input type="button" value="..." id="start_time_trigger">
+<input style="width:90px" id="end_time" name="end_time" value="{if $smarty.request.end_time != ''}{$smarty.request.end_time}{else}{$end}{/if}"><input type="button" value="..." id="end_time_trigger">
+<input type="submit" value="搜索">
+<input type="hidden" name="act" value="search">
+</form>
+<table class="bWindow">
+<caption><h2>库存汇总</h2><br></caption>
+<tr>
+<th>品牌</th>
+<th>出库时间 - 入库时间(天)</th>
+<th>售出个数</th>
+<th>采购总金额</th>
+</tr>
+<tr align="center">
+	<td>汇总</td>
+	<td>{$sum.total_days}
+		<br>
+			[平均]{$sum.avg_days}
+	</td>
+	<td>{$sum.total_count}</td>
+	<td>{$sum.total_purchase_amount}
+		<br>
+		[平均]{$sum.avg_amount}
+	</td>
+</tr>
+<!--{foreach from=$goods_list item=goods}-->
+<tr align="center">
+<td>{$goods.brand_name}</td>
+<td>{$goods.days}</td>
+<td>{$goods.goods_count}</td>
+<td>{$goods.amount}</td>
+</tr>
+<!--{/foreach}-->
+</table>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_time",
+        button            : "start_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_time",
+        button            : "end_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

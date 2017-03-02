@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<ShipmentConfirmRequest>
+	<Request>
+		<TransactionReference>
+			<CustomerContext>CHRIS GUAN</CustomerContext>
+			<XpciVersion>1.0001</XpciVersion>
+		</TransactionReference>
+		<RequestAction>ShipConfirm</RequestAction>
+		<RequestOption>nonvalidate</RequestOption>
+	</Request>
+	<Shipment>
+		<Description>See invoice</Description>
+		<Shipper>
+			<Name>CHRIS GUAN</Name>
+			<AttentionName>Chris Guan</AttentionName>
+			<PhoneNumber>+85281972796</PhoneNumber>
+			<ShipperNumber>E2338R</ShipperNumber>
+			<Address>
+				<AddressLine1>Unit152B,No.1355, Jinji Lake Avenue</AddressLine1>
+				<AddressLine2>Suzhou Industrial Park</AddressLine2>
+				<City>SUZHUO</City>
+				<StateProvinceCode>JS</StateProvinceCode>
+				<CountryCode>CN</CountryCode>
+				<PostalCode>215021</PostalCode>
+			</Address>
+		</Shipper>
+{$ShipTo}
+		<Service>
+			<Code>65</Code>
+			<Description>optional</Description>
+		</Service>
+		<PaymentInformation>
+			<Prepaid>
+				<BillShipper>
+					<AccountNumber>E2338R</AccountNumber>
+				</BillShipper>
+			</Prepaid>
+		</PaymentInformation>
+{$Package}
+	</Shipment>
+	<LabelSpecification>
+		<LabelPrintMethod>
+			<Code>GIF</Code>
+		</LabelPrintMethod>
+		<HTTPUserAgent>Mozilla/4.5</HTTPUserAgent>
+		<LabelImageFormat>
+			<Code>GIF</Code>
+		</LabelImageFormat>
+	</LabelSpecification>
+</ShipmentConfirmRequest>

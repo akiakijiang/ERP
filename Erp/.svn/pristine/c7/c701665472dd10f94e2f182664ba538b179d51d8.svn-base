@@ -1,0 +1,13 @@
+单据号码,客户名称,商品名,数量,单价,{*
+*}金额,新增应收金额,备注,税率,税号,地址电话,银行账号,复核人,收款人,
+{foreach from=$orders2 item=order}{foreach from=$order.order_goods item=goods name=order_goods key=flag}
+{$order.now_date},{*
+*}{$order.inv_payee},{*
+*}{$goods.goods_name},{$goods.goods_number},,{*
+*}{$goods.goods_total_amount},{if $flag == 0}{$order.invoice_amount}{else} {/if},{*
+*}{$order.order_sn},17%,,{*
+*}{$order.province_name},,{*
+*}王艳华,{*
+*}周婷
+{/foreach}
+{/foreach}

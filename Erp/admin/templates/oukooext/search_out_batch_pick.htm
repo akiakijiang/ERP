@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>批拣单查询</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: center;
+	}
+	#search td {
+		text-align: left;
+	}
+	.pWindow{
+		width:99.7%;
+		font-size:10pt;
+		text-align:center;
+		border:1px solid #000;
+		border-collapse:collapse;
+		margin:20px 0 20px 2px;
+	}
+	.pWindow td{
+	    padding:5px 10px;
+	}
+	.pWindow td,.pWindow th{
+		border:1px solid #000;
+		height:25px;
+		line-height:25px;
+	}
+	.postscript {
+	    font-size:15px;
+	    font-family: "黑体";
+	    font-weight:bold;
+	}
+	.top{
+	    margin-top:140px;
+	    margin-left:0px;
+	}
+	<!--{/literal}-->
+</style>
+<script type="text/javascript">
+{literal}
+$(document).ready(function(){
+	
+	$(".print-btn").click(function(){
+		$(this).parents("tr").hide();
+		return true;
+	});
+	
+	
+})
+
+
+// 完结批捡单前灰掉按钮
+function over_batch_pick(batch_pick_sn) {
+	if(!confirm('确认完结吗？')) {
+		return false;
+	}
+	$('#btn_over_batch_pick_'+batch_pick_sn).attr('disabled',true);
+	$('#form_over_batch_pick_'+batch_pick_sn).submit();
+}
+{/literal}
+</script>
+</head>
+	<body>
+	
+	<h1 align='center'>批拣单打印</h1>
+	<fieldset style="-moz-border-radius:6px;padding:10px;margin:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;打印批拣单&nbsp;</span></legend>
+	 <DIV>
+	    <h3 style="color:#09F;">查询</h3>
+		<p>
+			<form action="search_out_batch_pick.php"  method="GET">
+			<label for="facility_id">请选择仓库：</label>
+    		<select name="facility_id" id="facility_id">{html_options options=$available_facility selected=$facility_id}</select>
+			 <table id="search" cellpadding="5" cellspacing="1">
+			   <tr>
+			    <td>批拣单号
+	            <input id="batch_pick_sn" style="width:100px;margin-top:10px" size="50"  name="batch_pick_sn" value="{$smarty.request.batch_pick_sn}"></td>
+			    <td>批拣单状态
+			    <select name="is_pick">
+			        {html_options options=$is_pick_list selected = $smarty.request.is_pick}
+			    </select></td>
+			   </tr>
+			   <tr>
+			    <td>起始发起时间 <input style="width:90px;margin-top:0px" id=start_validity_time name="start_validity_time" value="{$smarty.request.start_validity_time}"><input type="button" value="..." id="start_validity_time_trigger"></td>
+			    <td>终止发起时间 <input style="width:90px;margin-top:0px" id="end_validity_time" name="end_validity_time" value="{$smarty.request.end_validity_time}"><input type="button" value="..." id="end_validity_time_trigger"></td>
+			    <td><input type="submit"  style="margin-top:0px" value="搜索" ></td>
+			   </tr>
+			  </table>
+			</form>
+		</p>
+	</DIV>
+	<DIV>
+	    <h3 style="color:#09F;">批拣单列表</h3>
+		<hr style="margin:5px;">
+		<h3 style="text-align:center;color:red;">
+		    <if $message>
+			    {$message}
+			</if>
+		</h3>
+		<hr style="margin:5px;">
+		<h3 style="text-align:left;">
+		{if $flag}
+		     {$total_message}
+		</h3>
+		{else}
+		<h3 style="text-align:left;color:red;">
+		      {$total_message}    
+		{/if}
+		</h3>
+		<table class="bWindow" style="margin-top:10px;margin-bottom:10px;width:1400px;">
+			<tr>
+				<th>打标ID</th>
+				<th>打标省市</th>
+				<th>批拣单号(订单数量)</th>
+				<th>商品名称</th>
+				<th>是否打印</th>
+				<th>打印记录</th>
+				<th>是否复核</th>
+				<th>创建时间</th>
+			</tr>
+			<!--{foreach from=$batch_pick_lists item=list}-->
+			<tr>
+			   <td> {$list.task_id}</td>
+			   <td> {if $list.province}【{$list.province}】{/if}{if $list.city}【{$list.city}】{/if}</td>
+			   <td><a href="deal_out_batch_print.php?BPSN={$list.batch_pick_sn}" target="new">{$list.batch_pick_sn}({$list.shipment_number})
+			   	   </a>
+			   </td>
+			   <td>{$list.goods_name}</td>
+			   {if $list.print_number == 0}
+			   <td>未打印</td>
+			   {else}
+			   <td style="text-align:left;color:red;">已打印</td>       
+			   {/if}
+			   
+			   <td>{$list.print_note}</td>
+			   <td>{$list.check_status}</td>
+			   <td>{$list.created_stamp}</td>
+			</tr>
+			<!--{/foreach}-->
+
+	</table>
+	{$pagination}
+	</fieldset>
+	{literal}
+	<script type="text/javascript">//<![CDATA[
+	                                          
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "start_validity_time",
+	          button            : "start_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "end_validity_time",
+	          button            : "end_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      //]]>
+	</script>
+	{/literal}
+</body>
+</html>

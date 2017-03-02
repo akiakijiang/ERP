@@ -1,0 +1,1469 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<!--
+ * Created on 2011-7-14
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+-->
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title> 赠品管理 </title>
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <script type="text/javascript" src="../misc/ajaxfileupload.js"></script>
+  <!-- Calendar -->
+  <link rel="stylesheet" type="text/css" href="../js/style/calendar/GooCalendar.css"/>
+  <script type="text/javascript" src="../js/style/calendar/GooFunc.js"></script>
+  <script type="text/javascript" src="../js/style/calendar/GooCalendar.js"></script>
+  <!-- Calendar /-->
+  
+    <script type="text/javascript"><!--
+    // <![CDATA[
+    var WEB_ROOT = '{$WEB_ROOT}';
+    var exclude_goods_str = '{$exclude_goods_str}';
+    // {literal}
+    
+    window.onload = function() {
+		var position = E('position').value;
+		var showNum = E('show').value;
+		if(position){
+			window.location.hash=position;
+		}
+		show(showNum);
+	}
+    
+    function E(id) {return document.getElementById(id);}
+    function ES(name) {return document.getElementsByName(name);}
+    
+    var property={
+	    divId:"demo",
+	    needTime:true,
+	    yearRange:[1970,2030],
+	    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+	    month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+	    format:"yyyy-MM-dd hh:mm:ss"
+	};
+
+ 	// 初始化变量		
+	// 已添加的订单商品
+	var exclude_goods_array = new Array();
+	if(exclude_goods_str !=null && exclude_goods_str!='') {
+		tmp_goods_array = exclude_goods_str.split(',');
+		for(var i=0; i<tmp_goods_array.length;++i) {
+			exclude_goods_array.push({goods_style_id:tmp_goods_array[i]});
+			
+		}
+	}
+	
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').not('#cat_legend').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+            $('#cat_legend').next().slideToggle();  
+        }); 
+        $('#cat_legend').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+
+        }); 
+        
+        canva1=$.createGooCalendar("start",property);
+        canva2=$.createGooCalendar("end",property);
+//        canva1.setDate({});
+//        canva2.setDate({});
+
+        canva3=$.createGooCalendar("start_full_amount",property);
+        canva4=$.createGooCalendar("end_full_amount",property);
+        
+        canva5=$.createGooCalendar("start_remind",property);
+        canva6=$.createGooCalendar("end_remind",property);
+//        canva5.setDate({});
+//        canva6.setDate({});
+         
+        /**
+         * 主商品搜索
+         */
+    /*    $('#main_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods', {
+            dataType : 'json',
+            minChars: 0,
+            mustMatch: false,
+            formatItem : function(row, i, max, value, term) {
+                return(row.goods_name);
+            },
+            formatResult : function(row) {
+                return(row.goods_name);
+            }
+        }).result(function(event, row, formatted) {
+            $('#hid_main_goods_id').val(row.goods_id);
+            $('#hid_main_style_id').val(row.style_id);
+            $('#hid_main_cat_id').val(row.cat_id);
+        });
+   */
+   		
+   		//alert(eval('(' + exclude_goods_array + ')'));
+   		//alert(exclude_goods_array.parseJSON());
+		$('#main_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods_and_taocan', {
+    		dataType : 'json',
+    		minChars: 0,
+    		mustMatch: false,
+    		formatItem : function(row, i, max, value, term) {
+    			return(row.goods_name);
+    		},
+    		formatResult : function(row) {
+    			return(row.goods_name);
+    		}
+    	}).result(function(event, row, formatted) {
+    		$('#hid_main_goods_id').val(row.goods_id);
+    		$('#hid_main_style_id').val(row.style_id);
+    		$('#hid_main_cat_id').val(row.cat_id);
+    		$('#main_goods').val(row.goods_name);
+    		var type = row.type;
+    		if(type == 'taocan') {
+    			$('#hid_main_tc_code').val(row.outer_id);
+        	} else {
+        		$('#hid_main_tc_code').val('');
+            }
+    	});
+
+        /**
+         * 赠品搜索
+         */
+        $('#child_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods_and_taocan', {
+    		dataType : 'json',
+    		minChars: 0,
+    		mustMatch: false,
+    		formatItem : function(row, i, max, value, term) {
+    			return(row.goods_name);
+    		},
+    		formatResult : function(row) {
+    			return(row.goods_name);
+    		}
+    	}).result(function(event, row, formatted) {
+    		$('#hid_child_goods_id').val(row.goods_id);
+    		$('#hid_child_style_id').val(row.style_id);
+    		$('#child_goods').val(row.goods_name);
+    		var type = row.type;
+    		if(type == 'taocan') {
+    			$('#hid_child_tc_code').val(row.outer_id);
+        	} else {
+        		$('#hid_child_tc_code').val('');
+            }
+    	});
+        
+        
+        /**
+         * 满金额送赠品搜索
+         */
+        $('#full_amount_child_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods_and_taocan', {
+    		dataType : 'json',
+    		minChars: 0,
+    		mustMatch: false,
+    		formatItem : function(row, i, max, value, term) {
+    			return(row.goods_name);
+    		},
+    		formatResult : function(row) {
+    			return(row.goods_name);
+    		}
+    	}).result(function(event, row, formatted) {
+    		$('#full_amount_hid_child_goods_id').val(row.goods_id);
+    		$('#full_amount_hid_child_style_id').val(row.style_id);
+    		$('#full_amount_child_goods').val(row.goods_name);
+    		var type = row.type;
+    		if(type == 'taocan') {
+    			$('#full_amount_hid_child_tc_code').val(row.outer_id);
+        	} else {
+        		$('#full_amount_hid_child_tc_code').val('');
+            }
+    	});
+        
+	/**
+	 * 商品搜索
+	 */
+	$('#exclude_goods_add_select').autocomplete('gifts_manage.php?request=ajax&act=search_goods_and_taocan', {
+		dataType : 'json',
+		minChars: 0,
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.goods_name);
+		},
+		formatResult : function(row) {
+			return(row.goods_name);
+		}
+	}).result(function(event, row, formatted) {
+		//var goods_id = row.goods_id;
+		//var style_id = (row.style_id == null ? 0 : row.style_id);
+		var outer_id = row.outer_id
+		$('#exclude_outer_id').val(outer_id);
+	});
+
+	// 绑定添加商品按钮事件
+	$('#exclude_goods_add_btn').bind('click', exclude_goods_add);
+    
+    changeInput();
+    changeRemindInput();
+    changeFullamountInput();
+    
+});
+
+	/**
+	 * 更改样式选择的下拉项
+	 *
+	 * @param int goods_id 商品ID 
+	 */
+	function change_goods_style_select_list(goods_id)
+	{
+			var $e = $('#hid_main_style_id');
+			
+			$.ajax({
+ 	     		    beforeSend : function(){
+						$e.attr('disabled', true);	
+					},
+					async : false,
+					dataType : "json",
+					data: "goods_id=" + goods_id,
+					url : WEB_ROOT + "admin/ajax.php?act=search_goods_styles",
+					type : 'POST',
+					success : function(response) {
+						if (response.length) {	
+							var tpl = '';
+							tpl = '<option value="0">全部样式</option>';
+							for (var i = 0; i < response.length; i++) {
+								tpl += '<option value="'+ response[i].style_id +'">'+ response[i].color +'</option>';
+							}
+						} else {
+							tpl = '<option value="0">全部样式</option>';	
+						}
+						 
+						$e.html(tpl);
+					},
+					complete : function() {
+						$e.attr('disabled', false);
+					}
+			});
+	}
+	
+    function cancelBtnclick(){
+        document.getElementById('main_goods').value = '';
+        document.getElementById('child_goods').value = '';
+        document.getElementById('hid_main_goods_id').value = '';
+        document.getElementById('hid_main_style_id').value = '';
+        document.getElementById('hid_main_tc_code').value = '';
+        document.getElementById('hid_main_cat_id').value = '';
+        document.getElementById('hid_child_goods_id').value = '';
+        document.getElementById('hid_child_style_id').value = '';
+        document.getElementById('hid_child_tc_code').value = '';
+    }
+
+    function formsubmit(){ 
+        
+    	var active_name=document.getElementById('active_name').value;
+        var main_goods_id = document.getElementById('hid_main_goods_id').value ;
+        var main_goods_name = document.getElementById('main_goods').value ;
+        var main_tc_code = document.getElementById('hid_main_tc_code').value ;
+        var child_tc_code = document.getElementById('hid_child_tc_code').value ;
+        var child_goods_id = document.getElementById('hid_child_goods_id').value ;
+        var child_goods_name = document.getElementById('child_goods').value ;
+        var main_goods_amount = document.getElementById('main_goods_amount').value ;
+        var child_goods_amount = document.getElementById('child_goods_amount').value ;
+    	var start_time=document.getElementById('start').value;
+    	var end_time=document.getElementById('end').value;
+    	var distributorIds=document.getElementsByName("distributorsId[]");
+        var facilityIds = document.getElementsByName("facilitiesId[]"); 
+
+
+    	if(''==active_name || null==active_name){
+    		alert('活动名称还未添加。。。');
+    		return false;
+    	}
+    	if(''==start_time || null==start_time || '设置开始时间'==start_time){
+    		alert('活动开始时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(start_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(''==end_time || null==end_time || '设置结束时间'==end_time){
+    		alert('活动结束时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(end_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(distributorIds){
+    		var flag=false;
+    		for(var i=0;i<distributorIds.length;i++){
+    			if(distributorIds[i].checked==true){
+    				flag=true;
+    			}
+    		}
+    		if(flag==false){
+    			alert('适用分销商未选择。。。');
+    			return false;
+    		}
+    	}
+        if('' == main_goods_name || null == main_goods_id || '' == main_goods_id){
+            alert('还没有选择绑定的主商品 。。。');
+            return false;
+        }
+        if('' == child_goods_name || null == child_goods_id || '' == child_goods_id){
+            alert('还没有选择绑定的赠品 。。。');
+            return false;
+        }
+        if('' == main_goods_amount || null == main_goods_amount){
+            alert('还没有填写商品数量。。。');
+            return false;
+        }
+        if('' == child_goods_amount || null == child_goods_amount){
+            alert('还没有填写赠品数量。。。');
+            return false;
+        }
+        
+        
+        
+    }
+    
+
+    function fullamountformsubmit(){ 
+    	var active_name=document.getElementById('full_amount_active_name').value;
+        var child_goods_id = document.getElementById('full_amount_hid_child_goods_id').value ;
+        var child_goods_name = document.getElementById('full_amount_child_goods').value ;
+        var child_goods_amount = document.getElementById('full_amount_child_goods_amount').value ;
+    	var start_time=document.getElementById('start_full_amount').value;
+    	var end_time=document.getElementById('end_full_amount').value;
+    	var distributorIds=document.getElementsByName("distributorsId_full_amount[]");
+    	var full_amount = document.getElementById("full_amount").value;
+    	var child_tc_code = document.getElementById('full_amount_hid_child_tc_code').value ;
+    	
+    	if(''==active_name || null==active_name){
+    		alert('活动名称还未添加。。。');
+    		return false;
+    	}
+    	if(''==start_time || null==start_time || '设置开始时间'==start_time){
+    		alert('活动开始时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(start_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(''==end_time || null==end_time || '设置结束时间'==end_time){
+    		alert('活动结束时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(end_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(distributorIds){
+    		var flag=false;
+    		for(var i=0;i<distributorIds.length;i++){
+    			if(distributorIds[i].checked==true){
+    				flag=true;
+    			}
+    		}
+    		if(flag==false){
+    			alert('适用分销商未选择。。。');
+    			return false;
+    		}
+    	}
+
+        if(null == child_goods_name || '' == child_goods_name || null == child_goods_id || '' == child_goods_id){
+            alert('还没有选择绑定的赠品 。。。');
+            return false;
+        }
+        if('' == child_goods_amount || null == child_goods_amount){
+            alert('还没有填写赠品数量。。。');
+            return false;
+        }
+        if('' == full_amount || null == full_amount) {
+            alert("还没有填写金额")
+            return false;
+        }
+        
+    }
+    
+    function remindformsubmit(){
+    	var remind_name=document.getElementById('remind_name').value;
+    	var start_time=document.getElementById('start_remind').value;
+    	var end_time=document.getElementById('end_remind').value;
+    	var distributorIds=document.getElementsByName("distributorsId_remind[]");
+    	var notice=document.getElementById('notice').value;
+    	if(''==remind_name || null==remind_name){
+    		alert('活动名称还未添加。。。');
+    		return false;
+    	}
+    	if(''==start_time || null==start_time || '设置开始时间'==start_time){
+    		alert('活动开始时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(start_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(''==end_time || null==end_time || '设置结束时间'==end_time){
+    		alert('活动结束时间还未选择。。。');
+    		return false;
+    	}
+    	if(!checkDateTime(end_time)){
+    		alert('输入活动开始时间格式要正确。。。');
+    		return false;
+    	}
+    	if(distributorIds){
+    		var flag=false;
+    		for(var i=0;i<distributorIds.length;i++){
+    			if(distributorIds[i].checked==true){
+    				flag=true;
+    			}
+    		}
+    		if(flag==false){
+    			alert('适用分销商未选择。。。');
+    			return false;
+    		}
+    	}
+    	if(''==notice || null==notice){
+    		alert('活动内容还未填写。。。');
+    		return false;
+    	}
+    }
+    
+  //实现分销商的全选功能
+    function CheckAll(elementName){
+    	var objs=document.getElementsByName(elementName);
+    	if(objs){
+    		for(var i=0;i<objs.length;i++){
+    			if(!objs[i].checked){
+    				objs[i].checked=true;
+    			}
+    		}
+    	}
+    }
+    //实现分销商的取消全选功能
+    function CancelCheckAll(elementName){
+    	var objs=document.getElementsByName(elementName);
+    	if(objs){
+    		for(var i=0;i<objs.length;i++){
+        		objs[i].checked=false;
+        	}
+    	}
+    	
+    }
+    //实现分销商的反选功能
+    function CheckInverse(elementName){
+    	var objs=document.getElementsByName(elementName);
+    	if(objs){
+    		for(var i=0;i<objs.length;i++){
+    			if(objs[i].checked==true){
+    				objs[i].checked=false;
+    			}
+    			else{
+    				objs[i].checked=true;
+    			}
+    		}
+    	}
+    }
+    
+    //修改时,选中原有的值
+    function changeInput() {
+        var distributorids = document.getElementById("distributorids").value;
+        if (distributorids != '' && distributorids != null) {
+        	var objs =document.getElementsByName("distributorsId[]");
+        	if(objs){
+		        var distributoridsAry = distributorids.split(",")
+        		for(var i=0;i<objs.length;i++){
+		        	for ( var index in distributoridsAry) {
+		        	    if (objs[i].value == distributoridsAry[index]) {
+        					objs[i].checked=true;
+		        	    }
+		            }
+        		}
+        	}
+        }
+        // 选中仓库 
+        var facilityids =  document.getElementById("facilityids").value;
+        if (facilityids != '' && facilityids != null) {
+            var objs =document.getElementsByName("facilitiesId[]");
+            if(objs){
+                var facilityidsAry = facilityids.split(",")
+                for(var i=0;i<objs.length;i++){
+                    for ( var index in facilityidsAry) {
+                        if (objs[i].value == facilityidsAry[index]) {
+                            objs[i].checked=true;
+                        }
+                    }
+                }
+            }
+        }
+
+        var is_overlay_value = document.getElementById("is_overlay_value").value;
+        if (is_overlay_value != '' && is_overlay_value != null) {
+            var objs = document.getElementsByName("is_overlay");
+            if (objs) {
+                for(var i=0;i<objs.length;i++){
+	        	    if (objs[i].value == is_overlay_value) {
+       					objs[i].checked=true;
+	        	    }
+        		}
+            }
+        }
+        
+        var start_value = document.getElementById("start_value").value;
+        if (start_value != null && start_value != '') {
+            document.getElementById("start").value=start_value;
+        }
+        var end_value = document.getElementById("end_value").value;
+        if (end_value != null && end_value != '') {
+            document.getElementById("end").value=end_value;
+        }
+        
+
+        
+    }
+    
+    // 满金额
+    function changeFullamountInput() {
+        var distributorids = document.getElementById("distributorids_full_amount").value;
+        if (distributorids != '' && distributorids != null) {
+        	var objs =document.getElementsByName("distributorsId_full_amount[]");
+        	if(objs){
+		        var distributoridsAry = distributorids.split(",")
+        		for(var i=0;i<objs.length;i++){
+		        	for ( var index in distributoridsAry) {
+		        	    if (objs[i].value == distributoridsAry[index]) {
+        					objs[i].checked=true;
+		        	    }
+		            }
+        		}
+        	}
+        } 
+
+        var facilityids = document.getElementById("facilityids_full_amount").value;
+        if (facilityids != '' && facilityids != null) {
+            var objs =document.getElementsByName("facilitiesId_full_amount[]");
+            if(objs){
+                var facilityidsAry = facilityids.split(",")
+                for(var i=0;i<objs.length;i++){
+                    for ( var index in facilityidsAry) {
+                        if (objs[i].value == facilityidsAry[index]) {
+                            objs[i].checked=true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        var cat_ids = document.getElementById("category_ids_full_amount").value;
+        
+        if (cat_ids != '' && cat_ids != null) {
+        	var objs =document.getElementsByName("category_ids[]");
+        	if(objs){
+		        var catAry = cat_ids.split(",")
+        		for(var i=0;i<objs.length;i++){
+		        	for ( var index in catAry) {
+		        	    if (objs[i].value == catAry[index]) {
+        					objs[i].checked=true;
+		        	    }
+		            }
+        		}
+        	}
+        }
+        
+        var is_overlay_value = document.getElementById("full_amount_is_overlay_value").value;
+        if (is_overlay_value != '' && is_overlay_value != null) {
+            var objs = document.getElementsByName("full_amount_is_overlay");
+            if (objs) {
+                for(var i=0;i<objs.length;i++){
+	        	    if (objs[i].value == is_overlay_value) {
+       					objs[i].checked=true;
+	        	    }
+        		}
+            }
+        }
+        
+        var start_value = document.getElementById("full_amount_start_value").value;
+        if (start_value != null && start_value != '') {
+            document.getElementById("start_full_amount").value=start_value;
+        }
+        var end_value = document.getElementById("full_amount_end_value").value;
+        if (end_value != null && end_value != '') {
+            document.getElementById("end_full_amount").value=end_value;
+        }
+    }
+    
+    //修改赠品活动提醒时，选中原有的值
+    function changeRemindInput() {
+        var distributorids = document.getElementById("edit_distributorids").value;
+        if (distributorids != '' && distributorids != null) {
+        	var objs =document.getElementsByName("distributorsId_remind[]");
+        	if(objs){
+		        var distributoridsAry = distributorids.split(",")
+        		for(var i=0;i<objs.length;i++){
+		        	for ( var index in distributoridsAry) {
+		        	    if (objs[i].value == distributoridsAry[index]) {
+        					objs[i].checked=true;
+		        	    }
+		            }
+        		}
+        	}
+        }
+        
+        var start_value = document.getElementById("remind_start_value").value;
+        if (start_value != null && start_value != '') {
+            document.getElementById("start_remind").value=start_value;
+        }
+        var end_value = document.getElementById("remind_end_value").value;
+        if (end_value != null && end_value != '') {
+            document.getElementById("end_remind").value=end_value;
+        }
+    }
+    
+    //时间格式检查
+    function checkDateTime(str){
+    	var r = str.match(/^(\d{4})(-)(\d{2})(-)(\d{2})( )(\d{2})(:)(\d{2})(:)(\d{2})$/);
+    	if(r == null){
+    		return false;
+    	}else{
+    		return true;
+    	}
+    }
+    
+    //删除确认
+    function delete_confirm(){
+    	return confirm("确认删除么？");
+    }
+    
+    //显示
+    function show(num){
+    	for(var i=1;i<4;i++){
+    		if(i != num){
+    			E('s'+i).style.display = 'none';
+    		}
+    	}
+    	E('s'+num).style.display = '';
+    }
+    
+    //满金额为0的提示
+    function check_amount(){
+    	var full_amount = E('full_amount').value;
+    	if(full_amount == 0){
+    		E('full_amount_is_overlay_y').disabled = true;
+    		E('full_amount_is_overlay_n').checked = true;
+    	}else{
+    		E('full_amount_is_overlay_y').disabled = false;
+    	}
+    }
+
+
+	/**
+	 * 添加不计入满赠商品明细
+	 */
+	function exclude_goods_add(event)
+	{
+		// 添加按钮
+		var $button = $('#exclude_goods_add_btn');
+		waiting($button);
+		
+		// 取得传入的订单商品id
+		var outer_id = $('#exclude_outer_id').val();
+		if (!outer_id) {
+			alert('该商品的数据错误');
+			waiting($button, 'en');
+			return;
+		}
+		
+		var goods_name = $('#exclude_goods_add_select').val();
+		
+		if(goods_name == null || goods_name == '') {
+			alert('该商品的数据错误');
+			waiting($button, 'en');
+			return;
+		}
+		
+		var g = {goods_style_id:outer_id};
+		var tpl = "<tr id='aaa' align='center' ix='" + outer_id +"'>"
+				  + "<td>" + outer_id + "</td>"
+				  + "<td>" + goods_name + "</td>"
+				  + "<td><a href='javascript:void(0);' onclick='exclude_goods_remove(this)'>删除</a>"
+				  + "<input type='hidden' name=exclude_goods[" + outer_id + "] value=" + outer_id + " />"
+				  + "</td>"
+				  + "</tr>";
+					
+	    if (cart_add(g)) { $('#exclude_goods_list').append(tpl)}; 
+		waiting($button, 'en');
+		
+	}
+
+	/**
+	 * 切换按钮的等待状态
+	 */
+	function waiting($button, status)
+	{
+		if (status == 'en') {
+			$button.attr('disabled', false);
+		} else {
+			$button.attr('disabled', true);
+		}
+	}
+
+	/**
+	 * 删除商品
+	 *
+	 * @param docObject  节点对象
+	 * @param string 类型 goods|item
+	 */
+	function exclude_goods_remove(doc, type) 
+	{
+		var $tr = $(doc).parent().parent();
+		var id = $tr.attr('ix');
+		$tr.remove();
+								
+		// 从已添加堆栈中删除该商品
+		for (var i = 0; i < exclude_goods_array.length; i++ ) {
+			if (exclude_goods_array[i].goods_style_id == id) {
+				exclude_goods_array.splice( i, 1);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * @return boolean 返回商品是否存在了
+	 */
+	function cart_add(g)
+	{
+		  // 判断该商品是否存在了
+		for (var i = 0; i < exclude_goods_array.length; i++ ) {
+			// 商品存在则更改数量			
+			if (exclude_goods_array[i].goods_style_id == g.goods_style_id) {
+				return false;
+			}
+		}
+			
+		// 该商品还没有添加
+		exclude_goods_array.push(g);
+		return true;
+	}
+	
+	/**
+	* 批量导入 不计入满赠商品
+	**/
+	function batch_exclude_goods()
+	{
+		var party_id = $('#party_id').val();
+		$.ajaxFileUpload({
+			url:'../batch_exclude_goods.php?party_id=' + party_id,
+			fileElementId:'fileToUpload',
+			dataType:'json',
+			success:function(data) {
+				
+				console.log(data);
+	        	added_goods_list = data.content;
+	        	console.log(added_goods_list);
+				if(data.message == ""){
+	        		batch_exclude_goods_add();
+	        	}else{
+	        		alert(data.message);
+	        	}
+			},
+			error:function(data, status, e) {
+				console.log("方法调用错误，请联系erp组");
+			}
+		})
+	}
+	
+	function batch_exclude_goods_add() {
+		// 添加按钮
+		var $button = $('#batch_exclude_goods_add_btn');
+		waiting($button);	
+		
+		for(var i = 0;i < added_goods_list.length; i++){			
+			var goods_id = added_goods_list[i][0]['goods_id'];
+			var style_id = added_goods_list[i][0]['style_id'];
+			var cat_id = added_goods_list[i][0]['cat_id'];
+			var outer_id = added_goods_list[i][0]['outer_id'];
+			var goods_name = added_goods_list[i][0]['goods_name'];
+			var type = added_goods_list[i][0]['type'];
+			
+			if (!outer_id) {
+				alert('该商品的数据错误1');
+				waiting($button, 'en');
+				return;
+			}
+			
+			if(goods_name == null || goods_name == '') {
+				alert('该商品的数据错误2');
+				waiting($button, 'en');
+				return;
+			}
+		
+			var g = {goods_style_id:outer_id};
+			var tpl = "<tr id='aaa' align='center' ix='" + outer_id +"'>"
+					  + "<td>" + outer_id + "</td>"
+					  + "<td>" + goods_name + "</td>"
+					  + "<td><a href='javascript:void(0);' onclick='exclude_goods_remove(this)'>删除</a>"
+					  + "<input type='hidden' name=exclude_goods[" + outer_id + "] value=" + outer_id + " />"
+					  + "</td>"
+					  + "</tr>";
+						
+		    if (cart_add(g)) { $('#exclude_goods_list').append(tpl)}; 
+			waiting($button, 'en');	
+		}
+	}
+    
+    // {/literal}
+    // ]]>
+    --></script>
+    <link href="Level1_Arial.css" rel="stylesheet" type="text/css" />
+ </head>
+ <body>
+ <!--{if $tip}-->
+   <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+		window.setTimeout(function(){
+			$('#tip').slideUp("slow");
+		}, 3000);
+	// {/literal}
+	// ]]>
+	</script>
+	<div id="tip" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+	{$tip}
+	</div>
+<!--{/if}-->
+<p style="margin-left: 350px;
+  font-size: 2em;
+  color: red;
+  font-weight: bolder;">新建赠品活动请前往“<span style="color:blue">赠品活动（新）</span>”页面进行操作</p>
+ <div style="margin-top:30px; margin-left:40px; width:1200px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;赠品管理&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+      <!--{if $message}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+          window.setTimeout(function(){$('#message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+      </script>
+      <div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$message}
+      </div>
+      <!--{/if}-->
+     <br/>
+     <!-- 赠品编辑 -->
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;{if $edit_gifts}赠品编辑{else}添加赠品{/if}&nbsp;</legend>
+     <div style="display:none;" id="s1">
+       <form method="post" id="form" onsubmit="return formsubmit()">
+         <table style="margin-left: 60px;width: 100%">
+            <tr>
+               <td style="width:100px;">活动名称:</td>
+               <td>&nbsp;<input type="text" style="width:270px;" id="active_name" name="active_name" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} value="{$gifts.active_name}"></input></td>
+            </tr>
+		    <tr>
+               <td style="width:100px;">活动时间：</td>
+               <td style="padding:5px;">
+                  <input type="text" value="{$gifts.start_time}" id="start" name="start" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}></input>&nbsp;到&nbsp;
+         	      <input type="text" value="{$gifts.end_time}" id="end" name="end"></input>
+         	      <input type="hidden" id="start_value" value="{$gifts.start_time}"/>
+         	      <input type="hidden" id="end_value" value="{$gifts.end_time}"/>
+               </td>
+           </tr>
+          </table>
+           <table style="margin-left: 60px;width: 100%">
+	           <tr>
+	              <td style="width:100px;"> <p>适用分销商:</p></td>
+	              <td>&nbsp;</td>
+	           </tr>
+		       <tr>
+				   {foreach from=$distributors item=distributor name=distributors}
+				   {if $smarty.foreach.distributors.iteration>1 and ($smarty.foreach.distributors.iteration-1)%3 eq 0}
+			   </tr>
+			   <tr>
+				   {/if}			   
+				   <td>&nbsp;</td>
+				   <td><input type="checkbox" name="distributorsId[]" value="{$distributor.distributor_id}" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;{$distributor.name}</td>
+				   {/foreach}
+			   </tr>
+			   <tr>
+			       <td><input type="hidden" id="distributorids" value="{$gifts.distributor_ids}"/>&nbsp;</td>
+			   </tr>
+	       <table style="margin-left:60px;width:100%">
+		       <tr>
+				   <td style="width:100px;">&nbsp;</td>
+				   <td><input name="chk_all" type="button" id="chk_all" value="全选" onClick="CheckAll('distributorsId[]')" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="cancel_chk_all" type="button" id="cancel_chk_all" value="全取消" onClick="CancelCheckAll('distributorsId[]')" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="chk_inverse" type="button" id="chk_inverse" value="反选" onClick="CheckInverse('distributorsId[]')" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+				   </td>
+			   </tr>
+	       </table>
+            </table> 
+               <table style="margin-left: 60px;width: 100%">
+               <tr>
+                  <td style="width:120px;"> <p>适用仓库（可不选）:</p></td>
+                  <td>&nbsp;</td>
+               </tr>
+
+               <tr>
+                   {foreach from=$facilities  key=facility_id item=facility name=facilities}
+                   {if $smarty.foreach.facilities.iteration>1 and ($smarty.foreach.facilities.iteration-1)%3 eq 0}
+               </tr>
+               <tr>
+                   {/if}               
+                   <td>&nbsp;</td>
+                   <td><input type="checkbox" name="facilitiesId[]" value="{$facility_id}" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;{$facility}</td>
+                   {/foreach}
+               </tr>
+               <tr>
+                   <td><input type="hidden" id="facilityids" value="{$gifts.facility_ids}"/>&nbsp;</td>
+               </tr>
+           </table> 
+            <table style="margin-left:60px;width:100%">
+               <tr>
+                   <td style="width:100px;">&nbsp;</td>
+                   <td><input name="chk_all" type="button" id="chk_all" value="全选" onClick="CheckAll('facilitiesId[]')" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <input name="cancel_chk_all" type="button" id="cancel_chk_all" value="全取消" onClick="CancelCheckAll('facilitiesId[]')" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <input name="chk_inverse" type="button" id="chk_inverse" value="反选" onClick="CheckInverse('facilitiesId[]')" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                   </td>
+               </tr>
+           </table>
+         <table style="margin-top: 30px; margin-left: 60px; margin-bottom: 40px; width: 100%">
+           <tr>
+              <td>商品(单品或套餐):&nbsp; </td>
+              <td>
+
+        	<input type="text" name="main_goods" id="main_goods" size="59" value='{$gifts.goods_name}'/> #
+        	<input type="hidden" name="hid_main_goods_id" id="hid_main_goods_id" value='{$gifts.parent_id}' size="5" readonly="readonly" style="border:none;" />
+        	<input type="hidden" name="hid_main_style_id" id="hid_main_style_id" value='{$gifts.parent_style_id}' size="5" readonly="readonly" style="border:none;" />
+        	<input type="hidden" name="hid_main_cat_id" id="hid_main_cat_id" value='{$gifts.parent_cat_id}'/>
+        	<input type="hidden" name="hid_main_tc_code" id="hid_main_tc_code" value='{$gifts.parent_tc_code}' size="5" readonly="readonly" style="border:none;" /> 
+                                   &nbsp; 
+                                      数量: &nbsp; <input type="text" name="main_goods_amount" id="main_goods_amount" size="5" value='{$gifts.parent_amount}'/>                
+              </td>
+           </tr>
+           <tr>
+              <td>赠品(单品或套餐)：&nbsp;  </td>
+              <td >
+                 <input type="text" name="child_goods" id="child_goods" size="85" value='{$gifts.child_goods_name}'/>&nbsp;   数量: &nbsp;
+                 <input type="text" name="child_goods_amount" id="child_goods_amount" size="5" value='{$gifts.goods_amount}'></input>
+                 <input type="hidden" name="hid_child_goods_id" id="hid_child_goods_id" value='{$gifts.goods_id}'/>
+                 <input type="hidden" name="hid_child_style_id" id="hid_child_style_id" value='{$gifts.style_id}'/>
+                 <input type="hidden" name="hid_child_tc_code" id="hid_child_tc_code" value='{$gifts.tc_code}' size="5" readonly="readonly" style="border:none;" />
+              </td>
+           </tr>
+           <tr>
+           		<td>限制赠品数量：</td>
+           		<td >
+                  <input type="radio" name="is_limit" value="Y" id="is_limit_y" {if $gifts.is_limit == 'Y'} checked="checked" {/if} {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/>是&nbsp;&nbsp;
+                  <input type="radio" name="is_limit" value="N" id="is_limit_n" {if $gifts.is_limit !== 'Y'} checked="checked" {/if} {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/> 否&nbsp;
+                  <input type="hidden" id="is_limit_value" value="{$gifts.is_limit}"/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 				     赠品上限：&nbsp;
+	              <input type="text" name="limit_goods_number" id="limit_goods_number" size="5" value='{$gifts.limit_goods_number}' {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}></input>
+              	</td>
+           </tr>
+           <tr>
+              <td> 自身活动叠加：</td>
+              <td >
+                  <input type="radio" name="is_overlay" value="Y" id="is_overlay_y" checked="checked" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/>是&nbsp;&nbsp;
+                  <input type="radio" name="is_overlay" value="N" id="is_overlay_n" {if $gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/> 否&nbsp;
+                  <input type="hidden" id="is_overlay_value" value="{$gifts.is_overlay}"/>
+              </td>
+           </tr>
+         </table>
+         <input type="hidden" name="hidden_group_goods_id" id="hidden_group_goods_id" value='{$gifts.group_goods_id}'/>
+         <input type="hidden" name="act" id="act" value="insert"/>
+         <input type="hidden" name="type" id="type" value="BIND"/>
+         <table style="margin-left: 400px;"><tr><td>
+             {if !$gifts}
+             <input type="submit" value=" 绑定赠品 " disabled/><span style="color:blue">该页面即将停止使用，目前只能查看和编辑已有活动。如需添加新活动请前往"赠品活动(新)"页面添加 </span> 
+             {elseif $view_only == 'N'}
+             <input type="submit" value="编辑绑定赠品">&nbsp; &nbsp; &nbsp; 
+             {/if}
+             {if $gifts && $gifts.can_update == 'N'}
+             <input type = "hidden" name = "part_edit" value = "Y" />
+             <input type = "hidden" name = "part_active_name" value = "{$gifts.active_name}" />
+             <input type = "hidden" name = "part_start_value" value = "{$gifts.start_time}" />
+             <input type = "hidden" name = "part_distributorids" value = "{$gifts.distributor_ids}" />
+             <input type = "hidden" name = "part_facilityids" value = "{$gifts.facility_ids}" />
+             <input type = "hidden" name = "part_is_overlay_value" value = "{$gifts.is_overlay}" />
+             <input type = "hidden" name = "part_is_limit_value" value = "{$gifts.is_limit}" />
+             <input type = "hidden" name = "part_limit_goods_number_value" value = "{$gifts.limit_goods_number}" />
+             {/if}
+         </td></tr></table><br/>
+         
+       </form>
+       </div>
+     </fieldset>
+     
+     <br/>
+     <font color="red">温馨提示：以买3送1这种情况为例，当买家买6时，如果勾选自身活动叠加‘是’这种情况的话，则意味着送2，否则还是送1</font>
+   </div>
+  </fieldset>
+   
+ </div>
+ 
+  <div style="margin-top:30px; margin-left:40px; width:1200px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;满金额送赠品&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+   <div id="gift_sign">
+   <input type = "hidden" name = "position" id = "position" value = {$position} />
+   <input type = "hidden" name = "show" id = "show" value = {$show} />
+   </div>
+      <!--{if $messageV2}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+          window.setTimeout(function(){$('#full_amount_message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+      </script>
+      <div id="full_amount_message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$messageV2}
+      </div>
+      <!--{/if}-->
+     <br/>
+     <!-- 满金额送赠品编辑 -->
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;{if $edit_full_amount_gifts}满金额送赠品编辑{else}添加满金额送赠品{/if}&nbsp;</legend>
+     <div style="display:none;" id="s2">
+       <form method="post" id="form" onsubmit="return fullamountformsubmit()">
+         <table style="margin-left: 60px;width: 100%">
+            <tr>
+               <td style="width:100px;">活动名称:</td>
+               <td>&nbsp;<input type="text" style="width:270px;" id="full_amount_active_name" name="active_name"  {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} value="{$full_amount_gifts.active_name}"></input></td>
+            </tr>
+		    <tr>
+               <td style="width:100px;">活动时间：</td>
+               <td style="padding:5px;">
+                  <input type="text" value="{$full_amount_gifts.start_time}" id="start_full_amount" name="start" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}></input>&nbsp;到&nbsp;
+         	      <input type="text" value="{$full_amount_gifts.end_time}" id="end_full_amount" name="end"></input>
+         	      <input type="hidden" id="full_amount_start_value" value="{$full_amount_gifts.start_time}"/>
+         	      <input type="hidden" id="full_amount_end_value" value="{$full_amount_gifts.end_time}"/>
+               </td>
+           </tr>
+          </table>
+           <table style="margin-left: 60px;width: 100%">
+	           <tr>
+	              <td style="width:100px;"> <p>适用分销商:</p></td>
+	              <td>&nbsp;</td>
+	           </tr>
+		       <tr>
+				   {foreach from=$distributors item=distributor name=distributors}
+				   {if $smarty.foreach.distributors.iteration>1 and ($smarty.foreach.distributors.iteration-1)%3 eq 0}
+			   </tr>
+			   <tr>
+				   {/if}
+				   <td>&nbsp;</td>
+				   <td><input type="checkbox" name="distributorsId_full_amount[]"  {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} value="{$distributor.distributor_id}">&nbsp;{$distributor.name}</td>
+				   {/foreach}
+			   </tr>
+			   <tr>
+			       <td><input type="hidden" id="distributorids_full_amount" value="{$full_amount_gifts.distributor_ids}"/>&nbsp;</td>
+			   </tr>  
+			   
+	       </table> 
+	       <table style="margin-left:60px;width:100%">
+		       <tr>
+				   <td style="width:100px;">&nbsp;</td>
+				   <td><input name="chk_all" type="button" id="chk_all" value="全选" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onClick="CheckAll('distributorsId_full_amount[]')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="cancel_chk_all" type="button" id="cancel_chk_all" value="全取消" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onClick="CancelCheckAll('distributorsId_full_amount[]')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="chk_inverse" type="button" id="chk_inverse" value="反选" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onClick="CheckInverse('distributorsId_full_amount[]')">
+				   </td>
+			   </tr>
+	       </table>
+                          <table style="margin-left: 60px;width: 100%">
+               <tr>
+                  <td style="width:120px;"> <p>适用仓库（可不选）:</p></td>
+                  <td>&nbsp;</td>
+               </tr>
+
+               <tr>
+                   {foreach from=$facilities  key=facility_id item=facility name=facilities}
+                   {if $smarty.foreach.facilities.iteration>1 and ($smarty.foreach.facilities.iteration-1)%3 eq 0}
+               </tr>
+               <tr>
+                   {/if}               
+                   <td>&nbsp;</td>
+                   <td><input type="checkbox" name="facilitiesId_full_amount[]" value="{$facility_id}" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;{$facility}</td>
+                   {/foreach}
+               </tr>
+               <tr>
+                   <td><input type="hidden" id="facilityids_full_amount" value="{$full_amount_gifts.facility_ids}"/>&nbsp;</td>
+               </tr>
+           </table> 
+            <table style="margin-left:60px;width:100%">
+               <tr>
+                   <td style="width:100px;">&nbsp;</td>
+                   <td><input name="chk_all" type="button" id="chk_all" value="全选" onClick="CheckAll('facilitiesId_full_amount[]')" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <input name="cancel_chk_all" type="button" id="cancel_chk_all" value="全取消" onClick="CancelCheckAll('facilitiesId_full_amount[]')" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <input name="chk_inverse" type="button" id="chk_inverse" value="反选" onClick="CheckInverse('facilitiesId_full_amount[]')" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}>
+                   </td>
+               </tr>
+           </table>
+
+         <table style="margin-top: 30px; margin-left: 60px; margin-bottom: 40px; width: 100%">
+           <tr>
+              <td>全场商品满&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="full_amount" id="full_amount" value='{$full_amount_gifts.full_amount}' {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onblur="check_amount();"> 元</td>
+           </tr>
+           <tr>
+           	  <td >
+                 送赠品(单品或套餐)：&nbsp;<input type="text" name="child_goods" id="full_amount_child_goods" size="60" value='{$full_amount_gifts.child_goods_name}'/>&nbsp; &nbsp;&nbsp; &nbsp;数量: &nbsp;
+                 <input type="text" name="child_goods_amount" id="full_amount_child_goods_amount" size="5" value='{$full_amount_gifts.goods_amount}'></input>
+                 <input type="hidden" name="hid_child_goods_id" id="full_amount_hid_child_goods_id" value='{$full_amount_gifts.goods_id}'/>
+                 <input type="hidden" name="hid_child_style_id" id="full_amount_hid_child_style_id" value='{$full_amount_gifts.style_id}'/>
+                 <input type="hidden" name="hid_child_tc_code" id="full_amount_hid_child_tc_code" value='{$full_amount_gifts.tc_code}'/>
+              </td>
+           </tr>
+           <tr>
+           		<td>
+           		     限制赠品数量：
+                  <input type="radio" name="full_amount_is_limit" value="Y" id="full_amount_is_limit_y" {if $full_amount_gifts.is_limit == 'Y'} checked="checked" {/if} {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/>是&nbsp;&nbsp;
+                  <input type="radio" name="full_amount_is_limit" value="N" id="full_amount_is_limit_n" {if $full_amount_gifts.is_limit !== 'Y'} checked="checked" {/if} {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/> 否&nbsp;
+                  <input type="hidden" id="full_amount_is_limit_value" value="{$full_amount_gifts.is_limit}"/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 				     赠品上限：&nbsp;
+	              <input type="text" name="full_amount_limit_goods_number" id="full_amount_limit_goods_number" size="5" value='{$full_amount_gifts.limit_goods_number}' {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}></input>
+              	</td>
+           </tr>
+           <tr>
+              <td> 自身活动叠加：</td>
+           </tr>
+           <tr>
+              <td >
+                  <input type="radio" name="full_amount_is_overlay" value="Y" id="full_amount_is_overlay_y" checked="checked" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} />是&nbsp;&nbsp;
+                 <input type="radio" name="full_amount_is_overlay" value="N" id="full_amount_is_overlay_n" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if}/> 否&nbsp;
+                  <input type="hidden" id="full_amount_is_overlay_value" value="{$full_amount_gifts.is_overlay}"/>
+              </td>
+           </tr>
+         </table>
+         
+         <legend class="expand" id='cat_legend' style="margin-left:60px">不计入满赠的类目</legend>
+         <table style="margin-left:60px;width:100%" id='cat_table'>
+		     <tr>
+		     {foreach from=$categories item=category name=categories}
+		     {if $smarty.foreach.categories.iteration>1 and ($smarty.foreach.categories.iteration-1)%3 eq 0}
+		     </tr>
+		     <tr>
+		       {/if}
+		       <td>&nbsp;</td>
+		       <td><input type="checkbox" name="category_ids[]" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} value="{$category.cat_id}">&nbsp;{$category.cat_name}</td>
+		       {/foreach}
+		     </tr>
+		     <tr>
+		         <td><input type="hidden" id="category_ids_full_amount" value="{$full_amount_gifts.exclude_cat_ids}"/>&nbsp;</td>
+		     </tr>
+		</table>
+		<table style="margin-left:60px;width:100%">
+		       <tr>
+				   <td style="width:100px;">&nbsp;</td>
+				   <td><input name="chk_all_categories" type="button" id="chk_all_categories" value="全选" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onClick="CheckAll('category_ids[]')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="cancel_chk_all_categories" type="button" id="cancel_chk_all_categories" value="全取消" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onClick="CancelCheckAll('category_ids[]')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="chk_inverse_categories" type="button" id="chk_inverse_categories" value="反选" {if $full_amount_gifts.can_update == 'N' && $view_only == 'N'} disabled="true" {/if} onClick="CheckInverse('category_ids[]')">
+				   </td>
+			   </tr>
+	    </table>
+      
+	      <div class="inner" style="margin-left: 60px; text-align:left; padding-right:20px;margin-top: 20px;">
+	      不计入满赠的商品(单品或套餐) ：  <input type="text" id="exclude_goods_add_select" size="60" />
+	      <input type="hidden" id="exclude_outer_id" />
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input id="exclude_goods_add_btn" type="button" value="添加" />
+	      </div>
+	      
+	      <div class="inner" style="margin-left:60px; text-align:left; padding-right:20px; margin-top:10px;">
+          <input type="hidden" name="party_id" id="party_id" value="{$smarty.session.party_id}"/>
+                                   批量导入不计入满赠的商品：&nbsp;&nbsp;
+          <input type="file" id="fileToUpload" name="fileToUpload"/>&nbsp;&nbsp;
+          <input id="batch_exclude_goods_add_btn" type="button" value="导入EXCEL" onclick="batch_exclude_goods()"/>
+          <a href="../template1.rar">批量导入模板下载</a>
+          </div>
+      
+	      <table id="exclude_goods_list" style="margin-left: 60px; margin-top:10px;  width: 90%">
+	        <tr align="center" bgcolor="#E2F9FA">
+	          <th style="width:13%">商家编码</th>
+	          <th style="width:73%">商品名称</th>
+	          <th style="width:14%">操作</th>
+	        </tr>
+	        {foreach from=$exclude_goods_list item=exclude_goods}
+	        <tr align='center' ix="{$exclude_goods.outer_id}">
+	        	<td>{$exclude_goods.outer_id}</td>
+	        	<td>{$exclude_goods.goods_name}
+	        	<input type='hidden' name="exclude_goods[{$exclude_goods.outer_id}]" value="{$exclude_goods.outer_id}" />
+	        	</td>
+	        	<td>
+	        	<a href='javascript:void(0);' onclick='exclude_goods_remove(this)'>删除</a>
+	        	</td>
+	        </tr>
+	        {/foreach}
+	      </table>
+	   </div>
+         <input type="hidden" name="hidden_group_goods_id" id="full_amount_hidden_group_goods_id" value='{$full_amount_gifts.group_goods_id}'/>
+         <input type="hidden" name="act" id="act" value="insert"/>
+         <input type="hidden" name="type" id="type" value="FULL_AMOUNT" />
+         <table style="margin-left: 400px; margin-top: 40px;"><tr><td>
+             {if !$full_amount_gifts}
+             <input type="submit" value="绑定赠品 " /> &nbsp; &nbsp; &nbsp; 
+             {elseif $view_only == 'N'}
+             <input type="submit" value="编辑绑定赠品">&nbsp; &nbsp; &nbsp; 
+             {/if}
+             <input type = "hidden" name = "full_position" value = "gift_sign" />
+             {if $full_amount_gifts.can_update && $full_amount_gifts.can_update == 'N'}
+             <input type = "hidden" name = "part_full_edit" value = "Y" />
+             <input type = "hidden" name = "part_full_active_name" value = "{$full_amount_gifts.active_name}" />
+             <input type = "hidden" name = "part_full_start_value" value = "{$full_amount_gifts.start_time}" />
+             <input type = "hidden" name = "part_distributorids_full_amount" value = "{$full_amount_gifts.distributor_ids}" />
+             <input type = "hidden" name = "part_facilityids_full_amount" value = "{$full_amount_gifts.facility_ids}" />
+             <input type = "hidden" name = "part_full_amount" value = "{$full_amount_gifts.full_amount}" />
+             <input type = "hidden" name = "part_full_is_overlay_value" value = "{$full_amount_gifts.is_overlay}" />
+             <input type = "hidden" name = "part_full_is_limit_value" value = "{$full_amount_gifts.is_limit}" />
+             <input type = "hidden" name = "part_full_limit_goods_number_value" value = "{$full_amount_gifts.limit_goods_number}" />
+             {/if}
+         </td></tr></table><br/>
+         
+       </form>
+      
+     </fieldset>
+     
+     <br/>
+     <font color="red">温馨提示：以买3送1这种情况为例，当买家买6时，如果勾选自身活动叠加‘是’这种情况的话，则意味着送2，否则还是送1</font>
+   </div>
+  </fieldset>
+   
+ </div>
+ 
+ <div style="margin-top:30px; margin-left:40px; width:1200px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;赠品活动管理&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+     <br/>
+     <div id="remind_sign"></div>
+     <!-- 赠品活动提醒 -->
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;赠品活动提醒&nbsp;</legend>
+     <!--{if $tip_remind}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+          window.setTimeout(function(){$('#tip_remind').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+      </script>
+      <div id="tip_remind" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$tip_remind}
+      </div>
+      <!--{/if}-->
+      <div style = "display:none;" id="s3">
+       <form method="post" id="form" onsubmit="return remindformsubmit()">
+         <table style="margin-left: 60px;width: 100%">
+           <tr>
+              <td style="width:100px;">活动名称：</td>
+              <td>&nbsp;<input type="text" style="width:270px;" id="remind_name" name="remind_name" value="{$edit_remind.remind_name}"></input></td>
+           </tr>
+           <tr>
+              <td >活动时间：</td>
+              <td style="padding:5px;">
+                  <input type="text" value="{$edit_remind.start_time}" id="start_remind" name="start"></input>&nbsp;到&nbsp;
+         	      <input type="text" value="{$edit_remind.end_time}" id="end_remind" name="end"></input>
+         	      <input type="hidden" id="remind_start_value" value="{$edit_remind.start_time}"/>
+         	      <input type="hidden" id="remind_end_value" value="{$edit_remind.end_time}"/>
+              </td>
+           </tr>
+           </table>
+           <table style="margin-left: 60px;width: 100%">
+	           <tr>
+	              <td style="width:100px;"> <p>适用分销商:</p></td>
+	              <td>&nbsp;</td>
+	           </tr>
+		       <tr>
+				   {foreach from=$distributors item=distributor name=distributors}
+				   {if $smarty.foreach.distributors.iteration>1 and ($smarty.foreach.distributors.iteration-1)%3 eq 0}
+			   </tr>
+			   <tr>
+				   {/if}
+				   <td>&nbsp;</td>
+				   <td><input type="checkbox" name="distributorsId_remind[]" value="{$distributor.distributor_id}">&nbsp;{$distributor.name}</td>
+				   {/foreach}
+			   </tr>
+			   <tr>
+			       <td><input type="hidden" id="edit_distributorids" value="{$edit_remind.distributor_ids}"/>&nbsp;</td>
+			   </tr>
+			   
+	       </table> 
+	       <table style="margin-left:60px;width:100%">
+		       <tr>
+				   <td style="width:100px;">&nbsp;</td>
+				   <td><input name="chk_all" type="button" id="chk_all" value="全选" onClick="CheckAll('distributorsId_remind[]')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="cancel_chk_all" type="button" id="cancel_chk_all" value="全取消" onClick="CancelCheckAll('distributorsId_remind[]')">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				   <input name="chk_inverse" type="button" id="chk_inverse" value="反选" onClick="CheckInverse('distributorsId_remind[]')">
+				   </td>
+			   </tr>
+	       </table>
+	       
+           <table style="margin-left: 60px;width: 100%">
+	           <tr>
+	              <td style="width:100px;">活动注意事项：(订单详情页见)</td>
+	              <td><p>
+	                  <textarea rows="6" cols="100" id="notice" name="notice">{$edit_remind.notice}</textarea>
+	                </p>
+	             </td>            
+	           </tr>
+	           
+	           <tr>
+	              <td>&nbsp;</td>
+	              {if !$edit_remind.remind_code}<td><input type="submit" value=" 提交 "/></td>
+	              <td><input type="hidden" name="act" id="act" value="insert_remind"/></td>
+	              {elseif $edit_remind.can_update=='Y'}
+	              <td><input type="submit" value="编辑 "/></td>
+	              <td><input type="hidden" name="act" id="act" value="update_remind"/></td>
+	              <td><input type="hidden" id="edit_remind_code" name="edit_remind_code" value="{$edit_remind.remind_code}"/></td>
+	              {/if}
+	              
+	           </tr>
+         </table>
+       </form>
+       </div>
+     </fieldset>
+     
+     <br/>
+     <font color='red'>温馨提示：当上述两种活动方式无法满足的时候，可以通过设置赠品活动提醒，在相应时间段自动实现信息内容展示到订单详情页中</font>
+   </div>
+  </fieldset>
+   
+ </div>
+ <div style="margin-top:30px; margin-left:40px; width:1200px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;赠品活动一览表&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+     <br/>
+     <!-- 赠品活动一览表 -->   
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;商品绑赠品&nbsp;</legend>
+        <table style="width: 100%" id="dataTab">
+          <tr>
+             <td align="center" style="width: 10%;"><strong>活动编码</strong></td>
+             <td style="width: 8%;"><strong>开始时间</strong></td>
+             <td style="width: 8%;"><strong>结束时间</strong></td>
+             <td style="width: 29%;"><strong>赠品活动标题</strong></td>
+             <td style="width: 7%;"><strong>限制赠品数量</strong></td>
+             <td style="width: 7%;"><strong>赠品上限</strong></td>
+             <td style="width: 7%"><strong>自身活动叠加</strong></td>
+             <td style="width: 5%"><strong>操作人</strong></td>
+             <td style="width: 8%"><strong>操作时间</strong></td>
+             <td style="width: 11%"><strong>操作</strong></td>
+          </tr> 
+          
+          {foreach from=$gifts_list_V2 item=gifts}
+          {if $gifts.type == "BIND"}
+	          <tr class="{cycle values='odd,even'}">
+	             <td>{$gifts.code}</td>
+	             <td>{$gifts.start_time}</td>
+	             <td>{$gifts.end_time}</td>
+	             <td>{$gifts.active_name}</td>
+	             <td>{$gifts.is_limit}</td>
+	             <td>{$gifts.limit_goods_number}</td>
+	             <td>{$gifts.is_overlay}</td>
+	             <td>{$gifts.created_by}</td>
+	             <td>{$gifts.update_time}</td>
+	             <td>
+	               <a href="?act=update&group_goods_id={$gifts.group_goods_id}&type=BIND&view_only=Y&show=1" >查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+	               <a href="?act=update&group_goods_id={$gifts.group_goods_id}&type=BIND&view_only=N&show=1" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+	               <a href="?act=delete&group_goods_id={$gifts.group_goods_id}" onclick="return delete_confirm()">删除</a>
+	             </td>
+	          </tr>
+          {/if}
+          {/foreach}       
+        </table>
+      
+     </fieldset>
+     
+     <br/>
+     <br/>
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;满金额送赠品&nbsp;</legend>
+        <table style="width: 100%" id="dataTab">
+          <tr>
+             <td align="center" style="width: 10%;"><strong>活动编码</strong></td>
+             <td style="width: 8%;"><strong>开始时间</strong></td>
+             <td style="width: 8%;"><strong>结束时间</strong></td>
+             <td style="width: 29%;"><strong>赠品活动标题</strong></td>
+             <td style="width: 7%;"><strong>限制赠品数量</strong></td>
+             <td style="width: 7%;"><strong>赠品上限</strong></td>
+             <td style="width: 7%"><strong>自身活动叠加</strong></td>
+             <td style="width: 5%"><strong>操作人</strong></td>
+             <td style="width: 8%"><strong>操作时间</strong></td>
+             <td style="width: 11%"><strong>操作</strong></td>
+          </tr> 
+          
+          {foreach from=$gifts_list_V2 item=gifts}
+          {if $gifts.type == 'FULL_AMOUNT'}
+	          <tr class="{cycle values='odd,even'}">
+	             <td>{$gifts.code}</td>
+	             <td>{$gifts.start_time}</td>
+	             <td>{$gifts.end_time}</td>
+	             <td>{$gifts.active_name}</td>
+	             <td>{$gifts.is_limit}</td>
+	             <td>{$gifts.limit_goods_number}</td>
+	             <td>{$gifts.is_overlay}</td>
+	             <td>{$gifts.created_by}</td>
+	             <td>{$gifts.update_time}</td>
+	             <td>
+	               <a href="?act=update&group_goods_id={$gifts.group_goods_id}&now={$now_time}&type=FULL_AMOUNT&view_only=Y&position=gift_sign&show=2" >查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+	               <a href="?act=update&group_goods_id={$gifts.group_goods_id}&now={$now_time}&type=FULL_AMOUNT&view_only=N&position=gift_sign&show=2" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;
+	               <a href="?act=delete&group_goods_id={$gifts.group_goods_id}" onclick="return delete_confirm()">删除</a>
+	             </td>
+	          </tr>
+	      {/if}
+          {/foreach}       
+        </table>
+      
+     </fieldset>
+     
+     <br/>
+     <br/>
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;赠品活动提醒&nbsp;</legend>
+       <table style="width: 100%" id="dataTab">
+          <tr>
+             <td align="center" style="width: 10%;"><strong>活动编码</strong></td>
+             <td style="width: 10%;"><strong>开始时间</strong></td>
+             <td style="width: 10%;"><strong>结束时间</strong></td>
+             <td style="width: 30%;"><strong>赠品活动标题</strong></td>
+             <td style="width: 11%"><strong>自身活动叠加</strong></td>
+             <td style="width: 6%"><strong>操作人</strong></td>
+             <td style="width: 10%"><strong>操作时间</strong></td>
+             <td style="width: 13%"><strong>操作</strong></td>
+          </tr>
+          
+          {foreach from=$reminds item=remind}
+          <tr class="{cycle values='odd,even'}">
+             <td align="center">{$remind.remind_code}</td>
+             <td>{$remind.start_time}</td>
+             <td>{$remind.end_time}</td>
+             <td>{$remind.remind_name}</td>
+             <td>&nbsp;</td>
+             <td>{$remind.created_by}</td>
+             <td>{$remind.update_time}</td>
+             <td>
+               {if $remind.can_update == 'N'}<a href="?act=view_remind&remind_code={$remind.remind_code}&show=3#s3" >查看</a> &nbsp;&nbsp;&nbsp;&nbsp;
+               {else}<a href="?act=view_remind&remind_code={$remind.remind_code}&now={$now_time}&show=3#s3" >编辑</a> &nbsp;&nbsp;&nbsp;&nbsp;{/if}
+               <a href="?act=delete_remind&remind_code={$remind.remind_code}" onclick="return delete_confirm()">删除</a>
+             </td>
+          </tr>
+          {/foreach}       
+        </table>
+      
+     </fieldset>
+     
+     <br/>
+   </div>
+  </fieldset>
+   
+ </div>
+ </body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－客服、售前、售后</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索">
+</form>
+
+<table class="bWindow" style="width:1100px">
+<caption><h2>客服、售前、售后统计</h2></caption>
+<tr>
+<th>时间</th>
+<th>在线（会话数/转化订单数）</th>
+<th>电话（电话数/转化订单数）</th>
+<th>店铺（咨询数/转化订单数）</th>
+<th>工作量</th>
+<th>贡献率</th>
+<th>订单数</th>
+<th>发货数<br>收款数</th>
+</tr>
+<tr align="center">
+<th>总计</th>
+<!--在线（会话数/转化订单数）-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$sum.tit_count|default:0}</td>
+		<td style="width:50px">{$sum.tit_order_count|default:0}</td>
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user.sum.tit_count|default:0}</td>
+		<td style="width:50px">{$action_user.sum.tit_order_count|default:0}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>	
+</td>
+
+<!--电话（电话数/转化订单数）-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$sum.phone_count|default:0}</td>
+		<td style="width:50px">{$sum.phone_order_count|default:0}</td>	
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user.sum.phone_count|default:0}</td>
+		<td style="width:50px">{$action_user.sum.phone_order_count|default:0}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>		
+</td>
+
+<!--店铺（咨询数/转化订单数）-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$sum.online_store_count|default:0}</td>
+		<td style="width:50px">{$sum.online_store_order_count|default:0}</td>	
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user.sum.online_store_count|default:0}</td>
+		<td style="width:50px">{$action_user.sum.online_store_order_count|default:0}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>		
+</td>
+
+<!--工作量-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$sum.phone_count+$sum.tit_count+$sum.online_store_count}</td>
+		<td></td>
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user.sum.phone_count+$action_user.sum.tit_count+$action_user.sum.online_store_count}</td>
+		<td>{if $sum.phone_count+$sum.tit_count+$sum.online_store_count > 0}{math equation="x / y * 100" x=$action_user.sum.phone_count+$action_user.sum.tit_count+$action_user.sum.online_store_count y=$sum.phone_count+$sum.tit_count+$sum.online_store_count format="%.2f"}%{/if}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>		
+</td>
+
+<!--贡献率-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$sum.tit_order_count+$sum.phone_order_count+$sum.online_store_order_count}</td>
+		<td>{if $sum.confirm_order_count > 0}{math equation="x / y * 100" x=$sum.tit_order_count+$sum.phone_order_count+$sum.online_store_order_count y=$sum.confirm_order_count format="%.2f"}%{/if}</td>
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user.sum.tit_order_count+$action_user.sum.phone_order_count+$action_user.sum.online_store_order_count}</td>
+		<td>{if $sum.confirm_order_count > 0}{math equation="x / y * 100" x=$action_user.sum.tit_order_count+$action_user.sum.phone_order_count+$action_user.sum.online_store_order_count y=$sum.confirm_order_count format="%.2f"}%{/if}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>		
+</td>
+
+<!--订单数、确认订单数、发货订单数-->
+<td align="left">
+	订单数：{$sum.order_count}<br>
+	确认数：{$sum.confirm_order_count}<br>
+	发货数：{$sum.shipped_order_count}<br>
+	留言数：
+		<a href="analyze_customer_detail.php?type=message_order&start={$start}&end={$end}" target="_blank">
+			{$sum.message_order_count}
+		</a>
+</td>
+
+<!--发货数、收款数-->
+<td>{$sum.shipped_order_count}/{$sum.payed_order_count}</td>
+</tr>
+
+<!--{foreach from=$dates item=date}-->
+<tr align="center">
+<td style="width:80px">{$date}</td>
+
+<!--在线（会话数/转化订单数）-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$values[$date].tit_count|default:0}</td>
+		<td style="width:50px">{$values[$date].tit_order_count|default:0}</td>	
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user[$date].tit_count|default:0}</td>
+		<td style="width:50px">{$action_user[$date].tit_order_count|default:0}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>
+</td>
+
+<!--电话（电话数/转化订单数）-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$values[$date].phone_count|default:0}</td>
+		<td style="width:50px">{$values[$date].phone_order_count|default:0}</td>	
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user[$date].phone_count|default:0}</td>
+		<td style="width:50px">{$action_user[$date].phone_order_count|default:0}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>
+</td>
+
+<!--店铺（咨询数/转化订单数）-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$values[$date].online_store_count|default:0}</td>
+		<td style="width:50px">{$values[$date].online_store_order_count|default:0}</td>	
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user[$date].online_store_count|default:0}</td>
+		<td style="width:50px">{$action_user[$date].online_store_order_count|default:0}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>
+</td>
+
+<!--工作量-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$values[$date].tit_count+$values[$date].phone_count+$values[$date].online_store_count}</td>
+		<td></td>
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user[$date].tit_count+$action_user[$date].phone_count+$action_user[$date].online_store_count}</td>
+		<td>{if $values[$date].tit_count+$values[$date].phone_count+$values[$date].online_store_count > 0}{math equation="x / y * 100" x=$action_user[$date].tit_count+$action_user[$date].phone_count+$action_user[$date].online_store_count y=$values[$date].tit_count+$values[$date].phone_count+$values[$date].online_store_count format="%.2f"}%{/if}</td>
+		</tr>
+		<!--{/foreach}-->
+	</table>
+</td>
+
+<!--贡献率-->
+<td style="padding:0px">
+	<table class="bWindow">
+		<tr align="center">
+		<td align="right" style="width:50px">小计：</td>
+		<td style="width:50px">{$values[$date].tit_order_count+$values[$date].phone_order_count+$values[$date].online_store_order_count}</td>
+		<td>{if $values[$date].confirm_order_count > 0}{math equation="x / y * 100" x=$values[$date].tit_order_count+$values[$date].phone_order_count+$values[$date].online_store_order_count y=$values[$date].confirm_order_count format="%.2f"}%{/if}</td>	
+		</tr>
+		<!--{foreach from=$action_users item=action_user key=user_name}-->
+		<tr align="center">
+		<td align="right" style="width:50px">{$user_name}：</td>
+		<td style="width:50px">{$action_user[$date].tit_order_count+$action_user[$date].phone_order_count+$action_user[$date].online_store_order_count}</td>
+		<td>{if $values[$date].confirm_order_count > 0}{math equation="x / y * 100" x=$action_user[$date].tit_order_count+$action_user[$date].phone_order_count+$action_user[$date].online_store_order_count y=$values[$date].confirm_order_count format="%.2f"}%{/if}</td>	
+		</tr>
+		<!--{/foreach}-->
+	</table>
+</td>
+
+<!--订单数、确认订单数、发货订单数-->
+<td>
+	订单数：{$values[$date].order_count}<br>
+	确认数：{$values[$date].confirm_order_count}<br>
+	发货数：{$values[$date].shipped_order_count}<br>
+	留言数：
+		<a href="analyze_customer_detail.php?type=message_order&start={$date}&end={$date}" target="_blank">
+			{$values[$date].message_order_count}
+		</a>
+</td>
+
+<!--发货数、收款数-->
+<td>{$values[$date].shipped_order_count}/{$values[$date].payed_order_count}</td>
+</tr>
+<!--{/foreach}-->
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

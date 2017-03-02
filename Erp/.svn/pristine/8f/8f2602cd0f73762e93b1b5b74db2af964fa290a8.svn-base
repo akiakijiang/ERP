@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<title>{if $check == 'NO'}未核对过的{/if}{if $check == 'YES'}核对完的{/if}采购发票</title>
+</head>
+
+<body>
+<form>
+类型：
+<select name='check'>
+	<option value='ALL' {if $smarty.request.check != 'NO' && $smarty.request.check != 'YES'}selected{/if}}>全部</option>
+	<option value='NO' {if $smarty.request.check == 'NO'}selected{/if}>未核对</option>
+	<option value='YES' {if $smarty.request.check == 'YES'}selected{/if}>核对过</option>
+</select>
+<input type="submit" name="act" value="查询">
+<input type="submit" value="导出CSV" name="csv">
+</form>
+<br>
+<table class="bWindow">
+	<th>发票号</th>
+	<th>发票金额(含税)</th>
+	<th>操作</th> 
+	{foreach from=$invoices item=invoice}
+		<tr>
+			<td>{$invoice.invoice_no}</td>
+			<td>{$invoice.purchase_paid_amount}</td>
+			<td><a href='check_purchase_invoice.php?no={$invoice.invoice_no}'>核对发票</a></td>
+		</tr>
+	{/foreach}
+	<tr>
+		<td colspan="2" align="center" style="border-left:0">{$pager}</td>
+	</tr>
+</table>
+
+</body>
+</html>

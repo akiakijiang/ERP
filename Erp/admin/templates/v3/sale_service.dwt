@@ -1,0 +1,571 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link type="text/css" rel="stylesheet" href="{$WEB_ROOT}admin/styles/v3.css" />
+<link type="text/css" rel="stylesheet" href="{$WEB_ROOT}admin/styles/pikaday.css"/>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/jquery-1.2.6.pack.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/json2.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/jquery.flot.pack.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/v3.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/pikaday.min.js"></script>
+<title>售后服务</title>
+<style type="text/css">
+{literal}
+.clear{
+  clear: both;
+}
+#headWrap{
+  position: fixed;
+  top:0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: #7DBFF6;
+  background-image: -moz-linear-gradient(top, #45a3dc, #1590d2);
+   /* Firefox */
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0,#3295DD), color-stop(1, #99CFFF)); 
+    /* Saf4+, Chrome */
+  margin: 0;
+  padding:5px;
+  border-bottom: 1px solid #7DBFF6;
+  box-shadow:0 0 10px rgba(0,146,199,.5);
+  -moz-box-shadow:0 0 10px rgba(0,146,199,.5);
+  -webkit-box-shadow:0 0 10px rgba(0,146,199,.5);
+  color:#242b2b;
+}
+#headWrap h1{
+  font-size: 20px;
+  font-weight: normal;
+  color:#242b2b;
+  position: absolute;
+  left: -90px;
+  top:3px;
+}
+#form{
+  width: 600px;
+/*  margin: 0 auto;*/
+  margin-top: 6px;
+  margin-left: -33px;
+}
+.tab{
+  margin: 0 auto;
+  width: 820px;
+  height: 100px;
+  position: relative;
+}
+.tab a{
+  display: inline-block;
+  padding:0 5px;
+  height: 28px;
+  line-height: 28px;
+  margin-top: 3px;
+  color:#fff;
+  border-left:1px solid #3187bc;
+  border-right:1px solid #79a9c4;
+  float: left;
+}
+.tab a:first-child{
+  border-left:none;
+}
+.tab a:last-child{
+  border-right:none;
+}
+.tab a span{
+  background-color: #fff;
+  color:#3ea3db;
+  padding:0 6px;
+  border-radius: 9px;
+  margin-left: 4px;
+}
+.main{
+  width: 840px;
+  margin: 0 auto;
+  margin-top: 150px;
+}
+
+#form input[type='text']{
+  
+  -moz-box-shadow: 0 0 3px #999 inset;
+  -webkit-box-shadow: 0 0 3px #999 inset;
+  box-shadow: 0 0 3px #999 inset;
+}
+#datepicker,#datepicker1{
+  width: 90px;
+  height: 26px;
+  line-height: 26px;
+  padding-left:10px;
+  border:none;
+}
+#search_text{
+  border:2px solid #3295DD;
+  width: 250px;
+  height: 26px;
+  line-height: 26px;
+  padding-left: 10px;
+}
+#searchBtn{
+  width: 36px;
+  height: 30px;
+/*  background: url(img/sear1.png) no-repeat #3295DD;*/
+  background-color: #3295DD;
+  color:#fff;
+  background-position: 0 3px;
+  border:none;
+  position: relative;
+  right: 5px;
+  cursor: pointer;
+}
+#exBtn{
+  width: 34px;
+  height: 28px;
+  line-height: 30px;
+  background-color: #3295DD;
+  border:none;
+  color:#fff;
+  cursor: pointer;
+  position: relative;
+  right: 4px;
+}
+#searchBtn:active,#exBtn:active{
+  top:2px;
+}
+.status {
+  margin-top: 3px;
+}
+{/literal}
+</style>
+</head>
+<body>
+  <input type='hidden' id='maskIsShow' value="1">
+  <div id="headWrap">
+  
+    <div class="tab"> 
+      {if !$smarty.request.service_type}
+      <h1><strong>售后服务申请</strong></h1> 
+      {elseif $smarty.request.service_type == 1}
+      <h1><strong>换货申请</strong></h1>
+      {elseif $smarty.request.service_type == 2}
+      <h1><strong>退货申请</strong></h1>
+      {/if}
+    <p style="color:black">(只显示最近6个月内的售后服务，如需查询历史售后服务，请联系ERP组)</p>
+      {if $smarty.request.service_type == 1}
+
+                    <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1" >所有换货申请<span>{$count_var.service_type}</span></a>
+                {*<a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&is_reply=1">未回复<span>{$count_var.no_reply}</span></a>*}
+                
+                <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&service_status=0&ok_no=1" {if $smarty.request.service_status==0 && $smarty.request.ok_no == 1}style="color:red;"{/if} >换货申请,待审核<span>{$count_var.service_status_0}</span></a>
+          
+                <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&inner_check_status=32&outer_check_status=23&service_call_status=1" {if $smarty.request.inner_check_status==32 && $smarty.request.outer_check_status==23 && $smarty.request.service_call_status==1}style="color:red;"{/if}>已入库，待确认换货订单<span>{$count_var.confirm_change_order}</span></a>
+             
+                <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&service_status=all_denied">除去审核未通过的申请列表<span>{$count_var.service_status_4}</span></a>
+                </br>
+                </br>
+
+                <select class="status" onchange="{literal}if(this.value == 0 ){return false;}else{ location.href=this.value;}{/literal}">
+                    <option value="0" >--------------请选择-----------------</option>
+                    <option {if $smarty.request.service_status == 1 && $smarty.request.back_shipping_status == 0}selected="selected"{/if} value="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&service_status=1&back_shipping_status=0">
+                      换货申请,已审核,待退货[{$count_var.service_status_1}]
+                    </option>
+                    <option {if $smarty.request.back_shipping_status == 12}selected="selected"{/if} value="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&service_status=1&outer_check_status=0&back_shipping_status=12">
+                      货已收到，待验货[{$count_var.inner_check_status_0}]
+                    </option>
+                    <option {if $smarty.request.service_status == 3}selected="selected"{/if} value="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=1&service_status=3&service_call_status=0">
+                      已回访,审核未通过,申请结束 [{$count_var.service_status_3_nocall}]
+                    </option>                                                                                                                                                         
+                  </select>
+                </br>
+
+      {/if}
+      {if $smarty.request.service_type == 2}
+
+                <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2" >所有退货申请<span>{$count_var.service_type}</span></a>
+             
+            {*<a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&is_reply=1">未回复<span>{$count_var.no_reply}</span></a>*}
+            <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&service_status=0&ok_no=1" {if $smarty.request.service_status==0 && $smarty.request.ok_no == 1}style="color:red;"{/if} >退货申请,待审核<span>{$count_var.service_status_0}</span></a>
+      
+            <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&inner_check_status=32&outer_check_status=23&service_call_status=1" {if $smarty.request.inner_check_status==32 && $smarty.request.outer_check_status==23 && $smarty.request.service_call_status==1}style="color:red;"{/if}>已入库，待确认退款信息<span>{$count_var.confirm_change_order}</span></a>
+        
+            <a href="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&outer_check_status=23&inner_check_status=32&service_call_status=2&service_pay_status=0" {if $smarty.request.outer_check_status == 23 && $smarty.request.service_call_status == 2}style="color:red"{/if}>退款信息已确认,待退款<span>{$count_var.outer_check_status_23_called_back}</span></a>
+            </br>
+            </br>
+
+            <select  class="status" onchange="{literal}if(this.value == 0 ){return false;}else{ location.href=this.value;}{/literal}">
+                    <option value="0" >--------------请选择-----------------</option>
+                    <option {if $smarty.request.service_status == 1 &&  $smarty.request.back_shipping_status == 0}selected="selected"{/if} value="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&service_status=1&back_shipping_status=0">
+                      退货申请,已审核,待退货[{$count_var.service_status_1}]
+                    </option>
+                    <option {if $smarty.request.back_shipping_status == 12}selected="selected"{/if} value="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&service_status=1&outer_check_status=0&back_shipping_status=12">
+                      货已收到，待验货[{$count_var.inner_check_status_0}]
+                    </option>
+                    <option {if $smarty.request.service_status == 3}selected="selected"{/if} value="{$WEB_ROOT}admin/sale_serviceV3.php?service_type=2&service_status=3&service_call_status=0">
+                      已回访,审核未通过,申请结束 [{$count_var.service_status_3_nocall}]
+                    </option>                 
+                  </select>
+            </br>
+
+
+      {/if}
+      <div>
+        <form class="search" id="form"> 
+          <span class="timeSelect">时间:</span>
+          <input id="datepicker" name="start" type='text'/> 
+          <span >到</span>
+          <input id="datepicker1" name="end" type='text'/>
+          <input type="button" value="导出" id="exBtn" onclick="return time_check();" />
+          <input type="text" name="search_text" id="search_text" placeholder="输入原始订单号，退回运单号，收件人"/>
+          <input type='submit' value='搜索' id="searchBtn">
+          <input type="hidden" name="act" id="act" value="search" />
+          <input type="hidden" name="service_type" value="{$smarty.request.service_type}" />        
+        </form>
+      </div>
+    </div> 
+  </div>
+<div class="main">  
+    <p><strong><a href="#" id="show_form">新建{if $smarty.request.service_type == 1}换货{/if}{if $smarty.request.service_type == 2}退货{/if}申请</a></strong></p>
+
+    <form action="sale_service_actionV3.php" method="POST" id="new_0" style="margin:10px 0;display:none;width:700px;" onSubmit="return checkGoodsAmount()">
+    <table class="new_service">
+    <tr>
+      <td>订单号：</td>
+      <td><input style="width:100px" id="order_sn_0" name="order_sn" type="text">
+    	<input type="button" value="搜索商品" id="new_goods_0"><span id='order_title_0' style='margin-left:20px;'></span>
+    	<div class="loading_and_error" id="load1" hidden="hidden">
+        	<span>正在努力加载，请耐心等待！</span>
+            <img src="images/loading36.gif" title="loading" class="loading_img"/>
+        </div>
+        <div class="loading_and_error" id="shipment_num" hidden="hidden"></div>
+        <div class="loading_and_error" id="error1" hidden="hidden">
+        	<p>AJAX请求失败!</p>
+        </div>
+        <div><input type="button" value="全部退/换货" id="all_return" ></div>
+    	</td>
+    </tr>
+    <tr>
+    	<td>商品：</td>
+      <td>
+      	<div id="goods_list_0"></div>
+      	
+    	<div id="price_map_0" style='width:550px;height:200px;display:none;margin-bottom:10px;'></div>
+      </td>
+    </tr>
+    <tr>
+      <td>服务类型：</td>
+      <td>
+      	{if $smarty.request.service_type == 1}
+      		<input type="hidden" name="type" value="1">换货申请
+      	{elseif $smarty.request.service_type == 2}
+      		<input type="hidden" name="type" value="2">退货申请
+      	{/if}
+      </td>
+    </tr>
+    {if $smarty.request.service_type == 2 || $smarty.request.service_type == 1}
+    <tr>
+    	<td>寄回快递信息</td>
+    	<td>
+    		<table cellpadding="0" cellspacing="0" style='width:99%;margin-top:0;' frame='void'>
+                <tr>
+                  	<th width='33%'>寄回的快递公司</th>
+                 	<th width='33%'>寄回的快递单号</th>
+                 	<th width='33%'>快递费用</th>
+                </tr>
+                <tr>
+               		<td><input type="text"  name="deliver_company"/></td>
+                	<td><input type="text"  name="deliver_number"/></td>
+                	<td>
+                        <input type="text" name="deliver_fee" style="width:60px;"/>
+                        <select name="backfee_paiedby" style="vertical-align:middle;width:70px;" />
+                           <option value="USER">用户付</option>
+                           <option value="WE">我们付</option>
+                        </select>   
+                    </td>
+                 </tr>
+             </table>
+        </td>
+    </tr>
+    {/if}
+    <tr>
+      <td>售后申请原因：</td>
+      <td>
+      {if $party_id == '65619' ||  $party_id == '65639' ||  $party_id == '65628'}
+      <select name="apply_return_reason">  
+      <option label="顾客不满意" value="顾客不满意">顾客不满意</option>
+      <option label="商品损坏" value="商品损坏">商品损坏</option>
+      </select>
+      {/if}
+      <br />
+      <br />
+      <textarea style="width:98%;height:70px;" name="apply_reason"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td>责任方：</td>
+      <td>
+      	<select name="responsible_party">{html_options options=$responsible_party_list}</select>
+      </td>
+    </tr>
+    <tr>
+      <td>处理方式：</td>
+      <td><select name="dispose_method">{html_options options=$dispose_method_list}</select>
+      	&nbsp;&nbsp; <input type="text" name="dispose_description" />(其他处理方式时填写)</td>
+    </tr>
+    <tr>
+        <td>受理仓库：</td>
+        <td>
+          <div id="origin_facility_name" style="display:inline"></div>
+          <div id="available_facility" style="display:inline"></div>
+        </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="text-align:center;">
+      <input type="hidden" name="act" value="apply" />
+      <input type="hidden" name="back_url" value="{$smarty.server.REQUEST_URI}" />
+      <input type='hidden' name='service_id' value='{$service.service_id}' />
+      <input type="submit" id="apply" value="提交"><input type="button" value="取消" id=cancel_0 style="margin-left:30px;">
+      </td>
+    </tr>
+    </table>
+    </form>
+    <!--{foreach from=$services item=service name=serv} -->
+    <div class="service_box">
+      <h2><span>订单号：<a href="{$WEB_ROOT}admin/order_edit.php?order_id={$service.order_id}" target="_blank">{$service.order_sn}</a></span>&nbsp;&nbsp;支付方式：{$service.pay_name}&nbsp;&nbsp;送货方式：<a href="#">{$service.shipping_name}</a>&nbsp;&nbsp;订单确认时间：{$service.confirm_time}</h2>
+      <div class="ask_reply">
+          <h3>
+            状态：<span {if $service.service_status == 3}style="color:red;font-size:20px;"{/if}>{$service.status_name}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+           {if $service.service_type == 1}换货{/if}{if $service.service_type == 2}退货{/if}申请时间：{$service.apply_datetime}<br/>
+           {if $service.change_order_info.order_sn}
+             <span style="color:red;">生成的换货订单号：</span><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$service.change_order_info.order_id}" target="_blank">{$service.change_order_info.order_sn}</a>
+             {if $service.service_type == 1} {* 只有换货的时候才有退款申请 *}
+             &nbsp;&nbsp;<input type="button" class="refund_apply" oid="{$service.change_order_info.order_id}" value="退款申请" />&nbsp;&nbsp;
+             {/if} 
+           {/if}
+           {if $service.back_order_info.order_sn}<span style="color:red;">生成的退货订单号：</span><a href="{$WEB_ROOT}admin/order_edit.php?order_id={$service.back_order_info.order_id}" target="_blank">{$service.back_order_info.order_sn}</a>{/if}
+           
+          责任方：{$responsible_party_list[$service.responsible_party]}， 处理方式： {$dispose_method_list[$service.dispose_method]} {if $service.dispose_method==4} - {$service.dispose_description} {/if}
+           </h3>
+                    {include file="v3/include/user_info.dwt"} {*用户信息*} 
+                    {include file="v3/include/back_goods_info.dwt"}  {*退货商品信息*}
+                    
+                    {include file="v3/include/back_express_info.dwt"}  {*退货快递信息*} 
+                    {include file="v3/include/action_info.dwt"}  {*操作记录*}
+                    {include file="v3/include/back_price_info.dwt"}  {*退款价格*}
+                    {include file="v3/include/reply_info.dwt"}  {*咨询回复*}
+        </div>
+    </div>
+    <!--{/foreach}-->
+    <div>{$pager}</div>
+
+</div>
+<div id="popDiv" style="display:none;">
+	<div class="popw">
+    	<span class="closeMask">&times;</span>
+            <h2>添加备注：</h2>
+            <div class="popContent">
+                <p><textarea name="track_result"></textarea></p>
+                <input type="hidden" name="act"  value="reply_comment" />
+                <input type="hidden" name="service_id"  value="0"/>
+                <input type="hidden" name="service_type"  value="0" />
+                <input type="hidden" name="service_status"  value="0" />
+                <input type="hidden" name="service_order_goods_id[]"  value="0" />
+                <input type="hidden" name="order_goods_id[]" value="0"  />
+                <input type="hidden" name="service_amount[]" value="0"  />
+                <input type="hidden" name="service_order_goods_json"  />
+                <input type="hidden" name="apply_amount" value=""  />
+                <input type="hidden" name="service_call_status" value="0" />
+                <input type="hidden" name="is_backbonus" value="" />
+                <input type="hidden" name="misc_fee" value="0" />
+				        <input type="hidden" name="amount_info_json" value="" />
+                <p><input type="button" value="提交" class="sub button_1" onclick="$('#popDiv').hide();"/><input type="button" value="取消" class='closeMask button_2'/></p>
+            </div>    
+	</div>        
+</div>
+
+<script>
+{literal}
+    var picker = new Pikaday(
+    {
+        field: document.getElementById('datepicker'),
+        firstDay: 1,
+        minDate: new Date('2000-01-01'),
+        maxDate: new Date('2020-12-31'),
+        yearRange: [2000,2020]
+    });
+    
+    var picker = new Pikaday(
+    {
+        field: document.getElementById('datepicker1'),
+        firstDay: 1,
+        minDate: new Date('2000-01-01'),
+        maxDate: new Date('2020-12-31'),
+        yearRange: [2000,2020]
+    });
+{/literal}
+</script>
+
+<script type="text/javascript">
+// <![CDATA[
+
+  var BACK_URL = '{$smarty.server.REQUEST_URI}';
+// {literal}
+
+  $(document).ready(function(){
+    var $aNumber = $(".tab a").length;
+    if($aNumber == 3){
+      $(".tab").css("width","360px");
+    }
+    
+    // 提交申请请求时防止多次操作
+    $('#apply').attr('disabled', false).bind('click', check);
+  
+    // 点击生成退款申请
+    $('.refund_apply').bind('click', function(){
+        $i = $(this);
+        $i.attr('disabled', true);
+        if (!confirm('确定要生成退款申请吗?')) {
+          $i.attr('disabled', false);
+          return false;
+        }
+    
+        var $i = $(this);
+        var order_id = $i.attr('oid'); // 订单id
+        
+        $.ajax({
+          type: 'POST',
+          url: 'ajax.php?act=create_refund_apply',
+          data: 'order_id=' + order_id + '&check_exists=1&refund_type=5', // 检查该订单是否拥退款申请,  退款类型为退款货 
+          dataType: 'json',
+          success: function(data){
+            $i.attr('disabled', false);
+            alert(data.message);
+          },
+          error: function(){
+            $i.attr('disabled', false);
+          }
+        });
+    });
+    
+  });
+  
+  function E(id) {return document.getElementById(id);}
+  function time_check(){
+     var startArray = new Array();
+     var endArray = new Array();
+     var start = E('datepicker').value;
+     var end = E('datepicker1').value;
+     if(start == null || start == ""){
+         alert('导出的起始时间不能为空');
+         return false;
+     }
+     if(end == null || end == ""){
+         alert('导出的结束时间不能为空');
+         return false;
+     }
+     startArray = start.split("-");
+     endArray = end.split("-");
+     start = new Date(startArray[0],startArray[1],startArray[2]);
+     end = new Date(endArray[0],endArray[1],endArray[2]);
+     if((end-start)<0){
+        alert('导出的结束时间必须大于起始时间');
+        return false;
+     }
+     if((end-start)/(3600*24*1000)>31){
+      alert('导出的时间间隔要小于31天');
+      return false;
+     }
+     $('#act').val('csv');
+     $('#form').submit();
+  }
+  
+  function checkGoodsAmount(){
+    var re = /^\d+$/;
+    //检测商品数量
+    for(var i=0;i<$(".service_order_goods").length;i++){
+      if(!(re.test($(".service_order_goods").eq(i).val()))){
+        alert("商品数量必须为非负整数！请重新输入");
+        return false;
+      }
+      var apply_amount = Number($(".service_order_goods").eq(i).val());
+      var amount_available = Number($(".service_amount_available").eq(i).val());
+      if(apply_amount > amount_available){
+        alert("申请售后的商品不能超过可操作数！请重新输入");
+        return false;
+      }
+    }
+    var re1 = /^\d*$/;
+    var deliver_number = $("input[name='deliver_number']").val();
+    if(!re1.test(deliver_number)){
+    	alert("退回运单号必须为数字");
+    	return false;
+    }
+    return true;
+  }
+  
+  function checkForm(){
+	var regNumber = /^\d+$/;
+	
+	var n = $(".editAmount").length;
+	for(var i=0;i<n;i++){
+	    if(!regNumber.test($(".editAmount").eq(i).val())){
+	        alert("商品数量必须为非负整数！请重新输入");
+	        return false;
+	    }
+	    var editAmount = Number($(".editAmount").eq(i).val());
+	    var allowAmount = Number($(".editAmount").eq(i).parent().prev().text());
+	    if(editAmount > allowAmount){
+	        alert("请输入大于或等于零且小于可操作值的数值！谢谢");
+	        return false;
+	    }
+	}
+	//
+	return true;
+  }
+
+  /**
+     * 表单提交
+     */
+  function check(event)
+  {
+      // 禁用提交按钮
+      $('#apply').attr('disabled', true);
+      // 出库提交
+      $('#new_0').find(':hidden[name="act"]').val('apply');
+      $('#new_0').find(':hidden[name="back_url"]').val(BACK_URL);
+      if(!checkGoodsAmount()){
+      	$('#apply').attr('disabled', false);
+      	return false;
+      }
+      $('#new_0').submit();
+  }
+// {/literal}
+
+</script>
+<!--
+SINRI 20140512 POST SALE
+-->
+<script type="text/javascript">
+var fast_apply={$fast_apply};
+{if !$smarty.request.service_type}
+var create_link_captain='新建售后服务申请';
+{elseif $smarty.request.service_type == 1}
+var create_link_captain='新建换货申请';
+{elseif $smarty.request.service_type == 2}
+var create_link_captain='新建退货申请';
+{/if}
+var the_order_sn="{$order_sn}";
+{literal}
+// <![CDATA[
+if(fast_apply!=0){
+  if($('#new_0').css('display') == 'none'){
+    $('#new_0').show(); 
+    $('#show_form').html(create_link_captain);
+    $('#order_sn_0').val(the_order_sn);
+  }else{
+    $('#new_0').hide(); 
+    $('#show_form').html('取消新建');
+  }
+}
+// ]]>
+{/literal}
+</script>
+</body>
+</html>

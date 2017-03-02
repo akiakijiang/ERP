@@ -1,0 +1,107 @@
+﻿/*数据表格 周明 2007.9.8*/
+.Table3_Bo{
+border:0;
+}
+.Table3_Bo table,.ddan table{
+border-collapse:collapse;
+width:100%;
+text-align:center;
+}
+.ddan table{
+border:#b2b2b2 1px solid;
+margin-bottom:10px;
+}
+
+.Table3_Bo table th,.ddan table caption{
+background:url(../../images/image/Table_H.gif) repeat-x;
+height:27px;
+line-height:27px;
+border:#b2b2b2 1px solid;
+font-weight:bold;
+}
+.ddan table th{
+height:27px;
+line-height:27px;
+border:#b2b2b2 1px solid;
+}
+.Table3_Bo table td,.ddan table td{
+padding:1px 0;
+width:12.5%;
+border:#b2b2b2 1px solid;
+}
+.ddan table td{
+width:14.4%;
+}
+.Button3{
+float:none;
+margin:5px 0 5px 35px;
+*margin:5px 0;
+text-decoration:none;
+display:block;
+color:#000;
+}
+.Button_n{
+float:left;
+margin:5px 0 5px 35px;
+display:inline;
+}
+.ddan{
+width:950px;
+float:left;
+}
+.ddan_item{
+clear:both;
+border:#b2b2b2 1px solid;
+/*overflow:hidden;*/
+_height:1%;
+margin-bottom:10px;
+}
+.ddan_item h2{
+margin:0;
+padding:0;
+background:url(../../images/image/Table_H.gif) repeat-x;
+height:27px;
+line-height:27px;
+border-bottom:#b2b2b2 1px solid;
+font-size:12px;
+}
+.ddan_item ul{
+padding:5px;
+margin:0;
+list-style:none;
+overflow:hidden;
+_height:1%;
+text-align:left;
+}
+.ddan_item li{
+width:50%;
+float:left;
+margin:5px 0;
+}
+.ddan_item li.sp{
+width:100%;
+}
+.ddan_item li strong{
+float:left;
+width:100px;
+text-align:right;
+margin:0 0 0 50px;
+}
+
+.order_liTab{float:left;margin-bottom:-1px;margin-top:20px;}
+.order_liTab li{width:110px;height:21px;padding-top:11px;background:url(../../images/order_liBg_1.gif) 0 5px no-repeat;float:left;text-align:center;margin-left:-1px;cursor:pointer;list-style:none;}
+.order_liTab li.on{background:url(../../images/order_liOn.png) no-repeat;font-weight:bold;font-size:14px;margin-bottom:-1px;position:relative;cursor:default;color:#000;}
+.order_liTab li a{color:#fff;}
+.order_liTab li.on a{color:#000;}
+.fix li{background-image:url(../../images/order_liBg_2.gif);}
+.fix li a{color:#000;}
+.fix li.on {background-image:url(../../images/order_liOn.gif);}
+
+.table_1{margin:15px 0;background:#F1FFF0;text-align:left;width:100%;border-collapse:collapse;border:1px solid #666;}
+.table_1 td{padding:10px;border:1px solid #666;}
+.table_1 th{padding:10px;background:#278296;color:#fff;font-weight:normal;border:1px solid #666;}
+.table_1 th a{color:#fff;margin:0 5px;}
+.info{margin:5px 0;}
+.info p{padding:5px;border:1px solid #FFCC00;background:#FFFFD7;}
+.status_cat{padding:10px;background:#EBF4E5;clear:both;text-align:left;border:1px solid #C0DDB5;}
+.status_cat a {margin:0 5px;}

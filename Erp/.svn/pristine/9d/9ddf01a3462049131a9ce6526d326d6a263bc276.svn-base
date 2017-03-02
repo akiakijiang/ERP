@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>中粮采购订单同步</title>
+<link href="../styles/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../misc/jquery.js"></script>
+<link href="../misc/thickbox.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../misc/thickbox.js"></script>
+<link rel="stylesheet" type="text/css" href="../js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="../js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="../js/style/calendar/GooCalendar.js"></script>
+<script type="text/javascript">//<![CDATA[
+//{literal}
+var property={
+	    divId:"demo",
+	    needTime:true,
+	    isFirst :true,
+	    yearRange:[1970,2030],
+	    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+	    month:['January','February','March','April','May','June','July','August','September','October','November','December'],
+	    format:"yyyy-MM-dd hh:mm:ss"
+	};
+	$(document).ready(function(){
+	    canva1=$.createGooCalendar("start_order_time",property);
+	    property.isFirst = false;
+	    canva2=$.createGooCalendar("end_order_time", property);
+	    canva3=$.createGooCalendar("start_apply_time", property);
+	    canva4=$.createGooCalendar("end_apply_time", property);
+	});
+	// {/literal}
+    //]]>
+</script>
+<script type="text/javascript">
+{literal}
+{/literal}
+</script>
+</head>
+<body>
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;中粮采购订单同步&nbsp;</span>
+		</legend>
+		<div style="clear: both;">
+			<form id="select_from" method="post">
+				<table class="bWindow">
+					<tr>
+						<td>下单时间（开始）：<input  id="start_order_time" name="start_order_time" value="{$smarty.request.start_order_time}" /></td>
+						<td>下单时间（结束）：<input id="end_order_time" name="end_order_time" value="{$smarty.request.end_order_time}" /></td>
+						<td>申请收货时间（开始）：<input  id="start_apply_time" name="start_apply_time" value="{$smarty.request.start_apply_time}" /></td>
+						<td>申请收货时间（结束）：<input  id="end_apply_time" name="end_apply_time" value="{$smarty.request.end_apply_time}" /></td>
+					</tr>
+					<tr>
+						
+						<td>采购批次号：<input name="batch_order_id"/></td>
+						<td></td>
+						<td>订单状态: 
+						<select name="best_order_status"> {html_options options=$best_order_status_list selected=$smarty.request.best_order_status }
+						</select>
+						<input type="hidden" name="page" value="1" />
+						<input type="hidden" name="request" value="search" />
+						</td>
+						<td>
+						<input type="submit" value="搜索" /></td>
+					</tr>
+				</table>
+			</form>	
+		</div>
+		<br />
+		<div style="clear: both;">
+			<h3 style="color: #09F;">中粮采购订单同步</h3>
+				<table class="bWindow" style="margin-top: 10px;"
+				id="goods_list_table">
+				<tr>
+					<th width="30">No.</th>
+					<th>采购批次号</th>
+					<th>订单状态</th>
+					<th>下单时间</th>
+					<th>ERP申请收货时间</th>
+					<th>WMS收货时间</th>
+					<th>ERP收货时间</th>
+					<th>备注信息</th>
+				</tr>
+				<!--  {if $taobao_order_list != null} -->
+				<!-- {foreach from=$taobao_order_list item=taobao_order name="taobaoOrderList"} -->
+				<form id="item_from" method="post">
+				<tr align="center" class="{cycle values='odd,even'}">
+					<td>{$smarty.foreach.taobaoOrderList.iteration}</td>
+					<td>{$taobao_order.batch_order_id}</td>
+					<!-- {if $best_order_status_list[$taobao_order.best_order_status] != null} -->
+					<td>{$best_order_status_list[$taobao_order.best_order_status]}</td>
+					<!-- {else} -->
+					<td>{$taobao_order.best_order_status}</td>
+					<!-- {/if} -->					<td>{$taobao_order.order_time}</td>
+					<td>{$taobao_order.apply_time}</td>
+					<td>{$taobao_order.wms_fulfill_time}</td>
+					<td>{$taobao_order.erp_fulfill_time}</td>
+					<td>{$taobao_order.note}</td>
+				</tr>
+				</form>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="16" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+				<tr align="center">
+					<td colspan="16">{$pager}</td>
+				</tr>
+			    </table>
+			<br />
+		</div>
+
+	</fieldset>
+
+</body>
+</html>

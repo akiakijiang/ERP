@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>调整单</title>
+{insert_scripts files="../../js/utils.js,../../js/transport.js"}
+{literal}
+<style type="text/css">
+	
+	body{font-size:12px;font-family:"宋体"}
+	ul,ul li{list-style:none;font-size:12px;margin:0;padding:0;background:#fff;}
+	.who_get_goods{position:relative;margin:20px 0;}
+	.who_get_goods ul{position:absolute;top:20px;left:54px;border:1px solid #7f9db9;width:100px;}
+	.who_get_goods li{padding:3px;}
+	.goods_list{ border-collapse:collapse;border:1px solid #999;}
+	.goods_list td,.goods_list th{border:1px solid #999;padding:5px;}
+	.goods_list input[type="text"]{height:16px;padding-top:3px;}
+	.goods_list ul{position:absolute;top:23px;border:1px solid #7f9db9;width:202px;padding:5px 0;}
+	.goods_list li{padding:5px;}
+</style>
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">//<![CDATA[
+      window.onload = function(){
+	      Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "startCalendar",
+	        button            : "startTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+	      Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "endCalendar",
+	        button            : "endTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+      }
+    //]]>	
+</script>
+
+<script src="../js/jquery.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$(".adjustInventory").on("click",function(event){
+	    event.preventDefault();
+	    var that = $(this);
+		that.parent("#adjustForm").submit();
+	});
+	$(".deleteInventory").on("click",function(event){
+	    event.preventDefault();
+	    if(confirm("确认删除吗？")){
+		    var that = $(this);
+		    that.parent("#deleteForm").submit();
+	    }
+	});
+});
+</script>
+{/literal}
+</head>
+<body>
+<p>
+目前所处组织：{$user_current_party_name} 
+</p>
+<form>
+<span style="margin-top:14px;margin-left:11px;float:left;width:35px">日期</span>
+	<span style="margin-top:10px;margin-left:11px;float:left;width:110px"><input type="text" style="height:14px;width:100px" id="startCalendar" name="startCalendar" value="{$smarty.request.startCalendar}" ></span>
+	<span style="margin-top:13px;float:left;width:20px"><input type="button" style="background-image:url(../images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" /></span>
+	<span style="margin-top:14px;float:left;width:20px">到</span>
+	<span style="margin-top:10px;margin-left:11px;float:left;width:110px"><input type="text" style="height:14px;width:100px" id="endCalendar" name="endCalendar"  value="{$smarty.request.endCalendar}"></span>
+	<span style="margin-top:13px;float:left;width:20px"><input type="button" style="background-image:url(../images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" /></span>
+<span><input type="submit" value="查询" name="search"/><input type="submit" value="导出已出库商品" name="export" /></span>
+</form>
+
+<!--{if $not_out_goods}-->
+<h3 style="margin-top:30px;">待出库的商品列表：</h3>
+<table cellpadding=0 cellspacing=0 class="goods_list">
+	<tr>
+		<th width="250">商品名</th>
+		<th width="80">商家编码</th>
+		<th width="100">库存状态</th>
+		<th width="100">仓库名称</th>
+		<th width="50">申请调整数量</th>
+		<th width="50">批次号</th>
+		<th width="50">订单</th>
+		<th width="50">申请时间</th>
+		<th width="50">类型</th>
+		<th width="50">已出库</th>
+		<th width="100">操作</th>
+	</tr>
+<!--{foreach from=$not_out_goods item=item}-->
+	<tr>
+		
+		<td>{$item.goods_name}</td>
+		<td>{$item.barcode}</td>
+		<td>{$item.status_id}</td>
+		<td>{$item.facility_name}</td>
+		<td>{$item.goods_number}</td>
+		<td>{$item.batch_sn}</td>
+		<td>{$item.order_sn}</td>
+		<td>{$item.order_time}</td>
+		<td>{$item.order_type_id}</td>
+	    <td>{$item.out_num}</td>
+	  	<td>
+	  	<form id="adjustForm" name="adjustForm" act="physical_inventory_out_inventory.php">
+<!--{if $item.is_serial}-->
+		
+	<!--{foreach from=$item.serial_numbers item=serial_number}-->
+		{$serial_number}<br/>
+	<!--{/foreach}-->
+		<input type="text" id = "{$item.order_goods_id}" name="serialNumber"/>
+<!--{/if}--> 
+		<input type="hidden" name="orderGoodsId" value="{$item.order_goods_id}" />
+		<input type="hidden" name="act" value="out" />
+		{if $item.reserve_status == 'Y' || $item.order_type_id == 'VARIANCE_ADD'}
+		<input type="button" class="adjustInventory" value="调整库存"  />
+		{else}
+              <p>未预定</p>
+        {/if}
+		</form>
+		<form id="deleteForm" name="deleteForm" act="physical_inventory_out_inventory.php">
+		<input type="hidden" name="orderGoodsId" value="{$item.order_goods_id}" />
+		<input type="hidden" name="act" value="del" />
+		<input type="button" class ="deleteInventory" value="删除"  />
+		</form>	
+		</td>
+	</tr>
+<!--{/foreach}-->
+</table>
+<!--{/if}-->
+<!--{if $already_out_goods}-->
+<h3 style="margin-top:30px;">已经出库商品列表：</h3>
+<table cellpadding=0 cellspacing=0 class="goods_list">
+	<tr>
+		<th width="250">商品名</th>
+		<th width="80">商家编码</th>
+		<th width="100">库存状态</th>
+		<th width="100">仓库名称</th>
+		<th width="50">申请调整数量</th>
+		<th width="50">批次号</th>
+		<th width="50">订单</th>
+		<th width="50">申请时间</th>
+		<th width="50">类型</th>
+		<th width="50">出库数量</th>
+		<th width="100">串号</th>
+	</tr>
+<!--{foreach from=$already_out_goods item=item}-->
+	<tr>
+		<td>{$item.goods_name}</td>
+		<td>{$item.barcode}</td>
+		<td>{$item.status_id}</td>
+		<td>{$item.facility_name}</td>
+		<td>{$item.goods_number}</td>
+		<td>{$item.batch_sn}</td>
+		<td>{$item.order_sn}</td>
+		<td>{$item.order_time}</td>
+		<td>{$item.order_type_id}</td>
+	    <td>{$item.out_num}</td>
+<!--{if $item.is_serial}-->
+		<td>
+	<!--{foreach from=$item.serial_numbers item=serial_number}-->
+		{$serial_number}<br />
+	<!--{/foreach}-->	
+		</td>
+<!--{/if}--> 
+	</tr>
+<!--{/foreach}-->
+</table>
+<!--{/if}-->
+</body>
+</html>

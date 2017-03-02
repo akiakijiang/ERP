@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>中粮-合并订单</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	.loading {
+		background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+	}
+    .strik {
+        background-color: #ECEE9F;
+    }
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	function hidden_me(){
+		$(this).css("display","none");
+	}
+	/**
+	 * 提交检查
+	 */
+	function check_submit(node)
+	{
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		if (!item || item==undefined || item.length<2) {
+			alert('没有选中项');
+			return;
+		}
+		$('#form').submit();
+	}
+	
+	/**
+	 * 全选
+	 */
+	function select_all(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = true;
+		});
+	}
+	/**
+	*清空
+	*/
+	
+	function select_none(node, type)
+	{
+	    node = node ? node : document ;
+	    $(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = false;
+		});
+	}
+	
+	/**
+	 * 反选
+	 */
+	function select_reverse(node)
+	{
+		node = node ? node : document ;
+		$(node).find("input[name='checked[]']:enabled").each(function(i){
+			this.checked = !this.checked;
+		});
+	}
+
+	// {/literal}
+	// ]]>
+	</script>
+	
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;中粮 - 合并订单&nbsp;</span></legend> 
+
+  <div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+  	<div class="item"><a href="order_shipment_list_new_order.php">合并订单查看</a></div> 
+    <div class="active"><a href="order_shipment_new_order.php">合并订单操作</a></div>
+    <!-- 
+    <div class="item"><a href="order_search.php">查找订单</a></div>
+    <div class="item"><a href="order_list.php">订单列表</a></div>
+     -->
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">查询</h3>      
+    
+	<form method="get">
+  	<table cellpadding="5" cellspacing="1">
+        <tr>
+          <td width="120">下单时间</td>
+          <td>
+              <input type="text" id="start" name="start" value="{$filter.start}" size="20" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+              <input type="text" id="end" name="ended" value="{$filter.ended}" size="20" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+          </td>
+          <td>&nbsp;&nbsp;顾客ID:</td>
+          <td>
+          <input type="text" name="nick_name" value="{$filter.nick_name}"/>
+          <input type="hidden" name="act" value="one_person_orders"/> 
+          </td>
+          <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" onclick="hidden_me();" value="查询" /></td>
+        </tr>
+	</table>
+	</form>
+  </div>
+  
+  
+  <!--{if $order_list}-->
+  <br />
+  <div style="clear:both;">
+	  <form method="post" id="form">
+	  <h3 style="color:#09F;">合并建议列表</h3>
+      
+      <span class="tip">请选择要合并的发货的订单然后操作合并，已合并发货的订单不会出现在该列表中</span>
+      <br />
+      <br />
+      
+      <input type="button" value="全选" onclick="select_all('#form');" /> &nbsp;&nbsp; 
+      <input type="button" value="清空" onclick="select_none('#form');" /> &nbsp;&nbsp;
+      <input type="button" value="反选" onclick="select_reverse('#form');" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <table class="bWindow" style="margin-top:10px;" id="table">
+      
+        <tr bgcolor="#f9f9f9">          
+			<th>选择</th>
+            <th>订单号</th>
+            <th>订单时间</th>
+            <th>库存</th> 
+            <th>仓库</th> 
+            <th>外部订单号</th>
+            <th>用户ID</th>
+			<th>收货人</th>
+            <th>电话</th>
+            <th>手机</th>
+            <th>省</th>
+            <th>市</th>
+            <th>区</th>
+            <th>详细地址</th>
+            <th>配送方式</th>
+            <th>邮费</th>
+            <th>订单金额</th>
+        </tr>   
+        
+        <!--{foreach from=$order_list item=order}-->
+		<tr align="center">
+			<td > 
+				<input type="checkbox" name="checked[]" value="{$order.order_id}" />
+			</td>
+			<td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+			<td>{$order.order_time}</td>
+			<td style="color:red">
+				 <!--{if $order.not_enough == 1}-->
+				 不足 
+				 <!--{/if}-->
+			</td>
+			<td>{$order.facility_name}</td>
+			<td>{$order.taobao_order_sn}</td>
+			<td>{$order.TAOBAO_USER_ID}</td>
+			<td>{$order.consignee}</td>
+		  	<td>{$order.tel}</td>
+		  	<td>{$order.mobile}</td>
+		  	<td>{$order.province_name}</td>
+		  	<td>{$order.city_name}</td>
+		  	<td>{$order.district_name}</td>
+		  	<td>{$order.address}</td>    
+		  	<td>{$order.shipping_name}({$order.pay_name})</td>
+		  	<td>{$order.shipping_fee}</td>
+		  	<td>{$order.order_amount}</td>
+		</tr>     
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />
+        
+      <div style="margin-top:10px; clear:both;"> 
+        <input type="button" value="将选中项合并发货" onclick="check_submit('#table')" />
+        <input type="hidden" name="act" value="order_shipment_merge" />
+      </div>
+      
+      </form>
+  </div>
+  
+  <!--{else}-->
+  
+  <br /><br />
+  <div style="text-align:center;color:red;"><h4>{$show_tips}</h4>
+  <br/> 
+  </div>
+  <br />
+  <br />
+
+  
+  <!--{/if}-->
+
+<br /><br />
+<p>{$time_info}</p>
+
+</fieldset>
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S",
+	showsTime         :true
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d %H:%M:%S",
+	daFormat          : "%Y-%m-%d %H:%M:%S",
+	showsTime         :true
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

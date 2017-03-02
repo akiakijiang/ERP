@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>批量打印快递面单</title>
+<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1 }onload="window.print()"{/if}>
+{if $is_out_facility}
+<iframe id='iframe_out_facility' src="print_out_batch_pick_sn.php?batch_pick_sn={$batch_pick_sn}" frameborder=0 scrolling=no
+onload="document.getElementById('iframe_out_facility').height=document.getElementById('iframe_out_facility').contentWindow.document.body.scrollHeight;document.getElementById('iframe_out_facility').width=document.getElementById('iframe_out_facility').contentWindow.document.body.scrollWidth;">
+</iframe>
+<div STYLE="page-break-after: always;"></div>
+{/if}
+{php}$is_first=true;{/php}
+{foreach from=$order_ids name=order_ids item=f key=k}
+	<!-- [{$k}-{$f}] -->	
+	<script type="text/javascript">
+		//document.write(get_bill_url({$f}));
+		
+		document.write("<iframe id='iframe{$k}' src=\""+get_bill_url({$f})+
+				"&arata=1"+
+				"&print=2\" frameborder=0 scrolling=\"no\""+
+				"onload='document.getElementById(\"iframe{$k}\").height=document.getElementById(\"iframe{$k}\").contentWindow.document.body.scrollHeight;"+
+				"document.getElementById(\"iframe{$k}\").width=document.getElementById(\"iframe{$k}\").contentWindow.document.body.scrollWidth;'"+
+				"></iframe>");
+
+		
+	</script>
+	{if !$smarty.foreach.order_ids.last}<div STYLE="page-break-after: always;"></div>{/if}
+{/foreach}
+</body>
+</html>

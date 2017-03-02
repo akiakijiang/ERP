@@ -1,0 +1,11 @@
+支票{$smarty.request.cheque}明细如下
+订单号,订单日期,采购付款时间,商品名,工单号 {if "5cg_sensitivity_csv"|check_admin_priv},供应商,供价,支票号
+{else} 
+{/if}
+{foreach from=$goods_list item=goods}
+"{$goods.order_sn}","{$goods.order_time}","{$goods.purchase_paid_time}","{$goods.goods_name}","{$goods.dispatch_sn}"{if "5cg_sensitivity_csv"|check_admin_priv},"{$goods.provider_name}",{if view_provide_price($goods.category)}"{$goods.purchase_paid_amount}"{else}"N/A"{/if},"{$goods.cheque}"
+{else} 
+{/if}
+{/foreach}
+,,,,总价,{$sum.purchase_paid_amount},
+签名,

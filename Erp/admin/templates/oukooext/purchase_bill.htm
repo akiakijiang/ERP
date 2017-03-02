@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<title>采购付款记录</title>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+<script type="text/javascript">
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+$(document).ready(function(){
+	$('#provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+		dataType : 'json',
+        minChars: 0,
+        mustMatch: true,
+        formatItem : function(row, i, max, value, term) {
+            return(row.provider_name);
+        },
+        formatResult : function(row) {
+            return(row.provider_name);
+        }
+    }).result(function(event, row, formatted) {
+        $('#provider_id').val(row.provider_id);
+        $('#order_type').val(row.provider_order_type);
+    });   
+});
+	function E(id) {return document.getElementById(id);}
+	function ES(name) {return document.getElementsByName(name);}
+{/literal}
+</script>
+</head>
+<body>
+<form action="purchase_bill.php" method="get">
+	<input type="text" name="provider" id="provider" style="width:300px;">
+	<input type="hidden" name="provider_id" id="provider_id">
+	<input type="hidden" name="order_type" id="order_type">
+	<input type="submit" value="供应商搜索">
+</form>
+<table class="bWindow">
+<caption><h2>采购{$smarty.request.order_type}付款记录</h2><a href='c2c_buy_sale.php'>内部订单详情</a><br><br></caption>
+<tr>
+<th>付款批次号</th>
+<th>状态</th>
+<th>时间</th>
+<th>本次付款金额</th>
+<th>采购金额</th>
+<th>使用返利金额</th>
+<th>使用预付金额</th>
+<th>C2C应返金额</th>
+<th>订单类型</th>
+{* <th>采购结款人</th> *}
+<th>类型</th>
+{* <th>银行帐号</th> *}
+<th>操作者</th>
+<th>供应商</th>
+<th>操作</th>
+</tr>
+
+<!--{foreach from=$bills item=bill}-->
+<form action='generate_finance_bill.php'>
+<tr align="center">
+<td>{$bill.purchase_bill_id}</td>
+<td><font color="red" style="bold">{if $bill.status == 'P_PAID'}采购已付款{elseif $bill.status == 'F_PAID'}财务已付款{else}未名状态{/if}</font></td>
+<td>{$bill.date}</td>
+<td>{$bill.amount}</td>
+<td>{$bill.purchase_amount}</td>
+<td>{$bill.rebate_amount}</td>
+<td>{$bill.prepayment_amount}</td>
+<td>{$bill.return_amount}</td>
+<td>{$bill.type}</td>
+ 
+{* <td>{$bill.purchaser}</td> *}
+<td>
+	{if $bill.paid_type == 2}
+		现金
+	{elseif $bill.paid_type == 4}
+		支票
+	{elseif $bill.paid_type == 1}
+		银行汇款
+	{elseif $bill.paid_type == 3}
+		网银
+	{/if}
+</td>
+{* <td>{$bill.bank_no}</td> *}
+<td>{$bill.user}</td>
+<td>
+	{foreach from=""|getProviders item=provider}
+	{if $provider.provider_id == $bill.real_provider_id}
+	{$provider.provider_name}
+	{/if}
+	{/foreach}
+</td>
+<td>
+	<a href="c2c_buy_sale_bill_detail.php?bill_id={$bill.purchase_bill_id}&type=p">查看</a>
+	{if $bill.status == 'P_PAID'}<a href="generate_finance_bill.php?purchase_bill_id={$bill.purchase_bill_id}">财务批量已付款</a>{/if}
+	&nbsp;&nbsp;<a target="_blank" href='c2c_buy_sale_bill_detail_print.php?bill_id={$bill.purchase_bill_id}&type={$bill.type}&bill_type=purchase'>打印</a>
+</td>
+</tr>
+<!--{/foreach}-->
+
+<td colspan="10" align="center" style="border-right:0"><font color="red">内部C2C结帐</font>{$pager}</td>
+</table>
+</body>
+</html>

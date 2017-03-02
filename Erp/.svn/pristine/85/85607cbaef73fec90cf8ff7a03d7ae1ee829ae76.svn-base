@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ShipmentAcceptRequest>
+	<Request>
+		<TransactionReference>
+			<CustomerContext>CHRIS GUAN</CustomerContext>
+			<XpciVersion>1.0001</XpciVersion>
+		</TransactionReference>
+		<RequestAction>ShipAccept</RequestAction>
+	</Request>
+	<ShipmentDigest>{ShipmentDigest}</ShipmentDigest>
+</ShipmentAcceptRequest>

@@ -1,0 +1,4 @@
+订单号,订单状态,{if $type == 'feedback'}回访人,回访时间{else}销售人员，销售时间{/if}
+{foreach from=$feedback_list item=feedback}
+"{$feedback.order_sn}","{$feedback.status}","{$feedback.handle_person}","{$feedback.handle_time}"
+{/foreach}

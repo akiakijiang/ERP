@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>已录入国家分区信息查询</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    .strik {
+        background-color: #ECEE9F;
+    }
+    <!--{/literal}-->
+    </style>
+    
+    <!-- Loading Calendar JavaScript files -->
+    <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+{if $smarty.request.message}
+  <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+  {$smarty.request.message}
+  </div>
+  {/if}
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+
+
+  <div class="menu-tab">
+    <div class="right-edge">&nbsp;</div>
+    <div class="active"><a href="fee_search.php">分区运费信息查询</a></div>
+    <div class="item"><a href="fee_entry.php">分区运费信息录入</a></div>
+
+    <div class="left-edge">&nbsp;</div>
+  </div>
+  <h3 style="color:#09F;">分区运费信息修改</h3>
+    <form method="post" name= "form" action="fee_search.php" id="form"  >
+	
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">修改分区运费信息</h3>
+
+  	<table cellpadding="5" cellspacing="1">
+  	 	<tr>
+          <td width="120">ID</td>
+          <td>
+          	<input name="info_id" type="text" onclick="this.select();" value="{$edit_info.id}" size="15" readonly="readonly" /> 
+          </td>
+        </tr>
+    	<tr>
+        <td>快递分区 <span class="require"> * </span></td>
+        <td>
+           <select name="fenqu_id"><option value="0">-请选择-</option>{html_options options=$fenqu_list selected=$edit_info.fenqu_id}</select> &nbsp;&nbsp;
+           </td>
+      </tr>
+	 	<tr>
+	  		<td>包裹类型</td>
+          	<td><select name="type" ><option value="0">-请选择-</option><option value="P">P</option><option value="D">D</option></select>
+		  	</td>
+	    </tr>
+       <tr>
+	  		<td>重量</td>
+          	<td>
+          	<select name="weight" >
+          	<option value="0">-请选择-</option>
+          	<option value="0.5">0.5</option>
+          	<option value="1">1</option>
+          	<option value="1.5">1.5</option>
+          	<option value="2">2</option>
+          	<option value="2.5">2.5</option>
+          	<option value="3">3</option>
+          	<option value="3.5">3.5</option>
+          	<option value="4">4</option>
+          	<option value="4.5">4.5</option>
+          	<option value="5">5</option>
+          	<option value="5.5">5.5</option>
+          	<option value="6">6</option>
+          	<option value="6.5">6.5</option>
+          	<option value="7">7</option>
+          	<option value="7.5">7.5</option>
+          	<option value="8">8</option>
+          	<option value="8.5">8.5</option>
+          	<option value="9">9</option>
+          	<option value="9.5">9.5</option>
+          	<option value="10">10</option>
+          	<option value="10.5">10.5</option>
+          	<option value="11">11</option>
+          	<option value="11.5">11.5</option>
+          	<option value="12">12</option>
+          	<option value="12.5">12.5</option>
+          	<option value="13">13</option>
+          	<option value="13.5">13.5</option>
+          	<option value="14">14</option>
+          	<option value="14.5">14.5</option>
+          	<option value="15">15</option>
+          	<option value="15.5">15.5</option>
+          	<option value="16">16</option>
+          	<option value="16.5">16.5</option>
+          	<option value="17">17</option>
+          	<option value="17.5">17.5</option>
+          	<option value="18">18</option>
+          	<option value="18.5">18.5</option>
+          	<option value="19">19</option>
+          	<option value="19.5">19.5</option>
+          	<option value="20">20</option>
+          	<option value="20.5">20.5</option>
+          	</select>
+		  	</td>
+	    </tr>
+		
+	 	<tr>
+      		<td>费用<span class="require"> * </span> </td>
+        	<td>
+        	<input type="text" name="fee"  value="{$edit_info.fee}" size="30" id="first_fee" /> 
+			</td>
+	 	</tr>
+        <tr>
+        	<td>生效日期</td>
+        	<td>
+        	<input type="text" name="date" value="{$edit_info.date}" size="30" id="date" /> 
+		 	</td>
+        </tr>
+             
+	  </table>
+	  <div style="text-align:center">
+	  <input type="submit" value=" 更新 "  />
+	  <input type="hidden" name="act" value="update_submit" />
+	  </div>
+	  </div>
+	</form>
+   <div style="clear:both;"> 
+    <h3 style="color:#09F;">查询</h3>
+    <form method="get">
+    <table cellpadding="5" cellspacing="1" >
+        <tr>
+        	<td>每页显示</td>　　
+            <td>  <select name="size" id="size">{html_options options=$page_size_list}</select>条记录</td>
+        </tr>
+        <tr>
+        	<td>快递分区 <span class="require"> * </span></td>
+        	<td>
+           		<select name="fenqu_id"><option value="0">-请选择-</option>{html_options options=$fenqu_list selected=$fenqu}</select> &nbsp;&nbsp;
+        	</td>
+        	<td>重量</td>
+          	<td>
+          	<select name="weight" >
+          	<option value="0">-请选择-</option>
+          	<option value="0.5">0.5</option>
+          	<option value="1">1</option>
+          	<option value="1.5">1.5</option>
+          	<option value="2">2</option>
+          	<option value="2.5">2.5</option>
+          	<option value="3">3</option>
+          	<option value="3.5">3.5</option>
+          	<option value="4">4</option>
+          	<option value="4.5">4.5</option>
+          	<option value="5">5</option>
+          	<option value="5.5">5.5</option>
+          	<option value="6">6</option>
+          	<option value="6.5">6.5</option>
+          	<option value="7">7</option>
+          	<option value="7.5">7.5</option>
+          	<option value="8">8</option>
+          	<option value="8.5">8.5</option>
+          	<option value="9">9</option>
+          	<option value="9.5">9.5</option>
+          	<option value="10">10</option>
+          	<option value="10.5">10.5</option>
+          	<option value="11">11</option>
+          	<option value="11.5">11.5</option>
+          	<option value="12">12</option>
+          	<option value="12.5">12.5</option>
+          	<option value="13">13</option>
+          	<option value="13.5">13.5</option>
+          	<option value="14">14</option>
+          	<option value="14.5">14.5</option>
+          	<option value="15">15</option>
+          	<option value="15.5">15.5</option>
+          	<option value="16">16</option>
+          	<option value="16.5">16.5</option>
+          	<option value="17">17</option>
+          	<option value="17.5">17.5</option>
+          	<option value="18">18</option>
+          	<option value="18.5">18.5</option>
+          	<option value="19">19</option>
+          	<option value="19.5">19.5</option>
+          	<option value="20">20</option>
+          	<option value="20.5">20.5</option>
+          	</select>
+		  	</td>
+        </tr>
+        <tr>
+            <td width="120">生效时间</td>
+            <td>
+              <input type="text" id="start" name="start" value="{$start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+              <input type="text" id="end" name="ended" value="{$ended}" size="10" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+            
+            <td>
+              <input type="submit" value="查询" />
+            </td>
+        </tr>
+    </table>
+    </form>
+   </div>
+   
+
+      <h3 style="color:#09F;">分区运费信息查询结果列表</h3>
+   
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+        <tr bgcolor="#f9f9f9">  
+        	<th>ID</th> 
+            <th>分区号</th>
+            <th>重量</th>
+            <th>包裹类型</th>
+            <th>运费</th>
+            <th>生效日期</th>
+            <th>最后更新日期</th>
+            <th>最后操作人</th>
+            <th>分区名</th>
+			
+        </tr>   
+         {foreach from=$fee_list item=fee }
+         
+           <tr align="center" >
+            <td>{$fee.id}</td>
+			<td>{$fee.fenqu_id}</td>
+		  	<td>{$fee.weight}</td>
+		  	<td>{$fee.type}</td>
+		  	<td>{$fee.fee}</td>
+		  	<td>{$fee.date}</td>
+		  	<td>{$fee.update_time}</td>
+		  	<td>{$fee.operator}</td>
+		  	<td>{$fee.region_name}</td>
+            <td><a href="?act=update&info_id={$fee.id}">编辑</a></td>
+         </tr>     
+        
+        {/foreach}
+        <tr>
+        <td colspan="9" style="text-align:right;padding-right:20px;">{$Pager}</td>
+        </tr>
+      </table>
+            <br/>
+</fieldset>
+  
+  <script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "start",
+    button            : "startTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+    weekNumbers       : false,
+    electric          : false,
+    inputField        : "end",
+    button            : "endTrigger",
+    ifFormat          : "%Y-%m-%d",
+    daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+  
+</body>
+</html>

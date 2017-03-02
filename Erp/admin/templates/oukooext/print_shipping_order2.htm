@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>打印运货单</title>
+</head>
+<body>
+<table class="bWindow">
+<caption><h1>以下订单将会打印<span style="color:red">{$smarty.request.type|get_shipping_order_type_name}</span>运货单</h1><br><br></caption>
+<tr>
+<th>订单号</th>
+<th>订单时间</th>
+<th>收货人</th>
+<th>配送方式</th>
+<th>商品</th>
+<th>操作</th>
+</tr>
+<!--{foreach from=$orders item=order name=order}-->
+<tr align="center">
+<td><a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+<td>{$order.order_time}</td>
+<td>{$order.consignee}</td>
+<td>{$order.shipping_name}</td>
+<td>{"<br>"|join:$order.goods_names}</td>
+<td><input type="button" value="打印" onclick="window.open('print_shipping_order3.php?order_id={$order.order_id}&type={$smarty.request.type}');this.style.color='red'"></td>
+</tr>
+<!--{/foreach}-->
+</table>
+</body>
+</html>

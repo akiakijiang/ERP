@@ -1,0 +1,4 @@
+仓库名称,组织,商品名称,商品分类,是否全新,商品条码,库存数量,库位条码
+{foreach from=$storage_list item=goods}
+"{$goods.facility_name}","{$goods.party_name}","{$goods.goods_name}","{$goods.cat_name}","{$goods.is_new}","{$goods.goods_barcode}","{$goods.count}","{$goods.location}"
+{/foreach}

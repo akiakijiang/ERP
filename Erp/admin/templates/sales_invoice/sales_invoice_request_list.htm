@@ -1,0 +1,306 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>发票请求管理</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+														 
+			// 提交禁用按钮
+			$(':button, :submit').find('enabled').attr('disabled', false);
+			
+			// 提交表单事件
+			$('#form1').find(':button.smt').bind('click', function(){
+					var $i = $(this);
+					var act = $i.attr('act');
+					$('#form1').find(':hidden[name="act"]').val(act);
+					if (act == 'invoice' || act == 'search') {
+							var d = $('#form1').find(':select[name="main_distributor_id"]').val();
+							if (d == '' || d == '-1') {
+								return alert('请选择分销商或者直销商');	
+							}
+					}
+					if (act != 'export') {
+						$(':button, :submit').attr('disabled', true);	 // 如果不是导出就禁用按钮
+					}
+					$('#form1').submit();
+			});
+			
+			// 选择checkbox事件
+			$('#sales_order_table').find(':checkbox').bind('click', function(){
+				select_price('#sales_order_table', '#sales_order_total_amount');
+			});
+			$('#return_order_table').find(':checkbox').bind('click', function(){
+				select_price('#return_order_table', '#return_order_total_amount');
+			});
+	});
+
+	/**
+	 * 全选
+	 */
+	function select_all(node, target)
+	{
+	    node = node ? node : document ;
+	    $(node).find(':checkbox:enabled').each(function(i){
+	        this.checked = true;
+			});    
+			select_price(node, target);
+	}
+
+	/**
+	 * 反选
+	 */
+	function select_reverse(node, target)
+	{
+			node = node ? node : document ;
+			$(node).find(':checkbox:enabled').each(function(i){
+					this.checked = !this.checked;
+			});
+			select_price(node, target);
+	}
+
+	/**
+	 * 选中后计算金额
+	 */
+	function select_price(node, target)
+	{
+			node = node ? node : document ;
+			amount = 0;
+			$(node).find(':checkbox').each(function(i){
+					var i = $(this);
+					if (i.attr('checked')) { 
+						a = $(this).attr('amount');
+						if (a != undefined) amount += parseFloat(a);
+					}
+			});
+
+			$(target).val(amount.toFixed(2));
+	}
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px; min-width: 700px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;销售发票请求&nbsp;</span></legend>
+
+	<form method="post" id="form1" action="sales_invoice_request_list.php" >  
+  
+  
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  结算日期 ：<input type="text" id="start" name="start" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+  <input type="text" id="end" name="end" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+  &nbsp;&nbsp;&nbsp; 分销商： <select name="main_distributor_id"><option value="-1"> - 分销商</option>{html_options options=$main_distributor_list selected=$filter.main_distributor_id}</select>
+  &nbsp;&nbsp;&nbsp; 订单号：<input type="text" id="ordersn" name="ordersn" value="{$filter.ordersn}" size="10" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="button" act="search" class="smt" value="查询" /> &nbsp;&nbsp; <input type="button" act="export" class="smt" value="导出" {if !$sales_order_list && !$return_order_list}disabled="disabled"{/if} />
+  <input type="hidden" name="act" value="search" />
+  </div>
+  
+  
+<!--{if $sales_order_list || $return_order_list}-->  {* 有记录才显示 *}
+  
+  <br />
+  <div style="clear:both;">
+      <h3 style="color:#09F;">销售订单列表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sales_order_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th width="50">选择</th>
+          <th>订单号</th>
+          <th>分销采购单号</th>
+          <th>下单时间</th>
+          <th>分销店</th>
+          <th>订单金额</th>
+          <th>订单累计退款</th>
+          <th>运费</th>
+          <th>商品金额</th>
+          <th>返利金额</th>
+          <th>红包</th>
+          <!--{if $smarty.session.party_id == 65558}-->
+          <th>调价金额</th>
+          <th>返点金额</th>
+          <th>预存款金额</th>
+          <!--{/if}-->
+          <th>开票金额</th>
+        </tr>
+        
+        <!--{foreach from=$sales_order_list item=order name="saleOrderList"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.saleOrderList.iteration}</td>
+          <td><input type="checkbox" name="order_id[]" amount="{$order.invoice_amount}" value="{$order.order_id}" /></td>
+          <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td>{$order.distribution_purchase_order_sn}</td>
+          <td>{$order.order_time}</td>
+          <td>{$distributor_list[$order.distributor_id]}</td>
+          <td>{$order.order_amount}</td>
+          <td>{$order.total_refund_amount}</td>
+          <td>{$order.shipping_fee}</td>
+          <td>{$order.goods_amount}</td>
+          <td>{$order.rebate_amount}</td>
+          <td>{$order.bonus}</td>
+          <!--{if $smarty.session.party_id == 65558}-->
+          <td>{$order.total_adjust_amount|default:0}</td>
+          <td>{$order.total_rebate_amount|default:0}</td>
+          <td>{$order.adjust_amount|default:0}</td>
+          <!--{/if}-->
+          <td>{$order.invoice_amount}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+        
+        <tr><td colspan="13" align="center"><h4>没有数据</h4></td></tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+  
+      <div style="margin-top:10px;">
+        <input type="button" value="全选" onclick="select_all('#sales_order_table', '#sales_order_total_amount');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#sales_order_table', '#sales_order_total_amount');" /> &nbsp;&nbsp;
+        当期交易金额： <input type="text" id="sales_order_total_amount" size="10" readonly="readonly" />
+      </div>
+  
+  </div>
+  
+  
+  
+  <br />
+  <div style="clear:both;">
+  		<h3 style="color:#09F">销退订单列表</h3>
+  		      
+      <table class="bWindow" style="margin-top:10px;" id="return_order_table">
+        <tr>
+        	<th width="30">No.</th>
+          <th width="50">选择</th>
+          <th>订单号</th>
+          <th>分销采购单号</th>
+          <th>下单时间</th>
+          <th>分销店</th>
+          <th>订单金额</th>
+          <th>订单累计退款</th>
+          <th>运费</th>
+          <th>商品金额</th>
+          <th>返利金额</th>
+          <th>红包</th>
+          <!--{if $smarty.session.party_id == 65558}-->
+          <th>调价金额</th>
+          <th>返点金额</th>
+          <th>预存款金额</th>
+          <!--{/if}-->
+          <th>开票金额</th>
+        </tr>
+        
+        <!--{foreach from=$return_order_list item=order name="returnOrderList"}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$smarty.foreach.returnOrderList.iteration}</td>
+          <td><input type="checkbox" name="order_id[]" amount="{$order.invoice_amount}" value="{$order.order_id}" /></td>
+          <td><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+          <td>{$order.distribution_purchase_order_sn}</td>
+          <td>{$order.order_time}</td>
+          <td>{$distributor_list[$order.distributor_id]}</td>
+          <td>{$order.order_amount}</td>
+          <td>{$order.total_refund_amount}</td>
+          <td>{$order.shipping_fee}</td>
+          <td>{$order.goods_amount}</td>
+          <td>{$order.rebate_amount}</td>
+          <td>{$order.bonus}</td>
+          <!--{if $smarty.session.party_id == 65558}-->
+          <td>{$order.total_adjust_amount|default:0}</td>
+          <td>{$order.total_rebate_amount|default:0}</td>
+          <td>{$order.adjust_amount|default:0}</td>
+          <!--{/if}-->
+          <td>{$order.invoice_amount}</td>
+        </tr>
+        
+        <!--{foreachelse}-->
+        
+        <tr><td colspan="13" align="center"><h4>没有数据</h4></td></tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+  
+      <div style="margin-top:10px;">
+        <input type="button" value="全选" onclick="select_all('#return_order_table', '#return_order_total_amount');" /> &nbsp;&nbsp; 
+        <input type="button" value="反选" onclick="select_reverse('#return_order_table', '#return_order_total_amount');" /> &nbsp;&nbsp;
+        当期退货金额： <input type="text" id="return_order_total_amount" size="10" readonly="readonly" />
+      </div>
+  </div>  
+  
+  
+  <br /><br />
+  <div style="text-align:center">
+  	税率: <input type="text" name="tax_rate" value="0.17" size="5" maxlength="6" /> &nbsp;&nbsp;
+  	<input type="button" act="invoice" class="smt" value="生成发票" />
+	</div>
+
+<!--{/if}-->
+
+
+  </form>
+  <br />
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销订单管理</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+	<link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap.min.css" type="text/css"/>
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap-theme.min.css" type="text/css"/>
+  <!-- // <script type="text/javascript" src="styles/bootstrap/js/jquery.min.js"></script> -->
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="styles/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	
+	$(document).ready(function(){
+			// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+
+            // 导出xml
+			$('#xml').bind('click', function(event){
+				if (!check()) {
+					event.preventDefault();
+					return false;
+				}
+				$('#form').find(":hidden[name='act']").val('xml');
+			});
+			
+			// 移库+改快递
+			$('#transfer').bind('click', function(event){
+				if (!check()) { 
+					event.preventDefault();
+					return false; 
+				}
+				div = $('#order-facility-shipping-transfer');
+				div2 = $('#order-shipping-facility-transfer');
+				if (div.is(':hidden') || div2.is(':hidden')) {
+					div.show();
+					div2.show();
+					$('#form').find(":hidden[name='act']").val('transfer');
+					event.preventDefault();
+					return false;
+				}
+				
+				fid = $.trim($('#form').find(":input[name='facility_id']").val());
+				ship = $.trim($('#form').find(":input[name='shipping_id']").val());
+				if (fid=='-1' && ship=='-1') {
+					alert('请选择要转去的仓库与快递方式');
+					event.preventDefault();
+					return false; 
+				}
+				return confirm('确认要将这些订单转到指定发货仓/快递吗?');	
+			});
+			
+            // 全选
+            $(':checkbox').attr('checked', $(this).attr('checked'));
+            $('#checkAll').bind('click', function(){
+                $(':checkbox').attr('checked', $(this).attr('checked'));
+            });
+	});
+	
+	function check() {
+		if (!$('#form').find('input:checked').length) {
+			alert('没有选中项');
+			return false;
+		}
+		
+		return true;
+	}
+	
+	function search_outer_good(){
+		$outer_id = $.trim($('#sync_outer_goods_id').val());
+		if($outer_id ==''){
+			alert('请输入商家编码再进行查询');
+			return false;
+		}else{
+			$.ajax({
+				async : false,
+				dataType : "json",
+				data: "outer_id=" + $outer_id,
+				url : "ajax.php?act=search_outer_goods",
+				type : 'POST',
+				success : function(data) {
+					if (data=='') {	
+						alert('没有查找到对应商品，请核对商家编码');
+						// $('#sync_outer_goods_id').val('');
+            $(".hidden_tr").fadeIn().find("#sync_outer_goods_name").val('');
+					}else{
+            $(".hidden_tr").fadeIn().find("#sync_outer_goods_name").val(data);
+						// $('#sync_outer_goods_name').val(data);
+					}
+				},
+			});
+		}
+	}
+	
+  // {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  {literal}
+    <style type="text/css">
+        .main{
+          /*margin:auto;*/
+          width: 100%;
+        }
+        .main_content{
+          width: 98%;
+          margin: auto;
+        }
+        .header_background{
+          border-radius: 5px;
+          padding-top: 1px;
+          padding-left: 1px;
+          /*background-color: rgba(220,220,220,.9);
+          background:-webkit-gradient(linear, left bottom, left top, color-stop(0.15, #FFFAFA), color-stop(0.49, #DCDCDC),color-stop(0.51, #BEBEBE), color-stop(0.83, #CDC9C9));
+          background: -webkit-linear-gradient( #FFFAFA,#DCDCDC, #BEBEBE, #CDC9C9);
+          background: -moz-linear-gradient(top, #FFFAFA,#DCDCDC, #BEBEBE, #CDC9C9);
+          background: -ms-linear-gradient( #FFFAFA,#DCDCDC, #BEBEBE, #CDC9C9);
+          background: linear-gradient( #FFFAFA, #DCDCDC,#BEBEBE, #CDC9C9);*/
+          background: rgba(139,137,137,.6);
+        }
+        .if_message{
+          border:#7F9F00 2px solid;
+          padding: 5px;
+          text-align: center;
+        }
+        .circle{
+          border:1px solid rgba(220,220,220,.9);
+          border-radius: 1px 1px 20px 20px;
+        }
+        .top_circle{
+          overflow-x:hidden; 
+          /*border:1px solid rgba(220,220,220,.9);*/
+          /*border-radius: 1px 1px 20px 20px;*/
+          width: 84;
+          margin-left: 1%;
+        }
+        .bottom_circle{
+          margin-left:1%;
+          margin-bottom: 40px;
+        }
+        .border_radius{
+          border-radius: 15px 15px 1px 1px;
+        }
+        .select_right{
+          margin-left: 50px;
+          width: 138px !important;
+        }
+        .left_adjust{
+          margin-left: -15px;
+        }
+        .left_adjust_again{
+          margin-left: -16px;
+        }
+        .margin_left{
+          margin-left: -30px;
+          width: 80px !important;
+        }
+        .margin_both{
+          margin:6px -45px 2px -15px; 
+        }
+        .taobao_word_adjust{
+          margin-top: 5px;
+          margin-left: -20px;
+        }
+        .table_hover{
+          word-wrap:break-word; 
+          margin-top: 10px;
+          border-top-style: none;
+        }
+        .table_hover tr:nth-child(odd){
+          background: rgba(220,220,220,.8);
+        }
+        .table_hover tr:hover{
+          background: rgba(255,218,185,.6);
+        }
+        .table_header th{
+          text-align: center;
+          background: rgba(220,220,220,.9);
+        }
+        /*.table_header th:nth-child(1){
+          border-top-left-radius: 10px;
+        }
+        .table_header th:last-child{
+          border-top-right-radius: 10px;
+        }*/
+        .table_content{
+          text-align: center;
+        }
+        .check_all_margin{
+          margin-top: 7px;
+        }
+        .check_all_margin_icon{
+          margin-top: 20px;
+        }
+        .fenye_change{
+          float: right;
+          margin-top: -40px;
+        }
+        .currentPage{
+          background: rgba(220,220,220,.9) !important;
+        }
+        .fenye_change:after{
+          clear: both;
+        }
+        .a_href a:visited, a:hover{
+          color: rgba(160,32,240,.7);
+        }
+    </style>
+  {/literal}
+</head>
+<body>
+<div class="main">
+  <fieldset>
+    <!-- <legend class="header_background">
+      <h3>&nbsp;分销订单管理&nbsp;</h3>
+    </legend> -->
+    <div class="main_content">
+
+	  <!--{if $message}-->
+	  <div class="if_message">
+	     {$message}
+	  </div>
+    <!--{/if}-->
+
+	  <br />
+    <fieldset class="top_circle">
+      <legend class="expand expand_font_size">&nbsp;筛选条件&nbsp;</legend>
+  		  <div>
+          <form name="form" method="post" class="form-horizontal">
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">分销商</label>
+              <div class="col-sm-2">
+                <select name="filter[distributor_id]" class="form-control text_width">
+                  <option value="-1">-ALL</option>
+                <!--{foreach from=$distributor_list item=item}--><option value="{$item.distributor_id}" {if $item.distributor_id==$filter.distributor_id}selected="selected"{/if}>{$item.name}</option><!--{/foreach}-->
+                </select>
+              </div>
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-1 control-label font_size">承运商</label>
+              <div class="col-sm-2">
+                <select name="filter[shipping_id]" class="form-control text_width">
+                  <option value="-1">-ALL</option>{html_options options=$shipping_list selected=$filter.shipping_id}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">状态组合</label>
+              <!-- <div class="col-sm-10 left_adjust"> -->
+                <span class="col-sm-2">
+                  <select name="filter[order_status]" class="form-control text_width">
+                    <option value="-1">-ALL [订单状态]</option>{html_options options=$order_status_list selected=$filter.order_status}
+                  </select>
+                </span>
+                <span class="col-sm-1"></span>
+                <span class="col-sm-2">
+                  <select name="filter[pay_status]" class="form-control text_width">
+                    <option value="-1">-ALL [收款状态]</option>{html_options options=$pay_status_list selected=$filter.pay_status}
+                  </select>
+                </span>
+                <span class="col-sm-1"></span>
+                <span class="col-sm-2">
+                  <select name="filter[shipping_status]" class="form-control text_width">
+                    <option value="-1">-ALL [发货状态]</option>{html_options options=$shipping_status_list selected=$filter.shipping_status}
+                  </select>
+                </span>
+              <!-- </div> -->
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">分销类型</label>
+              <div class="col-sm-2">
+                <select name="filter[distribution_type]" class="form-control text_width">
+                  <option value="-1">-ALL&nbsp;&nbsp;&nbsp;</option>
+                  {if ($smarty.request.type == 'fenxiao' && $filter.distribution_type == '')}
+                      {html_options options=$distribution_list selected=$filter.distribution_type|default:'fenxiao' }
+                  {else}
+                      {html_options options=$distribution_list selected=$filter.distribution_type}
+                  {/if}
+                </select>
+              </div>
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-1 control-label font_size">省</label>
+              <div class="col-sm-2">
+                <select name="filter[region_id]" class="form-control text_width">
+                  <option value="-1">-ALL&nbsp;&nbsp;&nbsp;</option>
+                  {foreach from=$province_query item=item}<option value="{$item.region_id}">{$item.region_name}</option>{/foreach}
+                </select>
+              </div>
+              <label class="col-sm-1 control-label font_size">收货人</label>
+              <div class="col-sm-2">
+                <input class="form-control text_width" type="text" name="filter[consignee]" value="{$filter.consignee}" size="30" />
+              </div>
+            </div>
+            <!-- <div class="form-group">
+              <label class="col-sm-2 control-label">收货人</label>
+              <div class="col-sm-2">
+                <input class="form-control text_width" type="text" name="filter[consignee]" value="{$filter.consignee}" size="30" />
+              </div> -->
+            <!-- </div> -->
+            <div class="form-group">
+              <!-- <label class="col-sm-2 select_right"> -->
+              <div class="col-sm-2">
+                <select name="filter[time_field]" class="form-control select_margin_left font_size">
+                  <option value="order_time" {if $filter.time_field == 'order_time'}selected="selected"{/if}>下单时间</option>
+                  <option value="shipping_time" {if $filter.time_field == 'shipping_time'}selected="selected"{/if}>发货时间</option>
+                </select>
+              </div>
+              <!-- <div class="col-sm-9 left_adjust_again"> -->
+                <span class="col-sm-2">
+                  <input type="text" class="form-control text_width" id="start" name="filter[start]" value="{$filter.start}" size="10" />
+                </span>
+                <span class="col-sm-1 margin_left">
+                  <input type="button" class="form-control text_width" id="startTrigger" value="日历" />
+                </span>
+                <!-- 注意,这里的日历是用了外部的扩展库 -->
+                <span class="col-sm-1 margin_double">到
+                </span>
+                <span class="col-sm-2">
+                  <input type="text" class="form-control text_width" id="end" name="filter[end]" value="{$filter.end}" size="10" />
+                </span>
+                <span class="col-sm-1 margin_left">
+                <input type="button" class="form-control text_width" id="endTrigger" value="日历" />
+                <span>
+              <!-- </div> -->
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label font_size">每页显示记录</label>
+              <div class="col-sm-2">
+                <select name="size" class="form-control text_width">
+                  {html_options options=$page_size_list selected=$filter.size}
+                </select>
+              </div>
+              <label class="col-sm-1 control-label font_size">支付方式</label>
+              <div class="col-sm-2">
+                <select name="filter[pay_id]" class="form-control text_width">
+                  <option value="-1">-ALL</option><!--{foreach from=$payment_list item=item}--><option value="{$item.pay_id}" {if $item.pay_id==$filter.pay_id}selected="selected"{/if}>{$item.pay_name}</option><!--{/foreach}-->
+                </select>
+              </div>
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-1 control-label font_size">仓库</label>
+              <div class="col-sm-2">
+                <select name="filter[facility_id]" class="form-control text_width">
+                  <option value="-1">-ALL</option>{html_options options=$facility_list selected=$filter.facility_id}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <!-- <label class="col-sm-2 control-label">每页显示记录</label>
+              <div class="col-sm-3">
+                <select name="size" class="form-control text_width">
+                  {html_options options=$page_size_list selected=$filter.size}
+                </select>
+              </div> -->
+            <!-- </div>
+            <div class="form-group"> -->
+              <label class="col-sm-2 control-label font_size">商家(套餐)编码</label>
+              <!-- <div class="col-sm-10 left_adjust"> -->
+              <div class="col-sm-2">
+                <!-- <span class="col-sm-7"> -->
+                  <input type="text" class="form-control text_width" id="sync_outer_goods_id" size="15" name='filter[outer_id]' value='{$filter.outer_id}'/> 
+                <!-- </span> -->
+              </div>
+              <div class="tip col-sm-3 taobao_word_adjust">
+                  用于查询<strong>原淘宝订单</strong>有且只有一个该商品
+                </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-10 col-sm-offset-4">
+                <input type="submit" name="action" class="btn btn-primary btn-sm" value="筛选" />&nbsp; &nbsp;|&nbsp;&nbsp; 
+                <input type="submit" name="action" class="btn btn-primary btn-sm" value="导出" {if !$order_list}disabled="disabled"{/if} />
+              </div>
+              <input type="hidden" name="act" value="filter" />
+            </div>
+            
+            <table class="inner">                    
+          		<tr class="hidden_tr">
+          			<td>&nbsp;</td>
+          			<td><input type="text" id="sync_outer_goods_name" size='150'  readonly="readonly" style="border: none;" /> 
+          			</td>
+          		</tr>    
+            </table>
+          </form>
+  		  </div>    
+      </fieldset>
+      <fieldset class="circle bottom_circle">
+        <legend class="expand expand_font_size">&nbsp;订单列表&nbsp;</legend>
+        <div>
+          <div class="inner form_margin" style="text-align:right; padding-right:20px;">
+            <form method="post" class="form-horizontal">
+              <strong>查询出记录 {$total} 条</strong>
+               &nbsp; &nbsp; | &nbsp; &nbsp;模糊搜索 ：  
+              <input type="text" class="input-height" name="filter[keywords]" value="{$filter.keywords}" size="30" /> 
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+              <input type="submit" class="btn btn-default btn-sm" value="查询" /> <input type="hidden" name="act" value="search" />
+            </form>
+          </div>
+			<!--{if $order_list}--> {* 如果有订单数据 *}
+          <form method="post" id="form">
+            <table class="inner table table-condensed table_hover">      
+              <tr class="table_header">
+                <th>选择</th>
+                <th>订单号</th>
+                <th>订单金额</th>
+                <th>下单时间</th>
+                <th>确认时间</th>
+                <th>分销商</th>
+                <th>承运商</th>
+                <th>订单状态</th>
+                <th>支付方式</th>
+                <th>淘宝订单号</th>
+                <th>分销采购订单号</th>
+                <th>仓库</th>
+                <th>省</th>
+                <th>操作</th>
+              </tr>
+				<!--{foreach from=$order_list item=order name="order"}-->
+              <tr class="table_content">
+                <td>
+                  <input type="checkbox" name="checked[]" value="{$order.order_id}" />
+                </td>
+                <td class="a_href">
+                  <a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a>
+                </td>
+                <td>{$order.order_amount}</td>
+                <td>{$order.order_time}</td>
+                <td>{$order.confirm_time}</td>
+                <td>{$order.distributor_name}</td>
+                <td>{$order.shipping_name}</td>
+                <td>{$order_status_list[$order.order_status]}, {$pay_status_list[$order.pay_status]}, {$shipping_status_list[$order.shipping_status]}</td>
+                <td>{$order.pay_name}</td>
+                <td>{$order.taobao_order_sn}</td>
+                <td>{$order.distribution_purchase_order_sn}</td>
+                <td>{$facility_list[$order.facility_id]}</td>
+                <td>{$order.region_name}</td>
+                <td>
+                  <a href="discribution_order_note.php?order_id={$order.order_id}&keepThis=true&TB_iframe=true&height=400&width=800" class="thickbox" title="添加备注,订单号[{$order.order_sn}]">备注</a>
+                  &nbsp;&nbsp;
+                  <a href="discribution_order_adjustment_return.php?order_id={$order.order_id}&keepThis=true&TB_iframe=true&height=400&width=800" class="thickbox" title="返还预付款,订单号 [{$order.order_sn}]">返还预付款</a>
+                </td>
+              </tr>
+				<!--{/foreach}-->
+              <tr>
+                <td align="center" class="check_all_margin_icon"><input style="margin-top:10px;" type="checkbox" id="checkAll" /></td>  
+                <td colspan="12">
+                  <div class="form-group">
+                    <label class="col-sm-2 check_all_margin">全选; &nbsp;对选中的订单做 : &nbsp;&nbsp;</label>
+						<!-- 移库+改快递  -->
+                    <div class="col-sm-3" id="order-facility-shipping-transfer" style="display:none; margin:0; padding:0;" >
+                      <select name="facility_id" class="form-control">
+                        <option value="-1">- 未选择仓库</option>
+                        {html_options options=$facility_list}
+                      </select>
+                    </div>
+                    <div class="col-sm-3" id="order-shipping-facility-transfer" style="display:none; margin:0; padding:0;">
+                      <select name="shipping_id" class="form-control" >
+                        <option value="-1">- 未选择快递</option>
+                        {html_options options=$shipping_list}
+                      </select> 
+                    </div>
+                    <div class="col-sm-3">
+                      <input type="hidden" name="act" />
+                      <input class="btn btn-default" type="submit" value="转仓/快递" id="transfer" /> &nbsp;&nbsp;|&nbsp;&nbsp;
+                      <input class="btn btn-default" type="submit" value="导出" id="xml" />
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+            {$pagination}
+            <br />    
+          </form> 
+          <!--{else}-->
+          <div style="text-align:center"><h4>无相关数据</h4></div>
+          <!--{/if}-->
+        </div>
+    	</fieldset>
+      <br />
+    </div>
+  </fieldset>
+</div>
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+</body>
+</html>

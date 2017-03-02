@@ -1,0 +1,4 @@
+店家,申请时间,金额
+{foreach from=$requests item=request}
+{$request.store_name},{$request.request_time},{$request.amount}
+{/foreach}

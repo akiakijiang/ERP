@@ -1,0 +1,465 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>外包订单打标</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+
+<!-- Calendar -->
+<link rel="stylesheet" type="text/css" href="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.css"/>
+<link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+<style>
+{literal}
+.vSelect-wrap,.vSelect,.vSelect li,.vSelect-trigger,.vSelect-wrap .arrow {
+	box-sizing:border-box;
+}
+.vSelect-wrap {
+	position: relative;
+	float: left;
+	margin-right: 10px;
+}
+.vSelect {
+	position: absolute;
+	top: 25px;
+	left: 0;
+	padding:0;
+	margin:0;
+	list-style: none;
+	width: 120px;
+	height: 300px;
+	overflow-y: scroll;
+	border:1px solid #808080;
+	border-top: none;
+	background-color: #fff;
+	display: none;
+}
+.vSelect.active {
+	display: block;
+}
+.vSelect li {
+	padding:3px;
+	height: 25px;
+	cursor: pointer;
+	white-space:nowrap; 
+	overflow:hidden; 
+	text-overflow:ellipsis;
+}
+.vSelect-trigger {
+	padding:3px 20px 3px 6px;
+	width: 120px;
+	height: 25px;
+	border:1px solid #808080;
+	margin:0;
+	cursor: pointer;
+	white-space:nowrap; 
+	overflow:hidden; 
+	text-overflow:ellipsis;
+}
+.vSelect li:first-child {
+	border-top: none;
+}
+.vSelect li:last-child {
+	border-bottom: none;
+}
+.vOption {
+	cursor: pointer;
+}
+.vSelect-wrap .arrow {
+	position: absolute;
+	font-size: 16px;
+	right: 0;
+	top: 0;
+	color: #808080;
+	width: 25px;
+	padding:2px;
+	height: 100%;
+	text-align: center;
+	border:1px solid #808080;
+	z-index: 10;
+	cursor: pointer;
+}
+.city-vSelect-wrap {
+	display: none;
+}
+{/literal}
+</style>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooFunc.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/calendar/GooCalendar.js"></script>
+<!-- Calendar /-->
+
+<script type="text/javascript">
+//<![CDATA[
+var provinces = '{$province}';
+var cities = '{$city}';
+// {literal}
+
+var property={
+    divId:"demo",
+    needTime:true,
+    yearRange:[1970,2030],
+    week:['日','一','二','三','四','五','六'],
+    month:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+    format:"yyyy-MM-dd hh:mm:ss",
+};
+
+$(document).ready(function(){
+	var arrProvinces = provinces ? provinces.split(",") : [];
+	var arrCities = cities ? cities.split(",") : [];
+	var arrProvincesLength = arrProvinces.length;
+	var arrCitiesLength = arrCities.length;
+	
+	$(".province-vSelect .vOption").attr("checked",false).attr("disabled",false);
+	$(".city-vSelect .vOption").attr("checked",false).attr("disabled",false);
+
+	$("body").bind("click",function(event){
+		if (!$(event.target).parents(".region-wrap").length) {
+			$(".vSelect").removeClass("active");
+		}
+	});
+    
+    function showAlreadySelectedProvinces () {
+		if (arrProvincesLength) {
+			var alreadySelectedProvinceNames = "";
+			for (var i=0;i<arrProvincesLength;i++) {
+				$(".province-vSelect .vOption[value="+arrProvinces[i]+"]").attr("checked",true);
+				alreadySelectedProvinceNames += $(".province-vSelect .vOption[value="+arrProvinces[i]+"]").next().text() + ",";
+			}
+			$(".province-vSelect-wrap .vSelect-trigger").html(alreadySelectedProvinceNames.substring(0,alreadySelectedProvinceNames.length-1));
+		}
+	}
+
+	function showAlreadySelectedCities () {
+		if (arrCitiesLength) {
+			var $checkbox = $(".province-vSelect").find("input[type='checkbox']");
+			var callback = function () {
+				var alreadySelectedCityNames = "";
+				for (var i=0;i<arrCitiesLength;i++) {
+					$(".city-vSelect .vOption[value="+arrCities[i]+"]").attr("checked",true);
+					alreadySelectedCityNames += $(".city-vSelect .vOption[value="+arrCities[i]+"]").next().text() + ",";
+				}
+				$(".city-vSelect-wrap .vSelect-trigger").html(alreadySelectedCityNames.substring(0,alreadySelectedCityNames.length-1));
+			}
+			showCitiesByAjax(arrProvinces[0],$checkbox,callback);
+		}
+	}
+
+	function showCitiesByAjax (provinceId,checkbox,callback) {
+		$.ajax({
+			type: 'POST',
+			url: 'ajax.php?act=get_regions',
+			data: 'type=2&parent=' + provinceId,
+			dataType: 'json',
+			beforeSend:function(){
+				checkbox.attr("disabled",true);
+			},
+			error: function() {
+				checkbox.attr("disabled",false);
+			    alert('查询地域失败');
+			},
+			success: function(data) {
+				checkbox.attr("disabled",false);
+				$(".city-vSelect-wrap .vSelect-trigger").html("请选择城市");
+				if (data.regions && data.regions != '') {
+					var cityOptionHtml = "";
+					for (var key in data.regions) {
+						cityOptionHtml += "<li><input type='checkbox' name='city[]' class='vOption' value='"+data.regions[key].region_id+"'/><span>"+data.regions[key].region_name+"</span></li>";
+					}
+					$(".city-vSelect").html(cityOptionHtml);
+					$(".city-vSelect-wrap").show();
+					$(".city-vSelect .vOption").bind("click",function(){
+						var checkbox = $(this).parents(".vSelect").find("input[type='checkbox']");
+						var selectedCityName = "";
+						for (var i=0;i<checkbox.length;i++) {
+							if (checkbox.eq(i).attr("checked")) {
+								selectedCityName += checkbox.eq(i).next().text() + ",";
+							}
+						}
+						$(this).parents(".vSelect").siblings(".vSelect-trigger").html(selectedCityName.substring(0,selectedCityName.length-1));
+					});
+				}
+				if (callback) {
+					callback();
+				}
+			}
+		});
+	}
+
+	showAlreadySelectedProvinces();
+	showAlreadySelectedCities();
+
+	(function(){
+		var selectedProvinceNumber = arrProvincesLength;
+	
+		$(".vSelect-wrap .arrow").bind("click",function(){
+			$(this).siblings(".vSelect").toggleClass("active");
+		});
+
+		$(".province-vSelect .vOption").bind("click",function(){
+			if ($(this).attr("checked")) {
+				selectedProvinceNumber ++;
+			} else {
+				selectedProvinceNumber --;
+			}
+			var $checkbox = $(this).parents(".vSelect").find("input[type='checkbox']");
+			var selectedProvinceName = "";
+			for (var i=0;i<$checkbox.length;i++) {
+				if ($checkbox.eq(i).attr("checked")) {
+					selectedProvinceName += $checkbox.eq(i).next().text() + ",";
+				}
+			}
+			$(this).parents(".vSelect").siblings(".vSelect-trigger").html(selectedProvinceName.substring(0,selectedProvinceName.length-1));
+			
+			if (selectedProvinceNumber == 1) {
+				var selectedProvinceId = "";
+				for (var i=0;i<$checkbox.length;i++) {
+					if ($checkbox.eq(i).attr("checked")) {
+						selectedProvinceId = $checkbox.eq(i).val();
+					}
+				}
+				
+				showCitiesByAjax(selectedProvinceId,$checkbox);
+			} else {
+				$(".city-vSelect .vOption").attr("checked",false);
+				$(".city-vSelect-wrap").hide();
+			}
+				
+		});
+	})();
+    canva1=$.createGooCalendar("start",property);
+    canva2=$.createGooCalendar("end",property);
+    var indicate_type = $("#indicate_type").val();
+	$("select[name='info[indicate_type]'] option[value='" + indicate_type + "']").attr("selected", true);
+	
+	var indicate_status = $("#indicate_status").val();
+	$("select[name='info[indicate_status]'] option[value='" + indicate_status + "']").attr("selected", true);
+	
+	var searchType = $("#searchType").val();
+	$("select[name='searchType'] option[value='" + searchType + "']").attr("selected", true);
+	
+	var timeType = $("#timeType").val();
+	$("select[name='timeType'] option[value='" + timeType + "']").attr("selected", true);
+	
+	$("#start").val($("#hidStart").val());
+	$("#end").val($("#hidEnd").val());
+	
+	/**
+	 * 商家编码搜索
+	 */
+	$('#outer_id').autocomplete('out_ship_order.php?request=ajax&act=search_outer_id', {
+	    dataType : 'json',
+	    minChars: 0,
+	    mustMatch: false,
+	    formatItem : function(row, i, max, value, term) {
+	        return(row.outer_id);
+	    },
+	    formatResult : function(row) {
+	        return(row.outer_id);
+	    }
+	}).result(function(event, row, formatted) {
+		$('#outer_id_hidden').val(row.outer_id);
+	    $('#is_tc').val(row.is_tc);
+	});
+	
+	$('#search_form').submit(function () {
+		$start = $('#start').val();
+		$end = $('#end').val();
+		if ($start == null || $start == "") {
+			alert("请选择订单开始时间");
+			return false;
+		}
+		if ($end == null || $end == "") {
+			alert("请选择订单结束时间");
+			return false;
+		}
+		
+		if ($start > $end) {
+			alert("开始时间不能大于结束时间");
+			return false;
+		} 
+		
+		var provinces="";
+        $("input[name='province[]']:checkbox").each(function(){ 
+            if($(this).attr("checked")){
+            	provinces += $(this).val()+","
+            }
+        })
+		$('#provinces').val(provinces);
+		
+		var cities="";
+        $("input[name='city[]']:checkbox").each(function(){ 
+            if($(this).attr("checked")){
+            	cities += $(this).val()+","
+            }
+        })
+		$('#cities').val(cities);
+		
+		return true; 
+	});
+});
+
+function mark(param, unmark_count) {
+	var count = prompt("请输入打标订单数量", unmark_count);
+	if (count != null) {
+		count = count.trim();
+		if (!isNaN(count) && count > 0) {
+			if (count > 1000) {
+				alert("最多只能打标1000单");
+			} else if (count > unmark_count) {
+				alert("不能超过待打标订单数量");
+			} else {
+				window.location.href = "out_ship_order.php?act=addTask" + $(param).val() + "&count="+count+"&goods_number="+$('#goods_number').val();
+			}
+		} else {
+			alert("输入错误");
+		}
+	}
+}
+
+//{/literal}
+//]]>
+</script>
+
+</head>
+
+<body>
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+
+<!-- 指示 -->
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+     <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;外包订单打标&nbsp;</span></legend>
+     {if $search_message}
+         <b>{$search_message}</b>
+     {/if}
+
+	<div class="menu-tab">
+	<div class="right-edge">&nbsp;</div>
+	<div class="item"><a href="out_ship_order.php?act=showTask">结果查询</a></div>
+	<div class="active"><a href="out_ship_order.php">打标操作</a></div>
+	<div class="left-edge">&nbsp;</div>
+	</div>
+     
+<form id="search_form" method="post">
+<p>
+订单时间：
+	从&nbsp;<input type="text" value="" id="start" name="start" size="18" value="{$start}"></input>&nbsp;
+	到&nbsp;<input type="text" value="" id="end" name="end" size="18" value="{$end}"></input>&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="hidden" id="hidStart" value="{$start}"></input>
+	<input type="hidden" id="hidEnd" value="{$end}"></input>
+
+商家编码：
+	<input type="text" name="outer_id" id="outer_id" value="{$outer_id}">
+	<input type="hidden" name="outer_id_hidden" id="outer_id_hidden">
+	<input type="hidden" name="is_tc" id="is_tc">&nbsp;&nbsp;&nbsp;&nbsp;
+<!-- 订单商品数量：
+	<input type="text" name="goods_number" id="goods_number" value="{$goods_number}"/>&nbsp;&nbsp;&nbsp;&nbsp; -->
+仓库:
+	<select name="facility_id" id="facility_id">
+		{foreach from=$facility_list key=key item=facility}
+			<option value="{$key}" {if $facility_id eq $key}selected="selected"{/if}>{$facility}</option>
+		{/foreach}
+		<!-- <option value=-1 {if $facility_id eq -1}selected="selected"{/if}>--全部--</option> -->
+	</select>&nbsp;&nbsp;&nbsp;&nbsp;
+快递方式：	
+	<select name="shipping_id" id="shipping_id">
+		<option value=-1 {if $shipping_id eq -1}selected="selected"{/if}>--全部--</option>
+		{foreach from=$shipping_list key=key item=shipping}
+			<option value="{$shipping.shipping_id}" {if $shipping.shipping_id eq $shipping_id}selected="selected"{/if}>{$shipping.shipping_name}</option>
+		{/foreach}
+	</select>
+	
+	<div class="region-wrap">
+		<span style="float:left;position:relative;top:3px;margin-right:3px;">指定地区：</span>
+		<div class="vSelect-wrap province-vSelect-wrap">
+			<i class="fa fa-sort-down arrow"></i>
+			<p class="vSelect-trigger">
+				请选择省份
+			</p>
+			<ul class="vSelect province-vSelect">
+				{foreach from=$province_list key=plk item=pli}
+				<li>
+					<input type="checkbox" name="province[]" class="vOption" value="{$plk}"/><span>{$pli}</span>
+				</li>
+				{/foreach}
+			</ul>
+		<input type="hidden" name="provinces" id="provinces" value=""/>
+		</div>
+		<div class="vSelect-wrap city-vSelect-wrap">
+			<i class="fa fa-sort-down arrow"></i>
+			<p class="vSelect-trigger">
+				请选择城市
+			</p>
+			<ul class="vSelect city-vSelect">
+			</ul>
+			<input type="hidden" name="cities" id="cities" value=""/>
+		</div>
+	</div>
+	
+	
+	<input type="hidden" name="act" value="list" />&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="submit" style="width:100px;" value="查	询"></input>
+</p>
+</form>
+<br />
+
+	<b><font color="red" size="2">同仓库、同快递的同一商品只能存在一个待打标的任务</font></b>
+      <table class="bWindow">
+          <tr align="center"  bgcolor="#62B4E8" style="color: white;">
+              <td>仓库</td>
+              <td>省</td>
+              <td>市</td>
+              <td>快递方式</td>
+              <td>商家编码</td>
+              <td>商品名称</td>
+              <td>未确认订单数量</td>
+              <td>未预定订单数量</td>
+              <td>待打标订单数量</td>
+              <td>已打标订单数量</td>
+              <td>操作</td>
+          </tr>
+          {foreach from=$list item=result}
+          <tr align="center" class="{cycle values='even,odd'}">
+              <td>{$result.facility_name}</td>
+              <td>{$result.province_name}</td>
+              <td>{$result.city_name}</td>
+              <td>{$result.shipping_name}</td>
+              <td>{$result.outer_id}</td>
+              <td>{$result.outer_goods_name}</td>
+              <td>{$result.unconfirm_count}</td>
+              <td>{$result.unreserved_count}</td>
+              <td>{$result.unmark_count}</td>
+              <td>{$result.marked_count}</td>
+              <td>
+                  <!-- {if !in_array($result.k,$iTask) && $result.unmark_count > 0} -->
+                  <button value="&start={$start}&end={$end}&facility_id={$result.facility_id}&outer_id={$result.outer_id}&shipping_id={$result.shipping_id}&province={$province}&city={$city}&party_id={$party_id}" onclick="mark(this, {$result.unmark_count})">打标</button>
+                  <!-- {/if} -->
+              </td>
+          </tr>
+          {/foreach}
+      </table>
+      {$pagination}
+      <!-- {if ! $list} -->
+      <br />
+      <center>无结果!</center>
+      <!-- {/if} -->
+</fieldset>
+</body>
+</html>

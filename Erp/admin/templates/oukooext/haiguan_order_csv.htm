@@ -1,0 +1,4 @@
+订单号,店铺名称,外部订单号,申报单号,支付流水号,推送状态,推送时间,错误信息
+{foreach from=$haiguan_orders item=order}
+="{$order.order_sn}",="{$order.nick}",="{$order.taobao_order_sn}",="{$order.mft_no}",="{$order.payment_no}",="{$order.status}",="{$order.created_stamp}",="{$order.err_message}"
+{/foreach}

@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>添加分类</title>
+{literal}
+ <style type="text/css">
+
+ #table{width:100%;border:1px solid #EEE;font-size:14px; font-family:"宋体";}
+ #table th{background:#ffffff;border-bottom:1px solid #CCC;padding:4px; text-align:center;}
+ #table td{border:1px solid #EEE;padding:4px;}
+ a{
+	color:#000000;
+	text-decoration: none;
+}
+ </style>
+ {/literal}
+  {literal}
+ <script src="./js/jquery-1.3.2.js"></script>
+  {/literal}
+</head>
+<body>
+<form id="form1" name="form1" method="post" action="category_index.php?act=edit_cat">
+<table id="table" cellpadding="0" cellspacing="0">
+ <tr>
+	<th colspan="2">添加商品分类</th>
+ </tr>
+ <tr>
+	<td align="right">当前所在组织:</td>
+	<td>{foreach from=$party item=list }{$list}{/foreach}</td>
+  </tr>
+   <tr>
+	<td align="right">从父级到根目录:</td>
+	<td>{foreach from=$parent_cat item=list }{foreach from=$list item=cate_name name=foo }{$cate_name}->{/foreach}{/foreach}</td>
+  </tr>
+  <tr>
+	<td align="right">当前选中类:</td>
+	<td>{if $cat_name eq ''}无{else}{$cat_name}{/if}<input type="hidden" id="cat_id" name="cat_id" value="{$cat_id}"></input></td>
+  </tr>
+  <tr>
+	<td align="right">加分类级别:</td>
+	<td>
+	  <label><input type="radio" name="cat" value="0" id="similar" {if $cat_name eq ''}checked="checked" {else}disabled="disabled"{/if}/>顶级类</label>
+	  <label><input type="radio" name="cat" value="1" id="subclass"  {if $cat_name eq ''}disabled="disabled"{else}checked="checked"{/if}/>子类</label>
+	</td>
+  </tr>
+  <tr>
+	<td align="right"><label id="cat_name">{if $cat_name eq ''}顶级类名称:{else}子类名称:{/if} <label></td>
+	<td><input type="text" id="category_name" name="category_name"  /><font id="category_name_info" name="category_name_info" color="red" ></td>
+  </tr>
+  <tr>
+  	<td align="right"><input type="button" id="sub" name="sub" value="提交" onclick="applySubmit();"/></td>
+	<td><input type="reset" id="res" name="res"  value="重置"/>
+		{if $can_delete}
+			<input type="button" value="删除当前类目" onclick="delete_category();"></input>
+		{/if}
+	</td>
+  </tr>
+</table>
+</form>
+</body>
+  {literal}
+<script type="text/javascript">
+function applySubmit(){
+	if($.trim($('#category_name').val()) == '')
+	{
+		$('#category_name_info').html('请输入类别名');
+		return false;
+	}
+	$("#form1").submit();
+}
+
+function delete_category(obj) {
+	 var info = "确认删除 记录吗？";
+	 var cat_id = $("#cat_id").val();
+	 if (confirm(info)) {
+		location.href="category_index.php?act=delete&cat_id="+cat_id;
+	 } else {
+		 return false;
+	 }
+}
+
+$(document).ready(function(){
+	 $("#similar").click(function(){
+	 	var val=$('input:radio[name="cat"]:checked').val();
+		if(val!=null)
+		{
+			$("#cat_name").html("顶级类名称:");
+		}
+	 });
+	 $("#subclass").click(function(){
+		 	var val=$('input:radio[name="cat"]:checked').val();
+			if(val!=null)
+			{
+				$("#cat_name").html("子类名称:");
+			}
+	});
+});
+</script>
+  {/literal}
+
+</html>

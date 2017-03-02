@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>内部对帐查看</title>
+</head>
+<body>
+<table class="bWindow">
+<caption><h3>帐单详情查看，类型：{$bill.type}，总额：{$bill.amount}，使用返利金额：{$bill.rebate_amount}， 使用预付金额：{$bill.prepayment_amount}， 日期：{$bill.date}，收款人：{$bill.purchaser}</h3>
+		<a href="c2c_buy_sale_bill.php">返回帐目列表</a>&nbsp;&nbsp;
+		<a target="_blank" href="c2c_buy_sale_bill_detail_print.php?bill_id={$bill.bill_id}&type={$bill.type}&bill_type={$bill.bill_type}">打印</a>
+<form>
+凭证号：
+<select name="voucher_year">
+{section name=foo start=2007 loop=$next_year}
+	<option value="{$smarty.section.foo.index}" {if $bill.voucher_year==$smarty.section.foo.index}selected="selected"{/if}>
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>年
+<select name="voucher_month">
+{section name=foo start=1 loop=13}
+	<option value="{$smarty.section.foo.index}"  {if $bill.voucher_month==$smarty.section.foo.index}selected="selected"{/if}>
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>月&nbsp;&nbsp;-
+<input style="width:150px" name="voucher_no" value="{$bill.voucher_no}">
+<input type="hidden" name="act" value="update_voucher_no">
+<input type="hidden" name="bill_id" value="{$bill.bill_id}">
+<input type="submit" value="更新凭证号">
+</form>
+<br><br></caption>
+<tr>
+<th>订单号</th>
+<th>入库/出库日期</th>
+<th>商品名</th>
+<th>供应商</th>
+<th>数量</th>
+<th>供价</th>
+<th>售价</th>
+<th>差价</th>
+<th>支票号</th>
+<th>采购付款方式</th>
+</tr>
+<tr align="center">
+<th>总计</th>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>{$sum.purchase_paid_amount}</td>
+<td>{$sum.goods_price}</td>
+<td>{$sum.goods_price-$sum.purchase_paid_amount}</td>
+<td></td>
+<td></td>
+</tr>
+<!--{foreach from=$goods_list item=goods}-->
+<tr align="center">
+<td><a href="order_edit.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a></td>
+<td>{$goods.in_time}</td>
+<td>{$goods.goods_name}</td>
+<td>
+{foreach from=""|getProviders item=provider}
+{if $provider.provider_id == $goods.provider_id}
+{$provider.provider_name}
+{/if}
+{/foreach}
+</td>
+<td>{$goods.quantity_on_hand_diff}</td>
+<td>{$goods.purchase_paid_amount}</td>
+<td>{$goods.goods_price}</td>
+<td>{$goods.goods_price-$goods.purchase_paid_amount}</td>
+<td>{$goods.cheque}</td>
+<td>{$_CFG.adminvars.purchase_paid_type[$goods.purchase_paid_type]}</td>
+</tr>
+<!--{/foreach}-->
+</table>
+</body>
+</html>

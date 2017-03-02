@@ -1,0 +1,473 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>仓库报表</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/tablesorter.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+			// 绑定查看订单详细		
+			$('.expand').bind('click', function(){
+				$(this).next().toggle();
+			});
+		
+			// 提交禁用按钮
+			$(':button, :submit').find('enabled').attr('disabled', false);
+			
+			// 没有激活的tab默认隐藏
+			$('#tab').find('.item,.active').each(function(i, n){
+					t = $(n);
+					if (t.attr('class') != 'active') {
+							div = t.children('a').attr('href');
+							//$(div).hide();
+					}
+			});
+			// 绑定点击切换tab事件
+			$('#tab').find('.item,.active').bind('click', function(event){
+					event.preventDefault();
+					$this = $(this);
+					
+					if ($this.attr('class') == 'item') {
+						$('#tab').find('.item,.active').each(function(i, n){
+							t = $(n);
+							if (t.attr('class') == 'active') {
+								t.removeClass('active').addClass('item');
+							}
+
+							div = t.children('a').attr('href');
+							$(div).hide();
+						});
+						
+						$this.removeClass('item').addClass('active');
+						div = $this.children('a').attr('href');
+						$(div).show();
+					}
+			});
+			
+			
+			// 排序
+			$("#sortable2").tablesorter({ 
+					headers: { 
+						2:{sorter: false}, 3:{sorter: false}, 
+						4:{sorter: false}, 5:{sorter: false}, 6:{sorter: false}
+					} 
+			});
+			$("#sortable3").tablesorter({ 
+					headers: { 
+						2:{sorter: false}, 3:{sorter: false}, 
+						4:{sorter: false}, 5:{sorter: false}, 6:{sorter: false}
+					} 
+			});
+			$("#sortable4").tablesorter({ 
+					headers: { 
+						3:{sorter: false}, 4:{sorter: false}, 
+						5:{sorter: false}, 6:{sorter: false}, 7:{sorter: false}
+					} 
+			});
+		
+	});
+
+	// {/literal}
+	// ]]>
+	</script>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <style type="text/css">
+	{literal}
+	a {
+		text-decoration:none;
+	}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;仓库报表&nbsp;</span></legend>
+
+  
+ 	<form method="act" id="form1" action="analyze_warehouse.php" >
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">查询</h3>
+  时间区间 ： &nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="start" name="start" value="{$filter.start}" size="10" /><input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" /> &nbsp; 到 &nbsp;&nbsp;
+  <input type="text" id="end" name="end" value="{$filter.end}" size="11" /><input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="act" value="查询" /> &nbsp;&nbsp; <input type="submit" name="act" value="导出" {if !$list && !$list}disabled="disabled"{/if} />
+  </div>
+  </form>
+  
+  
+<!--{if $taxology}-->  {* 有记录才显示 *}
+
+
+	<br />
+	<div class="menu-tab" id="tab">
+  	<div class="right-edge">&nbsp;</div>
+    <div class="item"><a href="#facility_province_shipping_id">配送方式和配送区</a></div>
+    <div class="item"><a href="#facility_shipping_id">配送方式</a></div>
+    <div class="item"><a href="#facility_province_id">配送区</a></div>
+  	<div class="active"><a href="#facility_id">总表</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  
+  <div style="clear:both;" id="facility_id">
+      <br />
+      <h3 style="color:#09F;">总表</h3>
+    
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="20%">仓库</th>
+          <th width="16%">缺货</th>
+          <th width="16%">待配货</th>
+          <th width="16%">已配货</th>
+          <th width="16%">已出库</th>
+          <th width="16%">已发货</th>
+        </tr>
+
+				<!--{foreach from=$taxology.facility_id item=group}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$group.facility_name}</td>
+          <td>
+          	{if $group.taxo.1.order_count}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=1&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.1.order_count}</a>
+            {else}
+            0
+            {/if}
+            <!--
+          	<a href="javascript:void(0);" class="expand">[+]</a><div style="display:none;">{foreach from=$group.taxo.1.order_list item=o}<p><a href="order_edit.php?order_id={$o.order_id}" target="_blank">{$o.order_sn}</a></p>{/foreach}</div>
+            -->
+					</td>
+          <td>
+          	{if $group.taxo.2.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=2&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.2.order_count}</a>
+            {else}
+            0
+            {/if}
+					</td>
+          <td>
+          	{if $group.taxo.3.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=3&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.3.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.4.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=4&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.4.order_count}</a>
+            {else}
+            0
+            {/if}
+					</td>
+          <td>
+          	{if $group.taxo.5.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=5&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.5.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+        </tr>
+        
+        <!--{/foreach}-->
+        
+      </table>
+  </div>
+  
+  
+  
+	
+  <div style="clear:both; display:none;" id="facility_province_id">
+		  <br />
+      <h3 style="color:#09F;">配送区</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sortable2">
+      	<thead>
+        <tr>
+          <th width="20%">仓库</th>
+          <th width="20%">配送区</th>
+          <th width="12%">缺货</th>
+          <th width="12%">待配货</th>
+          <th width="12%">已配货</th>
+          <th width="12%">已出库</th>
+          <th width="12%">已发货</th>
+        </tr>
+        </thead>
+        
+        
+        <tbody>
+        <!--{foreach from=$taxology.facility_province_id item=group}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$group.facility_name}{$item.1.facility_id}</td>
+          <td>{$group.province_name}</td>
+          <td>
+          	{if $group.taxo.1.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=1&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.1.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.2.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=2&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.2.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.3.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=3&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.3.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.4.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=4&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.4.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.5.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=5&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.5.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+        </tr>
+        
+        <!--{/foreach}-->
+        </tbody>
+        
+      </table>
+  
+  </div>
+  
+
+	
+  <div style="clear:both; display:none;" id="facility_shipping_id">
+  		<br />
+      <h3 style="color:#09F;">配送方式</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sortable3">
+      	<thead>
+        <tr>
+          <th width="20%">仓库</th>
+          <th width="20%">配送方式</th>
+          <th width="12%">缺货</th>
+          <th width="12%">待配货</th>
+          <th width="12%">已配货</th>
+          <th width="12%">已出库</th>
+          <th width="12%">已发货</th>
+        </tr>
+        </thead>
+        
+        <tbody>
+        <!--{foreach from=$taxology.facility_shipping_id item=group}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$group.facility_name}</td>
+          <td>{$group.shipping_name}</td>
+          <td>
+          	{if $group.taxo.1.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=1&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.1.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.2.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=2&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.2.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.3.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=3&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.3.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.4.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=4&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.4.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.5.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=5&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.5.order_count|default:"0"}</a>
+            {else}
+            0
+            {/if}
+          </td>
+        </tr>
+        
+        <!--{/foreach}-->
+        </tbody>
+        
+      </table>
+  
+  </div>
+  
+  
+  
+	
+  <div style="clear:both; display:none;" id="facility_province_shipping_id">
+  		<br />
+      <h3 style="color:#09F;">配送方式和配送区</h3>
+    
+      <table class="bWindow" style="margin-top:10px;" id="sortable4">
+      	<thead>
+        <tr>
+          <th width="13.3%">仓库</th>
+					<th width="13.3%">配送方式</th>
+					<th width="13.3%">配送区</th>
+          <th width="12%">缺货</th>
+          <th width="12%">待配货</th>
+          <th width="12%">已配货</th>
+          <th width="12%">已出库</th>
+          <th width="12%">已发货</th>
+        </tr>
+        </thead>
+        
+        
+        <tbody>
+        <!--{foreach from=$taxology.facility_province_shipping_id item=group}-->
+        
+        <tr align="center" class="{cycle values='odd,even'}">
+        	<td>{$group.facility_name}</td>
+          <td>{$group.shipping_name}</td>
+          <td>{$group.province_name}</td>
+          <td>
+          	{if $group.taxo.1.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=1&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.1.order_count}</a>
+            {else}
+            0
+            {/if}
+					</td>
+          <td>
+          	{if $group.taxo.2.order_count}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=2&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.2.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.3.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=3&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.3.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.4.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=4&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.4.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+          <td>
+          	{if $group.taxo.5.order_count > 0}
+          	<a href="analyze_warehouse_detail.php?facility_id={$group.facility_id}&shipping_id={$group.shipping_id}&province_id={$group.province_id}&taxology=5&start={$filter.start}&end={$filter.end}" target="_blank">{$group.taxo.5.order_count}</a>
+            {else}
+            0
+            {/if}
+          </td>
+        </tr>
+        
+        <!--{/foreach}-->
+        </tbody>
+        
+      </table>
+  
+  </div>
+  
+<!--{/if}-->
+
+  <br /><br />
+  
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

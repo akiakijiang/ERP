@@ -1,0 +1,334 @@
+<!doctype html>
+<html>
+	<head>
+		<title>ERP</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="./styles/indexV2Styles/normalize.css">
+		<link rel="stylesheet" href="./styles/indexV2Styles/indexV2.css">
+		<link rel="stylesheet" href="./styles/indexV2Styles/jquery.mCustomScrollbar.min.css">
+		<link href="https://cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+	</head>
+	<body>
+		<div id="main-wrap">
+			<div id="header-wrap">
+				<div id="logo-wrap">
+					<a href="index.php?act=main" target="content-frame"><img src="./styles/img/logo-shadow.png" alt="Leqee" id="logo"></a>
+				</div>
+				<div id="party-select">
+					<span id="party-name-wrap">
+						<span id="party-name">{$user_current_party_name}</span>
+						<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div id="parties-wrap">
+				{foreach from=$user_party_group key=upl_key item=upl_item}
+					{if $upl_key eq ''}
+						<div class="parties">
+							<ul class="party-list">
+								{foreach from=$upl_item.party_list key=party_id item=party_name}
+								<li class="hover"><a href="javascript:void(0);" onclick="switchParty({$party_id})">{$party_name}</a></li>
+								{/foreach}
+							</ul>
+						</div>
+					{else}
+						<div class="parties">
+							<p class="party-class"><i class="fa {$upl_item.fa_icon}"></i>{$upl_key}</p>
+							<ul class="party-list">
+								{foreach from=$upl_item.party_list key=party_id item=party_name}
+								{if $party_name == $user_current_party_name}
+								<li><a href="javascript:void(0);" class="hover" onclick="switchParty({$party_id})">{$party_name}</a></li>
+								{else}
+								<li><a href="javascript:void(0);" onclick="switchParty({$party_id})">{$party_name}</a></li>
+								{/if}
+								{/foreach}
+							</ul>
+						</div>
+					{/if}
+				{/foreach}
+				</div>
+				<ul id="header-nav">
+					<li><span>{$user_name}</span></li>
+					<li id="favorite-wrap">
+						<span id="favorite-btn">收藏</span>
+						<ul id="favorites-nav">
+							{if $nav_list}
+							{foreach from=$nav_list item=nav_list_item key=nav_list_key}
+							<li><a href="{$nav_list_key}" target="content-frame">{$nav_list_item}</a></li>
+							{/foreach}
+							{else}
+							<li><a href="javascript:;">您还没有收藏~</a></li>
+							{/if}
+						</ul>
+					</li>
+					<li><span><a href="privilege.php?act=modif" target="content-frame">设置</a></span></li>
+					<li><span><a href="privilege.php?act=logout">退出</a></span></li>
+				</ul>
+			</div>
+			<div id="menu-wrap">
+				<p id="openall"><i class="fa fa-plus"></i>全展开</p>
+				<ul class="multilevel-menu" id="left-menu">
+					{foreach from=$menus item=menu_i_item key=menu_i_key}
+					<li class="parent-level">
+						{if $menu_i_item.is_final eq 0}
+						<p class="li-title parent-li-title">
+							<i class="fa {$menu_i_item.fa_icon}"></i>{$menu_i_item.label}<i class="fa fa-angle-right ar"></i>
+						</p>
+						<ul class="child-menu first-child-menu">
+						{foreach from=$menu_i_item.children item=menu_ro_item key=menu_ro_key}
+							{if $menu_ro_item.is_final eq 0}
+							<li class="parent-level has-child">
+								<p class="li-title first-child parent-li-title">
+									<i class="fa fa-plus-square-o plus"></i>
+									{$menu_ro_item.label}
+								</p>
+								<ul class="child-menu second-child-menu">
+								{foreach from=$menu_ro_item.children2 item=menu_ha_item key=menu_ha_key}
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="{$menu_ha_item.action}" target="content-frame">{$menu_ha_item.label}</a>
+										</p>
+									</li>
+								{/foreach}
+								</ul>
+							</li>
+							{else}
+							<li class="parent-level">
+								<p class="li-title first-child last-child">
+									<a href="{$menu_ro_item.action}" target="content-frame">{$menu_ro_item.label}</a>
+								</p>
+							</li>
+							{/if}
+						{/foreach}
+						</ul>
+						{else}
+						<p class="li-title parent-li-title">
+							<a href="{$menu_i_item.action}" target="content-frame">{$menu_i_item.label}</a><i class="fa fa-angle-right ar"></i>
+						</p>
+						{/if}
+					</li>
+					{/foreach}
+					
+					<!-- <li class="parent-level">
+						<p class="li-title parent-li-title">
+							<i class="fa fa-dashboard"></i>双11预案<i class="fa fa-angle-right ar"></i>
+						</p>
+						<ul class="child-menu first-child-menu">
+							<li class="parent-level has-child">
+								<p class="li-title first-child"><i class="fa fa-plus-square-o plus"></i>二级菜单</p>
+								<ul class="child-menu second-child-menu">
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单三级菜单</a>
+										</p>
+									</li>
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+								</ul>
+							</li>
+							<li class="parent-level has-child">
+								<p class="li-title first-child"><i class="fa fa-plus-square-o plus"></i>二级菜单</p>
+								<ul class="child-menu second-child-menu">
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li class="parent-level">
+						<p class="li-title parent-li-title">
+							<i class="fa fa-code"></i>重写流程<i class="fa fa-angle-right ar"></i>
+						</p>
+						<ul class="child-menu">
+							<li class="parent-level has-child">
+								<p class="li-title first-child"><i class="fa fa-plus-square-o plus"></i>二级菜单</p>
+								<ul class="child-menu second-child-menu">
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+								</ul>
+							</li>
+							<li class="parent-level has-child">
+								<p class="li-title first-child"><i class="fa fa-plus-square-o plus"></i>二级菜单</p>
+								<ul class="child-menu second-child-menu">
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li class="parent-level">
+						<p class="li-title parent-li-title">
+							<i class="fa fa-bug"></i>废老库存<i class="fa fa-angle-right ar"></i>
+						</p>
+						<ul class="child-menu">
+							<li class="parent-level has-child">
+								<p class="li-title first-child"><i class="fa fa-plus-square-o plus"></i>二级菜单</p>
+								<ul class="child-menu second-child-menu">
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+									<li>
+										<p class="li-title second-child last-child">
+											<a href="javascript:;" target="content-frame">三级菜单</a>
+										</p>
+									</li>
+								</ul>
+							</li>
+							<li class="parent-level">
+								<p class="li-title first-child last-child">
+									<a href="javascript:;" target="content-frame">二级菜单</a>
+								</p>
+							</li>
+						</ul>
+					</li> -->
+				</ul>
+			</div>
+			<div id="content-wrap">
+				<iframe src="{$target_url}" width="100%" height="100%" frameborder="0" id="content_frame" name="content-frame"></iframe>
+			</div>
+		</div>
+		<script src="./js/jquery.min.js"></script>
+		<script src="./js/jquery.mCustomScrollbar.concat.min.js"></script>
+		<script>
+		{literal}
+			$(document).ready(function(){
+				$("#content-wrap").height($("#content-wrap").height()-45);
+				$("#menu-wrap").height($("#menu-wrap").height()-50);
+		        $("#menu-wrap").mCustomScrollbar({
+		        	theme: "minimal-dark",
+		        	scrollInertia: 100
+		        });
+		        // alert();
+		        $("#parties-wrap").css({
+		        	"right":parseInt($("#party-select").css("right").slice(0,3))+45
+		        });
+
+				$(".multilevel-menu .li-title").on("click",function(e){
+					e.stopPropagation();
+					if ($(this).hasClass("last-child")) {
+						$(this).addClass("active").parent().siblings().find(".last-child").removeClass("active");
+					}else {
+						if ($(this).hasClass("first-child")) {
+							if ($(this).find(".plus").hasClass("fa fa-plus-square-o plus")) {
+								$(this).find(".plus").attr("class","fa fa-minus-square-o plus");
+							} else if ($(this).find(".plus").hasClass("fa fa-minus-square-o plus")) {
+								$(this).find(".plus").attr("class","fa fa-plus-square-o plus");
+							}
+						}
+						$(this).toggleClass("active").siblings(".child-menu").eq(0).slideToggle(500)
+						.end()
+						.parents(".parent-level").siblings().find(".child-menu").slideUp(500);
+					}
+					$(this).parents(".parent-level").siblings().find(".li-title").removeClass("active");
+					$(this).parents(".parent-level").siblings().find(".plus").attr("class","fa fa-plus-square-o plus");
+				});
+
+				$("#openall").on("click",function(){
+					$(".multilevel-menu .li-title").not(".last-child").addClass("active");
+					$(".multilevel-menu .li-title.first-child").find(".plus").attr("class","fa fa-minus-square-o plus");
+					$(".multilevel-menu .child-menu").slideDown(500);
+				});
+
+				$("#party-name-wrap").on("click",function(){
+					$("#favorites-nav").removeClass("active").fadeOut(500);
+					$("#favorite-btn").removeClass("active");
+					$(this).toggleClass("active");
+					if ($("#parties-wrap").hasClass("active")) {
+						$("#parties-wrap").removeClass("active").fadeOut(500);
+					}else {
+						$("#parties-wrap").addClass("active").fadeIn(500);
+						window.setTimeout(function(){
+							$("#parties-wrap").on("mouseleave",function(){
+								$(this).removeClass("active").fadeOut(500);
+								$("#party-name-wrap").removeClass("active");
+								$("#parties-wrap").off();
+							});
+						},4000);
+					}
+				});
+
+				$(".party-list a").on("click",function(){
+					$(this).addClass("hover").parents("li").siblings().find("a").removeClass("hover");
+					$(this).parents(".parties").siblings().find("a").removeClass("hover");
+					$("#party-name").html($(this).html());
+					$("#parties-wrap").removeClass("active").fadeOut(500);
+					$("#party-name-wrap").removeClass("active");
+
+					console.log('ELEMENT PARTY LI ACTION');
+				});
+
+				$("#favorite-btn").on("click",function(){
+					$("#parties-wrap").removeClass("active").fadeOut(500);
+					$("#party-name-wrap").removeClass("active");
+					$(this).toggleClass("active");
+					if ($("#favorites-nav").hasClass("active")) {
+						$("#favorites-nav").removeClass("active").fadeOut(500);
+					}else {
+						$("#favorites-nav").addClass("active").fadeIn(500);
+					}
+				});
+
+				
+
+				$("#favorites-nav").on("mouseleave",function(){
+					$(this).removeClass("active").fadeOut(500);
+				});
+
+				$(".favorite-list li").on("click",function(){
+					$("#favorites-nav").removeClass("active").fadeOut(500);
+					$("#favorite-btn").removeClass("active");
+				});
+			});
+
+			function switchParty(party_id)
+			{
+				$.ajax({
+					type: 'GET',
+					url: 'indexV2.php?act=party',	
+					data: 'party_id=' + party_id,
+					success: function(response) {
+						console.log(response);
+						if(response!=party_id){
+							alert('切换业务组失败')
+							console.log('fail switchParty to '+party_id);
+						}else{
+							console.log('done switchParty to '+party_id);
+						}
+						$("#content_frame")[0].contentDocument.location.reload(true);
+					}
+				});
+				console.log('ajax switchParty	 to '+party_id);
+			}
+
+		{/literal}
+		</script>
+	</body>
+</html>

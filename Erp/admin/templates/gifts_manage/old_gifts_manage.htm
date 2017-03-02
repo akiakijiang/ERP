@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<!--
+ * Created on 2011-7-14
+ *
+ * To change the template for this generated file go to
+ * Window - Preferences - PHPeclipse - PHP - Code Templates
+-->
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title> 赠品管理 </title>
+  <link href="../templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+    <script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+
+
+        /**
+         * 主商品搜索
+         */
+        $('#main_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods', {
+            dataType : 'json',
+            minChars: 0,
+            mustMatch: false,
+            formatItem : function(row, i, max, value, term) {
+                return(row.goods_name);
+            },
+            formatResult : function(row) {
+                return(row.goods_name);
+            }
+        }).result(function(event, row, formatted) {
+            $('#hid_main_goods_id').val(row.goods_id);
+            $('#hid_main_style_id').val(row.style_id);
+            $('#hid_main_cat_id').val(row.cat_id);
+        });
+
+
+        /**
+         * 赠品搜索
+         */
+        $('#child_goods').autocomplete('gifts_manage.php?request=ajax&act=search_goods', {
+            dataType : 'json',
+            minChars: 0,
+            mustMatch: false,
+            formatItem : function(row, i, max, value, term) {
+                return(row.goods_name);
+            },
+            formatResult : function(row) {
+                return(row.goods_name);
+            }
+        }).result(function(event, row, formatted) {
+            $('#hid_child_goods_id').val(row.goods_id);
+            $('#hid_child_style_id').val(row.style_id);
+        });
+        
+    });
+
+
+    function cancelBtnclick(){
+        document.getElementById('main_goods').value = '';
+        document.getElementById('child_goods').value = '';
+        document.getElementById('hid_main_goods_id').value = '';
+        document.getElementById('hid_main_style_id').value = '';
+        document.getElementById('hid_main_cat_id').value = '';
+        document.getElementById('hid_child_goods_id').value = '';
+        document.getElementById('hid_child_style_id').value = '';
+    }
+
+    function formsubmit(){ 
+        var main_goods_id = document.getElementById('hid_main_goods_id').value ;
+        var main_goods_name = document.getElementById('main_goods').value ;
+        var child_goods_id = document.getElementById('hid_child_goods_id').value ;
+        var child_goods_name = document.getElementById('child_goods').value ;
+
+        if('' == main_goods_name || null == main_goods_id || '' == main_goods_id){
+            alert('还没有选择绑定的主商品 。。。');
+            return false;
+        }
+        if('' == child_goods_name || null == child_goods_id || '' == child_goods_id){
+            alert('还没有选择绑定的赠品 。。。');
+            return false;
+        }
+    }
+    
+    // {/literal}
+    // ]]>
+    </script>
+ </head>
+ <body>
+ <div style="margin-top:30px; margin-left:40px; width:1024px;" >
+  <fieldset style="border: #FF7FFF 2px solid;">
+   <legend><span style=" font-weight:bold; font-size:18px; ">&nbsp;赠品管理&nbsp;</span></legend>
+   <div style="width:96%; margin:auto;">
+      <!--{if $message}-->
+      <script type="text/javascript">
+        // <![CDATA[
+        // {literal}    
+          window.setTimeout(function(){$('#message').slideUp("slow"); }, 5000);
+        // {/literal}
+        // ]]>
+      </script>
+      <div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+        {$message}
+      </div>
+      <!--{/if}-->
+     <br/>
+     <!-- 赠品编辑 -->
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;{if $edit_gifts}赠品编辑{else}添加赠品{/if}&nbsp;</legend>
+       <form method="post" id="form" onsubmit="return formsubmit()">
+         <table style="margin-top: 30px; margin-left: 60px; margin-bottom: 40px; width: 100%">
+           <tr>
+              <td style="width: 70px;">主商品：</td>
+              <td > &nbsp; </td>
+           </tr>
+           <tr>
+              <td> &nbsp;</td>
+              <td>
+                 <input type="text" name="main_goods" id="main_goods" size="60" value='{$gifts.parent_goods_name}'/>&nbsp; &nbsp;
+                  
+                 <input type="hidden" name="hid_main_goods_id" id="hid_main_goods_id" value='{$gifts.parent_id}'/>
+                 <input type="hidden" name="hid_main_style_id" id="hid_main_style_id" value='{$gifts.parent_style_id}'/>
+                 <input type="hidden" name="hid_main_cat_id" id="hid_main_cat_id" value='{$gifts.parent_cat_id}'/>
+              </td>
+           </tr>
+           <tr>
+              <td> 赠 品：</td>
+              <td > &nbsp; </td>
+           </tr>
+           <tr>
+              <td> &nbsp; </td>
+              <td >
+                 <input type="text" name="child_goods" id="child_goods" size="60" value='{$gifts.child_goods_name}'/>&nbsp; &nbsp;
+                  
+                 <input type="hidden" name="hid_child_goods_id" id="hid_child_goods_id" value='{$gifts.goods_id}'/>
+                 <input type="hidden" name="hid_child_style_id" id="hid_child_style_id" value='{$gifts.style_id}'/>
+              </td>
+           </tr>
+         </table>
+         <input type="hidden" name="hidden_group_goods_id" id="hidden_group_goods_id" value='{$gifts.group_goods_id}'/>
+         <input type="hidden" name="act" id="act" value="insert"/>
+         <table style="margin-left: 400px;"><tr><td>
+             <input type="submit" value=" 绑定赠品 " /> &nbsp; &nbsp; &nbsp; 
+             <input type="button" value="重新添加" onclick="javascript:cancelBtnclick();" />
+         </td></tr></table>
+       </form>
+     </fieldset>
+     
+     <br/>
+     <!-- 赠品列表 -->   
+     <fieldset style="border: #FF7FFF 1px dashed;">
+     <legend class="expand">&nbsp;赠品一览表&nbsp;</legend>
+        <table style="width: 100%" id="dataTab">
+          <tr>
+             <td align="center" style="width: 3%"><input type="checkbox" name="chkbox_select"  id="chkbox_select" onclick="" /></td>
+             <td style="width: 10%;"><strong>商家编码</strong></td>
+             <td style="width: 22%;"><strong>商品名称</strong></td>
+             <td style="width: 10%;"><strong>赠品商家编码</strong></td>
+             <td style="width: 22%;"><strong>赠品名称</strong></td>
+             <td style="width: 10%"><strong>创建人</strong></td>
+             <td style="width: 13%;"><strong>创建时间</strong></td>
+             <td style="width: 10%"><strong>操作</strong></td>
+          </tr> 
+          
+          {foreach from=$gifts_list item=gifts}
+          <tr class="{cycle values='odd,even'}">
+             <td align="center"><input type="checkbox" name="chkbox" value="{$gifts.group_goods_id}" /></td>
+             <td>{$gifts.parent_goods_style}</td>
+             <td>{$gifts.parent_goods_name}</td>
+             <td>{$gifts.child_goods_style}</td>
+             <td>{$gifts.child_goods_name}</td>
+             <td>{$gifts.created_by}</td>
+             <td>{$gifts.created_datetime}</td>
+             <td>
+               <a href="?act=update&group_goods_id={$gifts.group_goods_id}">编辑</a> &nbsp; &nbsp;
+               <a href="?act=delete&group_goods_id={$gifts.group_goods_id}">删除</a>
+             </td>
+          </tr>
+          {/foreach}       
+        </table>
+      
+     </fieldset>
+   </div>
+  </fieldset>
+   
+ </div>
+ </body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>待采清单详情</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+		*.margin: 0;
+  </style>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body>
+
+<div style="width:900px; margin:0 auto;">
+	<form method="get">
+	<table>
+	<tr>
+		<td>
+			期初时间 <input type="text" name="filter_start" id="start" value="{$filter.filter_start}" size="10" />	
+		</td>
+		<td>
+			期末时间 <input type="text" name="filter_end" id="end" value="{$filter.filter_end}" size="10" />	
+		</td>
+		<td>
+			交易类型: 
+			<select name="filter_type">
+      	{html_options options=$transaction_type_list selected=$filter.filter_type}
+			</select>
+		</td>
+		<td>
+			&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="筛选" />
+		</td>
+	</tr>
+	</table>
+	<input type="hidden" name="type" value="{$type}"></input>
+  	<input type="hidden" name="supplier_id" value="{$supplier_id}" />
+	</form>
+</div>
+<br />
+
+<div style="width:900px; margin:0 auto;">
+<table class="bWindow">
+
+	<tr align="center">
+		  <th width="100">交易编号</th>
+	  	<th width="100">金额</th>
+	  	<th width="100">币种</th>
+	  	<th width="100">支付类型</th>
+	  	<th width="115">交易时间</th>
+	    <th width="115">创建时间</th>
+	    <th width="100">创建人</th>
+	    <th width="170">备注</th>
+	    <th width="100">返点</th>
+	</tr>
+  
+	{foreach from=$list item=item}
+	<tr align="center">
+		  <td>{$item->prepaymentTransactionId}</td>
+		  <td>{$item->amount|string_format:"%01.2f"}</td>
+		  <td>{$item->currency}</td>
+			<td>{$item->prepaymentPaymentType->prepaymentPaymentTypeName}</td>
+		  <td>{$item->transactionTimestamp|date_format:"%Y-%m-%d %H:%M"}</td>
+		  <td>{$item->createdStamp|date_format:"%Y-%m-%d %H:%M"}</td>
+		  <td>{$item->createdByUserLogin}</td>
+	 		<td>{$item->note}</td>
+	 		<td>{if $item->isRebate eq 1} 是 {else} 否 {/if}</td>
+	</tr>
+
+  {foreachelse}
+
+	<tr align="center">
+		  <td colspan="7" style="height:100px; line-height:100px;">没有查询到交易记录</td>
+	</tr>
+  
+  {/foreach}
+    
+<table>
+</div>
+
+<br />
+{$pagination}
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

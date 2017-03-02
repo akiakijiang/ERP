@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>发票打印列表</title>
+{if $smarty.request.info }<script>alert('{$smarty.request.info}');</script>{/if}
+</head>
+
+<body>
+<h1>手动开具c2c凭证</h1>
+<!--<form action="?debug=OUKOO_DEBUG_PASS" method="GET">
+<input name="order_sn" value="{$smarty.request.order_sn}" />
+<input type="submit" name="go" value="查询" />
+</form>-->
+<br>
+<form method="POST"> 
+订单号：<input type="text" name="order_sn" />
+<br />
+<div id="item_input">
+凭证条目 <input type="input" name="item_name[]" /> 价格 <input type="input" name="item_price[]" /> 数量 <input type="input" name="item_number[]" /> 串号 <input type="text" name="erp_goods_sns[]" />
+</div>
+<br />
+<input type="button" onclick="add_item();" value="增加条目" /> <input type="button" onclick="remove_item();" value="移除条目" />
+<br />
+<br />
+<input type="hidden" name="act" value="add_by_item" />
+<input type="submit" value="手动开具c2c凭证" /> 
+</form>
+<script>
+{literal}
+var items = new Array();
+function add_item() {
+  var i = items.length;
+  
+  document.getElementById('item_input').innerHTML += '<div id="item_div_'+ i +'">凭证条目 <input type="input" name="item_name[]" /> 价格 <input type="input" name="item_price[]" /> 数量 <input type="input" name="item_number[]" /> 串号 <input type="text" name="erp_goods_sns[]" /></div> ';
+  items[i] = 'in';
+}
+
+function remove_item() {
+  if(items.length == 0) return ;
+  i = items.length - 1;
+  
+  var item_div = document.getElementById("item_div_"+ i );
+//  alert(item_div);
+  document.getElementById('item_input').removeChild(item_div);
+  items.length = items.length - 1;
+}
+{/literal}
+</script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>淘宝店铺管理</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css" />
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/thickbox.css" type="text/css"></link>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/thickbox.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+<style type="text/css">
+<!--{literal}-->
+.tab-title{
+  border-bottom: 1px solid #ddd;
+}
+.tab-title a{
+text-decoration: none;
+
+}
+.tab-title p{
+  display: inline-block;
+  padding:7px 7px;
+  margin: 0px;
+  }
+
+.selected{
+    padding:7px 7px;
+  margin: 0px;
+  border: 1px solid #ddd;
+  border-top-left-radius:4px;
+  border-top-right-radius:4px;
+  border-bottom: 2px solid white;
+  color: red;
+}
+.update_button{
+  text-decoration: none;
+  border: 1px solid #ddd;
+  color: black;
+  background-color: #E8E8E8;
+  border-radius: 3px;
+  padding: 2px;
+}
+.update_button:hover{
+  background-color: #CFCFCF;
+  /*color: white;*/
+}
+
+<!--{/literal}-->
+
+</style>
+  <script type="text/javascript">
+    var WEB_ROOT = '{$WEB_ROOT}';
+    var message='{$message}';
+    // <![CDATA[
+    // {literal}
+    $(function(){
+     if(message){
+          alert(message);
+        };
+    });
+      
+      // 修改thickbox插件，使点击close按钮的时候重新加载页面
+    $(function(){
+        var original_tb_remove = tb_remove;
+        tb_remove = function (){ 
+                 console.log('one');
+                  window.location.reload();
+                  original_tb_remove(); 
+                  return false; 
+                }; 
+
+    });
+
+    function beforeSubmit(form){
+        if(form.nick.value==''){
+        alert('店铺名称不能为空！');
+        form.nick.focus();
+        return false;
+         };
+      };
+      function validateParams(){
+    	  var app_key = $("#app_key").val();
+    	  if(app_key==null || app_key == ''){
+    		  alert('app_key不能为空！');
+    		  return false;
+    	  }
+    	  var nick = $("#nick").val();
+    	  if(nick==null || nick == ''){
+    		  alert('店铺名称不能为空！');
+    		  return false;
+    	  }
+    	  var app_secret = $("#app_secret").val();
+    	  if(app_secret==null || app_secret == ''){
+    		  alert('app_secret不能为空！');
+    		  return false;
+    	  }
+    	  return true;
+      }
+
+    // {/literal}
+    // ]]>
+  </script>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝店铺管理&nbsp;</span></legend>
+    <br />
+      <div style="clear:both;">
+        {if !$taobao_shop_conf_page}
+        <div class="tab-title">
+            <p><a style="color:#0088cc;" class="selected" href="taobao_shop_conf.php">淘宝店铺列表</a></p>
+            <p><a style="color:#0088cc;" class="item" href="taobao_shop_conf.php?add_area=1" id="change">店铺修改</a></p>
+        </div>
+        <form method="POST" onsubmit="return validateParams()" id="myform"></form>
+        <table class="bWindow" style="margin-top:10px;">
+        <tr>
+            <th>映射ID</th>
+            <th>店铺名称</th>
+            <th>店铺类型</th>
+            <th>下单用户</th>
+            <th>支付方式</th>
+            <th>组织</th>
+            <th>仓库</th>
+            <th>配送方式</th>
+            <th>分销店铺</th>
+            <th>店铺编号</th>
+            <th>状态</th>
+            <th>淘宝应用码（app_key）</th>
+            <th>淘宝应用密钥（app_secret）</th>
+            <th>淘宝session_id</th>
+            <th>淘宝应用级别</th>
+            <th>淘宝订单类型</th>
+            <th>是否测试环境</th>
+            <th>是否报表展示</th>
+            <th>是否库存同步</th>
+            <th>操作</th>
+            <th>分销</th>
+        </tr>
+       
+        <tr align="center" class="even">
+            <td>{$taobao_shop_conf.taobao_shop_conf_id}
+                <input type="hidden" value="{$taobao_shop_conf.taobao_shop_conf_id}" 
+                    name="taobao_shop_conf_id" form="myform"/>
+                <input type="hidden" value="{$taobao_shop_conf.taobao_api_params_id}" 
+                    name="taobao_api_params_id" form="myform"/>
+            </td>
+            <td>
+                <input type="text" id="nick" value="{$taobao_shop_conf.nick}" name="nick" size="25" form="myform"/>
+            </td>
+            <td>
+                <select name="shop_type" form="myform">
+                      {html_options options=$shop_type_list selected=$taobao_shop_conf_display_list.shop_type}
+                </select>
+            </td>
+            <td>
+              <input type="text" name="user_name" value="{$taobao_shop_conf.user_name}" 
+                    id="user_id_select" size="20" form="myform"/> 
+              #<input type="text" name="user_id" value="{$taobao_shop_conf.user_id}" 
+                    style="border:none; width:50px;" form="myform"/>
+            </td>
+            <td>
+              <select name="pay_id" form="myform">
+                {html_options options=$payment_list selected=$taobao_shop_conf.pay_id}
+              </select>
+            </td>
+            <td>
+              <select name="party_id" form="myform">
+                {html_options options=$party_id_list selected=$taobao_shop_conf.party_id}
+              </select>
+            </td>
+            <td>
+              <select name="facility_id" form="myform">
+                {html_options options=$facility_id_list selected=$taobao_shop_conf.facility_id}
+              </select>
+            </td>
+            <td>
+              <select name="shipping_id" form="myform">
+                {html_options options=$shipping_list selected=$taobao_shop_conf.shipping_id}
+              </select>
+            </td>
+            <td>
+                <select name="distributor_id"form="myform">
+                    <option value="0">-- N/A</option>
+                    {html_options options=$distributor_list selected=$taobao_shop_conf.distributor_id}
+                </select>
+            </td>
+            <td></td>
+            <td>
+              <select name="status" form="myform">
+                {html_options options=$status_list selected=$taobao_shop_conf.status}
+              </select>
+            </td>
+            <td>
+                <input type="text" id="app_key" value="{$taobao_shop_conf.app_key}" name="app_key" size="15" form="myform"/>
+            </td>
+            <td>
+                <input type="text" id="app_secret" value="{$taobao_shop_conf.app_secret}" name="app_secret" size="45" form="myform"/>
+            </td>
+            <td>
+                <input type="text" value="{$taobao_shop_conf.session_id}" name="session_id" size="60" form="myform"/>
+            </td>
+            <td>
+              <select name="role" form="myform">
+                {html_options options=$role_list selected=$taobao_shop_conf.role}
+              </select>
+            </td>
+            <td>
+              <select name="type" form="myform">
+                {html_options options=$type_list selected=$taobao_shop_conf.type}
+              </select>
+            </td>
+            <td>
+              <select name="is_sandbox" form="myform">
+                {html_options options=$is_sandbox_list selected=$taobao_shop_conf.is_sandbox}
+              </select>
+            </td>
+            <td>
+              <select name="is_erp_display" form="myform">
+                {html_options options=$is_erp_display_list selected=$taobao_shop_conf.is_erp_display}
+              </select>
+            </td>
+            <td>
+              <select name="is_stock_update" form="myform">
+                {html_options options=$is_stock_update_list selected=$taobao_shop_conf.is_stock_update}
+              </select>
+            </td>
+            <td>
+              <input type="submit" value="新增" form="myform"/>
+              <input type="hidden" name="act" value="update" form="myform" />
+            </td>
+            <td>
+              <input onclick="alert('先添加直销店铺,再添加分销店铺')" title="分銷店鋪信息" type="button" value="新增" />
+            </td>
+            
+        </tr>
+        <!--{foreach from=$taobao_shop_conf_list item=taobao_shop_conf}-->
+        <form method="POST">
+        <tr align="center" class="{cycle values='odd,even'}">   
+            <!--  映射ID-->
+            <td>{$taobao_shop_conf.taobao_shop_conf_id} 
+                <input type="hidden" value="{$taobao_shop_conf.taobao_shop_conf_id}" 
+                    name="taobao_shop_conf_id" />
+                <input type="hidden" value="{$taobao_shop_conf.taobao_api_params_id}" 
+                    name="taobao_api_params_id" />
+            </td>
+            <!-- 店铺名称 -->
+            <td>{$taobao_shop_conf.nick}</td>
+            <!-- 店铺类型 -->
+            <td>{$shop_type_list[$taobao_shop_conf.shop_type]}</td>
+            <!-- 下单用户 -->
+            <td>{$taobao_shop_conf.user_name}({$taobao_shop_conf.user_id})</td>
+            <!-- 支付方式 -->
+            <td>{$taobao_shop_conf.pay_name}({$taobao_shop_conf.pay_id})</td>
+            <!-- 组织 -->
+            <td>{$party_id_list[$taobao_shop_conf.party_id]}({$taobao_shop_conf.party_id})</td>
+            <!-- 仓库 -->
+            <td>{$facility_id_list[$taobao_shop_conf.facility_id]}({$taobao_shop_conf.facility_id})</td>
+            <!-- 配送方式 -->
+            <td>{$shipping_list[$taobao_shop_conf.shipping_id]}({$taobao_shop_conf.shipping_id})</td>
+            <!-- 分销店铺 -->
+            <td>{$distributor_list[$taobao_shop_conf.distributor_id]}({$taobao_shop_conf.distributor_id})</td>
+            <!-- 店铺编号 -->
+            <td>{$taobao_shop_conf.application_key}</td>
+            <!-- 状态 -->
+            <td>{$status_list[$taobao_shop_conf.status]}</td>
+            <!-- 淘宝应用码 -->
+            <td>{$taobao_shop_conf.app_key}</td>
+            <!-- 淘宝应用密钥 -->
+            <td>{$taobao_shop_conf.app_secret}</td>
+            <!-- 淘宝session_id -->
+            <td>{$taobao_shop_conf.session_id}</td>
+            <!-- 淘宝应用级别 -->
+            <td>{$role_list[$taobao_shop_conf.role]}</td>
+            <!-- 淘宝订单类型 -->
+            <td>{$type_list[$taobao_shop_conf.type]}</td>
+            <!-- 是否测试环境 -->
+            <td>{$is_sandbox_list[$taobao_shop_conf.is_sandbox]}</td>
+            <!-- 是否报表展示 -->
+            <td>{$is_erp_display_list[$taobao_shop_conf.is_erp_display]}</td>
+            <!-- 是否库存同步 -->
+            <td>{$is_stock_update_list[$taobao_shop_conf.is_stock_update]}</td>
+            <!-- 直销操作 -->
+            <td>
+              <a class="update_button" href="?act=update&add_area=1&taobao_shop_conf_id={$taobao_shop_conf.taobao_shop_conf_id}">修改</a>
+            </td>
+            <!-- 分销 -->
+            <td>
+              <!-- <p style="color:red;">{$taobao_shop_conf.taobao_fenxiao_shop_conf_id}</p> -->
+              <input id="fenxiao" title="分銷店鋪信息" class="thickbox" type="button" 
+                {if $taobao_shop_conf.taobao_fenxiao_shop_conf_id != null} 
+                  alt="taobao_fenxiao_shop_conf.php?taobao_shop_conf_id={$taobao_shop_conf.taobao_shop_conf_id}&application_key={$taobao_shop_conf.application_key}&nick={$taobao_shop_conf.nick}&type=edit&keepThis=true&TB_iframe=true&height=500&width=800" 
+                  value="修改" 
+                {else} 
+                  alt="taobao_fenxiao_shop_conf.php?taobao_shop_conf_id={$taobao_shop_conf.taobao_shop_conf_id}&application_key={$taobao_shop_conf.application_key}&nick={$taobao_shop_conf.nick}&type=add&keepThis=true&TB_iframe=true&height=500&width=800"
+                  value="新增" 
+                {/if} 
+              />
+            </td>
+        </tr>
+        </form>
+        <!--{foreachelse}-->
+            <tr><td colspan="20" align="center">没有数据</td></tr>
+        <!--{/foreach}-->
+        <tr align="center"><td colspan="21">{$pager}</td></tr>
+        </table>
+        {/if}
+        {if $taobao_shop_conf_page}
+        <div class="tab-title">
+            <p><a style="color:#0088cc;" class="item" href="taobao_shop_conf.php">淘宝店铺列表</a></p>
+            <p><a style="color:#0088cc;" class="selected" href="taobao_shop_conf.php?add_area=1">店铺修改</a></p>
+        </div>
+        {if $old_shop=='1'}
+        <div><h3>未选择店铺</h3></div>
+        {elseif $old_shop=='0'}
+         <div style="clear:both;" id="table">
+          <form method="POST" action="taobao_shop_conf.php" onSubmit="return beforeSubmit(this);">
+            <table cellpadding="5" cellspacing="1">
+              
+              <!--  映射ID-->
+            <tr>
+                <td>映射ID</td>
+                <td>{$taobao_shop_conf_display_list.taobao_shop_conf_id} 
+                  <input type="hidden" value="{$taobao_shop_conf_display_list.taobao_shop_conf_id}" 
+                      name="taobao_shop_conf_id" />
+                  <input type="hidden" value="{$taobao_shop_conf_display_list.taobao_api_params_id}" 
+                      name="taobao_api_params_id" />
+                </td>
+            </tr>  
+            <tr>
+                <!-- 店铺名称 -->
+                <td>店铺名称</td>
+                <td>
+                     <input type="text" value="{$taobao_shop_conf_display_list.nick}" name="nick" size="25" id="shop_name"/>
+                </td>
+            </tr>  
+            <tr>
+              <!-- 店铺类型 -->
+              <td>店铺类型</td>
+              <td>
+                <select name="shop_type" >
+                      {html_options options=$shop_type_list selected=$taobao_shop_conf_display_list.shop_type}
+                </select>
+              </td>
+            </tr>
+            <tr>
+                 <!-- 下单用户 -->
+                 <td>下单用户</td>
+                  <td>
+                    {$taobao_shop_conf_display_list.user_name}
+                    <input type="hidden" name="user_id" value="{$taobao_shop_conf_display_list.user_id}" />
+                    <!-- <input type="text" name="user_id" value="{$taobao_shop_conf_display_list.user_id}" /> -->
+                  </td>
+            </tr>
+            <tr>
+                <!-- 支付方式 -->
+                <td>支付方式</td>
+                <td>
+                  <select name="pay_id" >
+                        {html_options options=$payment_list selected=$taobao_shop_conf_display_list.pay_id}
+                  </select>
+                </td>
+            </tr>
+            <tr>
+                <!-- 组织 -->
+                <td>组织</td>
+                <td>
+                  <select name="party_id" >
+                    {html_options options=$party_id_list selected=$taobao_shop_conf_display_list.party_id}
+                  </select>
+                </td>
+            </tr>
+            <tr>
+                <!-- 仓库 -->
+                <td>仓库</td>
+                <td>
+                  <select name="facility_id" >
+                  {html_options options=$facility_id_list selected=$taobao_shop_conf_display_list.facility_id}
+                  </select>
+                </td>
+            </tr>
+            <tr>
+                <!-- 配送方式 -->
+                <td>配送方式</td>
+                <td>
+                   <select name="shipping_id" >
+                    {html_options options=$shipping_list selected=$taobao_shop_conf_display_list.shipping_id}
+                  </select>
+                </td>
+            </tr>
+            <tr>
+                <!-- 分销店铺 -->
+                <td>分销店铺</td>
+                <td>
+                    <select name="distributor_id">
+                        <option value="0">-- N/A</option>
+                        {html_options options=$distributor_list selected=$taobao_shop_conf_display_list.distributor_id}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <!-- 店铺编号 -->
+                <td>店铺编号</td>
+                <td>
+                {$taobao_shop_conf_display_list.application_key}
+                <input type="hidden" name="application_key" value="{$taobao_shop_conf_display_list.application_key}" />
+                
+                </td>
+            </tr>
+            <tr>
+              <!-- 状态 -->
+              <td>状态</td>
+              <td>
+                <select name="status" >
+                  {html_options options=$status_list selected=$taobao_shop_conf_display_list.status}
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <!-- 淘宝应用码 -->
+              <td>淘宝应用码</td>
+              <td>
+                  <input type="text" value="{$taobao_shop_conf_display_list.app_key}" name="app_key" size="15" />
+              </td>
+            </tr>
+            <tr>
+              <!-- 淘宝应用密钥 -->
+              <td>淘宝应用密钥</td>
+              <td>
+                  <input type="text" value="{$taobao_shop_conf_display_list.app_secret}" name="app_secret" size="45" />
+              </td>
+            </tr>
+            <tr>
+              <!-- 淘宝session_id -->
+              <td>淘宝session_id</td>
+              <td>
+                  <input type="text" value="{$taobao_shop_conf_display_list.session_id}" name="session_id" size="60" />
+              </td>
+            </tr>
+            <tr>
+              <!-- 淘宝应用级别 -->
+              <td>淘宝应用级别</td>
+              <td>
+                <select name="role" >
+                  {html_options options=$role_list selected=$taobao_shop_conf_display_list.role}
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <!-- 淘宝订单类型 -->
+              <td>淘宝订单类型</td>
+              <td>
+                <select name="type" >
+                  {html_options options=$type_list selected=$taobao_shop_conf_display_list.type}
+                </select>
+              </td>
+            </tr>
+            <tr>
+               <!-- 是否测试环境 -->
+              <td>是否测试环境</td>
+              <td>
+                <select name="is_sandbox" >
+                  {html_options options=$is_sandbox_list selected=$taobao_shop_conf_display_list.is_sandbox}
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <!-- 是否报表展示 -->
+              <td>是否报表展示</td>
+              <td>
+                <select name="is_erp_display" >
+                  {html_options options=$is_erp_display_list selected=$taobao_shop_conf_display_list.is_erp_display}
+                </select>
+              </td>
+            </tr> 
+            <tr>
+              <!-- 是否库存同步 -->
+              <td>是否库存同步</td>
+              <td>
+                 <select name="is_stock_update">
+                    {html_options options=$is_stock_update_list selected=$taobao_shop_conf_display_list.is_stock_update}
+                  </select>
+              </td>
+            </tr>
+              <tr>
+                  <td>&nbsp;</td>
+                  <td>
+                    <input type="hidden" name="act" value="save" />
+                    <input type="submit" value="保存"/>&nbsp;&nbsp;
+                    <font color='red'>{$message}</font>
+              </td>
+            </tr>    
+        </table>
+          </form>
+    </div>
+    {/if}
+        {/if}
+        <br/>
+    </div>  
+</fieldset>
+    <script type="text/javascript">
+    var WEB_ROOT = '{$WEB_ROOT}';
+    // <![CDATA[
+    // {literal}
+    // 载入执行
+    $(document).ready(function(){
+        /**
+         * 用户搜索
+         */
+        $('#user_id_select').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_user', {
+            dataType : 'json',
+            minChars: 1,
+            mustMatch: true,
+            delay: 100,
+            formatItem : function(row, i, max, value, term) {
+                return(row.user_name);
+            },
+            formatResult : function(row) {
+                return(row.user_name);
+            }
+        }).result(function(event, row, formatted) {
+            $(':input[name="user_id"]').val(row.user_id);
+        });
+    });
+    
+      // function quit(){
+      //   parent.window.location.reload();
+      // }
+
+
+    // {/literal}
+    // ]]>
+    </script>
+</body>
+</html>

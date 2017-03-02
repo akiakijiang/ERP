@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+ <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>淘宝店铺商品列表</title>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+
+<script type="text/javascript">
+  {literal}
+     //载入执行
+     $(document).ready(function(){
+    	 $("#goods_list").hide();
+    	 /**
+          * 商品类型搜索
+          */
+         $('#goods_category_select').autocomplete('taobao_erp_goods_manager.php?request=ajax&act=search_goods_category', {
+             dataType : 'json',
+             minChars: 0,
+             mustMatch: false,
+             formatItem : function(row, i, max, value, term) {
+                 return(row.cat_name);
+             },
+             formatResult : function(row) {
+                 return(row.cat_name);
+             }
+         }).result(function(event, row, formatted) {
+             $('#goods_cat_id').val(row.cat_id);
+         }); 
+         $('#goods_category_select').focus();
+         /**
+          * 搜索指定类型的商品
+          */
+         $("#search_form").bind('submit',function(){
+        	 var cat_id = $("#goods_cat_id").val();
+        	 if (cat_id == '' || cat_id == undefined) {
+        		// alert("请先选择商品类型。");
+        		// confirm("确认要查询所有类型的商品吗？");
+        		 if (!confirm("确认要查询所有类型的商品吗？")) {
+        			 $('#goods_category_select').focus();
+        			 return false;
+        		 } 
+        	 }
+        	 var goods_stauts = $("#goods_status_selected").val();
+        	 if (goods_stauts == 'ALL') {
+        		 if (!confirm("确认选择商品所有状态吗？这样查看速度会比较慢，您是否选择继续执行？")){
+        			 return false;
+        		 } 
+        	 }
+        	 var is_auto_reserve = $("#is_auto_reserve").val();
+        	 if (is_auto_reserve == 'ALL') {
+        		 if (!confirm("确认选择预警状态吗？这样查看速度会比较慢，您是否选择继续执行？")){
+        			 return false;
+        		 } 
+        	 }
+        	 return true;
+        	 //todo
+         });
+     
+        $("#update_taobao_goods").click(function(){
+        	var taobao_goods_list = '';
+        	$("input[type='checkbox'][name='check_box']:checked").each(function(){
+        		taobao_goods_list = taobao_goods_list + $(this).parent().find("input[name='taobao_goods_id']").val() + "_";
+        	});
+        	if (taobao_goods_list == '') {
+        		alert("请先选择需要修改的商品。");
+        		return false;
+        	}
+        	var status = $("#update_taobao_goods_status").find("option:selected").val();
+        	//var old_status = $("#goods_status_selected").find("option:selected").val();
+        	var status_name = $("#update_taobao_goods_status").find("option:selected").text();
+        	//状态是否修改标识
+        	//var flag = true;
+        	//if (old_status == status) {
+        	//	if(!confirm("当前选择商品同步状态未发生改变，请确认是否继续？否则请点击“取消”进行修改。")){
+        	//        return false;
+            //    } else {
+            //    	flag = false;
+            //    }
+        	//}
+        	var quantity = 'not_update';
+        	var reserve = 'ALL';
+        	if (status == 'ALL') {
+        		alert("请您选择商品的同步状态。");
+        	    return false;
+        	} else if (status == 'OK'){
+        		reserve = $("#update_reserve").val();
+            	if (reserve == 'ALL') {
+            		alert("请选择是否启用系统计算预警库存。");
+            		return false;
+            	} else if (reserve == 0) {
+            	    quantity = $("#warn_goods_num").val();
+                	if (quantity == '') {
+                		alert("请输入商品预警库存数量。");
+                		return false;
+                	}
+            	}
+        	}
+        	
+            var url = window.location.href;
+        	//alert(url);
+        	//location.href = "taobao_erp_goods_manager.php?act=update_taobao_goods" + "&taobao_goods_list=" + 
+        	//		taobao_goods_list +"&quantity=" + quantity + "&status=" + status + "&reserve=" +reserve;
+        	var parameter =  window.location.search;
+        	if (parameter == '') {
+        		url = $("#td_Page").find("a[title='First Page 1']").attr("href");
+        	}
+        	$.ajax({
+			    type: "POST",
+			    url: "/admin/taobao_erp_goods_manager.php?act=update_taobao_goods",
+			    data: "taobao_goods_list=" + taobao_goods_list +"&quantity=" + quantity + "&status=" + status +
+			        "&reserve=" +reserve,
+			    dataType: 'json',
+			    error: function(data){
+			       alert("修改操作失败，请重新检查。");
+			    },
+			    success: function(data){
+			    	var message;
+			        if (data == true) {
+			        	message = "商品信息修改成功，请查看修改结果。";
+			        } else if (date == false) {
+			          	message = "商品信息修改失败，请重新确认操作，如有异常，请及时联系ERP。";
+			        }
+			        alert(message);
+			        location.href = url;
+			    }
+			 });
+          });
+          $("#check_all").click(function(){
+        	  var check = $("#check_all").attr("checked");
+        	  if (check == true) {
+        		  $("input[type='checkbox'][name='check_box']").attr("checked", true);
+        	  } else {
+        		  $("input[type='checkbox'][name='check_box']").removeAttr("checked");
+        	  }
+          });
+          $("#uncheck").click(function(){
+        	  var now_check = $("input[type='checkbox'][name='check_box']:checked");
+        	  var not_check = $("input[type='checkbox'][name='check_box']:not(:checked)");
+        	  now_check.removeAttr("checked");
+        	  not_check.attr("checked", true);
+          });
+          $("#update_reserve").change(function(){
+	         var reserve = $("#update_reserve").val();
+    	     if (reserve == 0) {
+    	         $("#update_goods_num").show();
+    	     } else if (reserve == 'ALL'){
+    		     alert("请选择是否启用系统预警库存。");
+   	         } else if (reserve == 1){
+   	        	$("#update_goods_num").hide();
+   	         }
+          });
+          $("#update_taobao_goods_status").change(function(){
+        	  var update_taobao_goods_status = $("#update_taobao_goods_status").find("option:selected").val();
+        	  if (update_taobao_goods_status == 'STOP' || update_taobao_goods_status == 'DELETE') {
+        		  $("#is_update_reserve").hide();
+        		  $("#update_goods_num").hide();
+        	  } else {
+        		  $("#is_update_reserve").show();
+        		  $("#update_goods_num").show();
+        	  }
+          });
+     });
+   
+  {/literal}
+  </script>
+</head>
+<body>
+{if $taobao_goods_list}
+ <script type="text/javascript">
+  {literal}
+  $(document).ready(function(){
+      $("#goods_list").show();
+      $("#update_goods_num").hide();
+  });
+  {/literal}
+  </script>
+{elseif $goods_status && !$taobao_goods_list}
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+没有符合条件的数据。
+</div>
+{/if}
+<fieldset style="-moz-border-radius: 6px; padding: 10px;"><legend><span
+	style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;淘宝店铺商品列表&nbsp;</span></legend>
+<form style="margin-left: 30px;" method="post" id="search_form">
+商品类型：<input type="text" name="goods_category_select" id="goods_category_select" value="{$cat_name}"></input>
+   <input type="hidden" name="goods_cat_id" id="goods_cat_id" value="{$cat_id}"/>&nbsp;&nbsp;&nbsp;&nbsp; 
+ 商品状态：<select name="goods_status_selected" id="goods_status_selected">
+	        <option value="ALL" label="所有">所有</option>
+	        {html_options options=$taobao_goods_status selected=$goods_status }
+          </select>&nbsp;&nbsp;&nbsp;&nbsp; 
+系统自动计算预警库存量：
+    <select name="is_auto_reserve" id="is_auto_reserve">
+        <option value="ALL">&nbsp;&nbsp;所有&nbsp;&nbsp;</option>
+        {html_options options=$reserve_list selected=$smarty.request.is_auto_reserve}
+    </select>&nbsp;&nbsp;&nbsp;&nbsp;
+    商品名称&nbsp;&nbsp;<input type="text" name="goods_name" id="goods_name" value=""></input>&nbsp;&nbsp;&nbsp;
+每页显示<select name="pagesize" id="pagesize">
+ {html_options options=$pageNum selected=$smarty.request.pagesize}
+        </select>条记录
+ 
+    <input type="hidden" name="act" value="search"></input>
+    <input type="submit" name="submit" value="搜索"></input>
+</form>
+<br/>
+<from method="post" >
+<table id="goods_list" class="bWindow" style="margin-top: 10px;">
+	<tr>
+		<th width="30">No.</th>
+		<th>是否选择</th>
+		<th>商品名称 (商品编码)</th>
+        <th>淘宝价格</th>
+		<th>淘宝数量</th>
+		<th>ERP是否上架</th>
+		<th>是否启用预警库存量</th>
+		<th>预警库存量</th>
+		<th>库存是否扣减预警量</th>
+		<th>是否同步</th>
+	</tr>
+	<!--{foreach from=$taobao_goods_list item=taobao_goods name="taobaoGoodsList"}-->
+	<tr align="center" class="{cycle values='odd,even'}">
+	    <td>{$smarty.foreach.taobaoGoodsList.iteration}</td>
+	    <td>
+	        <input type="checkbox" name="check_box"></input>
+	        <input type="hidden" name="taobao_goods_id" value="{$taobao_goods.taobao_goods_id}"></input>
+	    </td>
+	    <td><font {if $taobao_goods.error}color="Red"{/if} >{$taobao_goods.goods_name}</font>&nbsp;&nbsp;({$taobao_goods.outer_id})</td>
+	    <td><a href="{$taobao_goods.url}" target="_blank">{$taobao_goods.price}</a></td>
+	    <td>{$taobao_goods.quantity}</td>
+	    <td>{if $taobao_goods.is_on_sale eq 1}是{else}否{/if}</td>
+	    <td>{if $taobao_goods.is_auto_reserve eq 1}启用{else}否{/if}</td>
+	    <td>{$taobao_goods.reserve_quantity}</td>
+	    <td>{if $taobao_goods.is_use_reserve eq 1}启用{else}否{/if}</td>
+	    <td>{if $taobao_goods.status eq 'OK'}同步{elseif $taobao_goods.status eq 'DELETE'}删除{else}不同步{/if}</td>
+    </tr>
+	<!--{foreachelse}-->
+	<tr><td colspan="9" align="center">没有数据</td></tr>
+	<!--{/foreach}-->
+	<tr id="td_Page" name="td_Page" style="line-height:40px;">
+	    <td colspan="9" style="text-align:right;padding-right:20px;">{$Pager}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colspan="2" style="text-align:center;">
+                     全选：<input type="checkbox" name="check_all" id="check_all"></input>&nbsp;&nbsp;&nbsp;&nbsp;
+                     反选：<input type="checkbox" name="uncheck" id="uncheck"></input>&nbsp;&nbsp;&nbsp;&nbsp;
+                      商品状态：<select name="update_taobao_goods_status" id="update_taobao_goods_status">
+                     <option value="ALL" label="所有">所有</option>
+	                 {html_options options=$taobao_goods_status }
+                  </select>&nbsp;&nbsp;&nbsp;&nbsp; <!-- selected=$goods_status  -->
+                  <label id="is_update_reserve">
+                  系统自动计算预警库存量：<select name="update_reserve" id="update_reserve">
+                             <option value="ALL">&nbsp;&nbsp;所有&nbsp;&nbsp;</option>
+                             <option value="1">&nbsp;&nbsp;&nbsp;是&nbsp;&nbsp;&nbsp;</option>
+                             <option value="0">&nbsp;&nbsp;&nbsp;否&nbsp;&nbsp;&nbsp;</option>
+                             </select>
+                             </label>
+        </td>
+        <td colspan="3" style="text-align:center;">
+          <label id="update_goods_num">商品库存预警数量：<input type="text" name="warn_goods_num" id="warn_goods_num"></input></label> 
+        </td>
+        <td colspan="3" style="text-align:center;">
+        <input type="button" name="act" value="提交" id="update_taobao_goods"></input>
+        </td>
+    </tr>
+</table>
+<input type="hidden" name="cat_id" value="{$cat_id}"></input>
+<input type="hidden" name="status" value="{$status}"></input>
+</from>
+</fieldset>
+</body>
+</html>

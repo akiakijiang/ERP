@@ -1,0 +1,254 @@
+<?php
+
+/**
+ * $Id: master_config.php 26234 2011-03-22 05:14:21Z yzhang $
+ * 
+ * @modby Zandy 2007-10-17
+ */
+
+/*OUKOO图片路径*/
+define('ImagePath','http://img.ouku.com/imgs/');
+// 定义论坛路径
+define('BBSPath','http://localbbs.ouku.com/');
+
+//187的数据库
+$db187_host = "localhost:3306";
+$db187_name = "ecshop";
+$db187_user = "root";
+$db187_pass = "admin";
+
+// database host
+$db_host   = "localhost:3306";
+// database name
+$db_name   = "ecshop";
+// database username
+$db_user   = "root";
+// database password
+$db_pass   = "admin";
+
+
+$slave_db_host = "localhost:3306";
+$slave_db_user = "root";
+$slave_db_pass = "admin";
+$slave_db_name = "ecshop";
+
+//手机频道配置 add by taofei
+//// database host
+$mc_db_host   = "192.168.1.3:33306";
+//// database name
+$mc_db_name   = "CP_PDAFANS_RESOURCE";
+$crawler_db_name   = "CRAWLER";
+//// database username
+$mc_db_user   = "ecshop";
+//// database password
+$mc_db_pass   = "ecshopMySQL";
+
+
+// BBSAPI
+$bbsapi = "http://192.168.1.3/bbs/rpc.php";
+
+// COOKIE_DOMAIN
+$COOKIE_DOMAIN = "";
+
+// membership rpc host
+$membership_rpc_host = "192.168.1.3";
+$membership_rpc_path = "/RpcService.php";
+$membership_rpc_port = "81";
+
+// biaoju rpc host
+$biaoju_rpc_host = "192.168.1.3";
+$biaoju_rpc_path = "/rpc/jrpc";
+$biaoju_rpc_port = "38080";
+
+// sso rpc host
+$sso_rpc_host = '192.168.1.3';
+$sso_rpc_path = '/rpc/jrpc';
+$sso_rpc_port = '38080';
+
+// payment rpc host
+$payment_rpc_host = '192.168.1.3';
+$payment_rpc_path = '/rpc/jrpc';
+$payment_rpc_port = '38080';
+
+// payment rpc host
+$search_rpc_host = '192.168.1.3';
+$search_rpc_path = '/rpc/jrpc';
+$search_rpc_port = '38080';
+
+// talk_in_time
+$tit_db_host   = "192.168.1.3:33306";
+// database name
+$tit_db_name   = "talk_in_time";
+// database username
+$tit_db_user   = "ecshop";
+// database password
+$tit_db_pass   = "ecshopMySQL";
+
+// finannce shipping_fee database
+$finance_sf_db_host   = "192.168.1.3:33306";
+$finance_sf_db_name   = "shipping_fee";
+$finance_sf_db_user   = "ecshop";
+$finance_sf_db_pass   = "ecshopMySQL";
+
+
+// finannce c2cplus database
+$finance_c2cplus_db_host   = "192.168.1.3:33306";
+$finance_sf_db_name   = "shipping_fee";
+$finance_sf_db_user   = "ecshop";
+$finance_sf_db_pass   = "ecshopMySQL";
+
+
+// 指定一个时间，在此时间前的订单除了指定人以外，其他人无法修改订单数据
+$erp_admin = array("pgu", "liangliang");
+$erp_time = "2007/05/20";
+
+//$kefu_email = "kefu@oukoo.com";
+$kefu_email = "";
+
+//是否显示mysql错误信息 
+define('SHOW_MYSQL_ERROR', true);
+
+// message 发短信
+$is_message = false;
+$message_rpc_host = "192.168.1.3";
+$message_rpc_path = "/rpc/jrpc";
+$message_rpc_port = "38080";
+//$application_key = "5b4b488ae337e982205fb0fec6034089";
+/**
+ * 1:erp
+ * 2:oppo
+ */
+$application_key = array(
+	'1' => "5b4b488ae337e982205fb0fec6034089",
+	'8' => "c892ba238c98835d4d53a3faed43ee52"
+);
+    
+//$message_rpc_host = "122.224.141.185";
+//$message_rpc_path = "/rpc/jrpc";
+//$message_rpc_port = "38080";
+//$application_key = "5b4b488ae337e982205fb0fec6034089";
+
+$call_center_db_host = '192.168.1.19';
+$call_center_db_user = 'sa';
+$call_center_db_pass = '!@#';
+$call_center_db_name = 'NTTMOK';
+
+$mps_db_host = "localhost:3306";
+$mps_db_name = "mps";
+$mps_db_user = "root";
+$mps_db_pass = "123456";
+
+// 188的数据库
+$t188_db_host  = '192.168.1.3:33306';
+$t188_db_user = 'ecshop';
+$t188_db_pass = 'ecshopMySQL';
+
+// 订单中心domain
+$kfc_domain = "http://192.168.1.167:8080/";
+define('kfc_domain', $kfc_domain);
+
+// table prefix
+$prefix    = "ecs_";
+
+$timezone    = "Asia/Shanghai";
+
+$cookie_path    = "/";
+
+$cookie_domain    = "";
+
+$admin_dir = "admin";
+
+$session = "1440000";
+
+// {{{ 商品评论用
+define('BBSAPI', $bbsapi);
+define('COOKIE_DOMAIN', $COOKIE_DOMAIN);
+
+
+//$romeo_webservice_url = "http://192.168.1.3:38080/romeo/InventoryService?wsdl";
+$romeo_webservice_url = "http://localhost:38080/romeo/";
+define('ROMEO_WEBSERVICE_URL', $romeo_webservice_url);
+define('ROMEO_HTTP_USER', '');
+define('ROMEO_HTTP_PASS', '');
+
+// 报表服务
+define('REPORT_WEBSERVICE_URL', 'http://localhost:38080/report/service/');
+define('REPORT_HTTP_USER', '');
+define('REPORT_HTTP_PASS', '');
+
+// }}}
+
+
+/**
+ * 定义facility container的常量
+ *
+ */
+define('FACILITY_OUKU_SH', '74539');
+define('FACILITY_OUKU_DG', '1442078');
+define('FACILITY_LEQEE_DG', '1442079');
+define('FACILITY_LEQEE_SH', '1450562');
+
+define('CONTAINER_OUKU_SH', '74741');
+define('CONTAINER_OUKU_DG', '1442179');
+define('CONTAINER_LEQEE_DG', '1442180');
+define('CONTAINER_LEQEE_DG', '1442180');
+define('CONTAINER_LEQEE_SH', '1450663');
+
+/**
+ * 定义facilityId到名字的mapping
+ */
+$facility_mapping = array(
+    FACILITY_OUKU_SH => '欧酷上海仓',
+    FACILITY_OUKU_DG => '欧酷东莞仓',
+    FACILITY_LEQEE_DG => '乐其东莞仓',
+    FACILITY_LEQEE_SH => '乐其上海仓',
+);
+
+/**
+ * party下的facility
+ */
+$party_facility = array(
+    1 => array(FACILITY_OUKU_SH, FACILITY_OUKU_DG),
+    4 => array(FACILITY_OUKU_SH), 
+    8 => array(FACILITY_LEQEE_DG, FACILITY_LEQEE_SH), 
+    16 => array(FACILITY_LEQEE_DG, FACILITY_LEQEE_SH),
+);
+
+/**
+ * 默认的facility_id配置
+ */
+$default_facility_id = array(
+    1 => FACILITY_OUKU_SH,
+    4 => FACILITY_OUKU_SH, 
+    8 => FACILITY_LEQEE_DG, 
+    16 => FACILITY_LEQEE_DG,
+);
+
+/**
+ * facility下的container
+ * 目前facility和container是一对一的关系，如果出现一对多，需要用户选择
+ */
+$facility_container_mapping = array(
+    FACILITY_OUKU_SH => CONTAINER_OUKU_SH,
+    FACILITY_OUKU_DG => CONTAINER_OUKU_DG,
+    FACILITY_LEQEE_DG => CONTAINER_LEQEE_DG,
+    FACILITY_LEQEE_SH => CONTAINER_LEQEE_SH,
+);
+
+/**
+ * 定义分销系统使用常量
+ * 
+ * @+{
+ */
+
+define('DIS_MOB_CAT_ID', '1508');  // 乐其手机分类ID
+define('DIS_FIT_CAT_ID', '1509');  // 乐其配件分类ID
+define('DIS_EDU_CAT_ID', '1512');  // 乐其电教分类ID
+define('DIS_BOK_CAT_ID', '1517');  // 乐其电教教材分类ID
+
+define('DIS_USER_ID', 1);  // 分销的订单都挂在此用户下面
+
+/**
+ * @-}
+ */
+?>

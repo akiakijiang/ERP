@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   <link href="styles/default.css" rel="stylesheet" type="text/css" />
+   <link href="styles/whole_part_service.css" rel="stylesheet" type="text/css" />
+
+  <title>原单退回验货</title>
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript">
+  </script>
+  {literal}
+  <style type="text/css">
+  form{width: 85%;margin: 10px auto;}
+  .remark{width: 80%;height: 50px;}
+  </style>
+  <script type="text/javascript">
+     function abc(event){
+    }
+  $(function(){
+  	$('#scan_barcode').bind('keyup', listen_goods_barcode).focus();  
+	  	// 报错确认按钮
+	    $('#error_msg').click(function(){
+	        $("input").attr('disabled', false);
+	        $('#mask').fadeOut();
+	     });
+    });
+  	var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+
+    // 表单提交操作
+    function form_submit(event){
+    	var total_data = {};
+    	// 验货结果
+    	if(event=='pass'){
+    		// $('#inner_check').val('pass');
+    		var inner_check = 'pass';
+    	}else{
+    		// $('#inner_check').val('refuse');
+    		var inner_check = 'refuse';
+    	}
+    	$('#inner_check').val(inner_check);
+    	$('#form').submit();
+    	$("input").attr('disabled', true);
+    	$('.button').css('background-color','#999');
+    	//window.location.href="warehouse_service.php";
+
+    	// window.location.href="whole_service.php?act=load&tracking_number=358308715296";QS此处可能需要修改
+    }
+    /**
+     * 商品条码监听
+     */
+    function listen_goods_barcode(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load_goods_barcode();
+                event.preventDefault();
+                break;
+        }
+    }
+    //商品扫描
+	function load_goods_barcode(){
+		// var note = $("input").map(function(){return $(this).val();}).get().join(",");
+		// console.log(note);
+		var barcodes = [];//所有的商品条形码
+		var serialNumbers = [];//所有的serial_number
+		var rec_ids = [];
+		var goods_map = [];
+		var is_serial_num = 0;
+		var is_serial_map = {};
+		$('#goods_head').nextAll('tr').each(function(){
+			var rec_id = $(this).attr('id');//rec_id取值方式错了
+			rec_ids.push(rec_id);
+			var barcode = $(this).children('.product_barcode').text();//商品条码
+			barcodes.push(barcode);
+			var is_serial = $(this).children('.is_good_serial').children('.is_serial').val();//	是否串号
+			var serial_numbers =[];//单个barcode对应的serial_number
+			if(is_serial=='Y'){
+				$(this).children('.is_good_serial').children('.is_serial').nextAll('input.serial_number').each(function(){					
+					var serial_number = $(this).val();//串号条码
+					// console.log('serial_number:'+serial_number);
+					serial_numbers.push(serial_number);
+					is_serial_num++;
+				});	
+			}else{
+				var serial_numbers = [];
+			}		
+			serialNumbers.push(serial_numbers);//所有barcode对应的serial_numbers
+			goods_map.push({'rec_id':rec_id,'barcode':barcode,'is_serial':is_serial,'serial_numbers':serial_numbers});
+			// console.log(goods_map);
+			is_serial_map[serial_numbers]={'rec_id':rec_id,'barcode':barcode};//serialnumber无法和barcode对应
+		});
+		// console.log(serialNumbers);
+		var scan_barcode = $('#scan_barcode').val();//扫描的条码可能是串号也可能是商品条码也可能是错误值
+		if(scan_barcode==''){
+			error('条码不能为空');
+			// alert('条码不能为空');
+		}else{
+			var is_barcode = $.inArray(scan_barcode,barcodes);//条码在数组中的位置，-1则不存在
+			if(is_barcode==(-1)){//扫的可能是商品条码，条码不存在，或者扫描的是串号，或者是错误码
+				if(is_serial_num=0){// 先检查是否含有串号商品，大于0表示含有串号商品
+					error('条码不存在，请核实');
+					// alert('条码不存在，请核实');
+					$('#scan_barcode').val('');
+				}else{//含有串号商品，查看是否是串号
+					var flag = 0;//flag的设置是为了跳出双重循环
+					var num = 0;
+					for(var i=0;i<serialNumbers.length;i++){//此处为遍历二维数组查找serail_number，另一种解决方案：可通过filter,map遍历查找，
+						for(var j=0;j<serialNumbers[i].length;j++){
+							if(scan_barcode==serialNumbers[i][j]){
+								// 该条码为串号,需要找到该条码对应的商品rec_id,barcode
+								var its_barcode = is_serial_map[serialNumbers[i]].barcode;
+								var its_rec_id = is_serial_map[serialNumbers[i]].rec_id;
+								console.log('its_barcode:'+its_barcode);
+								var result = add_new(its_barcode,its_rec_id);//此处rec_id是唯一的
+								if(result == false){
+									error('已超出可退数量，请核实');
+									// alert('已超出可退数量，请核实');
+								}else{
+									$('input.serial_number_'+scan_barcode).remove();
+								}
+								$('#scan_barcode').val('');
+								flag = 1;
+								break;
+							}
+						}
+						if(flag==1){
+							break;
+						}else{
+							num++;
+						}
+					}
+					if(num==serialNumbers.length){
+						error('该条码即不是商品条码也不是串号，或是已扫描的串号，请核实');
+						// alert('该条码即不是商品条码也不是串号，或是已扫描的串号，请核实');
+						$('#scan_barcode').val('');
+					}
+				}	
+			}else{//扫的是商品条码且条码存在
+				var goods = goods_map.filter(function(good){
+					    return good.barcode == scan_barcode;
+					}).map(function(good){
+					    return good;
+					});
+					// console.log(goods);
+				 //判断是否为串号商品
+				if(goods[0].is_serial=='Y'){
+					error('该商品为串号商品，请扫描串号');
+					// alert('该商品为串号商品，请扫描串号');
+					$('#scan_barcode').val('');
+				}else{
+					var num = 0;
+					for (var i = 0; i < goods.length; i++) {
+						var result = add_new(scan_barcode,goods[i].rec_id);
+						console.log(result);
+						if(result==true){
+							break;
+						}else{
+							num++;
+							continue;
+						}
+					};
+					if(num == goods.length){
+						error('已超出可退数量，请核实');
+					 	// alert('已超出可退数量，请核实');
+					}
+				}
+				$('#scan_barcode').val('');
+			}
+		}
+
+	}
+	/**
+	* 根据扫描进来的条码判断是否存在于表格
+	*/ 
+	// function scan_and_dujge(){
+
+	// }
+	/**
+	* 扫描商品条码/串号后处理表格
+	*/ 
+	function add_new(scan_barcode,rec_id){
+		// var exist_barcode = barcodes[is_barcode];
+		console.log($('.back_num_'+rec_id).val());
+		var back_num = Number($('.back_num_'+rec_id).val())+1;//退回的数量
+		var can_back_num = Number($('.back_num_'+rec_id).parent().siblings('.can_back').text());//可退数量
+		console.log(back_num);
+		console.log(can_back_num);
+		if(back_num>can_back_num){
+			// alert('已超出可退数量，请核实');
+			return false;
+		}else{
+			$('.back_num_'+rec_id).val(back_num);
+			// 需要叠加全新二手
+			if(back_num>1){
+				var goods_type_html='<input type="radio" checked="checked" name="scan_order_goods['+rec_id+'][goods_type]['+(back_num-1)+']" class="good_status_'+rec_id+'_'+back_num+'" value="INV_STTS_AVAILABLE" />全新<input type="radio" name="scan_order_goods['+rec_id+'][goods_type]['+(back_num-1)+']" class="good_status_'+rec_id+'_'+back_num+'" value="INV_STTS_USED" />二手<br/>';
+				console.log('rec_id:'+rec_id);
+				$('.goods_type_'+rec_id).append(goods_type_html);
+			}
+			return true;
+		}
+		$('#scan_barcode').val('');
+	}
+	 // 报错
+    function error(msg){
+        $('#alert_msg p').text(msg);
+        $('#mask').fadeIn();
+        $("input").attr('disabled', true);
+    }
+  </script>
+  {/literal}
+</head>
+<body>
+  	<div id="mask" style="display:none">
+	    <div id="alert_msg">
+	        <p>操作成功</p>
+	        <button id="error_msg">确认</button>
+	    </div>
+	</div>
+{if $message} <div style="font-weight: bolder;color: red;">{$message}</div>{/if}
+	{if $loadInfos}
+	<form action="whole_service.php" method="post" id="form" onsubmit="location.href='index.php';">
+		<div>
+			<div>
+				<p>退回类型：原单退回</p>
+				<p><span>快递单号：{$tracking_number}<input type="hidden" value="{$tracking_number}"name="tracking_number" id="tracking_number"></span><span class="title">订单号：{$original_order_sn}<input type="hidden" value="{$original_order_sn}" id="original_order_sn" name="original_order_sn"></span></p>
+			</div>
+			<div>
+				<span class="scan_text" style="font-weight: bolder;">商品信息:</span>
+				{if $service_status=='INIT'}<span>商品条码扫描：<input type="text" name="scan_barcode" id="scan_barcode"/></span>{/if}
+				<table class="bWindow">
+						<tr id="goods_head">
+							<th>商品条码（商品串号）</th>
+							<th>商品名称</th>
+							<th>是否串号</th>
+							<th>原订单数量</th>
+							<th>可退数量</th>
+							<th>退回数量</th>
+							<th>商品新旧状态</th>
+							<th>入库/拒绝情况</th>
+						</tr>
+						{foreach from=$loadInfos item=loadInfo}
+						<tr class="rec_id" id="{$loadInfo.rec_id}">
+							<!-- 商品条码，串号 -->
+							<td class="product_barcode">{$loadInfo.product_barcode}<input type="hidden" class="product_barcode barcode_{$loadInfo.product_barcode}" name='scan_order_goods[{$loadInfo.rec_id}][barcode]' value="{$loadInfo.product_barcode}"></td>
+							<!-- 商品名称 -->
+							<td><input type="hidden" class="rec_id" value="{$loadInfo.rec_id}">{$loadInfo.goods_name}</td>
+							<!-- 是否串号 -->
+							<td class="is_good_serial">
+								<input type="hidden" name="scan_order_goods[{$loadInfo.rec_id}][is_serial]" value="{$loadInfo.is_serial}" class="is_serial">
+								{if $loadInfo.is_serial=='Y'}
+								是
+								{foreach from=$loadInfo.serial_numbers item =serial_number}
+								<input type="hidden" name="scan_order_goods[{$loadInfo.rec_id}][serial_numbers][]" value="{$serial_number}" class="serial_number_{$serial_number} serial_number"></input>
+								{/foreach}
+								{else}
+								否
+								{/if}	
+							</td>
+							<!-- 原订单数量 -->
+							<td>{$loadInfo.goods_number}</td>
+							<!-- 可退数量 -->
+							<td class="can_back">{$loadInfo.service_amount_available}</td>
+							<!-- 退回数量 -->
+							<td class="goods_back_num">{if $service_status=='INIT'} <input readonly  class="back_num_{$loadInfo.rec_id} back_num" type="text" name="scan_order_goods[{$loadInfo.rec_id}][goods_back_num]" value="0" />
+								{else} <input  type="text"
+								value="{$loadInfo.scan_goods_number_rec}" class="back_num_{$loadInfo.rec_id} back_num" name="scan_order_goods[{$loadInfo.rec_id}][goods_back_num]" readonly />
+								{/if}
+							</td>
+							<!-- 商品新旧状态 -->
+							<td class="goods_type_{$loadInfo.rec_id}">{if $service_status=='INIT'} 
+								<input type="radio" checked="checked" name="scan_order_goods[{$loadInfo.rec_id}][goods_type][0]" class="good_status_{$loadInfo.rec_id}_0" value="INV_STTS_AVAILABLE"/>全新
+								<input type="radio" name="scan_order_goods[{$loadInfo.rec_id}][goods_type][0]" class="good_status_{$loadInfo.rec_id}_0" value="INV_STTS_USED" />二手<br/>
+								{/if}
+							</td>
+							 <!-- 入库情况 -->
+							<td>{foreach from=$loadInfo.scan_goods item=scan_good} {if
+								$scan_good.goods_status=='INV_STTS_AVAILABLE'}全新{else}二手{/if} x {$scan_good.goods_number} ; 
+								{/foreach}</td>
+						</tr>
+						{/foreach}
+				</table>
+				<div>
+					<span>收货仓库： <select id="return_facility_id" name="return_facility_id">
+							{if $service_status=='INIT'}
+							{html_options options=$facility_user_list selected =$original_facility_id }{else}{html_options options=$facility_user_list selected =$scan_facility_id }{/if}
+					</select>
+					</span> <span> 发货仓库 ：{$facility_name}</span>
+					<br />
+					<br /> <span class="remark_t" valign="top" align="center"> 仓库备注：</span><!-- <input type="text"  value="{$loadInfos[0].remark}" /> -->
+					<textarea  class="remark" name="remark">{$loadInfos[0].remark}</textarea>
+					
+				</div>
+
+				{if $service_status=='INIT'}
+				<div class="buttons">
+					<input class="button" type="button" value="确认入库"  onclick="form_submit('pass')"/>
+					<input class="button" type="button" value="拒收入库" onclick="form_submit('refuse')"/>
+					<input type="hidden" id="inner_check" name="inner_check" value="pass">
+					<input type="hidden" name="act" value="storage">
+					{elseif $service_status=='REJECT'}
+					<input type="button" value="已拒绝" disabled="disabled"/>
+					{elseif $service_status=='RECOVER'}
+					<input type="button" value="已入库" disabled="disabled"/>
+					{else}
+					<input type="button" value="已验货" disabled="disabled"/>
+				</div>			
+				{/if}
+			</div>
+		</div>
+		</form>
+		{/if}
+		<!-- {debug} -->
+</body>
+</html>

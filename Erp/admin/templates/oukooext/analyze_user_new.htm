@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>统计信息－注册用户</title>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<br />
+注册用户 <select name="hour"><option value="24">24</option><option value="48" {if $hour == '48'}selected="selected"{/if}>48</option><option value="72" {if $hour == '72'}selected="selected"{/if}>72</option></select>小时内的统计 
+统计<input type="text" name="order_amount_begin" value="{$order_amount_begin}" /> 到 <input type="text" name="order_amount_end" value="{$order_amount_end}" />这个价位的订单有多少
+<br />
+<input type="submit" value="统计" onclick="this.disabled='disabled';"> 
+</form>
+<br>
+<table style="font-size:14px" cellpadding="5">
+<tr>
+<td>所有注册用户数：<span style="color:red;font-weight:bold">{$sum.total_user_count}</span></td>
+<td>所有确认订单数：<span style="color:red;font-weight:bold">{$sum.total_confirm_count}</span></td>
+<td>注册用户留言咨询：<span style="color:red;font-weight:bold">
+{$range_register_user_bjcomment_percent} ( {$range_register_user_bjcomment_count}/{$sum.register_user_count} )
+</span></td>
+</tr>
+</table>
+
+<table class="bWindow">
+<tr><td>日期</td>{foreach from=$dates item=date}<td>{$date}</td>{/foreach}<td>总计</td></tr>
+<tr><td>IP/PV</td>{foreach from=$dates item=date}<td>IP：{$values[$date].ip}<br>	PV：{$values[$date].pv}</td>{/foreach} <td> IP：{$sum.ip}<br>	PV：{$sum.pv} </td> </tr>
+<tr><td>{$hour}小时注册用户数</td>{foreach from=$dates item=date}<td><a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}" target="_blank">
+		{$values[$date].register_user_count}
+	</a></td>{/foreach}<td>{$sum.register_user_count}</td></tr>
+<tr><td>{$hour}小时注册咨询用户数</td>{foreach from=$dates item=date}<td>{$values[$date].register_user_bjcomment_count}</td>{/foreach}<td>{$sum.register_user_bjcomment_count}</td></tr>
+<tr><td>{$hour}小时注册咨询后下单用户数</td>{foreach from=$dates item=date}<td>{$values[$date].register_user_bjcomment_order_count}</td>{/foreach}<td>{$sum.register_user_bjcomment_order_count}</td></tr>
+<tr><td>{$hour}小时注册咨询后未下单用户数</td>{foreach from=$dates item=date}<td>{$values[$date].register_user_bjcomment_noorder_count}</td>{/foreach}<td>{$sum.register_user_bjcomment_noorder_count}</td></tr>
+<tr><td>{$hour}小时注册未下单用户数</td>{foreach from=$dates item=date}<td>{$values[$date].register_user_noorder_count}</td>{/foreach}<td>{$sum.register_user_noorder_count}</td></tr>
+<tr><td>{$hour}小时注册且下单用户数</td>{foreach from=$dates item=date}<td><a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}&order_status=exist" target="_blank">
+		{$values[$date].register_user_order_count}
+<!--		{if $values[$date].register_user_count > 0}
+			({math equation="x / y * 100" x=$values[$date].register_user_order_count y=$values[$date].register_user_count format="%.2f"}%)
+		{/if}-->
+	</a></td>{/foreach}<td>{$sum.register_user_order_count}</td></tr>
+<tr><td>{$hour}小时注册后取消订单用户数</td>{foreach from=$dates item=date}<td><a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}&order_status=exist" target="_blank">
+		{$values[$date].register_user_cancelorder_count}
+	</a></td>{/foreach}<td>{$sum.register_user_cancelorder_count}</td></tr>
+<tr><td>{$hour}小时注册用户购买数</td>{foreach from=$dates item=date}<td><a href="analyze_user_detail.php?type=user_count&start={$date}&end={$date}&order_status=1" target="_blank">
+		{$values[$date].register_user_confirm_order_count}
+<!--		{if $values[$date].register_user_count > 0}
+			({math equation="x / y * 100" x=$values[$date].register_user_confirm_order_count y=$values[$date].register_user_count format="%.2f"}%)
+		{/if}-->
+	</a></td>{/foreach}<td>{$sum.register_user_confirm_order_count}</td></tr>
+<tr><td>{$hour}小时注册下单平均时间</td>{foreach from=$dates item=date}<td>{$values[$date].register_user_order_avgtime} 分钟</td>{/foreach}<td>{$sum.register_user_order_avgtime / $dates_count}</td></tr>
+<tr><td>留言转换率（留言用户下单数/留言用户数）</td>{foreach from=$dates item=date}<td><a href="analyze_comment_detail.php?date={$date}" target="_blank">{$values[$date].comment_user_order_count}%</a></td>{/foreach}<td></td></tr>
+{foreach from=$bjtype_mapping key=type item=type_name}
+<tr><td>{$type_name} 留言转换率</td>{foreach from=$dates item=date}<td>{$values[$date].comment_user_order.$type}%</td>{/foreach}<td></td></tr>
+{/foreach}
+<tr>
+<td>订单总数</td>
+{foreach from=$dates item=date}
+<td>
+<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&store_id=ouku" target="_blank">
+		{$values[$date].ouku_order_count|default:0}
+<!--		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}-->
+</a>
+</td>
+{/foreach}
+<td>{$sum.ouku_order_count}</td>
+</tr>
+
+<tr>
+<td>订单总金额在￥{$order_amount_begin} - ￥{$order_amount_end}之间的订单数</td>
+{foreach from=$dates item=date}
+<td>{$values[$date].order_in_amount_count|default:0}</td>
+{/foreach}
+<td>
+{$sum.order_in_amount_count}
+</td>
+</tr>
+
+<tr>
+<td>销售额</td>
+{foreach from=$dates item=date}
+<td>￥ {$values[$date].ouku_confirm_order_amount|default:0}</td>
+{/foreach}
+<td>￥ {$sum.ouku_confirm_order_amount}</td>
+</tr>
+
+<tr>
+<td>确认订单数</td>
+<td colspan="{$dates_count}" align="center"><a href="analyze_order.php">订单统计</a></td>
+{*
+{foreach from=$dates item=date}
+<td><a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=1&store_id=ouku" target="_blank">
+		{$values[$date].ouku_confirm_order_count|default:0}
+<!--		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_confirm_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}-->
+</a>
+</a>
+</td>
+{/foreach}
+*}
+<td>{$sum.ouku_confirm_order_count}</td>
+</tr>
+
+<tr>
+<td>取消订单</td>
+{foreach from=$dates item=date}
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=2&store_id=ouku" target="_blank">
+		{$values[$date].cancel_order_count|default:0}
+<!--		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].cancel_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}-->
+	</a>
+</td>
+{/foreach}
+<td>{$sum.cancel_order_count}</td>
+</tr>
+
+<tr>
+<td>未确认订单</td>
+{foreach from=$dates item=date}
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=0&store_id=ouku" target="_blank">
+		{$values[$date].ouku_unconfirm_order_count|default:0}
+<!--		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_unconfirm_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}-->
+	</a>
+</td>
+{/foreach}
+<td>{$sum.ouku_unconfirm_order_count}</td>
+</tr>
+
+<tr>
+<td>拒收订单数</td>
+{foreach from=$dates item=date}
+<td><a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&order_status=4&store_id=ouku" target="_blank">	
+		{$values[$date].ouku_returned_order_count|default:0}
+<!--		{if $values[$date].ouku_order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].ouku_returned_order_count|default:0 y=$values[$date].ouku_order_count format="%.2f"}%)
+		{/if}-->
+	</a>
+</td>
+{/foreach}
+<td>{$sum.ouku_returned_order_count}</td>
+</tr>
+
+<tr>
+<td>商品>1的订单</td>
+{foreach from=$dates item=date}
+<td>
+<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&extra=multi_goods" target="_blank">
+		{$values[$date].more_than_one_order_count|default:0}
+<!--		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].more_than_one_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}-->
+	</a>
+</td>
+{/foreach}
+<td>{$sum.more_than_one_order_count}</td>
+</tr>
+
+<tr>
+<td>套餐订单数</td>
+{foreach from=$dates item=date}
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&extra=set" target="_blank">
+		{$values[$date].binding_order_count|default:0}
+<!--		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].binding_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}-->
+	</a>
+</td>
+{/foreach}
+<td>{$sum.binding_order_count}</td>
+</tr>
+
+<tr>
+<td>使用红包订单数</td>
+{foreach from=$dates item=date}
+<td>
+	<a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&extra=use_bonus" target="_blank">
+		{$values[$date].bonus_order_count|default:0}
+<!--		{if $values[$date].order_count > 0}
+			({math equation="x / y * 100" x=$values[$date].bonus_order_count|default:0 y=$values[$date].order_count format="%.2f"}%)
+		{/if}-->
+	</a>
+</td>
+{/foreach}
+<td>{$sum.bonus_order_count}</td>
+</tr>
+
+<tr>
+<td>老顾客订单数</td>
+{foreach from=$dates item=date}
+<td>{$values[$date].olduser_order_count|default:0}</td>
+{/foreach}
+<td>{$sum.olduser_order_count}</td>
+</tr>
+
+<tr>
+<td>未咨询，直接下单的订单数</td>
+{foreach from=$dates item=date}
+<td><a href="analyze_mobile_detail.php?type=order_count&start={$date}&end={$date}&order_sn_type=normal&store_id=ouku" target="_blank">
+	{$values[$date].register_user_nobjcomment_order_count|default:0}
+	</a>
+</td>
+{/foreach}
+<td>{$sum.register_user_nobjcomment_order_count}</td>
+</tr>
+</table>
+
+觉得统计数据不够详细？敬请关注XX组开发日程或通过大量的营养快线兑换更高的优先级。
+<br />
+<a href="{$smarty.server.REQUEST_URI|add_param_in_url:"view":"old"}">切换到旧的界面</a>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

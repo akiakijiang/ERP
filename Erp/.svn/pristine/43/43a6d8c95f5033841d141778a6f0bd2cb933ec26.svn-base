@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>预存款调整</title>
+<link href="styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" /> 
+<link rel="stylesheet" href="misc/autocomplete.css" type="text/css" />  
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+<style type="text/css">
+/*<![CDATA[
+{literal}*/
+	.clear:after {
+		content: "";
+		display: block;
+    	height: 0; 
+    	clear: both; 
+    	visibility: hidden;
+	}
+	.clear {
+		*zoom: 1;
+	}
+/*{/literal}
+]]>*/
+</style>
+<script type="text/javascript" type="text/javascript">
+// <![CDATA[
+// {literal}
+	$(document).ready(function(){
+		// 绑定滑动效果
+			$('legend.expand').bind('click', function(event){
+				$(this).next().slideToggle('normal');
+			});
+	
+	});
+
+	function check_form(){
+		if($(":input[name='order_sn']").val() == '' && $(":input[name='taobao_order_sn']").val() == ''){
+			alert("请输入订单号或者淘宝订单号！");
+			return false;
+		}
+		if($(":input[name='goods_name']").val() == ''){
+			alert("请选择商品！");
+			return false;
+		}
+	}
+
+	function pre_error(){
+		var con = confirm("您确定调整预存款吗？");
+		var goods_id = $(":input[name='goods_id']").val();
+		var order_sn = $(":input[name='order_sn']").val();
+		var taobao_order_sn = $(":input[name='taobao_order_sn']").val();
+		var goods_price = $(":input[name='ajust_price']").val();
+		var pre_data = {'goods_id':goods_id,'order_sn':order_sn,'taobao_order_sn':taobao_order_sn,'goods_price':goods_price};
+		console.log(pre_data);
+		if(con){
+			$.ajax({
+				url: 'prepayment_ajustment.php?ajax=pre_error',
+				type: 'POST',
+				dataType: 'json',
+				data: pre_data,
+			success:function(date) {
+				console.log(date);
+				if(date == 0){
+					$('#message').show();
+					$('#message').html("<p style='color:green;'>调整成功！</p>");
+					setTimeout(function(){
+						$('#message').slideUp("slow");
+					}, 5000);
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+	                        console.log(XMLHttpRequest.status);	
+	                        console.log(XMLHttpRequest.readyState);
+	                        console.log(textStatus);
+	                        $('#message').show();
+							$('#message').html("<p style='color:red;'>调整出错了！</p>");
+								setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+	                    }
+			});
+		}
+	}
+
+	function pre_none(){
+		var con = confirm("您确定扣除预存款吗？");
+		var goods_id = $(":input[name='goods_id']").val();
+		var order_sn = $(":input[name='order_sn']").val();
+		var taobao_order_sn = $(":input[name='taobao_order_sn']").val();
+		var goods_price = $(":input[name='ajust_price']").val();
+		var pre_data = {'goods_id':goods_id,'order_sn':order_sn,'taobao_order_sn':taobao_order_sn,'goods_price':goods_price};
+		console.log(pre_data);
+		if(con){
+			$.ajax({
+				url: 'prepayment_ajustment.php?ajax=pre_none',
+				type: 'POST',
+				dataType: 'json',
+				data: pre_data,
+			success:function(date) {
+				console.log(date);
+				if(date == 0){
+					$('#message').show();
+					$('#message').html("<p style='color:green;'>扣除成功！</p>");
+					setTimeout(function(){
+						$('#message').slideUp("slow");
+					}, 5000);
+				}else if(date == 1){
+					$('#message').show();
+					$('#message').html("<p style='color:red;'>该订单已扣过预存款！</p>");
+					setTimeout(function(){
+						$('#message').slideUp("slow");
+					}, 5000);
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+	                        console.log(XMLHttpRequest.status);
+	                        console.log(XMLHttpRequest.readyState);
+	                        console.log(textStatus);
+	                        $('#message').show();
+							$('#message').html("<p style='color:red;'>扣除出错了！</p>");
+								setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+	                    }
+			});
+		}
+	}
+
+	function pre_delete(){
+		var con = confirm("您确定要删除这条扣除预存款记录吗？");
+		var goods_id = $(":input[name='goods_id']").val();
+		var order_sn = $(":input[name='order_sn']").val();
+		var pre_data = {'goods_id':goods_id,'order_sn':order_sn};
+		if(con){
+			$.ajax({
+					url: 'prepayment_ajustment.php?ajax=pre_delete',
+					type: 'post',
+					dataType:'json',
+					data: pre_data,
+					success: function (data) {
+						if(data == 0){
+							$('#message').show();
+							$('#message').html("<p style='color:green;'>删除成功！</p>");
+							setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+						}else{
+							$('#message').show();
+							$('#message').html("<p style='color:red;'>删除失败！</p>");
+							setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+	                        console.log(XMLHttpRequest.status);
+	                        console.log(XMLHttpRequest.readyState);
+	                        console.log(textStatus);
+	                        $('#message').show();
+							$('#message').html("<p style='color:red;'>删除出错了！</p>");
+								setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+	                    }
+				});
+		}
+	}
+
+	function return_delete(){
+		var con = confirm("您确定要删除返还记录吗？");
+		var goods_id = $(":input[name='goods_id']").val();
+		var order_sn = $(":input[name='order_sn']").val();
+		var pre_data = {'goods_id':goods_id,'order_sn':order_sn};
+		if(con){
+			$.ajax({
+					url: 'prepayment_ajustment.php?ajax=return_delete',
+					type: 'post',
+					dataType:'json',
+					data: pre_data,
+					success: function (data) {
+						if(data == 0){
+							$('#message').show();
+							$('#message').html("<p style='color:green;'>删除成功！</p>");
+							setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+						}else{
+							$('#message').show();
+							$('#message').html("<p style='color:red;'>删除失败！</p>");
+							setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+	                        console.log(XMLHttpRequest.status);
+	                        console.log(XMLHttpRequest.readyState);
+	                        console.log(textStatus);
+	                        $('#message').show();
+							$('#message').html("<p style='color:red;'>删除出错了！</p>");
+								setTimeout(function(){
+								$('#message').slideUp("slow");
+							}, 5000);
+	                    }
+				});
+		}
+	}
+
+// {/literal}
+// ]]>
+</script>
+</head>
+<body>
+	<div style="width:100%;">
+		<div id="message" style="width:70%; border:#DDDDDD 1px solid; margin:10px auto; border-radius: 5px; text-align:center; {if empty($message)}display:none;{/if}">
+			<p style="color:red;">{$message}</p>
+		</div>
+	</div>
+	<div style="margin: 10px; padding: 30px 15px 15px; border: 1px solid #DDDDDD; border-radius: 4px; position: relative;"  class="clear">
+		<form method="post">
+			<span>ERP订单号</span><input type="text" class="input-sm" style="margin-left:8px;border: 1px solid #ccc;" name="order_sn" value="{$order_sn}" />
+			<span style="margin-left:30px;">淘宝订单号</span><input type="text" class="input-sm" style="margin-left:8px;border: 1px solid #ccc;" name="taobao_order_sn" value="{$taobao_order_sn}" />
+			<span style="margin-left:30px;">商品名称</span><input type="text" class="input-sm" style="margin-left:8px;border: 1px solid #ccc;" name="goods_name" id="goods_name" value="{$smarty.request.goods_name}" />
+			<input type="hidden" name = "goods_id" id = "goods_id" value="{$smarty.request.goods_id}"/>
+			<input type="submit" class="btn" style="margin-left:60px;height:30px;text-height: 28px;" name="act" value="查询" onclick="return check_form()" />
+			<input type="hidden" name="act" value="search" />
+		</form>
+		<table class="table table-bordered" id="result" style="width:40%;margin-left:30%;margin-top:30px;margin-bottom:18px;{if $goods_price ==''}display:none{/if}">
+			<tr style="text-align:center">
+				<td>订单号</td>
+				<td><span>{$order_sn}</span></td>
+			</tr>
+			<tr style="text-align:center">
+				<td>淘宝订单号</td>
+				<td><span>{$taobao_order_sn}</span></td>
+			</tr>
+			<tr style="text-align:center">
+				<td>商品名称</td>
+				<td><span>{$goods_name}</span></td>
+			</tr>
+			<tr style="text-align:center">
+				<td>商品金额</td>
+				<td><span><input type="text" class="input-sm" name="ajust_price" style="border: 1px solid #ccc;" value="{$goods_price}" /></span></td>
+			</tr>
+			<tr style="text-align:center">
+				<td>商品数量</td>
+				<td><span>{$goods_number}</span></td>
+			</tr>
+			<tr style="text-align:center">
+				<td colspan="2">
+					<button class="btn btn-mini" type="button" name="ajax" onclick="pre_error()">扣错预存款调整</button>
+					<button class="btn btn-mini" style="margin-left:30px;" type="button" name="ajax" onclick="pre_none()">未扣预存款调整</button>
+				</td>	
+			</tr>
+		</table>
+		<button class="btn btn-warning" type="button" style="margin-left:70%;{if $goods_price ==''}display:none;{/if}" onclick="pre_delete()" >删除</button>
+		<button class="btn btn-warning" type="button" style="margin-left:30px;{if $goods_price ==''}display:none;{/if}" onclick="return_delete()" >删除返还预存款</button>
+		<div style="float:left;margin-top:50px;">
+			<p>注意：1、扣错预存款，需要修改扣除商品金额请使用'扣错预存款调整'。</p>
+			<p style="margin-left:42px;">2、订单未扣除预存款，或者订单中有部分商品已扣预存款但有部分商品未扣预存款，请使用'未扣预存款调整'。</p>
+			<p style="margin-left:42px;">3、需要删除订单中已扣除预存款的商品，请使用'删除'。</p>
+			<p style="margin-left:42px;">4、删除返回预存款请使用'删除返回预存款'</p>			
+		</div>
+	</div>
+	<div style="margin: 10px; padding: 30px 15px 15px; border: 1px solid #DDDDDD; border-radius: 4px; position: relative;" class="clear">
+		<p style="color:#337ab7;">批量调整预存款</p>
+		<form method="post" enctype="multipart/form-data" style="margin-top:20px;">
+			<input type="file" name="prepayment_file" style="display:inline-block;" />
+			<input type="submit" value="上传" />
+			<span style="display:inline-block;float:right;margin-right:30px;">
+				<a href="/Erp/admin/templates/批量调整预存款.xls">导入模板下载</a>
+			</span>
+			<input type="hidden" name="act" value="upload_search" />
+		</form>
+		<!-- <form method="post">
+			<table class="table" style="margin-top:20px;">
+				<thead>
+					<tr>
+						<th>ERP订单号</th>
+						<th>淘宝订单号</th>
+						<th>商品名称</th>
+						<th>商品金额</th>
+						<th>商品数量</th>
+						<th>类型</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+				</tbody>
+			</table>
+		</form> -->
+		<div style="float:left;margin-top:50px;">
+			<p>1、请导入03版的Excel文件，即xls文件；</p>
+			<p>2、sheet名称为”预付款批量修改“；</p>
+			<p>3、第一列为订单号（ERP订单号），第二列为淘宝订单号，第三列为商品名称，第四列为类型，第五列为单价；</p>
+			<p>4、类型分为'error'、'none'、'delete'和'return'，error为修改扣错预存款，none为未扣预存款扣除金额，delete为删除预存款，return为删除返还预存款。</p>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+{literal}
+	//商品名称搜索
+		$('#goods_name').autocomplete('ajax.php?act=search_goods', {
+			dataType : 'json',
+			minChars : 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		}).result(function(even, row, formatted){
+			
+			$('#goods_id').val(row.goods_id);
+			 $('#goods_name').val(row.goods_name);	
+		});
+
+		$('#goods_name_t').autocomplete('ajax.php?act=search_goods', {
+			dataType : 'json',
+			minChars : 0,
+			mustMatch: false,
+			formatItem : function(row, i, max, value, term) {
+				return(row.goods_name);
+			},
+			formatResult : function(row) {
+				return(row.goods_name);
+			}
+		}).result(function(even, row, formatted){
+			
+			$('#goods_id_t').val(row.goods_id);
+			 $('#goods_name_t').val(row.goods_name);	
+		});
+{/literal}
+</script>
+</html>

@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>顺丰[乐其#杭州仓]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:12pt;top:0px;left:80px;font-size:40px;">{$order.diff}</div>
+<div style="position:absolute;font-size:12pt;top:80px;left:10px;letter-spacing:10px;">7698041295</div>
+<div style="position:absolute;font-size:10pt;top:90px;left:5px;"><!--东莞乐其网络科技有限公司--></div>
+<div style="position:absolute;font-size:10pt;top:110px;left:210px;">{$order.party_name}</div>
+<div style="position:absolute;font-size:9pt;top:135px;left:2px;">请亲自检查包裹完好后再签收，</br>
+如有破损请拒收，并联系我们。</br>
+否则概不负责。</div>
+<div style="position:absolute;font-size:10pt;top:190px;left:1px;">{$tel_qh}</div>
+<div style="position:absolute;font-size:10pt;top:190px;left:75px;">{$tel_dh}</div>
+<!--至此为寄件人信息-->
+
+
+<div style="position:absolute;font-size:10pt;top:230px;left:210px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:10pt;top:255px;left:1px;width:260px;line-height:200%;">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</div>
+<div style="position:absolute;font-size:10pt;top:330px;left:125px;">{$order.mobile}<br />{$order.tel}</div>
+<!--<div style="position:absolute;font-size:10pt;top:325px;left:170px;">13391284312</div> 已经移到上面-->
+<div style="position:absolute;font-size:14pt;top:400px;left:1px;">配件&nbsp;&nbsp;(订单号：{$order.order_sn})</div>
+<div style="position:absolute;font-size:14pt;top:385px;left:220px;">1</div>
+<div style="position:absolute;font-size:15pt;top:30px;left:485px;font-weight:bolder;">021LK</div><!--原寄地-->
+<div style="position:absolute;font-size:30pt;top:55px;left:465px;">√</div><!--寄方付 -->
+<div style="position:absolute;font-size:30pt;top:55px;left:600px;">√</div><!--第三方付 -->
+
+<div style="position:absolute;font-size:12pt;top:260px;left:570px;line-height:100%">乐其</div>
+<div style="position:absolute;font-size:12pt;top:300px;left:520px;line-height:100%">{$smarty.now|date_format:"%Y  %m  %d"}</div>
+
+<div style="position:absolute;font-size:12pt;top:120px;left:490px;letter-spacing:10px;">7698041295</div>
+<div style="position:absolute;font-size:12pt;top:155px;left:485px;line-height:100%">电子产品 转769F<br />只能验收外观不得试机</div>
+<div style="position:absolute;font-size:14pt;top:440px;left:500px;">本人签收，破损请拒收<br></div>
+
+</body>
+</html>

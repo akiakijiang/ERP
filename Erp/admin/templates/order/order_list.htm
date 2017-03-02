@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>销售订单管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	.loading {
+		background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+	}
+    .strik {
+        background-color: #ECEE9F;
+    }
+	<!--{/literal}-->
+	</style>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	/**
+	 * 提交检查
+	 */
+	function check_submit(node)
+	{
+		node = node ? node : document ;
+		item = $(node).find(':checkbox:checked');
+		if (!item || item==undefined || item.length<2) {
+			alert('没有选中项');
+			return;
+		}
+		$('#form').submit();
+	}
+	// {/literal}
+	// ]]>
+	</script>
+	
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;销售订单管理&nbsp;</span></legend> 
+
+  <div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+  	<div class="item"><a href="order_shipment_list.php">合并发货查看</a></div>
+    <div class="item"><a href="order_shipment.php">合并发货操作</a></div>
+    <div class="item"><a href="order_search.php">查找订单</a></div>
+    <div class="active"><a href="order_list.php">订单列表</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+
+
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">快捷方式</h3>
+    
+	<form method="get">
+  	<table cellpadding="5" cellspacing="1">
+        <tr>
+          <td width="120">每页显示</td>
+          <td>
+			  <select>{html_options options=$page_size_list selected=$filter.page_size}</select> 条记录
+          </td>
+        </tr>        
+        
+        <tr>
+          <td>快速链接</td>
+          <td>
+			  <a href="{$url|add_param_in_url:"status":"0-0_1-0"}" class="strik">未确认订单</a>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>模糊搜索</td>
+          <td>
+			  <input type="text" size="40" name="q" />
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <input type="submit" value="搜索" />
+          </td>
+        </tr>
+
+	</table>
+	</form>
+  </div>
+  
+  
+  <!--{if $order_list}-->
+  <br />
+  <div style="clear:both;">
+	  <form method="post" id="form">
+	  <h3 style="color:#09F;">订单列表</h3>
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+      
+        <tr bgcolor="#f9f9f9">          
+			<th>选择</th>
+            <th>订单号</th>
+			<th>收货人</th>
+            <th>电话</th>
+            <th>手机</th>
+            <th>省</th>
+            <th>市</th>
+            <th>区</th>
+            <th>详细地址</th>
+        </tr>   
+        
+        <!--{foreach from=$order_list item=order}-->
+		<tr>
+			<td align="center"> 
+				<input type="checkbox" name="checked[]" value="{$order.order_id}" />
+			</td>
+			<td align="center"><a href="order_edit.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+			<td>{$order.consignee}</td>
+		  	<td>{$order.tel}</td>
+		  	<td>{$order.mobile}</td>
+		  	<td>{$order.province_name}</td>
+		  	<td>{$order.city_name}</td>
+		  	<td>{$order.district_name}</td>
+		  	<td>{$order.address}</td>
+		</tr>     
+        <!--{/foreach}-->
+        
+      </table>
+      
+      </form>
+  </div>
+  
+  <!--{else}-->
+  
+  <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录</h4></div>
+  <br /><br />
+  
+  <!--{/if}-->
+
+<br /><br />
+
+</fieldset>
+
+</body>
+</html>

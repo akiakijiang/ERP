@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>不明汇款</title>
+
+</head>
+<body>
+<form method="POST">
+<table class="bWindow" style="width:800px">
+  <tr>
+	<th>收款方式</th>
+	<th>金额</th>
+	<th>备注</th>
+	<th>确认收款人</th>
+  </tr>
+  {foreach from=$unkown_moneys item=unkown_money}
+  <tr>
+	<td align="center">
+	{if "finance_order"|check_admin_priv}
+	  <select name="pay_id_{$unkown_money.id}">
+		<option value="2" {if $unkown_money.pay_id == 2}selected{/if}>邮局汇款</option>
+		<option value="4" {if $unkown_money.pay_id == 4}selected{/if}>网银在线网上支付</option>
+		<option value="5" {if $unkown_money.pay_id == 5}selected{/if}>支付宝</option>
+		<option value="8" {if $unkown_money.pay_id == 8}selected{/if}>招商银行网上银行</option>
+		<option value="9" {if $unkown_money.pay_id == 9}selected{/if}>工商银行网上银行</option>
+		<option value="3" {if $unkown_money.pay_id == 3}selected{/if}>招商银行/转帐</option>
+		<option value="10" {if $unkown_money.pay_id == 10}selected{/if}>农业银行/转帐</option>
+		<option value="11" {if $unkown_money.pay_id == 11}selected{/if}>交通银行/转帐</option>
+		<option value="12" {if $unkown_money.pay_id == 12}selected{/if}>浦发银行/转帐</option>
+		<option value="14" {if $unkown_money.pay_id == 14}selected{/if}>中国银行/转帐</option>
+		<option value="15" {if $unkown_money.pay_id == 15}selected{/if}>工商银行/转帐</option>
+		<option value="16" {if $unkown_money.pay_id == 16}selected{/if}>建设银行/转帐</option>
+	  </select>
+	{else}
+		{if $unkown_money.pay_id == 2}邮局汇款{/if}
+		{if $unkown_money.pay_id == 4}网银在线网上支付{/if}
+		{if $unkown_money.pay_id == 5}支付宝{/if}
+		{if $unkown_money.pay_id == 8}招商银行网上银行{/if}
+		{if $unkown_money.pay_id == 9}工商银行网上银行{/if}
+		{if $unkown_money.pay_id == 3}招商银行/转帐{/if}
+		{if $unkown_money.pay_id == 10}农业银行/转帐{/if}
+		{if $unkown_money.pay_id == 11}交通银行/转帐{/if}
+		{if $unkown_money.pay_id == 12}浦发银行/转帐{/if}
+		{if $unkown_money.pay_id == 14}中国银行/转帐{/if}
+		{if $unkown_money.pay_id == 15}工商银行/转帐{/if}
+		{if $unkown_money.pay_id == 16}建设银行/转帐{/if}
+	{/if}</td>
+	<td align="center">
+	  {if "finance_order"|check_admin_priv}
+		<input type="text" name="amount_{$unkown_money.id}" value="{$unkown_money.amount}"/>
+	  {else}{$unkown_money.amount}
+	  {/if}
+	</td>
+	<td align="center">
+		<input type="textarea" size="80" name="note_{$unkown_money.id}" value="{$unkown_money.note}"/>
+	</td>
+	<td align="center">{$unkown_money.user_name}</td>
+	<input type='hidden' name="seq[]" value="{$unkown_money.id}"/>
+  </tr>
+  {/foreach}
+  {if "finance_order"|check_admin_priv}
+  <tr>
+	<td align="center"><select name="pay_id_{$unkown_money.id+1}">
+		<option value="-1" selected>请选择</option>
+		<option value="2">邮局汇款</option>
+		<option value="4">网银在线网上支付</option>
+		<option value="5">支付宝</option>
+		<option value="8">招商银行网上银行</option>
+		<option value="9">工商银行网上银行</option>
+		<option value="3">招商银行/转帐</option>
+		<option value="10">农业银行/转帐</option>
+		<option value="11">交通银行/转帐</option>
+		<option value="12">浦发银行/转帐</option>
+		<option value="14">中国银行/转帐</option>
+		<option value="15">工商银行/转帐</option>
+		<option value="16">建设银行/转帐</option>
+	</select></td>
+	<td align="center"><input type="text" name="amount_{$unkown_money.id+1}" value=""/></td>
+	<td align="center"><input type="textarea" size="80" name="note_{$unkown_money.id+1}" value=""/></td>
+	<td align="center"></td>
+	<input type='hidden' name="seq[]" value="{$unkown_money.id+1}"/>
+  </tr>
+  <tr>
+	<td colspan=4 align="center"><input name="submit" type="submit" value="提交" /></td>
+  </tr>
+  {/if}
+</table>
+</form>
+</body>
+</html>

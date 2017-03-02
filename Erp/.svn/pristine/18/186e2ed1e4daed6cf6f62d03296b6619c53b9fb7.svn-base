@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{literal}
+<style type="text/css" media="all">
+h2{
+	font-size:12pt;
+	clear:both;
+	margin:10px 0;
+}
+ul{
+	list-style:none;
+	font-size:10pt;
+	width:49%;
+	float:left;
+}
+ul li{
+	height:40px;
+	line-height:40px;
+}
+
+table{
+	width:99.7%;
+	font-size:10pt;
+	text-align:center;
+	border:1px solid #000;
+	border-collapse:collapse;
+	margin:20px 0 20px 2px;
+}
+table td{padding:5px 10px;}
+table td,table th{
+	border:1px solid #000;
+	height:25px;
+	line-height:25px;
+}
+p{
+	font-size:10pt;
+	clear:both;
+	text-align:center;
+}
+.left{
+	float:left;
+	margin-left:40px;
+	display:inline;
+}
+.right{
+	float:right;
+	margin-right:20px;
+}	
+h1{
+	text-align:center;
+	font-size:14pt;
+}
+li.c{
+	clear:both;
+	width:100%;
+}	
+</style>
+{/literal}
+<title>打印发货单</title>
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if} style="width:800px;margin:auto;">
+{foreach from=$orders item=orderInfo name=order}
+{if $smarty.foreach.order.last}
+<h1>欧酷网{$orderInfo.shipping_name}发货汇总</h1>
+{/if}
+{/foreach}
+{if $smarty.request.print != 1}
+<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="history.back();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">返回</span>
+{/if}
+<table style="text-align:left;">
+<tr style="text-align:center;background:#f1f1f1;">
+<th>订单号</th>
+<th>商品名称</th>
+<th>收货人姓名</th>
+<th>联系电话</th>
+<th>订单金额</th>
+<th>支付方式</th>
+</tr>
+{foreach from=$orders item=orderInfo name=order}
+{if $orderInfo.pay_status == 2 || $orderInfo.pay_status == 0}
+<tr>
+	<td>{$orderInfo.order_sn}</td>
+    <td>{$orderInfo.goods_names}</td>
+	<td>{$orderInfo.consignee}</td>
+	<td>{if $orderInfo.tel}{$orderInfo.tel}{/if}{$orderInfo.mobile}</td>
+	<td>{$orderInfo.order_amount|price_format}</td>
+	<td>{$orderInfo.pay_name}</td>
+</tr>
+{/if}
+{/foreach}
+</table>
+</body>
+</html>

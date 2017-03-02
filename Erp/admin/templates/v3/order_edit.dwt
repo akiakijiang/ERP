@@ -1,0 +1,2210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/css_2007.9.8.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}js/region.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}js/common.js"></script>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<script type="text/javascript" src="{$WEB_ROOT}js/jquery/jquery.min.js"></script>
+
+<script type="text/javascript">
+var info = "{$smarty.request.info}";
+var process_request = "{$lang.process_request}";
+// {literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+  function ordershipment_staff_takebyself() {
+      var shippingId = document.getElementById('shippingId').value ;
+      var actionNote = document.getElementById('action_note_id').value ;
+    
+      if(86 == shippingId && '' == actionNote){
+          alert('【内部员工自提】订单要填写备注的。');
+          return false;
+      }
+  }
+
+  function inv_payee_modify_click(){
+      var btn_inv_payee_modify = document.getElementById('inv_payee_modify');
+      var btn_inv_payee_ok = document.getElementById('inv_payee_ok');
+      var btn_inv_payee_cancle = document.getElementById('inv_payee_cancle');
+      var txt_inv_payee = document.getElementById('inv_payee');
+      
+      btn_inv_payee_modify.style.display = 'none';
+      btn_inv_payee_ok.style.display = '';
+      btn_inv_payee_cancle.style.display = '';
+      txt_inv_payee.readOnly = false;
+      txt_inv_payee.style.border = '1px solid #999';
+      
+  }
+  
+  //一键选择最优快递 ljzhou 2012-8-30
+  function shipping_select_click(shipping_id,facility_id){  
+      if(!confirm("确认修改快递吗？")) return;
+      var shippingForm = E('form2');
+      var shippingId = shippingForm.elements['shipping_id'];
+      var facilityId = shippingForm.elements['facility_id'];
+      if(shipping_id == shippingId.value && facility_id == facilityId.value){
+         alert("您没有修改快递，请注意选择！");
+         return;
+      } 
+      var canEditFacility = shippingForm.elements['user_can_edit_facility'];
+      if(facility_id != facilityId.value){
+        if(canEditFacility.value == 0){
+         alert('仓库无法修改：商品已配货或者您没有修改权限，请重新选择！');
+         return;
+        }
+      }   
+
+      var obj = shippingForm.elements['shipping_id_0'];
+      if(obj.value != shipping_id){
+         onchange=change_shipping(obj);
+      }
+      shippingId.value = shipping_id;
+      facilityId.value = facility_id;
+      shippingForm.submit();
+  }
+  
+         
+  function inv_payee_ok_click(){
+      var btn_inv_payee_modify = document.getElementById('inv_payee_modify');
+      var btn_inv_payee_ok = document.getElementById('inv_payee_ok');
+      var btn_inv_payee_cancle = document.getElementById('inv_payee_cancle');
+      var txt_inv_payee = document.getElementById('inv_payee');
+      var val_order_id = document.getElementById('hidden_inv_order_id').value;
+      
+      var inv_value = txt_inv_payee.value;  
+ 
+      if(val_order_id != ''){
+          Ajax.call('order.php?act=edit_invoice_payee&order_id=' + val_order_id +'&inv_payee='+ inv_value, '', inv_payee_ok_return, 'GET', 'JSON');
+      }
+  }
+      
+  function inv_payee_ok_return(result){
+      if(true == result){
+          var btn_inv_payee_modify = document.getElementById('inv_payee_modify');
+          var btn_inv_payee_ok = document.getElementById('inv_payee_ok');
+          var btn_inv_payee_cancle = document.getElementById('inv_payee_cancle');
+          var txt_inv_payee = document.getElementById('inv_payee');
+          var inv_value = txt_inv_payee.value;  
+ 
+          txt_inv_payee.readOnly = 'disabled';
+          txt_inv_payee.style.border = '1px solid #fff';
+      
+          btn_inv_payee_modify.style.display = '';
+          btn_inv_payee_ok.style.display = 'none';
+          btn_inv_payee_cancle.style.display = 'none';
+      
+          document.getElementById('hidden_inv_payee').value = document.getElementById('inv_payee').value ;
+      }else{
+         document.getElementById('inv_payee').value = document.getElementById('hidden_inv_payee').value ; 
+         alert('发票抬头没更新好，发邮件到ERP组解决。。');
+      }
+  }
+         
+  function inv_payee_cancle_click(){
+      var btn_inv_payee_modify = document.getElementById('inv_payee_modify');
+      var btn_inv_payee_ok = document.getElementById('inv_payee_ok');
+      var btn_inv_payee_cancle = document.getElementById('inv_payee_cancle');
+      var txt_inv_payee = document.getElementById('inv_payee');
+      var val_inv_payee = document.getElementById('hidden_inv_payee');
+      
+      txt_inv_payee.value = val_inv_payee.value;
+      txt_inv_payee.readOnly = 'disabled';
+      txt_inv_payee.style.border = '1px solid #fff';
+      
+      btn_inv_payee_modify.style.display = '';
+      btn_inv_payee_ok.style.display = 'none';
+      btn_inv_payee_cancle.style.display = 'none';
+  }
+  
+  function catch_carrier_info_click(){
+      document.getElementById("carrier_info").target = "_blank";
+  }
+  function check_storage_num(){
+      var facility = E("facility_id") ;
+      var value = facility.value;
+        for (var i = 1 ;i < facility.length ; i++ ){
+           if(facility[i].value == value){
+               var name = facility[i].text;
+           }
+      }
+      var goods_names = "";
+      if( E("goodsTable")){
+        var table = E("goodsTable").rows ;
+        for (var i = 1 ;i < table.length -1 ; i++) { 
+         var goods_name = table[i].cells[0].firstChild.nodeValue.replace(/\s/g,"");
+            for(var j =1;j<table[i].cells.length;j++){
+                 if(table[i].cells[j].getAttribute("id") == value){
+                    if(table[i].cells[j].innerHTML <= 0){
+                         goods_names =  goods_names + goods_name + ",";
+                    }
+                 }
+            }  
+       }
+       if(goods_names){
+            if(!confirm(name+"中"+goods_names+"库存为零")){
+              return false;    
+           }
+       }
+     }
+     return true;
+  }
+  function check_order_num () {
+     if(E("goods_number-0").value <= 0){
+        alert("您添加的商品数量小于等于0，请检查");
+        return false;
+     }
+     E('action-0').value='edit_order_goods';
+     E("form_check_order_num").submit();
+  }
+if(info != ""){alert(info);}
+// {/literal}
+</script>
+<style type="text/css">
+
+{literal}
+input[type='submit'],input[type='button']{cursor:pointer;}
+.page{float:right;padding-right:15px;color:#75318e;margin:5px 0;}
+.page input.text2{width:20px;height:14px;border:1px solid #cfd0d0;margin:0 3px;float:none;}
+.page a{float:left;text-align:center;color:#75318e;margin:0 5px;padding:1px 5px;border:1px solid #e2e2e2;}
+.page a:hover,.page a.currentPage{background:#75318e;color:#fff;text-decoration:none;}
+.page span{float:left;}
+.page input{float:left;}
+.service p{padding:5px 0;}
+
+body#font_14 div,body#font_14 input,body#font_14 select{color:#000;}
+.tooltips{
+    position: relative; 
+    z-index: 9999;
+    text-decoration: none;
+    color: blue;
+    cursor: pointer;
+}
+.tooltips:hover{
+    z-index: 9999;
+    background: none; /* 没有这个在 IE 中不可用 */
+}
+.tooltips div{
+    display: none; /* span 不可见 */
+}
+.tooltips:hover div{ /* span 标签仅在 :hover 状态时显示 */
+    display: block;
+    position: absolute; 
+    top: -32px;
+    left: 80px;
+    width: 300px; /* ToolTips 的宽度 */
+    /* 以下是样式 */
+    border: 1px solid #D5C88B;
+    background: #C8D3F2;
+    padding: 4px;
+    color: #333;
+}
+.ddan_item h2{padding:0 10px;font-weight:normal;background-image:url(images/image/bg_1.jpg);border:1px solid #c1dad7;}
+.ddan_item h3{margin:10px 0 5px 0;}
+.ddan_item{text-align:left;padding:0;background:#f1fff0;border:0;width:850px;}
+.ddan_item p{padding-left:10px;padding-right:10px;}
+.ddan_item h2 a{color:blue;margin:0 5px;}
+.ddan_item table{margin:0;width:99.9%;margin-left:1px;}
+.ddan_item table tr{background:#f1fff0;}
+.ddan_item table td{width:auto;border:0;border:1px solid #c1dad7;padding:7px 5px;}
+.ddan_item table th{border:1px solid #c1dad7;background:url(images/image/bg_header.jpg) repeat-x;color:#4f6b72;padding:0;}
+input[value='删除']{color:red;}
+input[value='增加套餐商品']{margin-top:5px;}
+.service{border:1px solid #c1dad7;}
+.service p{line-height:160%;border-bottom:1px dashed #c1dad7;}
+table.statusTable{border-collapse:collapse;margin-top:1px;}
+table.statusTable td{border:1px solid #c1dad7;}
+table.statusTable th{border:1px solid #c1dad7;font-weight:normal;color:#333;}
+table.statusTable tr.even{background:#f5fafa;}
+
+.ddan_item table.none{margin:-10px;padding:0;float:right;width:350px;text-align:left;background:#fff;border:1px solid #c1dad7;}
+.ddan_item table.none td{border:0;background:#fff;}
+optgroup{color:#333;font-style:normal;}
+optgroup option{color:#000;}
+b{font-weight:normal;}
+
+#order_status_action,#changeId{position:absolute;top:30px;right:100px;background:#fff;z-index:1;}
+#changeId{border:1px solid #c1dad7;padding:10px;}
+#infoTable td{background:#f1fff0;}
+input[type='text'],select{background:#f1fff0;}
+#searchId{margin-top:10px;}
+#modify_vat_invoice input, #bonus_id, #bonus_id_note{border:1px solid #cfd0d0!important;}
+#modify_vat_invoice input[type='submit'], #use_bonus_id input[type='submit']{border:none;}
+</style>
+{/literal}
+<title>{$order.order_sn} ({$order.party_name}) 订单的详细信息</title>
+</head>
+
+<body id="font_14">
+
+<div class="ddan">
+    <ul class="order_liTab fix" id="order_li" style="margin:0 0 -1px 0;padding:0 0 0 1px;">
+        <li {if !$smarty.request.more}class="on"{/if} id="a0" onclick="show(0)">打开所有栏目</li>
+        <li id="a1" onclick="show(1)">订单详细</li>
+        <li id="a2" onclick="show(2)">统计信息</li>
+        <li id="a3" onclick="show(3)">客服操作</li>
+        <li id="a4" onclick="show(4)" style="overflow:hidden;width:0;">{*商品操作*}</li>
+        {*<li id="a5" onclick="show(5)" {if $smarty.request.more == 'more'}class="on"{/if}>售前咨询<span style="font-size:12px;font-weight:normal;">({$usercommentNum})</span></li>*}                       
+        {*<li id="a5" onclick="show(5)">订单咨询<span style="font-size:12px;font-weight:normal;">({$commentsNum})</span></li>*}
+        <li id="a5" onclick="location.href='sale_support/sale_support.php?order_id={$order.order_id}'">售后沟通<span style="font-size:12px;font-weight:normal;"></span></li>
+        <li id="a6" onclick="show(6)">售后服务<span style="font-size:12px;font-weight:normal;">({$servicesNum})</span></li> 
+        <li id="a7" onclick="show(7)">订单状态</li>
+        {if "kf_send_msg"|check_admin_priv}
+        <li id="a8" onclick="show(8)">发送短信</li>
+        {/if}
+    <input type="hidden" name="showonce" id="showonce" value="{$showonce}" />
+    </ul>
+<div id="s1" style="position:relative;margin-top:30px;">
+
+    <div class="ddan_item">
+
+        <h2><span style="float:right;">订单状态：{$order.order_status_name} {$order.pay_status_name} {$order.shipping_status_name} {*$order.shortage_status_name*}&nbsp;&nbsp;|
+            {if $order.order_status == 0}
+            <!-- <a href="#" onclick="{if $user.order_status.4 >= 1} if(!confirm('该用户曾经拒收过{$user.order_status.4}次，要确认订单吗？'))return false; {/if} {if $blackinfo.is_in_blacklist} if(!confirm('该订单在黑名单之中，要确认订单吗？'))return false; {/if} {if $order_attributes.TAOBAO_ITEM_MEAL_NAME} if(!confirm('该订单需手动添加配件，要确认订单吗？\n {$order_attributes.TAOBAO_ITEM_MEAL_NAME|replace:":":";\\n "}')) {literal}{ location.href='#goodsTable';return false;}{/literal} {/if} orderStatusFn(1,{$order.shortage_status},'edit_order_status', '确认订单');return false;">确认订单</a> -->
+            <!--
+            //{if $fuckyt == true}
+                        //alert('运营同事确认上海仓暂不使用圆通快递，请客服同事另外选择');
+                        //return false;
+                        //LJNI 20140402 奉监工幕府命开放上海圆通
+                        //alert('上海仓恢复使用圆通快递喜闻乐见大快人心');
+                //{/if}
+            -->
+            <a href="#"  onclick="                
+                {if $tmall_warehouse == true}
+                        alert('品牌特卖产品由淘宝商城发货，ERP无需操作');
+                        return false;
+                {/if}   
+                {if $prepay_shortage == true}
+                        if(!confirm('该订单分销商的预付款账户预估余额（可用预存款 减去 从已确认订单但未发货的订单将要扣的预存款）小于预警值，请通知店长和财务\n一定要确认订单请点确认，否则点取消！'))
+                        return false;
+                {/if}   
+                {if !$can_sure_order}
+                    alert('淘宝价格与ERP价格不一致，无法确认订单，请联系店长维护');
+                    return false;
+                {/if}  
+                {if $goods_amount_bonus_exception}
+                    alert('-b-h订单商品金额+红包小于0，无法确认订单，请联系ERP处理');
+                    return false;
+                {/if}  
+                {if $arrived == 'NONE'}
+                    alert('此快递不可达，请先核实该快递公司是否可达');
+                {/if} 
+                {if !$can_xiaobao}
+                    alert('邮政小包的订单重量不能超过3.3kg，请选择其他快递！');
+                    return false; 
+                {/if} 
+                {if $is_contraband}
+                    alert('该订单有违禁品商品，请选择其他快递！');
+                    return false; 
+                {/if} 
+                {if $order.party_id}
+                    if(!check_storage_num())
+                        return false;
+                {/if}
+                {if $user.order_status.4 >= 1} 
+                    //if(!confirm('该用户曾经拒收过{$user.order_status.4}次，要确认订单吗？'))
+                   //     return false; 
+                {/if}
+                {if $order.shipping_id == 86} 
+                    if(!confirm('该订单的配送方式是【内部员工自提】，还要继续确认订单吗？\n\n如果点确认， 下一步必须填写备注信息。')) 
+                        return false; 
+                {/if} 
+                {if ($exchangeOrderPayStatus.is_cod == 'Y')}
+                    if(!confirm('{$exchangeOrderPayStatus.msg}'))
+                        return false;
+                {/if} 
+                {if $order.province == 0 || $order.city == 0 }
+                    if(!confirm('收货地址的省或者城市为空，要确认订单吗？{$order.city}'))
+                        return false;
+                {/if} 
+                {if $blackinfo.is_in_blacklist} 
+                    if(!confirm('该订单在黑名单之中，要确认订单吗？'))
+                        return false; 
+                {/if}
+
+                {if $order_attributes.TAOBAO_ITEM_MEAL_NAME} 
+                    if(!confirm('该订单需手动添加配件，要确认订单吗？\n {$order_attributes.TAOBAO_ITEM_MEAL_NAME|replace:":":";\\n "}')) 
+                        {literal}{ location.href='#goodsTable';return false;}{/literal} 
+                {/if} 
+                {if $change_facility}
+                     if(!confirm('最优快递仓库与所选仓库不一致，请先手动修改仓库和快递方式\n'))
+                        return false;
+                {/if}
+                {if !$refund_status}
+                     if(!confirm('该订单发起退款申请?\n1、强制确认请点 确认\n2否则请点 取消'))
+                        return false;
+                {/if}
+                orderStatusFn(1,{$order.shortage_status},'edit_order_status', '确认订单');
+                
+                return false;" >
+            确认订单</a>
+            {elseif $order.order_status == 11}
+            	<font style="color:red">外包发货，不需要处理</font>
+            {/if}
+            
+            {*
+            {if $order.shipping_status == 0 && $order.goods_status == 21 && $order.order_status == 1 && $order.shortage_status == 0}
+            <a href="#" onclick="orderStatusFn({$order.order_status}, 2, 'edit_shortage_status');return false;">暂缺货，需等待</a>
+            {/if}
+            {if $order.shipping_status == 0 && $order.order_status == 1 && $order.shortage_status == 3}
+            <a href="#" onclick="orderStatusFn({$order.order_status}, 5, 'edit_shortage_status');return false;">到货确认</a>
+            {/if}
+            *}
+            
+            <!--取消已配货，待出库状态下取消订单的操作-->
+            {if ($order.shipping_status == 12 || $order.shipping_status == 0 || $order.shipping_status == 8 || $order.shipping_status == 10 ) && ($order.order_status == 1 || $order.order_status == 0)}
+            <a href="#" onclick="orderStatusFn(2, 0,'edit_order_status', '取消订单');return false;">取消订单</a>
+            {/if}
+            
+            {if $order.shipping_status == 1 || $order.shipping_status == 4 || $order.shipping_status == 5 || $order.shipping_status == 7}
+            <a href="#" onclick="orderStatusFn(1,0,'edit_shipping_status', '确认收货');document.getElementById('shippingStatus').value=2;return false;">确认收货</a>
+            <a href="#" onclick="orderStatusFn(4,0,'edit_order_status', '拒收');document.getElementById('shippingStatus').value=3;return false;">拒收</a>
+            
+            {/if}
+            
+            {if $order.shipping_status == 2 && $user_can_change_shipping_status_refuse }
+            <a href="#" onclick="orderStatusFn(4,0,'edit_order_status', '拒收');document.getElementById('shippingStatus').value=3;return false;">改成拒收</a>
+            {/if}        
+          
+          {if $refund_apply_enabled} {* 允许退款申请 *}
+          <a href="refund_apply.php?order_id={$order.order_id}" target="_blank">退款申请</a>
+          {/if}
+            
+            {if $order.order_status == 2}                
+                {if $user_can_recover_order}
+                <a href="#" onclick="orderStatusFn(0,0,'edit_order_status', '恢复订单');return false;">恢复订单</a>
+                {elseif "kf_order_recover"|check_admin_priv}
+                <a href="#" onclick="orderStatusFn(0,0,'edit_order_status', '强制恢复订单');return false;">强制恢复订单</a>
+                {else}
+                无法恢复订单
+                {/if}
+            {/if}
+            
+            <a href="#" onclick="orderStatusFn({$order.order_status},{$order.shortage_status},'edit_order_action', '添加备注');return false;">添加备注</a>
+            <a href="#" onclick="document.getElementById('changeId').style.display = document.getElementById('changeId').style.display == 'none' ? '':'none';">转移订单</a>
+            </span>
+            订单号：<span style="font-weight:bold;color:#666;">{$order.order_sn} ({$order.party_name})
+           
+            </span>
+            {if $order.special_type_id eq 'PRESELL'}
+                <font color="Red" size="2">预售订单
+                    {if $order.is_display eq 'N'}，未正式起售，请客服注意不要误操作{/if}
+                </font>
+                {if 0 && $order.is_display eq 'N'}
+                <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;filter:alpha(opacity=0);"></iframe>
+                {/if}
+            {/if}
+            
+        </h2>
+  
+    <form action="order_edit_action.php" method="post" style="display:none;margin-top:5px;" id="order_status_action" onsubmit="return ordershipment_staff_takebyself()"> 
+      <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+        <table class="none">
+        <tr valign="top">
+            <td colspan="4" id="order_status_action_header" align="center" >
+            </td>
+        </tr>
+        <tr>
+            <td style="width:60px;">
+                添加备注：
+            </td>    
+            <td>
+                <textarea style="font-size:12px;width:97%;height:45px;height:50px;"  name="actionNote" id="action_note_id"></textarea>
+            </td>
+        </tr>
+        <tr id="order_action_type" style="display:none;">
+        <td>重要备注：</td>
+        <td>
+            <input type="checkbox" name="is_shipping_note" value="1" /> 
+            {if $pick_list_status == 'printed'}<span style="color:green;font-weight:bold;">发货单已打印，请当面沟通</span>{/if}
+        </td>
+        </tr>
+        <tr>
+            <td>处理时间：</td>
+            <td><input name="handle_time" id="handle_time_calendar" value="{if $order.handle_time > 0}{$order.handle_time|date_format:"%Y-%m-%d"}{/if}" style="width: 80px"><input type="button" value="..." id="handle_time_trigger"></td>
+        </tr>
+        <tr style="margin-bottom:10px;">
+        <td></td>
+        <td align="center" style="padding:5px 0 10px 0;">
+        {if $order.shipping_status == 2 && "agree_userconfirm_to_back"|check_admin_priv}<input type="submit" onclick="document.getElementById('action_note_id').value='同意改成拒收'" value="同意改成拒收" style="margin-right:15px;"/>    {/if}
+            <input type="submit" value="提交" style="margin-right:15px;"/>    
+            <input type="button" onclick="document.getElementById('order_status_action').style.display='none';document.getElementById('shippingStatus').value={$order.shipping_status};document.getElementById('orderStatus').value={$order.order_status}" value="取消" />            
+            <input type="hidden" name="order_id" value="{$order.order_id}" />
+            <input type="hidden" name="order_status" value="{$order.order_status}" id="orderStatus"/>
+            <input type="hidden" name="shipping_status" value="{$order.shipping_status}" id="shippingStatus">
+            <input type="hidden" name="shortage_status" value="{$order.shortage_status}" id="shortageStatus">
+            <input type="hidden" name="shipping_id" value="{$order.shipping_id}" id="shippingId"/>
+            <input type="hidden" name="action" value="edit_order_action" id="order_action"/>
+            <input type="hidden" name="back" value="{$back}" />
+        </td>
+        </tr>
+        </table>
+    </form>
+     <div id="changeId" style="display:none;">
+        <input type="text" id="userId" /><input type="button" value="搜索用户名" onclick="searchUserId('{$order.order_id}');"/>
+        <div id="searchId">
+           请输入用户名进行搜索
+        </div>
+    </div>      
+            
+    <table style="text-align:left;">
+        <tr>
+            <td style="width:300px;">用户下单时间：{$order.order_time}
+            </td>
+            <td style="width:33%;">{if $order.confirm_time}客服确认时间：{$order.confirm_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}
+            客户要求：<font color="Red">{if $order.is_shortage_await eq 'NO'}48小时无货取消{else}48小时无货再等3天{/if}</font>
+            
+    {* 排除水龙头 *}
+    {if $auto_confirm_order_display == 'YES'}
+        <div id="auto_confirm_order_div" style="border: 1px dotted red; font-size: 12px;">
+        {if $auto_confirm_order}
+        <button id="auto_confirm_order_button" onclick="if (confirm('可以自动确认订单，确定此操作吗？'))location.href='{$smarty.server.REQUEST_URI}&auto_confirm_order=1'" 
+        	style="color: red; font-weight: green;">可以自动确认订单</button>
+        {else}
+        <button id="auto_confirm_order_button" onclick="alert('不能自动确认订单，条件不满足')" 
+        	style="color: red; font-weight: red;">不能自动确认订单</button>
+        {/if}
+        <p>
+        {$auto_confirm_order_info}
+        </p>
+        </div>
+    {/if}
+        
+            </td>    
+            <td>
+            {if $order.pay_time > 0}{if $order.pay_name == '货到付款'}到帐时间：{$order.pay_time|date_format:"%Y-%m-%d %H:%M:%S"}{else}付款时间：{$order.pay_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}{/if}
+            </td>
+        </tr>
+    
+        {if $order.shipping_time > 0 || $user_confirm_time}
+        <tr>
+            <td>{if $order.shipping_time > 0}物流发货时间：{$order.shipping_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</td>        
+            <td>{if $user_confirm_time}用户确认收货时间：{$user_confirm_time}{/if}</td>
+            <td></td>
+        </tr>
+        {/if}
+    
+        <tr>
+            <td>送货方式：
+            {if $shipping_exist == true}            
+            <a href="{$order.web_site}" target="_blank">
+            {$get_shippings[$order.shipping_id].shipping_name}
+            </a>
+            {else}
+            {$order.shipping_name}
+            {/if}
+            </td>
+            <td>
+                {foreach from=""|getPayments item=payment key=pay_id}
+                {if $order.pay_id == $pay_id}
+                支付方式：{$payment.pay_name}
+                {/if}
+                {/foreach}
+            </td>
+            <td>
+                {if $order.bill_no}运单号：{foreach from=$bill_weight item=bill_weight}{$bill_weight}{/foreach} <a id="carrier_info" href="catch_carrier_info.php?bill_no={$order.bill_no}&carrier_id={$order.carrier_id}" onclick="catch_carrier_info_click();">查看快递状态</a>{/if}
+            </td>
+        </tr>
+     
+    <tr>
+    <td>
+    <span>
+      <form id="taobaoForm" action="order_edit_action.php" method="post" style="clear:both;">
+        <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+          <span style="float:left;">外部订单类型: 
+          <select name="outer_type">
+          <option value="-1">无</option>
+          {html_options options=$outer_type_options selected=$order_attributes.OUTER_TYPE}
+          </select>
+          </span>
+          <span style="float:left;">外部订单渠道: 
+          <select name="sub_outer_type">
+          <option value="-1">无</option>
+          {html_options options=$sub_outer_type_options selected=$order_attributes.SUB_OUTER_TYPE}
+          </select>
+          </span>
+          <span style="float:left;">{$outer_type}订单号: <input type="text" name="taobao_order_sn" id="taobaoEditId" size="15" value="{$order.taobao_order_sn}" /></span>
+        <input type="button" id="taobaoEdit" actions='yes'  value="修改" onclick="changeForm('taobaoForm',1);this.style.display='none';E('taobaoUp').style.display = '';return false;" style="float:right;"/>
+        <span style="float:right;display:none;" id="taobaoUp">
+        <input type="submit" actions='yes' value="提交" onclick="if (!check_taobao_sn('{$order.taobao_order_sn}',E('taobaoEditId').value,'{$outer_type}')) return false;return confirm('确定修改{$outer_type}订单号吗？');" />
+        <input type="button" actions='yes' value="取消" onclick="changeForm('taobaoForm',0); E('taobaoEdit').style.display = '';E('taobaoUp').style.display = 'none'; E('taobaoForm').reset();return false;"/>
+        <input type="hidden" name="order_id" value="{$order.order_id}" />
+        <input type="hidden" name="action" value="edit_taobao_order_sn" />
+        <input type="hidden" name="back" value="{$back}" />
+        </span>
+      </form>
+    </span>
+    {if $order_attributes.TAOBAO_USER_ID}
+    <span style="clear:both;float:left;" >
+      {$outer_type}订单用户id：{$order_attributes.TAOBAO_USER_ID}
+    </span>
+    {/if}
+    
+    <form id="pointFeeForm" action="order_edit_action.php" method="post" style="clear:both;">
+      <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+        <span style="clear:both;float:left;" >
+      {$outer_type}使用积分：
+        <input type="text" name="outer_point_fee" size="14" value="{$order_attributes.TAOBAO_POINT_FEE}" />
+        </span>
+        <input type="button" id="pointFeeEdit" actions='yes'  value="修改" onclick="changeForm('pointFeeForm',1);this.style.display='none';E('pointFeeUp').style.display = '';return false;" style="float:right;" align="right"/><br />
+        <span style="float:right;display:none;" id="pointFeeUp">
+        <input type="submit" actions='yes' value="提交" onclick="return confirm('确定修改使用积分吗？');" />
+        <input type="button" actions='yes' value="取消" onclick="changeForm('pointFeeForm',0); E('pointFeeEdit').style.display = '';E('pointFeeUp').style.display = 'none'; E('pointFeeForm').reset();return false;"/>
+        <input type="hidden" name="order_id" value="{$order.order_id}" />
+        <input type="hidden" name="action" value="edit_outer_point_fee" />
+        <input type="hidden" name="back" value="{$back}" />
+        </span>
+        {if $order.distributor_name!= ''}
+        <span style="clear:both;float:left;">分销商：{$order.distributor_name}</span>
+        {/if}
+    </form>
+    
+      </td>
+      <td>
+      <form id="feedbackPersonForm" action="order_edit_action.php" method="post" style="clear:both;"> 
+        <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+        <span style="float:left;">回访人员:
+        <input type="text" name="feedback_person" size="8" value="{$order_attributes.FEEDBACK_PERSON}" onclick="this.select();" ondblclick="this.value='{$smarty.session.admin_name}'" /></span>
+        <input type="button" id="feedbackPersonEdit" actions='yes'  value="修改" onclick="changeForm('feedbackPersonForm',1);this.style.display='none';E('feedbackPersonUp').style.display = '';return false;" style="float:right;"/>
+        <span style="float:right;display:none;" id="feedbackPersonUp">
+        <input type="submit" actions='yes' value="提交" onclick="return confirm('确定修改回访人员吗？');" />
+        <input type="button" actions='yes' value="取消" onclick="changeForm('feedbackPersonForm',0); E('feedbackPersonEdit').style.display = '';E('feedbackPersonUp').style.display = 'none'; E('feedbackPersonForm').reset();return false;"/>
+        <input type="hidden" name="order_id" value="{$order.order_id}" />
+        <input type="hidden" name="action" value="edit_feedback_person" />
+        <input type="hidden" name="back" value="{$back}" />
+        </span>
+      </form>
+      {if $order_attributes.FEEDBACK_TIME}
+      <span style="clear:both;float:left;" >
+      回访时间：{$order_attributes.FEEDBACK_TIME}
+      </span>
+      {/if}
+        <form id="salespersonForm" action="order_edit_action.php" method="post" style="clear:both;"> 
+        <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+        <span style="float:left;">销售人员:
+        <input type="text" name="salesperson" size="8" value="{$order_attributes.SALESPERSON}" onclick="this.select();" ondblclick="this.value='{$smarty.session.admin_name}'" /></span>
+        <input type="button" id="salespersonEdit" actions='yes'  value="修改" onclick="changeForm('salespersonForm',1);this.style.display='none';E('salespersonUp').style.display = '';return false;" style="float:right;"/>
+        <span style="float:right;display:none;" id="salespersonUp">
+        <input type="submit" actions='yes' value="提交" onclick="return confirm('确定修改销售人员吗？');" />
+        <input type="button" actions='yes' value="取消" onclick="changeForm('salespersonForm',0); E('salespersonEdit').style.display = '';E('salespersonUp').style.display = 'none'; E('salespersonForm').reset();return false;"/>
+        <input type="hidden" name="order_id" value="{$order.order_id}" />
+        <input type="hidden" name="action" value="edit_salesperson" />
+        <input type="hidden" name="back" value="{$back}" />
+        </span>
+        </form>
+      </td>
+      <td>
+      {$order.consignee}<br/>
+      {$order.address}<br/>
+      {if $order_attributes.district_text|default:$order.district_name != ''}
+      {$order_attributes.district_text|default:$order.district_name},
+      {/if}
+      {if $order_attributes.city_text|default:$order.city_name != ''}
+      {$order_attributes.city_text|default:$order.city_name},
+      {/if}
+      {if $order_attributes.province_text|default:$order.province_name != ''}
+      {$order_attributes.province_text|default:$order.province_name},
+      {/if}
+      {$order.zipcode}<br/>
+      {$order.country_name|default:$order_attributes.country_text}<br/>
+      Phone: {$order.tel}
+      </td>
+    </tr>
+
+    </table>    
+    
+ </div>
+ 
+<div class="ddan_item"  style="border-top:1px solid #C1CAD7;">
+    <table style="text-align:left;width:100%">
+        <tr>
+            <td width="20%">
+                 合并发货的订单：
+                {foreach from=$merge_shipment_orders item=merge_shipment_order}
+                    <a href="{$WEB_ROOT}admin/order_edit.php?order_id={$merge_shipment_order.order_id}" target="_blank">{$merge_shipment_order.order_sn}</a>
+                {foreachelse}
+                    {if $merge_shipment_avaiable}没有合并发货的订单{else}{$merge_shipment_message}{/if}
+                {/foreach}
+                
+                {if $split_shipment_avaiable}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <form action="order_edit_action.php" method="post" style="display:inline">
+                    <input type="submit" actions='yes' value="拆分" onclick="return confirm('确定拆分发货吗？');" />
+                    <input type="hidden" name="order_id" value="{$order.order_id}" />
+                    <input type="hidden" name="action" value="split_shipment" />
+                    <input type="hidden" name="back" value="{$back}" />
+                </form>
+                {/if}
+                
+              <br />
+              
+              <form id="mergeShipmentForm" action="order_edit_action.php" method="post" style="clear:both;"> 
+                <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+                <span style="float:left;">添加要合并发货的订单号:
+                    <select name="merge_shipment_external_type">
+                        <option value="taobao">淘宝订单号</option>
+                        <option value="internal">ERP订单号</option>
+                    </select>
+                    <input type="text" name="merge_shipment_order_sn" size="20" onclick="this.select();" />
+                </span>
+                <input type="button" id="mergeShipmentEdit" actions='yes'  value="添加" onclick="changeForm('mergeShipmentForm',1);this.style.display='none';E('mergeShipmentUp').style.display = '';return false;" style="float:right;"/>
+                <span style="float:right;display:none;" id="mergeShipmentUp">
+                <input type="submit" actions='yes' value="提交" onclick="return confirm('确定合并发货吗？');" />
+                <input type="button" actions='yes' value="取消" onclick="changeForm('mergeShipmentForm',0); E('mergeShipmentEdit').style.display = '';E('mergeShipmentUp').style.display = 'none'; E('mergeShipmentForm').reset();return false;"/>
+                <input type="hidden" name="order_id" value="{$order.order_id}" />
+                <input type="hidden" name="action" value="merge_shipment" />
+                <input type="hidden" name="back" value="{$back}" />
+                </span>
+              </form>
+            </td>
+        </tr>
+    </table>    
+</div>
+
+<!--{if $order_refer_bonus}--> {* 订单关联的红包情况 *}
+<div class="ddan_item"  style="border-top:1px solid #C1CAD7;">
+    <table style="text-align:left;">
+        <tr align="center">
+            <td rowspan="{math equation="x + 1" x=$order_refer_bonus|@count}">由该订单产生的红包</td>
+      <td>红包编号</td>
+      <td>红包金额</td>
+      <td>红包类型</td>
+      <td>拥有人</td>
+      <td>使用时间</td>
+      <td>使用订单</td>
+        </tr>
+    
+    <!--{foreach from=$order_refer_bonus item=bonus}-->  
+    <tr align="center">
+            <td>{$bonus.gt_code}</td>
+            <td>{$bonus.gtc_value}</td>
+      <td>{$bonus.gtc_type_name}</td>
+      <td>{$bonus.info.user_name}</td>
+      <td>{if $bonus.gt_state == 1}已禁用{elseif $bonus.info.used_time == 0}未使用{else}{$bonus.info.used_time|date_format:"%Y-%m-%d %H:%M:%S"}{/if}</td>
+      <td>{$bonus.info.order_sn}</td>
+    </tr>
+    <!--{/foreach}-->
+    
+    </table>    
+</div>
+<!--{/if}-->
+
+ 
+<div class="ddan_item">
+    <h2 style="clear:both">客户信息</h2>
+    <form action="order_edit_action.php" method="post" id="form1">
+      <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+      <input type="hidden" name="action" value = "edit_order" />
+    <table cellpadding="0" cellspacing="0" style="margin-top:0;margin-bottom:0;text-align:left;" id="infoTable">
+    {if $blackinfo.is_in_blacklist}<tr><td colspan="3" style="color:red;font-weight:bold;font-size:14px;">该订单属于黑名单列表中，黑名单信息为 {$blackinfo.blacklist_tips} </td></tr> {/if}
+        <tr>
+            <td style="width:300px;">
+                用户名：{$user.user_name}
+            </td>
+            <td>
+                客户姓名：<input type="text" style="width:60px" name="consignee" value="{$order.consignee}" />
+                <select name="sex">
+                {html_options options=$sex_mapping selected=$order.sex}
+                </select>
+            </td>
+            <td>
+                {if check_admin_priv('check_user_tel')}
+                手机：<input type="text" style="width:100px" name="mobile" id="mobile" value="{$order.mobile}" />
+                {if $order_mask.mobile}<br />面单手机号：{$order_mask.mobile}{/if}
+                {else}
+                手机：权限限制
+                {/if}
+            </td>
+        <tr>
+            <td>
+                {if check_admin_priv('check_user_email')}
+                电子邮件：<input type="text" style="width:200px" name="email" value="{$order.email}" />
+                {else}
+                电子邮件：权限限制
+                {/if}
+            </td>
+            <td>
+                邮编：<input type="text" style="width:60px" name="zipcode" value="{$order.zipcode}" />
+            </td> 
+            <td>
+                            {if check_admin_priv('check_user_tel')}
+              电话：
+              {if $order.tels or $order.tel eq ''}
+              <input type="text" style="width:40px" name="tel0" id="tel0" value="{$order.tels.0}" />-
+              <input type="text" style="width:80px" name="tel1" id="tel1" value="{$order.tels.1}" />-
+              <input type="text" style="width:40px" name="tel2" id="tel2" value="{$order.tels.2}" />
+              {else}
+              <input type="text" style="width:100px" name="tel" value="{$order.tel}" />
+              {/if}
+              {if $order_mask.tel}<br />面单电话号：{$order_mask.tel}{/if}
+                            {else}
+              电话：权限限制
+              {/if}
+             </td>
+    </tr>
+    <tr>      
+        <td colspan="3">
+        
+        {if check_admin_priv('check_user_address') || $user_can_edit_shipping_order_address}
+                      客户地址：
+        <select name="country" id="country" onchange="region.changed(this, 1, 'province')">
+        {html_options options=$country_list selected=$order.country}
+        </select>
+        &nbsp;&nbsp;
+        
+        {if $order_attributes.province_text}
+        <input type="text" name="province_text" value="{$order_attributes.province_text}" />
+        {else}
+        <select name="province" id="province" onchange="region.changed(this, 2, 'city')" >
+        <option value="0"></option>
+        <!-- {foreach from=$province_list item=province} -->
+        <option value="{$province.region_id}" {if $order.province eq $province.region_id}selected{/if}>{$province.region_name}</option>
+        <!-- {/foreach} -->
+        </select>
+        {/if}
+        &nbsp;&nbsp;
+        
+        {if $order_attributes.province_text || $order_attributes.city_text}
+        <input type="text" name="city_text" value="{$order_attributes.city_text}" />
+        {else}
+        <select name="city" id="city"  onchange="region.changed(this, 3, 'district')">
+        <option value="0"></option>
+        <!-- {foreach from=$city_list item=city} -->
+        <option value="{$city.region_id}" {if $order.city eq $city.region_id}selected{/if}>{$city.region_name}</option>
+        <!-- {/foreach} -->
+        </select>
+        {/if}
+        &nbsp;&nbsp;
+        
+        {if $order_attributes.province_text || $order_attributes.city_text || $order_attributes.district_text}
+        <input type="text" name="district_text" value="{$order_attributes.district_text}" />
+        {else}
+        <select name="district" id="district" class="input" {if $order.district == 0} style="display:none"{/if}>
+        <option value="0"></option>
+        <!-- {foreach from=$district_list item=district} -->
+        <option value="{$district.region_id}" {if $order.district eq $district.region_id}selected{/if}>{$district.region_name}</option>
+        <!-- {/foreach} -->
+        </select>
+        {/if}
+        
+        <input type="text" style="width:488px" name="address" value="{$order.address}" />
+
+        <span style="color: red" title="淘宝订单地址">
+            {if $order.pay_id == 65}<br/>淘宝订单地区： {$order.province_name} {$order.city_name} {$order.district_name}(发货单打淘宝地址){/if}
+            {if $order_attributes.TAOBAO_ERROR_ADDRESS}<br />地址匹配有误，原地址为：{$order_attributes.TAOBAO_ERROR_ADDRESS}{/if}
+        </span>
+        {else}
+        客户地址：权限限制
+        {/if}
+        </td>
+    </tr>    
+    <tr>
+        <td colspan="3">到达情况：
+        {if $arrived == 'ALL'}
+        <font color=red>全境到达</font>
+        {elseif $arrived == 'PARTLY'}
+        <font color=red>部分可达</font>&nbsp;&nbsp;请转到 <a href="{$order.web_site}" target="_blank">{$order.shipping_name}</a> 进行查询
+        {else}
+        <font color=red>不可达(请注意：这个结果不应该出现。)</font>
+        {/if}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">快递公司费用参照：<br><br>
+        {if $shipping_cost_list}
+         {foreach from=$shipping_cost_list item=shipping_cost }
+        <div style="float:left;">实际支付快递费：</div>
+           <div style="float:left;">{$shipping_cost.shipping_cost}元</div><br>
+           <div style="float:left;">快递单号：{$shipping_cost.tracking_number}</div><br><br>
+            {/foreach}
+           {/if}
+        <div style="float:left;">预估快递包裹重量（含耗材）：</div>
+           <div style="float:left;">{$goods_forcast_weight}g</div><br><br>
+           <div style="float:left;">预估耗材重量：</div>
+           <div style="float:left;">{$package_weight}g（以该耗材重量为准）</div><br>
+           {if $attr_package_weight}
+           <div style = "float:left;">同步时计算的耗材重量为：</div>
+           <div style="float:left;">{$attr_package_weight}g</div><br>
+           {/if}
+          {foreach from=$shippingFeeInfo item=shippingFee }
+           <br />
+           <div style="float:left;margin-left:00px;width:250px; ">{$shippingFee.facility_name}</div>
+           <div style="float:left;width:140px; ">{$shippingFee.shipping_name}</div>
+           <div style="float:left;width:160px;">预算快递费：{$shippingFee.shipping_fee}</div>
+           <div style="float:left;width:50px;"><font color=red>{$shippingFee.arrived}</font></div>
+           <input type="button" {if !$can_edit_order}disabled="true"{/if} style="float:left;width:80px;{if $shippingFee.facility_id!=$order.facility_id}color:blue{/if};" id="{$shippingFee.shipping_id}" name="{$shippingFee.shipping_id}" value="{$shippingFee.shipping_name}" onclick="javascript:shipping_select_click({$shippingFee.shipping_id},{$shippingFee.facility_id});" actions='yes' />        
+          {/foreach}
+          
+          <div style="float:left;">
+          <br />
+           <div style="float:left;"><font color=red>展示快递(非最优快递，仅供参考价格):</font></div>
+          <br />
+           {foreach from=$shippingFeeShowInfo item=shippingFeeShow }
+           <br />
+           <div style="float:left;margin-left:00px;width:250px; ">{$shippingFeeShow.facility_name}</div>
+           <div style="float:left;width:140px; ">{$shippingFeeShow.shipping_name}</div>
+           <div style="float:left;width:160px;">预算快递费：{$shippingFeeShow.shipping_fee}</div>
+           <div style="float:left;width:50px;"><font color=red>{$shippingFeeShow.arrived}</font></div>
+          {/foreach}
+          </div><br>
+          
+        </td>
+    </tr>
+  {if $order.midway_address}
+    <tr>
+        <td colspan="3">中转地址：{$order.midway_address}</td>
+    </tr>
+  {/if}
+    <tr>
+        <td style="line-height:170%;" colspan="3">
+        发票抬头：<input type="text" style="width:250px" id="inv_payee" name="inv_payee" value="{$order.inv_payee}" />&nbsp;&nbsp;
+      <input type="button" value="修改抬头" id="inv_payee_modify" name="inv_payee_modify" onclick="javascript:inv_payee_modify_click();"/>
+      <input type="button" value="确定" id="inv_payee_ok" name="inv_payee_ok" style="display:none;" onclick="javascript:inv_payee_ok_click();"/>
+      <input type="button" value="取消" id="inv_payee_cancle" name="inv_payee_cancle" style="display:none;" onclick="javascript:inv_payee_cancle_click();"/>
+      <input type="hidden" value="{$order.inv_payee}" name="hidden_inv_payee" id="hidden_inv_payee"/> 
+      <input type="hidden" value="{$order.order_id}" name="hidden_inv_order_id" id="hidden_inv_order_id"/> &nbsp;&nbsp;
+        需要增值税发票：
+        {if $order.vat_invoice.invoice_id}<span style="color:red;font-weight:bold;">是</span>
+        {else}否
+        {/if}
+        
+        <a href="#" onclick="E('modify_vat_invoice').style.left = this.offsetLeft + 'px';E('modify_vat_invoice').style.top = '250px'; E('modify_vat_invoice').style.display = '';return false;">
+        详细信息
+        </a>
+        
+        {if $order.inv_phone}
+        <br />
+        发票电话：<input type="text" style="width:80px" name="inv_phone" value="{$order.inv_phone}" />        
+        {/if}        
+        {if $order.inv_zipcode}
+        <br />
+        发票邮编：<input  type="text" style="width:80px" name="inv_zipcode" value="{$order.inv_zipcode}" />
+        {/if}        
+        {if $order.inv_address}
+        <br />
+        发票地址：<input  type="text" style="width:300px" name="inv_address" value="{$order.inv_address}" />
+        {/if}
+
+        {foreach from=$goods_list item=goodsList name=goodsListName}
+            {if $smarty.foreach.goodsListName.first}
+                {if $goodsList.shipping_invoice_carrier_id !=0}
+                        <p>
+                    <!--{foreach from=$carriers item=carrier}-->
+                        {if $carrier.carrier_id == $goodsList.shipping_invoice_carrier_id}补寄快递方式：{$carrier.name}{/if}
+                    <!--{/foreach} -->    
+                        补寄运单号：{$goodsList.shipping_invoice_bill_no}
+                         </p>       
+                {/if}
+             {/if}   
+        {/foreach}
+                
+        {* 如果是鞋子业务的订单，显示是否打印发票 *}
+        {if $order.party_id == $smarty.const.PARTY_OUKU_SHOES}
+        &nbsp;&nbsp; 是否打印发票： {if $order.need_invoice == 'Y'}是{else}否{/if}
+        {/if}
+        
+        </td>
+    </tr>
+    {if $order.postscript}
+    <tr>
+        <td colspan="3" style='color:red;'>客户留言：{$order.postscript}</td>
+    </tr>
+    {/if}
+    {if $order_attributes.TAOBAO_SELLER_MEMO}
+    <tr>
+        <td colspan="3" style='color:red;'>小二备注：{$order_attributes.TAOBAO_SELLER_MEMO}</td>
+    </tr>
+    {/if}
+    {if $order_attributes.TAOBAO_ITEM_MEAL_NAME}
+    <tr>
+        <td colspan="3" style='color:red;'>淘宝套餐：{$order_attributes.TAOBAO_ITEM_MEAL_NAME}</td>
+    </tr>
+    {/if}
+    <tr>
+        <td colspan="3">
+        <input type="button" id="infoEdit" actions='yes' {if !$can_edit_order && !$user_can_edit_shipping_order_address}disabled="true"{/if}  value="修改客户信息" onclick="changeForm('infoTable',1);this.style.display='none';E('infoUp').style.display = '';return false;" style="float:right;"/>
+        <span style="float:right;display:none;" id="infoUp">
+        <input type="submit" actions='yes' value="提交修改信息" onclick="if (!check_mobile()) return false;return confirm('{if $order_attributes.OUTER_TYPE}年关了，请千万注意修改他人订单地址的骗子！{/if}确定修改吗？');" />
+        <input type="button" actions='yes' value="取消修改信息" onclick="changeForm('infoTable',0);E('infoEdit').style.display = '';E('infoUp').style.display = 'none';E('form1').reset();return false;"/>
+        </span>
+        </td>
+    </tr>
+    </table>
+    <input type="hidden" name="order_id" value="{$order.order_id}" />
+    <input type="hidden" name="back" value="{$back}" />
+</form>
+
+
+        <form action="order_edit_action.php" method="post" id="form2" onsubmit="return check_shipping_time_interval()">
+          <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+        <p id="payShippingInfo" style="border:1px solid #c1dad7;padding:10px;">
+                <input type="button" {if !$can_edit_order}disabled="true"{/if}  value="修改配送支付" onclick="changeForm('payShippingInfo',1);this.style.display='none';E('paychangeId').style.display = ''; {if $order.pay_status == 2} E('pay_id_0').disabled=true{else}E('pay_id_0').disabled=false{/if};alert('请先点击配送方式，确定配送方式正确！');return false;" actions='yes'  style="float:right;" id="editshipping"/>
+        <span id="paychangeId" style="display:none;float:right;">
+            <input type="submit" value="提交修改信息" onclick="return confirm('确定修改支付配送方式吗？');" actions='yes' />
+            <input type="button" value="取消修改" onclick="changeForm('payShippingInfo',0);E('paychangeId').style.display='none';E('editshipping').style.display = '';E('form2').reset();return false;" actions='yes'/>
+        </span>
+
+        配送方式：
+        {if $shipping_exist == true}
+        <select name="shipping_id" id="shipping_id_0" onchange="change_shipping(this)" >
+                    <optgroup label="款到发货">
+                    {foreach from=$get_shippings item=shipping key=shipping_id}
+                    {if $shipping.support_no_cod == 1 && $shipping.support_cod == 0}
+                        <option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $order.shipping_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    {/if}
+                    {/foreach}
+                    </optgroup>
+          
+                    <optgroup label="货到付款">
+          {foreach from=$get_shippings item=shipping key=shipping_id}
+                    {if $shipping.support_no_cod == 0 && $shipping.support_cod == 1}
+                        <option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $order.shipping_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    {/if}
+                    {/foreach}
+                    </optgroup>    
+          
+                    <optgroup label="上门自提">
+                    {foreach from=$get_shippings item=shipping key=shipping_id}
+                    {if $shipping.support_no_cod == 1 && $shipping.support_cod == 1}
+              <option value="{$shipping_id}" support_cod="{$shipping.support_cod}" support_no_cod="{$shipping.support_no_cod}" {if $order.shipping_id == $shipping_id}selected{/if}>{$shipping.shipping_name}</option>
+                    {/if}
+          {/foreach}
+                    </optgroup>                                                
+             </select>
+             {else}
+                 <span style="padding-right:25px;">{$order.shipping_name} (已挂起) </span>
+             {/if}
+      
+          &nbsp;&nbsp;&nbsp;&nbsp;
+        支付方式：
+        {if $payment_exist == true}
+          <select name="pay_id" id="pay_id_0">
+            <optgroup label="第三方支付">
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=400 && $payment.pay_order < 500}
+              <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}
+            </optgroup>
+            
+            <optgroup label="网银支付">
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=100 && $payment.pay_order < 200}
+              <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}
+            </optgroup>    
+                                
+            <optgroup label="货到付款">
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=200 && $payment.pay_order < 300}
+                            <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}            
+            </optgroup>
+            
+            <optgroup label="转账/汇款">
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=300 && $payment.pay_order < 400}
+                            <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}            
+            </optgroup>
+            
+            <optgroup label="信用卡支付">
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=500 && $payment.pay_order < 600}
+              <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}
+            </optgroup>
+            
+            <optgroup label="内部购机"> {* 内部购机， 前台不显示 add by yxiang@oukoo.com 20090707 *}
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=600 && $payment.pay_order < 700}
+              <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}
+            </optgroup>
+            
+            <optgroup label="海外支付">
+            {foreach from=""|getPayments item=payment key=pay_id}
+            {if $payment.pay_order >=700 && $payment.pay_order < 800}
+              <option value="{$pay_id}" {if $order.pay_id == $pay_id}selected{/if}>{$payment.pay_name}</option>
+            {/if}
+            {/foreach}
+            </optgroup>
+          </select>
+          {if $order.pay_status == 2}
+          <input type="hidden" name="pay_id" value="{$order.pay_id}" />
+          {/if}
+        {else}
+               <span style="padding-right:25px;">{$order.pay_name} (已挂起) </span>
+        {/if}
+        <br />
+        <br />
+        基本运费：<input  type="text" name="shipping_basic_fee" value="{$order.shipping_basic_fee}" style="width:45px;text-align:right" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        手续费：<input  type="text" name="shipping_proxy_fee" value="{$order.shipping_proxy_fee}" style="width:45px;text-align:right" />
+        <input type="hidden" name="order_id" value="{$order.order_id}" />
+                <input type="hidden" name="action" value="edit_shipping" />
+                <input type="hidden" name="back" value="{$back}" />
+                <br />
+        <br />
+        {if $shipping_fee && $order.shipping_fee != $shipping_fee}
+                <span style="color:red; font-weight:bold;">当前配送费用为 {$order.shipping_fee}，系统计算出的配送金额为 {$shipping_fee|string_format:"%01.2f"}，可能是修改商品或修改配送方式引起的，请确定是否需要修改</span>
+        <br />
+        <br />
+                {/if}
+        
+            处理订单时间：<input type="text" name="handle_time" id="handle_time_calendar1" value="{if $order.handle_time > 0}{$order.handle_time|date_format:"%Y-%m-%d"}{/if}" style="width: 80px;"><input type="button" value="..." id="handle_time_trigger1">
+            <span id="shipping_time_interval" {if $order.shipping_id != '49' && $order.shipping_id != '44'}style="display:none"{/if}>
+                
+                配送时间：
+                <select name="start_shipping_time">
+                    <option value="0">无限制</option>
+                    {section name="start_shipping_time" start=9 loop=21}
+                        <option value="{$smarty.section.start_shipping_time.index}" {if $order.start_shipping_time == $smarty.section.start_shipping_time.index}selected{/if}>{$smarty.section.start_shipping_time.index}</option>
+                    {/section}
+                </select>
+                至
+                <select name="end_shipping_time">
+                    <option value="0">无限制</option>
+                    {section name="end_shipping_time" start=9 loop=21}
+                        <option value="{$smarty.section.end_shipping_time.index}" {if $order.end_shipping_time == $smarty.section.end_shipping_time.index}selected{/if}>{$smarty.section.end_shipping_time.index}</option>
+                    {/section}
+                </select>
+            </span>
+            配送仓库：
+            {if $user_can_edit_facility}            
+            <select name="facility_id" id="facility_id" >            
+            {html_options options=$available_facility selected=$order.facility_id }
+            </select>
+            {else}
+            {foreach from=$available_facility item=facility_name key=facility_id}
+            {if $facility_id == $order.facility_id}{$facility_name}{/if}
+            {/foreach}
+            <input id="facility_id" type="hidden" name="facility_id" value="{$order.facility_id}" />
+            {/if}
+            <input type="hidden" name="origin_facility_id" value="{$order.facility_id}" />
+            <input type="hidden" name="user_can_edit_facility" value="{$user_can_edit_facility}" />
+            </p>
+        </form>            
+</div>
+<div class="ddan_item">
+    
+    <form action="order_edit_action.php" method="post" id="form3">
+    <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+    <!--{foreach from=$order.goods_list item=goods name=goodsName}-->
+    {if $smarty.foreach.goodsName.first}
+    <table cellpadding="0" cellspacing="0" id="goodsTable" class="statusTable">
+    <thead>
+    {if $order_attributes.TAOBAO_ITEM_MEAL_NAME}
+    <tr><td colspan="20" style='color:red;font-size:15px;' align="left" >
+        <strong>淘宝套餐：{$order_attributes.TAOBAO_ITEM_MEAL_NAME}</strong>
+    </td></tr>
+    {/if}
+    <tr>
+    <th>商品名称</th><!-- 
+    <th style="width:5%;">移动</th>
+    <th style="width:5%;">非移动</th> -->
+    {foreach from=$order_facility_list key=facility_id item=facility_name}
+    <th>{$facility_name}</th>
+    {/foreach}<!-- 
+    <th>可预订量</th>-->
+    <th style="width:7%;">商品状态</th>
+    <th width="5%">类型</th>
+    <th width="15%">商品串号</th> 
+    <th width="5%">UniqSku</th>
+    <th width="7%">发票号</th>
+    <th style="width:1%;">单价</th>
+    <th style="width:5%;">数量</th>
+    <th>已预订量</th> 
+    <th style="width:7%;">小计</th>
+    <th style="width:15%;">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+{/if}
+
+    <tr id="goods_{$goods.rec_id}" {if $smarty.foreach.goodsName.iteration%2 == 0}class="even"{/if}>
+        <td id="goods_name" style="text-align:left;padding-left:10px;{if $goods.parent_id != 0}padding-left:20px;{/if}">
+            {if $goods.parent_id != 0}<span style="color:#999;">|__</span>{/if}
+            {if $order.party_id == '65545'}
+            <a href="http://www.jjshouse.com/erp-g{$goods.jjshouse_goods_id}" target="_blank" >{$goods.goods_name}</a>
+            {elseif $order.party_id == '65554' || $order.party_id == '65570'}
+            <a href="http://www.amormoda.com/erp-g{$goods.jjshouse_goods_id}" target="_blank" >{$goods.goods_name}</a>
+            {elseif $order.party_id == '65560'}
+            <a href="http://www.faucetland.com/erp-g{$goods.jjshouse_goods_id}" target="_blank" >{$goods.goods_name}</a>
+            {elseif $order.party_id == '65564'}
+            <a href="http://www.jenjenhouse.com/erp-g{$goods.jjshouse_goods_id}" target="_blank" >{$goods.goods_name}</a>
+            {elseif $order.party_id == '65567'}
+            <a href="http://www.jennyjoseph.com/erp-g{$goods.jjshouse_goods_id}" target="_blank" >{$goods.goods_name}</a>
+            {else}
+            {$goods.goods_name}
+            {/if}
+            <p style="padding-left:0;">
+            {if $goods.parent_id == 0}
+                <input type="hidden" id="goods_id-{$goods.rec_id}" value="{$goods.goods_id}" />
+                <input type="button" value="搜索套餐" actions='yes' {if $is_rma_exchange }disabled="true"{/if} onclick="searchFitting('{$goods.rec_id}')" />
+            {/if}
+            </p>
+                <div id="fitting-{$goods.rec_id}" style="text-align:left;">
+                   
+                </div>
+                <p id="add-{$goods.rec_id}" style="display:none;margin:0;padding:0;">
+                <input type="submit" actions="yes" {if !$can_edit_order}disabled="true"{/if}  value="增加套餐商品" onclick="E('action-{$order.order_id}').value='edit_order_goods';E('id-{$order.order_id}').value='{$goods.rec_id}';" />
+                <input type="button" style="margin-left:20px;" actions="yes" value="取消选择套餐" onclick="E('fitting-{$goods.rec_id}').style.display = 'none';E('add-{$goods.rec_id}').style.display='none';E('form3').reset();" />
+                </p>
+                <p style="margin-top:10px;padding-left:0;">
+                <input type="hidden" id="is_rma_exchange" value="{$is_rma_exchange}" />
+                <input type="hidden" id="pre_goods_price-{$goods.rec_id}" value="{$goods.goods_price}" />
+                {if !$is_rma_exchange}
+                <input type="button" actions='yes' {if !$can_edit_order}disabled="true"{/if} value="修改颜色" onclick="searchGoodsStyle({$goods.rec_id});changeForm('goods_{$goods.rec_id}',1);E('goods_edit_{$goods.rec_id}').style.display='none';E('goods_up_{$goods.rec_id}').style.display = '';E('del_{$goods.rec_id}').style.display = 'none';E('style_list-{$goods.rec_id}').style.display = '';return false;"/>
+                {else}
+                <input type="button" actions='yes' {if !$can_edit_order}disabled="true"{/if} value="修改颜色" onclick="searchGoodsStyle({$goods.rec_id});changeForm('goods_{$goods.rec_id}',1);E('goods_edit_{$goods.rec_id}').style.display='none';E('goods_up_{$goods.rec_id}').style.display = '';E('del_{$goods.rec_id}').style.display = 'none';E('style_list-{$goods.rec_id}').style.display = '';E('goods_price-{$goods.rec_id}').readOnly=true;E('goods_number-{$goods.rec_id}').readOnly=true;return false;"/>
+                {/if}
+                <select name="goods_list-{$goods.rec_id}" id="goods_list-{$goods.rec_id}" style=" visibility:hidden;width:0;"><option value="{$goods.goods_id}" selected="selected"></option></select>
+                <select name="style_list-{$goods.rec_id}" style="display:none;" id="style_list-{$goods.rec_id}" onchange="getGoodsStylePrice({$goods.rec_id})"><option value="{$goods.style_id}"></option></select>
+                </p>
+        </td><!-- 
+        <td>{$goods.mobile_cnt}</td>
+        <td>{$goods.no_mobile_cnt}</td> -->
+        {foreach from=$order_facility_list key=facility_id item=facility_name}
+        <td id={$facility_id}>{$goods.facility_cnt[$facility_id]|default:"0"}</td>
+        {/foreach}<!-- 
+        <td>{$goods.available_to_reserved}</td> -->
+        <td><select id="goods_status_id-{$goods.rec_id}" name="goods_status_id-{$goods.rec_id}" disabled>
+            {foreach from=$status_id_list item=status_id key=key}<option value="{$key}" {if $goods.status_id == $key}selected{/if}>{$status_id}</option>{/foreach}
+            </select>
+            {if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{elseif $goods.is_new == 'NONE'}未知{/if}</td>
+        <td>{"<br/>"|join:$goods.order_types}</td>
+        <td>{*{"<br/>"|join:$goods.erp_goods_sns}*}</td>
+        <td>
+        {$goods.uniq_sku}
+        {$goods.dispatch_sn_info}
+        </td>
+        <!-- 
+        <td><select id="goods_customized-{$goods.rec_id}" name="goods_customized-{$goods.rec_id}" disabled>
+            {foreach from=$customize_type item=customize key=key}<option value="{$key}" {if $goods.customized == $customize}selected{/if}>{$customize}</option>{/foreach}
+            </select>
+            </td> -->
+        <td>{"<br/>"|join:$goods.shipping_invoices}</td>
+        <td><input type="text" style="width:60px;text-align:right;" id="goods_price-{$goods.rec_id}" name="goods_price-{$goods.rec_id}" value="{$goods.goods_price}" /></td>
+        <td><input type="text" style="width:40px;text-align:right;"  name="goods_number-{$goods.rec_id}" id="goods_number-{$goods.rec_id}" value="{$goods.goods_number}" /></td>
+        <td>{$goods.reserved_quantity}</td> 
+        <td style="text-align:right;">{if $order_attributes.order_currency_symbol}{$order_attributes.order_currency_symbol}{$goods.total_price}{else}{$goods.total_price|price_format}{/if}</td>
+        <td style="text-align:left;padding-left:20px;">
+             <span><input type="submit" {if !$can_edit_order || ($is_rma_exchange && !($goods.goods_id|is_gift) && !$kf_order_goods_edit)}disabled="true"{/if}  value="删除" id="del_{$goods.rec_id}" actions='yes' style="none"" onclick="E('action-{$order.order_id}').value='delete_order_goods';E('id-{$order.order_id}').value='{$goods.rec_id}';return confirm('确定删除？')" /></span>
+            <input type="button"  {if !$can_edit_order || $is_rma_exchange}disabled="true"{/if}  value="修改" actions='yes' onclick="changeForm('goods_{$goods.rec_id}',1);this.style.display='none';E('goods_up_{$goods.rec_id}').style.display = '';E('del_{$goods.rec_id}').style.display = 'none';E('goods_customized-{$goods.rec_id}').disabled=false;E('goods_status_id-{$goods.rec_id}').disabled=false;return false;" id="goods_edit_{$goods.rec_id}" />
+        <span id="goods_up_{$goods.rec_id}" style="display:none;">    
+      
+            <input type="button" style="float:right;" value="取消" actions='yes' onclick="changeForm('goods_{$goods.rec_id}',0);E('goods_customized-{$goods.rec_id}').disabled=true;E('goods_status_id-{$goods.rec_id}').disabled=true;E('goods_customized-{$goods.rec_id}').disabled=true;E('goods_edit_{$goods.rec_id}').style.display='';E('goods_up_{$goods.rec_id}').style.display = 'none';E('fitting-{$goods.rec_id}').style.display = 'none';E('del_{$goods.rec_id}').style.display = '';if(E('style_list-{$goods.rec_id}')) E('style_list-{$goods.rec_id}').style.display = 'none';E('form3').reset();return false;"> 
+               <input type="submit" value="提交" actions='yes'  onclick="E('action-{$order.order_id}').value='edit_order_goods';E('id-{$order.order_id}').value='{$goods.rec_id}';" />              
+        </span>
+
+        </td>
+    </tr>
+
+
+
+{if $smarty.foreach.goodsName.last}
+    <tr>
+        <td colspan="{math equation="x + y" x=7 y=$order_facility_list|@count}" style="align:right;">
+        {if $order.shipping_status eq 0 && $order.order_status eq 1}
+            {if $order.reserved_info.status eq 'Y'}
+            <font color="Red">预订成功</font>，
+            预订时间：{$order.reserved_info.reservedTime|date_format:'%Y-%m-%d %H:%M:%S'}
+            {else}未预订成功，待预订{/if}
+        {/if}
+        </td>
+        <td colspan="3" style="text-align:right;">
+        商品总金额：
+        </td>
+        <td>
+            {if $order.order_sn|strpos:"h" == false}
+                {if $order_attributes.order_currency_symbol}
+                    {$order_attributes.order_currency_symbol}{$order.goods_amount}
+                {else}
+                    {$order.goods_amount|price_format}
+                {/if}
+            {/if}
+        </td>
+    </tr>
+    </tbody>
+</table>
+{/if}
+<!--{/foreach}-->
+<input type="hidden" name="order_goods_id" id="id-{$order.order_id}" />    
+<input type="hidden" name="action" id="action-{$order.order_id}"/>
+<input type="hidden" name="order_id" value="{$order.order_id}" />
+<input type="hidden" name="back" value="{$back}">
+</form>
+
+<form action="order_edit_action.php" method="post" id="form4">
+  <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+
+<table cellpadding="0" cellspacing="0" style="margin-top:0;">        
+    <tr id="feeEdit">
+        <td style="text-align:right;">
+      {if $order.bonus_id}
+      红包ID:{$order.bonus_id}
+      {else}
+      
+      <a href="#" onclick="E('use_bonus_id').style.left = this.offsetLeft + 'px';E('use_bonus_id').style.top = '700px'; E('use_bonus_id').style.display = '';E('bonus_id').readOnly = false;E('bonus_id_note').readOnly = false; return false;">使用红包</a>
+      
+      {/if}&nbsp;&nbsp;&nbsp;&nbsp;包装费用：{$order.pack_fee}&nbsp;&nbsp;配送费用：{$order.shipping_fee}&nbsp;&nbsp;
+           {*订单总金额：{if $order.order_sn|strpos:"h" == false}{$order.total_fee|price_format}{/if}*}
+        抵用券抵用：<input name="bonus" value="{$order.bonus}" style="width:45px;text-align:right" />&nbsp;&nbsp;
+        {if $order.order_sn|strpos:"-h" !== false}杂项费用：<input type="text" name="misc_fee" value="{$order.misc_fee}" style="width:45px;" />{/if}
+        </td>
+        <td style="text-align:right;width:13%;">
+        {if $order.order_sn|strpos:"-h" !== false }
+        {if $order.additional_amount > 0}换货订单用户还需支付金额：{$order.additional_amount}{else}换货订单用户还需退给用户：{$order.additional_amount}{/if}
+        {elseif $order.order_sn|strpos:"-b" !== false }补寄订单无需支付
+        {else}应付金额：
+            {if $order.currency}
+                {$order.currency} {$order.order_amount}
+            {else}
+                {$order.order_amount|price_format}
+            {/if}
+        {/if}
+        </td>
+        <td style="padding-left:10px;width:15%;">
+        <input type="button" {if !$can_edit_order}disabled="true"{/if}  style="float:right;margin-right:15px;" value="修改费用" onclick="changeForm('feeEdit',1);this.style.display='none';E('feeUp').style.display = '';return false;" id="feeE" actions='yes' />
+        <span id="feeUp" style="display:none;">
+
+            <input type="submit" value="提交" onclick="E('action-{$order.order_id}-1').value='edit_fee'" actions='yes' />
+            <input type="button" value="取消" onclick="changeForm('feeEdit',0);E('feeUp').style.display='none';E('feeE').style.display = '';E('form4').reset();return false;" actions='yes' />
+
+        </span>
+            <input type="hidden" name="integral_money" value="{$order.integral_money}" />
+        </td>
+    </tr>
+</table>
+{if "kf_edit_pack_fee"|check_admin_priv}
+<table cellpadding="0" cellspacing="0" style="background:#fff;border:0;">
+    <tr id="packFeeEdit" >
+        <td style="text-align:right;" colspan="2">
+              修改包装费用：<input name="pack_fee" value="{$order.pack_fee}" style="width:45px;text-align:right" />
+        </td>
+        <td style="padding-left:10px;width:15%;">
+        <input type="button" {if !$can_edit_order}disabled="true"{/if}  style="float:right;margin-right:15px;" value="修改费用" onclick="changeForm('packFeeEdit',1);this.style.display='none';E('packFeeUp').style.display = '';return false;" id="packFeeE" actions='yes' />
+        <span id="packFeeUp" style="display:none;">
+
+            <input type="submit" value="提交" onclick="E('action-{$order.order_id}-1').value='edit_pack_fee'" actions='yes' />
+            <input type="button" value="取消" onclick="changeForm('packFeeEdit',0);E('packFeeUp').style.display='none';E('packFeeE').style.display = '';E('form4').reset();return false;" actions='yes' />
+
+        </span>
+        </td>
+    </tr>
+</table>
+{/if}
+    <input type="hidden" name="action" id="action-{$order.order_id}-1" value="edit_fee"/>
+    <input type="hidden" name="order_id" value="{$order.order_id}" />
+    <input type="hidden" name="back" value="{$back}">
+</form>
+
+       <form action="order_edit_action.php" method="post" id="form_check_order_num">
+         <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+        <table cellpadding="0" cellspacing="0" style="background:#fff;border:0;">
+        <tr>
+                <td colspan=6 align = 'left'><font color="red">活动提醒：<br>{$notice}</td></font>
+        </tr>
+        <tr>    
+                <td style="text-align:left;">增加商品：<input style="width:100px"  name="goods_name-0" id="goods_name-0" />
+                <input type="button" value="搜索" onclick="searchGoods(0)" />{if $is_rma_exchange}<span class="tip"><font color = "red">&nbsp;换货订单只能添加赠品</font></span>{/if}
+                <p style="margin-left:50px;">
+                <input type="hidden" id="is_rma_exchange" value="{$is_rma_exchange}" />
+                <input type="hidden" id="pre_goods_price-0" value="0" />
+                <select name="goods_list-0" id="goods_list-0" onchange="searchGoodsStyle(0)"></select>
+                <select name="style_list-0" id="style_list-0" onchange="getGoodsStylePrice(0)"></select> <span id="storage-0" style="margin-left:10px;"></span>
+                </p>
+                </td>
+                <!--<td>
+                <select id="goods_status_id-0" name="goods_status_id-0">
+                {foreach from=$status_id_list item=status_id key=key}<option value="{$key}" >{$status_id}</option>{/foreach}
+
+                </select>
+                </td>-->
+                <td><select id="goods_customized-0" name="goods_customized-0">
+            {foreach from=$customize_type item=customize key=key}<option value="{$key}">{$customize}</option>{/foreach}
+            </select></td>
+                <td style="width:10%"><input style="width:80px;text-align:right;" id="goods_price-0"  name="goods_price-0" value="0" /></td>
+                <td style="width:6%"><input style="width:20px;text-align:right;" id="goods_number-0" name="goods_number-0" value="1" /></td>
+                <td style="width:7%;"></td>
+           <!--     <td  style="text-align:left;padding-left:20px;width:15%;"><input type="submit" {if !$can_edit_order}disabled="true"{/if}  value="增加商品" onclick="E('action-0').value='edit_order_goods'" /></td>-->
+<td  style="text-align:left;padding-left:20px;width:15%;"><input type="button" id="add_goods" {if !$can_edit_order || ($is_rma_exchange && !$kf_order_goods_edit)}disabled="true"{/if}  value="增加商品" onclick="check_order_num();" /></td>
+        </tr>
+
+        </table>
+            <input type="hidden" name="order_goods_id" value="0" />
+            <input type="hidden" name="action" id="action-0" value="edit_order_goods"/>
+            <input type="hidden" name="order_id" value="{$order.order_id}" />
+            <input type="hidden" name="back" value="{$back}">
+            <input type="hidden" name="order_goods_edit" id="order_goods_edit" value="{$kf_order_goods_edit}" />
+        </form>
+        </div>            
+    </div>
+<!-- -->
+
+<div class="ddan_item" id="s2" >
+    <h2>用户统计信息</h2>
+    <table cellpadding="0" cellspacing="0">
+        <tr>
+            <td>注册时间：{$user.reg_time_str}</td>
+            <td>成功购买：{$user.buy_succes_times}次</td>
+            <td>取消订单：{$user.order_status.2}次</td>
+            <td>拒收：{$user.order_status.4}次</td>
+            <td>电话呼入数：{$user.call_in_times}次</td>
+            <td>电话呼出数：{$user.call_out_times}次</td>
+            <td>换货次数：{$change_goods_times}次</td>
+      <td>退货次数：{$back_goods_times}次</td>
+        </tr>
+    
+    </table>
+</div>
+
+    <div class="ddan_item" id="s3" style="position:fixed;top:0;right:0;background:#fff;">    
+    <h3><a href="#" style="float:right" onclick="document.getElementById('s3').style.display = 'none';return false;">关闭</a>订单操作信息(蓝色背景：发送短信  黄色背景：操作发货)</h3>
+    <table cellpadding="0" cellspacing="0" class="statusTable">
+        <tr>
+            <th>订单状态</th>
+            <th>操作人</th>
+            <th width="21%">操作时间</th>
+            <th>备注</th>
+        </tr>
+        <tr>
+            <td align="left" style="padding-left:20px;width:25%;">订单生成，待确认</td>
+            <td>{$order.consignee}</td>
+            <td>{$order.order_time}</td>
+            <td align="left" style="padding-left:20px;">新订单</td>
+        </tr>
+          {foreach from=$order.actions item=action}             
+            {foreach from=$action item=actions name=actionName}
+            <tr {if $actions.note_type == 'SHIPPING'}style="background:yellow;"{elseif  $actions.note_type == 'message'}style="background:#0099ff;"{/if} >
+                {if $smarty.foreach.actionName.first}    
+                <td align="left" style="padding-left:20px;" rowspan="{$smarty.foreach.actionName.total}">
+                
+                
+                {if $order.pay_name == '货到付款' && $actions.pay_status == 2 }与快递公司已结账
+                {else}
+                   {if $actions.order_status_name}{$actions.order_status_name}，{/if}{if $actions.pay_status_name}{$actions.pay_status_name}，{/if}{$actions.shipping_status_name}
+                {/if}   
+                </td>
+                {/if}
+                <td >
+                    {$actions.action_user}
+                </td>
+                <td >
+                    {$actions.action_time}
+                </td>
+                <td align="left" style="padding-left:20px;line-height:150%;">
+                    {$actions.action_note}
+                </td>
+            </tr>
+            {/foreach}
+       {/foreach}
+       </table>
+    <h3>售后备注<span style="font-size:12px;font-weight:normal;">(客服记录的事情)</span></h3>
+                  
+    <table cellpadding="0" cellspacing="0" class="statusTable">
+      <tr>
+          <th>售后状态</th>
+            <th>操作人</th>
+            <th width="21%">操作时间</th>
+            <th>备注</th>
+      </tr>                  
+        {foreach from=$services item=service}
+            {foreach from=$service.service_log item=log name=logName}
+                    
+                {if $log.is_remark}            
+           <tr>
+  
+            <td align="left" style="padding-left:20px;width:25%;">
+                {$log.status_name}    
+            </td>
+            <td>
+                {$log.log_username}    
+            </td>
+            <td>
+                {$log.log_datetime}    
+            </td> 
+            <td align="left" style="padding-left:20px;">
+            {$log.log_note}
+            </td>                                     
+        </tr>
+                {/if}
+            {/foreach}
+
+        {/foreach}
+        
+      </table>
+   <h3>操作记录<span style="font-size:12px;font-weight:normal;">(系统自动添加的记录)</span></h3>
+          
+    <table cellpadding="0" cellspacing="0" class="statusTable">
+      <tr>
+          <th>售后状态</th>
+            <th>操作人</th>
+            <th width="21%">操作时间</th>
+            <th>备注</th>
+      </tr>               
+        {foreach from=$services item=service}
+          {foreach from=$service.service_log item=log name=logName}
+          
+        {if !$log.is_remark}     
+        <tr>
+  
+            <td align="left" style="padding-left:20px;width:25%;">
+              {$log.status_name}  
+            </td>
+            <td>
+              {$log.log_username} 
+            </td>
+            <td>
+              {$log.log_datetime} 
+            </td> 
+            <td align="left" style="padding-left:20px;">
+            {$log.log_note}
+            </td>                                     
+        </tr>
+        {/if}
+          {/foreach}
+
+        {/foreach}
+        
+      </table>  
+      
+    <h3>售后沟通<span style="font-size:12px;font-weight:normal;"></span></h3>      
+    <table cellpadding="0" cellspacing="0" class="statusTable">
+      <tr>
+          <th width="15%">发送时间</th>
+          <th width="20%">咨询类型</th>
+          <th width="40%">咨询详情</th>
+          <th width="10%">发送人</th>
+          <th width="10%">操作状态</th>
+      </tr> 
+                    
+        <!-- {foreach from=$message_list item=m_item}-->
+        <tr>
+           <td>{$m_item.created_stamp}</td>
+           <td>{$m_item.support_type_detail}</td>
+           <td>{$m_item.message}</td>
+           <td>{$m_item.send_by}</td>
+           <td>{if $m_item.status == 'OK'}进行中{elseif $m_item.status == 'FINISHED'}完结{/if}</td>
+        </tr> 
+        <!-- {/foreach} -->
+        
+      </table>
+                
+</div>
+<div class="ddan_item" id="s4" >
+{*
+<h3>商品操作信息</h3>
+<table cellpadding="0" cellspacing="0" class="statusTable">
+    <thead>
+    <tr>
+        <th>操作者</th>
+        <th>操作时间</th>
+        <th>操作商品</th>
+        <th>商品状态</th>
+        <th width="35%">备注</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!--{foreach from=$order.goods_list item=goods}-->
+        <!--{foreach from=$goods.actions item=action}-->
+    <tr>
+        <td>{$action.action_user}</td>
+        <td>{$action.action_time}</td>
+        <td>{$goods.goods_name}</td>
+        <td>{$action.goods_status_name}</td>
+        <td>{$action.action_note}</td>
+    </tr>
+        <!--{/foreach}-->
+    <!--{/foreach}-->    
+    </tbody>
+</table>
+*}
+</div>
+
+<!-- -->
+{*
+<div class="ddan_item" id="s5" >
+    <h2>售前咨询({$usercommentNum}条)</h2>
+    <div class="order_comment">
+        {foreach from=$usercomment item=comment}
+            <p>类型：<span style="color:red;">{$comment.comment_cat_desc}</span></p>
+            <p style="line-height:150%;">{$comment.nick}：{$comment.comment}<span style="color:#999;margin-left:10px;">{$comment.postDatetime}</span></p>
+            <p style="border-bottom:1px dashed #b2b2b2;padding-bottom:5px;">{if $comment.reply}{$comment.repliedNick}：{$comment.reply}<span style="color:#999;margin-left:10px;">{$comment.repliedDatetime}</span>{else}<span style="color:red;">未回复</span>{/if}</span></p>
+        {/foreach}
+         {if $usercommentNum >3 && !$smarty.request.more}<p style="text-align:right;padding-right:20px;"><a href="?order_id={$order.order_id}&more=more">更多&gt;</a></p>{/if}{if $smarty.request.more == 'more'}{$pagination->get_simple_output()}{/if}
+    </div>
+</div>
+*}
+
+<!-- -->
+
+<div class="ddan_item" id="s5" style="display:none;">
+    <h2>订单咨询({$commentsNum}条)</h2>
+    <div class="order_comment" style="border:1px solid #c1dad7;">
+        {foreach from=$order_comments item=comment}
+            <p>类型：<span style="color:red;">{$comment.comment_cat_desc}</span></p>
+            <p  style="line-height:150%;">客户留言：{$comment.comment}<span style="color:#999;margin-left:10px;">{$comment.post_datetime}</span></p>
+            <p style="border-bottom:1px dashed #b2b2b2;padding-bottom:5px;">{if $comment.reply}{$comment.replied_by}：{$comment.reply}<span style="color:#999;margin-left:10px;">{$comment.reply_datetime}</span>{else}<span style="color:red;">未回复</span>{/if}</span></p>
+        {/foreach}
+    </div>
+</div>
+<!-- -->
+<!-- -->
+<div class="ddan_item" id="s6" style="display:none;">
+    <h2>售后服务({$servicesNum}条)</h2>
+    {foreach from=$services item=service}
+    <div class="service">
+        <h3 style="margin-left:10px;border-bottom:1px dashed #ccc;padding-bottom:10px;">{$service.type_name}</a>&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-weight:normal;font-size:12px;">售后状态：{$service.status_name}&nbsp;&nbsp;&nbsp;&nbsp;申请时间：{$service.apply_datetime}</span></h3>
+        {if $service.check_result}<p style="color:red;">检测结果：{$service.check_result}</p>{/if} 
+      <table cellpadding="0" cellspacing="0" {if !$service.return_info.bank_info }style="display:none;"{else}style="margin:10px;width:47%;float:left;"{/if}>
+           <caption style="background:none;">退款帐号信息</caption>
+              <tr>
+              {foreach from=$service.return_info.bank_info key=key item=item}
+                    <td>{$key}</td>
+
+                {/foreach}
+                </tr>
+        <tr>
+          {foreach from=$service.return_info.bank_info key=key item=item}
+          <td>{$item}</td>
+        {/foreach}
+        </tr>                
+            </table>    
+                <table cellpadding="0" cellspacing="0" {if !$service.return_info.carrier_info}style="display:none;"{else}style="margin:10px;width:47%;float:right;"{/if}>
+          <caption style="background:none;">退回快递信息</caption>
+            <tr>
+          {foreach from=$service.return_info.carrier_info key=key item=item}
+          <td>{$key}</td>
+          {/foreach}
+        </tr>
+        <tr>
+          {foreach from=$service.return_info.carrier_info key=key item=item}
+          <td>{$item}</td>
+          {/foreach}
+        </tr>                                 
+            </table>
+             <div style="clear:both;">
+
+    
+            <p><strong style="color:#C400C4;font-family:Tahoma;">{$service.apply_username}</strong>：{$service.apply_reason}<span style="color:#999;margin-left:10px;white-space:nowrap;">{$service.apply_datetime}</span></p>
+            <p><strong style="color:green;font-family:Tahoma;">{$service.review_username}</strong>：{$service.review_remark}<span style="color:#999;margin-left:10px;white-space:nowrap;">{$service.review_datetime}</span></p>
+                    {foreach from=$service.service_comments item=comment}
+            <p><strong style="color:#C400C4;font-family:Tahoma;">{$comment.post_username}</strong>：{$comment.post_comment}<span style="color:#999;margin-left:10px;white-space:nowrap;">{$comment.post_datetime}</span></p>
+            <p><strong style="color:green;font-family:Tahoma;">{$comment.replied_username}</strong>：{$comment.reply}<span style="color:#999;margin-left:10px;white-space:nowrap;">{$comment.replied_datetime}</span></p>                  
+                    {/foreach}
+                </div>
+     </div>   
+    {/foreach}
+</div>
+<!-- -->
+<div class="ddan_item" id="s7" style="display: none;">
+    <h3>订单状态历史</h3>
+    <table class="statusTable">
+    <thead>
+    <tr>
+    <th>订单</th><th>支付</th><th>仓库物流</th><th>配货单 发票 快递面单</th><th>操作</th><th width="28%">备注</th>
+    </tr>
+    </thead>
+    {foreach from=$order_mixed_status_history item=status}
+    <tr>
+    <td rowspan="{$status.note_number}">{$status.order_status_description}，{$status.adjustment_status_description}</td>
+    <td rowspan="{$status.note_number}">{$status.pay_status_description}</td>
+    <td rowspan="{$status.note_number}">{$status.warehouse_status_description}，{$status.shipping_status_description}</td>
+    <td rowspan="{$status.note_number}">{$status.pick_list_status_description}，{$status.invoice_status_description}，{$status.shipping_bill_status_description}</td>
+    <td rowspan="{$status.note_number}">{$status.created_by_user_login} {$status.created_stamp}</td>
+    <td class="ddan_item">{foreach from=$status.note item=note name=note}{if $smarty.foreach.note.first} {$note.note} {/if}{/foreach}</td>
+    </tr>
+    {foreach from=$status.note item=note name=note}{
+    if !$smarty.foreach.note.first} 
+    <tr>
+    <td class="ddan_item">{$note.note}</td> 
+    </tr>
+    {/if}
+    {/foreach}
+    
+    {/foreach}
+    </table>
+</div>
+{if "kf_send_msg"|check_admin_priv || "kf_send_mail"|check_admin_priv}
+<div class="ddan_item" id="s8" style="display: none;">
+    {if "kf_send_msg"|check_admin_priv}
+    <h3>发送短信</h3>
+    <form method="post" action="order_edit_action.php" id="form_msg">
+    <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+    <table class="statusTable">
+    <thead>
+    <tr>
+    <th>手机号</th>
+    <th>短信内容</th><th>短信服务商</th><th>操作</th>
+    </tr>
+    </thead>
+    <tr>
+    <td>
+    订单号：{$order.order_sn}<br />
+    {if $order.mobile eq ''}用户未填写手机号{else}手机号：{$order.mobile}{/if}
+    <br />
+    <input type="text" name="mobile" value="{$order.mobile}" /></td>
+    <td><textarea name="msg" rows="4" cols="64" ></textarea></td>
+    <td><select name='server'>
+        <option value="emay">亿美短信服务</option>
+        <option value="nineorange">建州短信服务</option>
+    </select></td>
+    <td><input type="submit" value="发送" /></td>
+    </tr>
+    </table>
+    <input type="hidden" value="send_msg" name="action" />
+    <input type="hidden" value="{$order.order_id}" name="order_id" />
+    <input type="hidden" value="{$order.party_id}" name="party_id" />
+    <input type="hidden" name="back" value="{$back}" />
+    </form>
+    {/if}
+    {if "kf_send_mail"|check_admin_priv}
+    <h3>发送邮件</h3>
+    <form method="post" action="order_edit_action.php" id="form_mail">
+    <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+    <table class="statusTable">
+    <thead>
+    <tr>
+    <th>收件人</th><th>收件地址</th><th>邮件标题</th><th>邮件内容</th><th>操作</th>
+    </tr>
+    </thead>
+    <tr>
+    <td><input type="text" name="mail_name" value="{$order.user_name}" ></td>
+    <td>
+    订单号：{$order.order_sn}<br />
+    {if $order.email eq ''}用户未填写邮件地址{else}邮件：{$order.email}{/if}
+    <br />
+    <input type="text" name="email" value="{$order.email}" ></td>
+    <td><input type="text" name="mail_subject" /></td>
+    <td><textarea name="mail_content" rows="12" cols="64" ></textarea></td>
+    <td><input type="submit" value="发送" /></td>
+    </tr>
+    </table>
+    <input type="hidden" value="send_mail" name="action" />
+    <input type="hidden" value="{$order.order_id}" name="order_id" />
+    <input type="hidden" value="{$order.party_id}" name="party_id" />
+    <input type="hidden" name="back" value="{$back}" />
+    </form>
+    {/if}
+</div>
+{/if}
+</div>
+
+<div id="modify_vat_invoice" style="display:none;position:absolute;background:#fff;width:350px;border:1px solid #ccc;padding:5px;text-align:left;">
+    <form id="form_invoice" action="order_edit_action.php" method="post">
+    <input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+    <input type="hidden" name="action" value="modify_vat_invoice" /><input type="hidden" name="invoice_id" value="{$order.vat_invoice.invoice_id}" /><input type="hidden" name="order_id" value="{$order.order_id}" />
+    <p>是否收到三证:<input type="checkbox" name="status" {if $order.vat_invoice.status == 'confirmed' }checked="checked"{/if} /></p>
+    <p>单位名称:<input name="company" value="{$order.vat_invoice.company}" /></p>
+    <p>纳税人识别号：<input name="identify_no" value="{$order.vat_invoice.identify_no}" /></p>
+    <p>注册地址：<input name="address" value="{$order.vat_invoice.address}" /></p>
+    <p>注册电话：<input name="telphone" value="{$order.vat_invoice.telphone}" /></p>
+    <p>银行账户：<input name="account" value="{$order.vat_invoice.account}" /></p>
+    <p>开户银行：<input name="bank" value="{$order.vat_invoice.bank}" /></p>
+    <p>删除增值税发票：<input type="checkbox" name="delete" onclick="alert('请确认用户不需开具增值税发票')" value="1" /></p>
+    <p>
+    {if $user_can_edit_vat_invoice}
+    <input type="submit" value="保存" /> 
+    {else}
+    该订单已出库，无法修改增值税发票
+    {/if}
+    <input type="reset" onclick="E('modify_vat_invoice').style.display = 'none';" value="取消" />
+    </p>
+    </form>
+</div>
+
+<div id="use_bonus_id" style="display:none;position:absolute;background:#fff;width:350px;border:1px solid #ccc;padding:15px;text-align:left;">
+<form action="order_edit_action.php" method="post">
+<input type="hidden" name="order_info_md5" value="{$order_info_md5}" />
+<input type="hidden" name="action" value="use_bonus_id" />
+<input type="hidden" name="order_id" value="{$order.order_id}" />
+红包代码：<input type="text" id="bonus_id" name="bonus_id" maxlength="16" value="" />
+<a href="#" onclick="test_bonus_id({$order.order_id});">查看红包</a>
+<br /><br />
+使用备注：<textarea id="bonus_id_note" cols="25" name="bonus_id_note" value=""></textarea>
+<br /><br />
+<input type="submit" value="使用红包" style="border:0!important;" />
+</form>
+<div style="text-align:right;"><a href="#" onclick="E('use_bonus_id').style.display = 'none';return false;">取消使用</a></div>
+</div>
+      
+
+
+
+<script type="text/javascript">
+
+// 这里把JS用到的所有语言都赋值到这里
+{foreach from=$lang.js_languages key=key item=item}
+var {$key} = "{$item}";
+{/foreach}
+var pay_status = {$order.pay_status};
+{literal}
+
+window.onload = function() {
+    var obj = E('shipping_id_0');
+    if (obj) {
+        change_shipping(obj, true);     //根据shipping选择显示部分payment
+    }
+    
+    var showOnce=E('showonce').value;
+    if(showOnce){
+        show(showOnce);
+    }else{
+        show(0);
+    }
+}
+
+function change_shipping(obj, init) {
+    var payId = document.getElementById('pay_id_0');
+    var payGroups = payId.getElementsByTagName('optgroup');
+    if (obj.value == 44 || obj.value == 49) {
+        E("shipping_time_interval").style.display = "";
+    } else {
+        E("shipping_time_interval").style.display = "none";
+    }
+    
+    if (pay_status == 2) {
+        return ;
+    }
+    
+    var opts = obj.options;
+    for(var i=0;i<opts.length;i++){
+        // 货到付款
+      if(opts[i].selected == true &&(opts[i].getAttribute('support_cod') == 1 && opts[i].getAttribute('support_no_cod') == 0)){
+        payGroups[0].style.display = 'none';  // 三方支付
+            payGroups[1].style.display = 'none';  // 网上银行
+            payGroups[3].style.display = 'none';  // 转账/汇款
+            payGroups[4].style.display = 'none';  // 信用卡
+            payGroups[5].style.display = 'none';  // 上门支付
+            //if (!init) { delTextNod(payGroups[2]); }  // 货到付款
+      }
+        
+        // 款到发货
+    if(opts[i].selected == true &&(opts[i].getAttribute('support_cod') == 0 && opts[i].getAttribute('support_no_cod') == 1)){
+      payGroups[1].style.display = '';
+      payGroups[2].style.display = 'none';
+            payGroups[3].style.display = '';
+            payGroups[4].style.display = '';
+            payGroups[5].style.display = '';
+            //if (!init) { delTextNod(payGroups[0]); }
+    }
+        
+        // 上门自提
+    if(opts[i].selected == true &&(opts[i].getAttribute('support_cod') == 1 && opts[i].getAttribute('support_no_cod') == 1)){
+      payGroups[0].style.display = '';
+      payGroups[1].style.display = '';
+            payGroups[3].style.display = '';
+            payGroups[4].style.display = '';
+            payGroups[5].style.display = '';
+            //if (!init) { delTextNod(payGroups[5]); }
+    }                          
+    }
+    
+    if (!init) {
+        alert("您已经修改配送方式，请注意修改相应的支付方式");
+    }
+}
+
+/**
+ * 将一组序列为num的options设置为选中
+ */
+function delTextNod(ele,num){
+    ele.style.display = '';
+    var children = ele.childNodes;
+    for(var i=0;i<children.length;i++){
+        if(children[i].nodeType != 3){
+      if(num){    
+                children[num+2].selected = "selected";
+            }else{
+                children[i].selected = "selected";
+            }
+            break;
+        }
+    }
+}
+
+function change_pay(obj){
+    var shippingId = document.getElementById('shipping_id_0');
+    var optGroup_shipping = shippingId.getElementsByTagName('optgroup');
+    var optGroups = obj.getElementsByTagName('optgroup');
+    var opt_1 = optGroups[0].getElementsByTagName('option');
+    var opt_2 = optGroups[1].getElementsByTagName('option');
+    var opt_3 = optGroups[2].getElementsByTagName('option');
+    for(var i=0;i<opt_1.length;i++){
+        if(opt_1[i].selected == true){
+            delTextNod(optGroup_shipping[0]);
+        }
+    }
+  for(var i=0;i<opt_2.length;i++){
+    if(opt_2[i].selected == true){
+      if(opt_2[i].value == 1){
+                 delTextNod(optGroup_shipping[1],1);
+            }else{
+                delTextNod(optGroup_shipping[2]);
+            }
+    }
+  }
+  for(var i=0;i<opt_3.length;i++){
+    if(opt_3[i].selected == true){
+      delTextNod(optGroup_shipping[0]);
+    }
+  }
+    alert("您已经修改支付方式，请注意修改相应的配送方式");        
+}
+
+function check_shipping_time_interval() {
+    var start_shipping_time = parseInt(ES("start_shipping_time")[0].value);
+    var end_shipping_time = parseInt(ES("end_shipping_time")[0].value);
+    
+    if (start_shipping_time > end_shipping_time) {
+        alert("配送时间非法");
+        return false;
+    } else {
+        return true;
+    }
+}
+function orderStatusFn(orderStatus, shortageStatus, action, header){
+    document.getElementById('order_status_action').style.display = document.getElementById('order_status_action').style.display == '' ? 'none':'';    
+    document.getElementById('order_status_action_header').innerHTML = "<h3>"+header+"</h3>";
+    document.getElementById('orderStatus').value = orderStatus;
+    document.getElementById('shortageStatus').value = shortageStatus;
+    document.getElementById('order_action').value = action;
+    document.getElementById('action_note_id').focus();
+    if (action == 'edit_order_action') {
+        E('order_action_type').style.display = E('order_status_action').style.display;    
+    } else {
+        E('order_action_type').style.display = 'none';
+    }
+    
+}
+function disableForm(id,name,num){
+    if (E(id) == null)
+        return;
+    var oTag = E(id).getElementsByTagName(name);
+    if(num==0){
+        for(var i=0;i<oTag.length;i++){
+            if(oTag[i].getAttribute('actions') != 'yes' && oTag[i].type != 'hidden'){
+                oTag[i].style.border = '1px solid #fff';
+                oTag[i].readOnly = 'disabled';
+            }
+
+        }
+    }else{
+        for(var i=0;i<oTag.length;i++){
+            if(oTag[i].getAttribute('actions') != 'yes' && oTag[i].type != 'hidden'){
+                oTag[i].style.border = '1px solid #999';
+                oTag[i].readOnly = false;
+            }    
+        }
+                
+    }
+}
+disableForm('infoTable','input',0);
+disableForm('infoTable','select',0);
+disableForm('infoTable','textarea',0);
+disableForm('payShippingInfo','select',0);
+disableForm('payShippingInfo','input',0);
+disableForm('goodsTable','input',0);
+disableForm('feeEdit','input',0);
+disableForm('packFeeEdit','input', 0);
+disableForm('importantDayForm', 'input', 0);
+disableForm('taobaoForm', 'input', 0);
+disableForm('taobaoForm', 'select', 0);
+disableForm('feedbackPersonForm', 'input', 0);
+disableForm('pointFeeForm', 'input', 0);
+disableForm('salespersonForm', 'input', 0);
+disableForm('mergeShipmentForm', 'input', 0);
+
+function changeForm(id,num){
+    disableForm(id,'input',num);
+    disableForm(id,'select',num);
+    disableForm(id,'textarea',num);    
+}
+  /**
+   * 按商品编号或商品名称或商品货号搜索商品
+   */
+  order_goods_id = 0;
+  function searchGoods(id)
+  {
+      order_goods_id = id;
+    /* 填充列表 */
+    var keyword = E("goods_name-"+order_goods_id).value;
+    
+    if (keyword != '')
+    {
+      Ajax.call('order.php?act=search_goods&extend=include_not_on_sale&keyword=' + keyword, '', searchGoodsResponse, 'GET', 'JSON');
+    }
+  }
+
+  function searchGoodsResponse(result)
+  {
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }
+    if (result.error == 0)
+    {
+      var sel = E('goods_list-'+order_goods_id);
+      
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+      E('storage-'+order_goods_id).innerHTML = '';
+
+      var arr = result.goodslist;
+      var goodsCnt = arr.length;
+      if (goodsCnt > 0)
+      {
+        var opt = document.createElement('OPTION');
+        opt.value = '';
+        opt.text = '';
+        sel.options.add(opt);
+        for (var i = 0; i < goodsCnt; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].goods_id;
+          opt.text = arr[i].name;
+          sel.options.add(opt);
+        }
+      }
+    }
+  }
+  
+  function searchGoodsStyle(id) {
+      order_goods_id = id;
+    var goods_id = E("goods_list-" + order_goods_id).value;
+    var is_rma_exchange = E("is_rma_exchange").value;
+    var pre_goods_price = E("pre_goods_price-" + order_goods_id).value;
+    if (goods_id != '')
+    {
+      Ajax.call('order.php?act=search_goods_style&id='+id+'&pre_goods_price=' +pre_goods_price+ '&is_rma_exchange=' +is_rma_exchange+ '&goods_id=' + goods_id, '', searchGoodsStyleResponse, 'GET', 'JSON');
+    }      
+  }
+
+  function searchGoodsStyleResponse(result) {
+    var is_rma_exchange = E("is_rma_exchange").value;
+    var order_goods_edit = E("order_goods_edit").value;
+    if (result.message.length > 0)
+    {
+      alert(result.message);
+    }  
+    if (result.error == 0)
+    {     
+      var sel = E('style_list-' + order_goods_id);
+      /* 清除列表 */
+      var selLen = sel.options.length;
+      for (var i = selLen - 1; i >= 0; i--)
+      {
+        sel.options[i] = null;
+      }
+
+      var arr = result.goods_style_list;
+      var style_length = arr.length;
+      if (style_length > 0)
+      {
+        for (var i = 0; i < style_length; i++)
+        {
+          var opt = document.createElement('OPTION');
+          opt.value = arr[i].style_id;
+          opt.text = arr[i].color;
+          sel.options.add(opt);
+        }
+        E('goods_price-'+order_goods_id).value = arr[0].style_price;
+      } else {
+        E('goods_price-'+order_goods_id).value = result.price;
+      }
+  
+      if(is_rma_exchange && !order_goods_edit){
+         if(result.is_gift && result.id == 0){
+           E('add_goods').disabled = false;
+           E('goods_price-0').readOnly = true;
+         }else{
+           E('add_goods').disabled = true;
+           E('goods_price-0').readOnly = false;
+         }
+      }
+      E('storage-'+order_goods_id).innerHTML = '库存：' + result.storage;
+    }    
+  }
+  
+  function getGoodsStylePrice(id) {
+    order_goods_id_price = id;
+    var style_id = E("style_list-" + order_goods_id_price).value;
+    var goods_id = E("goods_list-" + order_goods_id_price).value;
+    var pre_goods_price = E("pre_goods_price-" + order_goods_id).value;
+    var is_rma_exchange = E("is_rma_exchange").value;
+    if(style_id != '') {
+      Ajax.call('order.php?act=getGoodsStylePrice&pre_goods_price=' +pre_goods_price+ '&is_rma_exchange=' +is_rma_exchange+ '&goods_id=' + goods_id+'&style_id='+style_id, '', setStylePrice, 'GET', 'JSON');
+    }
+  }
+  
+  function setStylePrice(result) {
+    var price = result.price;
+    E('goods_price-'+order_goods_id_price).value=price;
+  }
+  function searchFitting(id) {
+    order_goods_id_fitt = id;
+    E('add-'+id).style.display = '';
+    E('fitting-'+id).style.display = '';
+    if(id == 0) {
+      goods_id = E("goods_list-" + id).value;
+    } else {
+      goods_id = E("goods_id-" + id).value;
+    }
+    if(goods_id != '') {
+      Ajax.call('order.php?act=search_goods_fitting&goods_id=' + goods_id, '', searchFittingResponse, 'GET', 'JSON');
+    }
+  }
+  function searchFittingResponse(result)  {
+    E('fitting-'+order_goods_id_fitt).innerHTML = '';
+    var i = 0;
+    for(i=0; i<result.length; i++) {
+      E('fitting-'+order_goods_id_fitt).innerHTML += '<input actions="yes" type="checkbox" name="group_goods_id[]" value="'+result[i].group_goods_id+'" />' +result[i].goods_name + ' ' + result[i].formatted_goods_price + '<br />';
+    }
+
+  }
+  var tt='';
+  function show(num){
+      var orderLi = E('order_li').getElementsByTagName('li');
+
+    if(num !=0 ){
+            E('a0').className = '';
+        for(var i=1;i<orderLi.length;i++){
+            E('a'+i).className = '';
+            E('s'+i).style.display = 'none';
+        }
+            E('a'+num).className = 'on';
+            E('s'+num).style.display = '';
+    }else{
+        for(var i=1;i<orderLi.length;i++){
+            E('a'+i).className = '';
+            E('s'+i).style.display = '';
+        }
+            E('s5').style.display = 'none';
+            E('s6').style.display = 'none';
+            E('a'+num).className = 'on';
+    }    
+        if(num == 0 ||  num == 6){
+            E('s3').style.position = 'fixed';
+            E('s3').style.display = '';
+            E('s3').style.width = document.documentElement.clientWidth - 865 + "px";
+            tt= setInterval('dd()',100);       
+        }
+      if(num == 3){
+        E('s3').style.position = 'static';
+        E('s3').style.width = '850px';
+        clearInterval(tt);
+      } 
+  }
+  
+    var dd = function(){E('s3').style.width = document.documentElement.clientWidth - 865 + "px"};
+    tt= setInterval('dd()',100);  
+  
+  function searchUserId(id){
+      order_id = id;
+    var user_name = E('userId').value;
+    Ajax.call('order.php?act=search_users&id_name=' + user_name, '', searchUserResponse, 'GET', 'JSON');
+  }
+  
+  function searchUserResponse(result){
+      //alert(result.message);
+    if(result.error == 1 || result.error == 2){
+
+        E('searchId').innerHTML = result.message;
+
+    }else if(result.error == 0){
+        var html = '<table><tr><th>#</th><th>用户名</th></tr>';
+        for(var i=0;i<result.userlist.length;i++){
+            html += '<tr><td>'+(i+1)+'</td><td style=\'cursor:pointer\'><a href=\'order.php?act=order_transfer&order_id=' + order_id +'&user_id=' + result.userlist[i].user_id +'&user_name='+result.userlist[i].user_name+'\' onclick=\'return confirm("确定把订单转移到--'+result.userlist[i].user_name+'--名下吗？")\'>'+result.userlist[i].user_name+'</a></td></tr>';
+        }    
+        html += '</table>';
+        E('searchId').innerHTML = html;    
+    }
+
+  }
+
+
+function test_bonus_id (order_id) {
+    var bonus_id = E('bonus_id').value;
+    Ajax.call('ajax.php?act=test_bonus_id', 'order_id=' + order_id + '&code=' + bonus_id, test_bonus_id_response, 'POST', 'JSON');
+}
+
+function test_bonus_id_response(result) {
+    alert(result.info);
+}
+
+function openJJshouseUrl(url, order_sn, value) {
+    if (value == '') {
+        alert('请输入需要补的金额，美元单位');
+    } else {
+        window.open(url + '?gn=' + value + '&orn=' + order_sn);
+    }
+}
+function check_mobile() {
+    var reg = new RegExp(/^400(\d)*(\*)(\d){6}$/);
+    if (isNaN(E('mobile').value) && !reg.exec(E('mobile').value)) {
+        alert('手机号错误');
+        return false;
+    }
+    
+    if (isNaN(E('tel0').value) || isNaN(E('tel1').value) || isNaN(E('tel2').value)) {
+        alert('电话号必须是数字');
+        return false;
+    }
+    return true;
+}
+function check_taobao_sn(taobao_sn,edit_taobao_sn,out_type){
+    if(taobao_sn!='' && strncmp(taobao_sn,edit_taobao_sn,5)!=0){
+        alert('只能在订单号后面修改');
+        return false;
+    }
+    return true;
+}
+function strncmp (str1, str2, lgth) {
+    var s1 = (str1 + '').substr(0, lgth);
+    var s2 = (str2 + '').substr(0, lgth);
+    return ((s1 == s2) ? 0 : ((s1 > s2) ? 1 : -1));
+}
+</script>  
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "handle_time_calendar",
+        button            : "handle_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "handle_time_calendar1",
+        button            : "handle_time_trigger1",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}  
+
+</body>
+</html>

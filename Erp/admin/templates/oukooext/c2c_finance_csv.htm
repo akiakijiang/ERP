@@ -1,0 +1,5 @@
+认证商家,日期,订单号,订单金额,欧酷收款状态,收款方法,付款方式,商品,客户名,收货地址,发货状态,快递公司,快递单号,支付方式,订单快递费,实际快递费,手续费,实际代收金额,欧酷实收金额,欧酷应付金额,欧酷是否付款,欧酷实付金额,备注
+汇总,,,{$sum.order_amount},,,,,,,,,,{$sum.shipping_fee},{$sum.real_shipping_fee},{$sum.proxy_amount},{$sum.real_paid},{$sum.real_ouku_collect_amount},{$sum.fix_order_amount-$sum.fix_shipping_fee},,{$sum.real_ouku_paid_amount},,,
+{foreach from=$orders item=order}
+"{$order.store_name}","{$order.order_time}","{$order.order_sn}",{$order.order_amount},{$all_pay_status[$order.pay_status]},{$order.pay_method},{$payments[$order.pay_id].pay_name},"{foreach from=$order.goods_list item=goods}{$goods.goods_name}(￥{$goods.goods_price} × {$goods.goods_number});{/foreach}","{$order.consignee}","{$order.address}","{$order.shipping_status_name}","{$order.carrier_name}","{$order.bill_no}","{$order.pay_name}","{$order.shipping_fee}","{$order.real_shipping_fee}","{$order.proxy_amount}","{$order.real_paid}","{$order.real_ouku_collect_amount}","{$order.fix_order_amount-$order.fix_shipping_fee}",{if $order.is_ouku_paid == 'YES'}是{else}否{/if},"{$order.real_ouku_paid_amount}","{$order.note}"	
+{/foreach}

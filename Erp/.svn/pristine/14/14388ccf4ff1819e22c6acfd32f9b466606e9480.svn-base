@@ -1,0 +1,16 @@
+<div style="border-bottom: #FCF 1px solid; height:28px; line-height:30px; padding-bottom:2px;">
+	<div style="float:left; font-weight:bold; font-size:18px; padding-right:30px; line-height:16px;">分销模块</div>
+  <ul class="navigation">
+    <li><a href="main_distributor_manage.php">主分销商维护</a></li>  
+    <li><a href="distributor_manage.php">分销店铺维护</a></li>
+    <li><a href="distribution_provide_price.php">商品供价维护</a></li>
+    <li><a href="distribution_sale_price.php">商品编辑</a></li>
+    <li><a href="distribution_group_goods.php">商品套餐维护</a></li>
+    <li><a href="distribution_order.php">下分销订单</a></li>
+    <li><a href="distribution_order_import.php">订单导入</a></li>
+    <li><a href="distribution_order_manage.php">订单管理</a></li>
+    <li><a href="distribution_purchase_request.php">提货清单</a></li>
+    <li><a href="distribution_delivery.php">发货</a></li>
+		<!--<li class="actived"><a href="distribution_order.php">下分销订单</a></li>-->
+  </ul>
+</div>

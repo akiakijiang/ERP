@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>修改采购发票</title>
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+<!-- Autocomplete -->
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="{$WEB_ROOT}admin/misc/autocomplete.js"></script>
+<link rel="stylesheet" href="{$WEB_ROOT}admin/misc/autocomplete.css" />
+
+<script type="text/javascript">
+{if $smarty.request.info}
+	alert("{$smarty.request.info}");
+{/if}
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+// <![CDATA[
+$(document).ready(function(){
+	/**
+	* 商品搜索
+	*/
+	$('#autocomplete_goods').autocomplete(WEB_ROOT + 'admin/ajax.php?act=search_goods', {
+		dataType : 'json',
+		formatItem : function(row, i, max, value, term) {
+			return(row.goods_name);
+		},
+		formatResult : function(row) {
+			return(row.goods_name);
+		},
+		mustMatch: false
+	}).result(function(event, row, formatted) {
+		// 商品颜色
+		$('#search_goods_id').val(row.goods_id);
+		$('#autocomplete_styles').val("");
+		data = $.ajax({
+			url: WEB_ROOT + 'admin/ajax.php?act=search_goods_styles',
+			dataType: 'json',
+			data: 'goods_id=' + row.goods_id,
+			type: 'POST',
+			async: true,
+			success : function(result) {
+				render_goods_style_autocomplete(result);
+			}
+		});
+	});
+	
+	/**
+	 * 渲染商品颜色选择的自动完成输入框
+	 */
+	var _init = false;
+	function render_goods_style_autocomplete(result)
+	{
+		var $elm = $('#autocomplete_styles');
+		
+		// 为空表示没有颜色的商品
+		if (result == '')
+		{
+			if (_init) {
+				$elm.unautocomplete();
+				_init = false;
+			}
+			$elm.val('').attr('disabled', true);
+			return;
+		}
+		
+		if ($elm.attr('disabled')) {
+			$elm.attr('disabled', false);
+		}
+		if (_init)
+		{
+			$elm.val('').setOptions({data: result});
+		}
+		else
+		{
+			// 初始化自动完成 
+			$elm.autocomplete(result, {
+				formatItem : function(row, i, max, value, term) {
+					return(row.color);
+				},
+				mustMatch: true,
+				minChars : 0
+			}).result(function(event, row, formatted) {
+				$('#search_goods_style_id').val(row.style_id);
+			});	
+			_init = true;	
+		}
+	}
+
+	/**
+	* 供应商
+	*/
+	$('#autocomplete_provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+		minChars: 0,
+		mustMatch: true,
+		dataType : 'json',
+		formatItem : function(row, i, max, value, term) {
+			return(row.provider_name);
+		},
+		formatResult : function(row) {
+			return(row.provider_name);
+		}
+	}).result(function(event, row, formatted) {
+		// 将隐藏域的值设为供应商的id
+		$('#provider_id').val(row.provider_id);
+	});
+
+	// 手动增加商品检查
+	$('#purchase_invoice_item_add_form').bind('submit', function(){
+		if (!$('#autocomplete_styles').attr('disabled')) {
+			v = $('#search_goods_style_id').val();
+			if (v == '') {
+				alert('请选择一款颜色');
+				return false;
+			}
+		}
+		
+		return true;
+	});
+});
+// ]]>
+
+function status_submit(status) {
+	var form_obj = document.getElementById("status_form");
+	form_obj.status.value = status;
+	form_obj.submit();
+	return true;
+}
+
+function select_all_checkbox(name, value) {
+	var check_box_list = document.getElementsByName(name);
+	var i = 0;
+	for (i = 0; i < check_box_list.length; i++) {
+		check_box_list[i].checked = value;
+	}
+}
+
+function anti_checkbox(name) {
+	var check_box_list = document.getElementsByName(name);
+	var i = 0;
+	for (i = 0; i < check_box_list.length; i++) {
+		if (check_box_list[i].checked) {
+			check_box_list[i].checked = "";
+		} else {
+			check_box_list[i].checked = "checked";
+		}
+	}
+}
+
+function delete_item(purchase_invoice_item_id) {
+	select_all_checkbox('purchase_invoice_item_id[]', '');
+	
+	var checkbox_obj = document.getElementById("checkbox_" + purchase_invoice_item_id);
+	checkbox_obj.checked = 'checked';
+	var form_obj = document.getElementById("delete_form");
+	form_obj.submit();
+}
+function open_close(obj_id) {
+	var obj = document.getElementById(obj_id);
+	if (obj == null) return;
+	
+	if (obj.style.display == '') {
+		obj.style.display = 'none';
+	} else {
+		obj.style.display = '';
+	}
+}
+</script>
+{/literal}
+</head>
+
+<body>
+<form id="status_form" action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+	<input type="hidden" name="status" />
+	<input type="hidden" name="invoice_no" value="{$smarty.request.invoice_no}" />
+	<input type="hidden" name="action" value="purchase_invoice_status_change" />
+</form>
+
+
+<h2 align="center">修改采购发票&nbsp;&nbsp;{if $purchase_invoice->review_super}<span style="color: red">商品不一致</span>{/if}<a href="purchase_invoice_item_list.php?invoice_no={$smarty.request.invoice_no}">查看关联</a></h2>
+<p>
+	<b>发票号：</b>{$purchase_invoice->invoiceNo} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>状态：</b>{assign var=status value=$purchase_invoice->status}{$_CFG.adminvars.purchase_invoice_status_mapping[$status]}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	{if $purchase_invoice->status == 'INIT'}
+		<!--<input type="button" value="废除" onclick="status_submit('CANCEL');" />-->
+	{/if}
+	{if $purchase_invoice->status == 'INIT'}
+		{if $match_action == 0}
+			<input type="button" value="审核" disabled />
+		{else}
+			{if $purchase_invoice->review_super}
+				{if "cw_review_purchase_invoice_plus"|check_admin_priv}
+					<input type="button" value="商品不一致审核" onclick="status_submit('CONFIRM');" />
+				{else}
+					<input type="button" value="商品不一致审核" disabled style="color:red"/>
+				{/if}
+			{else}
+				{if "cw_review_purchase_invoice"|check_admin_priv}
+					{if $purchase_invoice->totalCost == $purchase_invoice->match_cost}
+						<input type="button" value="审核" onclick="status_submit('CONFIRM');" />
+					{else}
+					    <input type="button" value="金额不一致审核" onclick="status_submit('CONFIRM');" />
+					{/if}
+				{else}
+					{if $purchase_invoice->totalCost == $purchase_invoice->match_cost}
+						<input type="button" value="审核" disabled />
+					{else}
+						<input type="button" value="金额不一致审核" disabled />
+					{/if}
+				{/if}				
+			{/if}
+		{/if}
+	{/if}
+	{if $purchase_invoice->status == 'CONFIRM'}
+		{if $purchase_invoice->review_super}
+			{if "cw_review_purchase_invoice_plus"|check_admin_priv}
+				<input type="button" value="商品不一致复核" onclick="status_submit('CLOSE');" />
+			{else}
+				<input type="button" value="商品不一致复核" disabled />
+			{/if}
+		{else}
+			{if "cw_review_purchase_invoice_plus"|check_admin_priv}
+				{if $purchase_invoice->totalCost == $purchase_invoice->match_cost}
+					<input type="button" value="复核" onclick="status_submit('CLOSE');" />
+				{else}
+					<input type="button" value="金额不一致复核" onclick="status_submit('CLOSE');" />
+				{/if}
+			{else}
+				{if $purchase_invoice->totalCost == $purchase_invoice->match_cost}
+					<input type="button" value="复核" disabled />
+				{else}
+					<input type="button" value="金额不一致复核" disabled />
+				{/if}
+			{/if}		
+		{/if}
+	{/if}
+</p>
+
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+<p>
+	<b>总金额：</b>￥{$purchase_invoice->totalCost|erp_price_format} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>使用金额：</b>￥{$purchase_invoice->match_cost|erp_price_format} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>未用金额：</b>￥{$purchase_invoice->totalCost-$purchase_invoice->match_cost|erp_price_format} <br/>
+	<b>开票时间：</b>
+	{if $purchase_invoice->status == "INIT"}
+		<input name="invoice_date" value="{$purchase_invoice->invoiceDate|date_format:"%Y-%m-%d"}" size="10" id="invoice_date" />
+		<input type="button" value="..." id="invoice_date_trigger" />
+		{literal}
+		<script type="text/javascript">//<![CDATA[
+		Zapatec.Calendar.setup({
+			weekNumbers       : false,
+			electric          : false,
+			inputField        : "invoice_date",
+			button            : "invoice_date_trigger",
+			ifFormat          : "%Y-%m-%d",
+			daFormat          : "%Y-%m-%d"
+		});
+		//]]>
+		</script>
+		{/literal}
+	{else}
+		{$purchase_invoice->invoiceDate|date_format:"%Y-%m-%d"}
+	{/if}
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<!--开票单位代码：{$purchase_invoice->supplierId}--> 
+	<b>开票单位：</b>
+	{if $purchase_invoice->status == "INIT"}
+		<input id="autocomplete_provider" value="{$purchase_invoice->supplierId|get_provider_name}" size="40" />
+		<input type="hidden" name="provider_id" value="{$purchase_invoice->supplierId}" id="provider_id" />
+	{else}
+		{$purchase_invoice->supplierId|get_provider_name}
+	{/if}
+</p>
+<p>
+	<b>录入人：</b>{$purchase_invoice->createdUser} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<b>录入时间：</b>{$purchase_invoice->createdStamp|date_format:"%Y-%m-%d %T"}<br>
+	{if $purchase_invoice->confirm_history}
+		<b>审核人：</b>{$purchase_invoice->confirm_history->createdUser} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<b>审核时间：</b>{$purchase_invoice->confirm_history->createdStamp|date_format:"%Y-%m-%d %T"} <br>
+	{/if}
+	{if $purchase_invoice->close_history}
+		<b>复核人：</b>{$purchase_invoice->close_history->createdUser} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<b>复核时间：</b>{$purchase_invoice->close_history->createdStamp|date_format:"%Y-%m-%d %T"} <br>
+	{/if}
+</p>
+<p>
+	<b>备注：</b><br><br>
+	{if $purchase_invoice->status == "INIT"}
+		<textarea name="note" style="width:600px; height:60px;">{$purchase_invoice->note}</textarea>
+	{else}
+		{$purchase_invoice->note}
+	{/if}
+	{if $purchase_invoice->status == "INIT"}
+		<input type="submit" value="修改发票信息" />
+	{/if}
+</p>
+
+<input type="hidden" name="action" value="purchase_invoice_edit" />
+<input type="hidden" name="invoice_no" value="{$smarty.request.invoice_no}" />
+</form>
+
+{if "cg_edit_purchase_invoice"|check_admin_priv }
+
+{if $purchase_invoice->status == "INIT"}
+	<input type="button" value="添加明细" onclick="open_close('item_add')"/>
+{/if}
+<div id="item_add" style="display: none;">
+<hr noshade="noshade" />
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST">
+	<p>增加待开票清单商品</p>
+	<p>
+		开票清单号：<input name="purchase_invoice_request_id" />
+		<input type="submit" value="追加待开票清单商品" />
+		<input type="hidden" name="invoice_no" value="{$smarty.request.invoice_no}"/>
+		<input type="hidden" name="action" value="purchase_invoice_item_add_by_request"/>
+	</p>
+</form>
+
+<hr noshade="noshade" />
+
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST" id="purchase_invoice_item_add_form">
+	<p>手动增加商品</p>
+	<p>
+		商品 <input name="search_goods_name" id="autocomplete_goods" size="40" /><input type="hidden" name="search_goods_id" id="search_goods_id" />
+		颜色 <input name="search_goods_style" id="autocomplete_styles" disabled="disabled" size="10"/><input type="hidden" name="search_goods_style_id" id="search_goods_style_id" />
+		数量 <input name="amount"  size="5" />
+		含税单价 <input name="price" size="10" /> 
+		<input type="submit" name="button10" id="button13" value="增加商品到发票" />
+	</p>
+	<input type="hidden" name="invoice_no" value="{$smarty.request.invoice_no}" />
+	<input type="hidden" name="action" value="purchase_invoice_item_add" />
+</form>
+</div>
+
+{/if}{* end if "cg_edit_purchase_invoice"|check_admin_priv *}
+
+<hr noshade="noshade" />
+<p>该发票已含以下商品</p>
+<form action="{$WEB_ROOT}admin/purchase_invoice/purchase_invoice_action.php" method="POST" id="delete_form">
+<table class="bWindow" style="width: 900px;">
+	<tr>
+		<th width="53" height="30">选择</th>
+		<th width="103">待开票清单号</th>
+		<th width="103">商品代码</th>
+		<th width="128">商品名称</th>
+		<th width="53">数量</th>
+		<th width="83">去税单价</th>
+		<th width="58">含税单价</th>
+		<th width="79">去税总金额</th>
+		<th width="74">含税总金额</th>
+		<th width="70">操作</th>
+	</tr>
+	{foreach from=$purchase_invoice_items item=purchase_invoice_item name=purchase_invoice_item}
+	<tr>
+		<td align="center" height="24">
+			{if $purchase_invoice->status == "INIT"}
+				<input name="purchase_invoice_item_id[]" type="checkbox" value="{$purchase_invoice_item->purchaseInvoiceItemId}" id="checkbox_{$purchase_invoice_item->purchaseInvoiceItemId}" />
+			{/if}
+		</td>
+		<td align="center">{"<br>"|implode:$purchase_invoice_item->match_purchase_request_id_list|default:"手动添加"}</td>
+		<td align="center">{$purchase_invoice_item->product_map.goods_id}#{$purchase_invoice_item->product_map.style_id}</td>
+		<td>
+    	{$purchase_invoice_item->product_map.goods_name}
+      {if $purchase_invoice_item->type == 'GT'}
+      <span style="color:red;">(gt调整)</span>
+      {elseif $purchase_invoice_item->type == 'GT_ONLY'}
+      <span style="color:red;">(跨期gt调整)</span>
+      {/if}
+		</td>
+		<td align="center">{$purchase_invoice_item->totalQuantity}</td>
+		<td align="right">￥{$purchase_invoice_item->totalNetCost/$purchase_invoice_item->totalQuantity|invoice_price_format}</td>
+		<td align="right">￥{$purchase_invoice_item->totalCost/$purchase_invoice_item->totalQuantity|invoice_price_format}</td>
+		<td align="right">￥{$purchase_invoice_item->totalNetCost|invoice_price_format}</td>
+		<td align="right">￥{$purchase_invoice_item->totalCost|invoice_price_format}</td>
+		<td align="center">
+		    {if $purchase_invoice->status == 'INIT'}
+		    	<input type="submit" name="button" id="button" value="删除" onclick="delete_item('{$purchase_invoice_item->purchaseInvoiceItemId}')" />
+		    {/if}
+		</td>
+	</tr>
+	{/foreach}
+</table>
+<p>发票总金额：￥{$purchase_invoice->totalCost}&nbsp;&nbsp;&nbsp;&nbsp;商品总数量：{$purchase_invoice->match_count}</p>
+{if $purchase_invoice->status == 'INIT'}
+<p>
+	<input type="button" value="全选" onclick="select_all_checkbox('purchase_invoice_item_id[]', 'checked')" />
+	<input type="button" value="反选" onclick="anti_checkbox('purchase_invoice_item_id[]')" />
+	<input type="submit" value="删除选中" />
+</p>
+{/if}
+<input type="hidden" name="invoice_no" value="{$smarty.request.invoice_no}" />
+<input type="hidden" name="action" value="purchase_invoice_item_delete" />
+</form>
+
+</body>
+</html>

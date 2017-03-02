@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+	<link href="styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/tablesorter.js"></script>
+    
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-zh.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  
+ 	{literal}
+  <script type="text/javascript">
+	// <![CDATA[
+	$(document).ready(function(){
+			// 排序
+			$("#sorttable").tablesorter({ 
+					headers: { 
+						1:{sorter: false}, 2:{sorter: 'currency'}, 7:{sorter: false}
+					}
+			});
+	});
+	// ]]>
+	</script>
+  {/literal}
+  
+	<title>Z101销量统计</title>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px; min-width:700px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;Z101销量统计&nbsp;</span></legend>
+  
+  
+	<div style="clear:both;"> 
+  	<h3 style="color:#09F;">查询</h3>
+    <form method="get">
+    <table cellpadding="5" cellspacing="1">
+      <tr>
+        <td width="120">确认时间</td>
+        <td>    
+        	<input type="text" name="start" value="{$filter.start}" id="start" size="10" maxlength="20" /> <input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />
+          到
+    			<input type="text" name="end" value="{$filter.end}" id="end" size="10" maxlength="20" /> <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+				</td>
+      </tr>
+            
+      <tr>
+        <td>订单状态</td>
+        <td>
+          <select name="order_status">
+              <option value="">-ALL [订单状态]</option>{html_options options=$order_status_list selected=$filter.order_status}
+					</select>  &nbsp;&nbsp;&nbsp;&nbsp;
+          <select name="pay_status">
+              <option value="">-ALL [收款状态]</option>{html_options options=$pay_status_list selected=$filter.pay_status}
+          </select>  &nbsp;&nbsp;&nbsp;&nbsp;
+          <select name="shipping_status">
+              <option value="">-ALL [发货状态]</option>{html_options options=$shipping_status_list selected=$filter.shipping_status}
+					</select>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>渠道</td>
+        <td>
+        	<select name="sale_channel"><option value="">- ALL</option>{html_options options=$sale_channel_list selected=$filter.sale_channel}</select>
+        	&nbsp;&nbsp;每页记录数： <select name="size">{html_options options=$page_size_list selected=$filter.size}</select>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" value="筛选" />
+        </td>
+      </tr> 
+    </table> 
+    </form>
+    
+  </div>
+
+<!--{if $order_list}-->
+  <div style="clear:both;">
+      <br />
+      <h3 style="color:#09F;">Z101销量 &nbsp;&nbsp; <span style="font-weight:normal; color: #999">共有记录{$total}条</span></h3>
+
+      <table id="sorttable" class="bWindow" style="margin-top:10px;">
+        <thead>
+        <tr>
+          <th>渠道</th>
+          <th>订单号</th>
+          <th class="{ldelim}sorter: 'procent'{rdelim}">订单金额</th>
+          <th width="90px">下单时间</th>
+          <th width="90px">确认时间</th>
+          <th>送货地址</th>
+          <th>分销商</th>
+          <th width="140px">订单状态</th>
+          <th>支付方式</th>
+        </tr>
+        </thead>
+      
+        <tbody>
+        <!--{foreach from=$order_list item=item}-->
+        <tr align="center" class="{cycle values="odd,even"}">
+          <td>{$item.sale_channel_name}</td>
+          <td><a href="order_edit.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+          <td>{$item.order_amount}</td>
+          <td>{$item.order_time}</td>
+          <td>{$item.confirm_time}</td>
+          <td>{$item.region}</td>
+          <td>{$item.distributor_name}</td>
+          <td>{$item.mix_status_name}</td>
+          <td>{$item.pay_name}</td>
+        </tr>
+        <!--{/foreach}-->
+        </tbody>
+      
+      </table>
+      
+      <br />
+			{$pagination}
+      
+      <br />
+	</div>
+<!--{/if}-->
+
+
+	<br /><br />
+
+</fieldset>
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+  button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+  button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

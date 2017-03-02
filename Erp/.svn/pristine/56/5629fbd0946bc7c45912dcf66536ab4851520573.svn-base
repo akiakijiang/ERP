@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <script type="text/javascript">
+    //{literal}
+	/**
+	 * 打印
+	 */
+	function hidden_print(url) {
+		window.print_frame.location.href = url;
+	}
+	function check_all_checkbox(name) {
+		var o = document.getElementsByName(name);
+		var all = o.length;
+		var j = 0;
+		for ( var i = 0; i < all; i++) {
+			if (o[i].checked) {
+				j++;
+			}
+		}
+		var ccc = true;
+		if (j >= all) {
+			ccc = false;
+		}
+		if (ccc) {
+			for ( var i = 0; i < all; i++) {
+				o[i].checked = true;
+			}
+		} else {
+			for ( var i = 0; i < all; i++) {
+				o[i].checked = false;
+			}
+		}
+	}
+	function printx(name) {
+		var o = document.getElementsByName(name);
+		var all = o.length;
+		var j = 0;
+		for ( var i = 0; i < all; i++) {
+			if (o[i].checked) {
+				document.forms.sntiform.submit();
+				return ;
+			}
+		}
+		alert('请选择要打印的项。');
+	}
+	function pn_reduce_increase(x, operator) {
+		var a = $('#' + x);
+		var av = a.val();
+		av = 1 * av;
+		av = isNaN(av) ? 0 : av;
+		if (operator == '-') {
+			a.val(av > 0 ? av - 1 : 0);
+		} else if (operator == '+') {
+			a.val(av + 1);
+		}
+	}
+	//{/literal}
+  </script>
+  <title>串号跟踪管理</title>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 5000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;串号跟踪管理&nbsp;</span></legend>
+
+	<div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+  	<div class="item"><a href="serialnum_track.php?act=generator">串号生成</a></div>
+    <div class="active"><a href="#">串号跟踪查询</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  	<h3 style="color:#09F; margin: 0px auto; float: left;">查询</h3>
+    </div>
+  
+  <div style="clear:both;"> 
+  <!-- <h3 style="color:#09F; margin: 0px auto;">查询</h3> -->
+  	<form method="get">  
+  	<table cellpadding="0" cellspacing="0">
+    	<tr>
+      	<td width="90">输入外箱条码：</td>
+        <td>
+            <input type="text" name="keyword" value="{$smarty.request.keyword}" size="40" 
+            	class="txt" style="ime-mode:disabled;" onkeyup="javascript: if (event.keyCode == 13) this.form.submit();" /> 
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" value="查询" class="btn" />
+        </td>
+        </tr>
+	</table>
+    </form>
+  </div>
+  
+<!--{if $serialnum_track_list}-->
+
+      <style>
+<!-- {literal} -->
+/* table style \\\ */ /* form /// */
+.btn {
+	margin: 3px 0;
+	padding: 2px 10px;
+	*padding: 3px 0px 0px; /* fix ie6 ie7*/
+	border-color: #ddd #666 #666 #ddd;
+	background: #DDD;
+	color: #000;
+	cursor: pointer;
+	vertical-align: middle;
+}
+.btn:hover {background: #3667A9; color: #fff;}
+.btn:hover {background: #669900; color: #fff;}
+textarea, input, select, button {
+	padding: 2px;
+	border: 1px solid;
+	border-color: #666 #ccc #ccc #666;
+	background: #F9F9F9;
+	color: #333;
+	font-family: 'Microsoft YaHei',monospace,Tahoma,Verdana;
+}
+.txt, select {
+	vertical-align: middle;
+}
+input, button {
+	font-size: 12px;
+	*padding-bottom: 5px;
+}
+.txt:hover, .txt:focus, select:hover, select:focus, textarea:hover, textarea:focus {
+	border-color: #09C;
+	background: #F5F9FD;
+}
+tr.ths th {
+	background-color: #F7F4F0;/*F0EBE2*/
+}
+
+tr.hbg {
+	background-color: #fff;
+}
+tr.hbg:hover {
+	background-color: #F5F9FD;
+}
+body {
+	font-family: 'Microsoft YaHei', monospace;
+}
+<!-- {/literal} -->
+      </style>
+      
+  <div style="clear:both;">
+      
+      <table class="bWindow" style="margin-top: 10px;">
+        <tr class="ths">
+          <th width="30%">外箱条码</th>
+          <th width="30%">品名</th>
+          <th width="12%">数量</th>
+          <th width="16%">生产日期</th>
+          <th width="12%">操作</th>
+        </tr>
+    
+        <!--{foreach from=$serialnum_track_list item=item}-->
+        
+        <tr align="center" class="hbg">
+            <td><a href="?keyword={$item.track_number}">{$item.track_number}</a></td>
+            <td>{$item.goods_name}</td>
+            <td>{$item.quantity}</td>
+            <td>{$item.production_date}</td>
+	        <td><a href="javascript:void(0);hidden_print('serialnum_track.php?act=print&serialnum_track_id={$item.serialnum_track_id}&print=1');">打印</a></td>
+        </tr>
+
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <!-- 只打印选择的项 -->
+      <!--{if $serialnum_track.item_list}-->
+      <form name="sntiform" id="sntiform" action="?act=snti_h&back={$smarty.server.REQUEST_URI|urlencode}" method="post">
+      <div style="margin-top: 6px; margin-bottom: 6px;">
+      <span style="float: right;">
+      <!--{if $serialnum_track.prev}-->
+<input type="button" onclick="location.href = '?keyword={$serialnum_track.prev}';" class="btn" value="← 前一个" /><!--{/if}-->
+	  <!--{if $serialnum_track.next}-->
+<input type="button" onclick="location.href = '?keyword={$serialnum_track.next}';" class="btn" value="后一个 →" /><!--{/if}-->
+      </span>
+<input type="button" onclick="check_all_checkbox('snti[{$serialnum_track.track_number}][]');" class="btn" value="选择全部/取消全部" />
+<select name="printer_id">{html_options options=$printers selected=$smarty.session.latest_printer_id}</select>
+<input type="button" onclick="printx('snti[{$serialnum_track.track_number}][]')" class="btn" value="打印选中项" />
+<input type="button" onclick="history.back();" class="btn" value="后退" />
+<input type="button" onclick="location.href = '?';" class="btn" value="返回串号列表页" />
+</div>
+<table class="bWindow">
+	<tr align="center" class="ths">
+        <th width="10%" colspan="2">选择 / No.</th>
+        <th width="30%">串号</th>
+        <th width="40%">条码</th>
+        <th width="20%">该条打印几份？</th>
+	</tr>
+	{foreach from=$serialnum_track.item_list item=item name="list"}
+	<tr align="center" class="hbg">
+        <td><input type="checkbox" name="snti[{$serialnum_track.track_number}][]" value="{$item.serial_number}" /></td>
+        <td align="right" style="padding-right: 6px;">{$smarty.foreach.list.iteration}</td>
+        <td>{$item.serial_number}</td>
+    	<td><img src="code_img.php?barcode={$item.serial_number}&width={$item.code_width}&height=30&text=0" /></td>
+        <td>
+        	<input type="button" style="padding: 1px 3px;" class="btn" value="－" title="减一" onclick="pn_reduce_increase('printnum_{$serialnum_track.track_number}_{$item.serial_number}', '-');" />
+        	<input type="text" style="text-align: center;" id="printnum_{$serialnum_track.track_number}_{$item.serial_number}" name="printnum_{$serialnum_track.track_number}_{$item.serial_number}" size="6" class="txt" value="1" />
+        	<input type="button" style="padding: 1px 3px" class="btn" value="＋" title="加一" onclick="pn_reduce_increase('printnum_{$serialnum_track.track_number}_{$item.serial_number}', '+');" />
+        </td>
+    </tr>
+	{/foreach}
+</table>
+</form>
+      <!--{/if}-->
+      
+      <!--{if $pagination}-->
+      <br /><br />
+      {$pagination}
+      <br />
+      <!--{/if}-->
+  </div>
+<!--{/if}-->
+ 
+  <br /><br />
+  
+</fieldset>
+
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <title>库存有效期查询</title>
+  <!-- Loading Calendar JavaScript files -->
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link href="misc/thickbox.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <!-- Sinri's Print Manage JS module -->
+  <script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+  <script type="text/javascript">
+  {literal}
+  // <![CDATA[
+  /**
+   * 检验商家编码 不为套餐
+   */
+   function check_input_data(){
+	  var productCode = $('#productCode').val();
+	  if(productCode) {
+	    var reg = "^[0-9]+(_[0-9]+)?$";
+	    if(!productCode.match(reg)){
+		  alert("商家编码不能套餐")
+          return false;
+        } 
+	  }
+   }; 
+  {/literal}
+  </script>   
+</head>
+<div style="display:block;line-height: 40px;"> <br />
+ <form action="inventory_validity_check.php" id= "form" method ="post">
+   选择分类：
+      <select name="category_id" >
+      <option value="-1">所有</option>
+      {html_options options=$category_list  selected = $smarty.request.category_id}
+      </select>
+    <br>
+    商家编码：
+    <input  id ="productCode" style="width:100px" size="50" class="ac_input" name="productCode"  value="{$smarty.request.productCode}" >
+    商品名：
+    <input  style="width:100px" size="50" class="ac_input" name="goods_name"  value="{$smarty.request.goods_name}">
+    商品条码：
+    <input style="width:100px" name="barcode" value="{$smarty.request.barcode}">
+    全新：
+    <select name="is_new">
+    <option value="-1">所有</option>
+    <option value="INV_STTS_AVAILABLE" {if $smarty.request.is_new == "INV_STTS_AVAILABLE"}selected{/if}>全新</option>
+    <option value="INV_STTS_USED" {if $smarty.request.is_new == "INV_STTS_USED"}selected{/if}>二手</option>
+    </select>
+    <br>
+  商品生产日期：
+	<input type="text" style="height:14px;width:100px" id="startCalendar" name="startCalendar" value="{$result.startCalendar}">
+	<input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" />
+	&nbsp;到&nbsp;
+	<input type="text" style="height:14px;width:100px" id="endCalendar" name="endCalendar"  value="{$result.endCalendar}">
+	<input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" />
+	<br>
+   仓库:
+    <select name="available_facility">
+    <option value="-1">所有</option>
+    {html_options options=$available_facility selected = $smarty.request.available_facility }
+    </select>
+    是否仅统计有货库存:
+    <select name="is_show_urikitamono">
+    <option value="0" {if $is_show_urikitamono eq 0} selected="selected"{/if}>只显示有货库存条目</option>
+    <option value="1" {if $is_show_urikitamono eq 1} selected="selected"{/if}>显示有货和无货库存条目</option>
+    </select>
+    如需检查和预防超卖，可以使用【显示有货和无货库存条目】。
+    <br>
+    <input type="submit" name="act" value="搜索" onclick="return check_input_data();" >
+    <input type="submit" name="type" value="导出库存清单">
+ </form> <br/>
+</div>
+<table class="bWindow">
+  <thead>
+	<tr>
+		<th width="12%">商品名称</th>
+		<th width="8%">商家编码</th>
+		<th width="10%">商品条码</th>
+		<th width="5%">新旧</th>
+		<th width="10%">仓库名称</th>
+		<th width="10%">库位</th>
+		<th width="10%">生产日期</th>
+		<th width="6%">库存</th>
+		<!-- {if $party_id == 65617} -->
+		<th width="10%">过1/3效期时间</th>
+		<th width="10%">过1/2效期时间</th>
+		<!-- {/if} -->
+		<th width=10%>批次号</th>
+	</tr>
+  <tbody>
+ <!--{foreach from=$goods_list key=goods_id item=goods name="goods"}-->
+ <tr align="center" height="20px;">
+  <td>{$goods.goods_name}</td>
+  <td>{$goods.productCode}</td>
+  <td>{$goods.barcode}</td>
+  <td>{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新 {else}二手 {/if}</td>
+  <td>{$goods.facility_name}</td>
+   <td>{$goods.location_barcode}</td>
+   <td>{$goods.validity}</td>
+   <td>{$goods.storage_count}</td>
+   <!-- {if $party_id == 65617} -->
+   <td>{$goods.1_3validity}</td>
+   <td>{$goods.1_2validity}</td>
+   <!-- {/if} -->
+   <td>{$goods.batch_sn}</td>
+   
+
+</tr>
+<!--{/foreach}-->
+</tbody>
+</thead>
+</table>
+ {$pagination}
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      $(function(){
+    	  Zapatec.Calendar.setup({	      
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "startCalendar",
+	        button            : "startTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+	      Zapatec.Calendar.setup({
+	        weekNumbers       : false,
+	        electric          : false,
+	        inputField        : "endCalendar",
+	        button            : "endTrigger",
+	        ifFormat          : "%Y-%m-%d",
+	        daFormat          : "%Y-%m-%d"
+	      });
+	      selectedByValue($("select[name=pay_id]"));
+	      selectedByValue($("select[name=shipping_status]"));
+	      selectedByValue($("select[name=pay_status]"));
+	      selectedByValue($("select[name=order_status]"));
+	      selectedByValue($("select[name=shipping_id]"));
+	      selectedByValue($("select[name=search_type]"));
+      });
+    //]]>
+    	function selectedByValue(node){
+    		node.val(node.attr("sValue"));
+    	}
+</script>
+{/literal}
+</html>

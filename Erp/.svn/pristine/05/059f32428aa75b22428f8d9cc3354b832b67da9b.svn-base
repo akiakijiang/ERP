@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>批拣</title>
+    <link href="styles/default.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript">
+    // <![CDATA[
+    // {literal}
+    /**
+     * 全选
+     */
+    function select_all(node, type)
+    {
+        node = node ? node : document ;
+        $(node).find(':checkbox:enabled').each(function(i){
+            this.checked = true;
+        });
+    }
+
+    /**
+     * 反选
+     */
+    function select_reverse(node, type)
+    {
+        node = node ? node : document ;
+        if (type == 'disabled') {
+            expr = ':checkbox:disabled';
+        } else {
+            expr = ':checkbox:enabled';
+        }
+        $(node).find(expr).each(function(i){
+            this.checked = !this.checked;
+        });
+    }
+    $(document).ready(function(){
+        $(".picklist").click(function(){
+            var facility_id = $(this).parent().parent().find("input[name='facility_id']").val();
+            var shipping_id = $(this).parent().parent().find("input[name='shipping_id']").val();
+            var orders_obj = $(this).parent().parent().find("input[name='order_id[]']");
+            var order_list = "";
+            orders_obj.each(function(){
+                order_list += $(this).val() + " ";
+            });
+            var goods_obj = $(this).parent().parent().find("input[name='goods_id[]']")
+            var goods_list  = "";
+            goods_obj.each(function(){
+                goods_list += $(this).val() + " ";
+            });
+            var button = $(this).attr("name");
+            var act = "";
+            if (button == 'picking_list') {
+                act = "act=picking_list";
+            } else if (button == 'dispatch_list') {
+                act = "act=dispatch_list";
+            }
+            var shipment_id = $(this).parent().parent().find("input[name='shipment_id[]']");
+            var shipment_list = "";
+            shipment_id.each(function(){
+                shipment_list += $(this).val() + " ";
+            });
+            //location.href = "picklist_shipment.php?"+act +"&facility_id=" + facility_id + "&shipping_id=" + shipping_id + "&order_list=" 
+            //    + order_list + "&goods_list=" + goods_list + "&shipment_list=" + shipment_list;
+            //alert(act +"&facility_id=" + facility_id + "&shipping_id=" + shipping_id + "&order_list=" 
+            //        + order_list + "&goods_list=" + goods_list + "&shipment_list=" + shipment_list);
+            $.ajax( {
+                url : "picklist_shipment.php",
+                data : act +"&facility_id=" + facility_id + "&shipping_id=" + shipping_id + "&order_list=" 
+                        + order_list + "&goods_list=" + goods_list + "&shipment_list=" + shipment_list,
+                type : "POST",
+                cache: false,
+                dataType :"json",
+                error : function(XMLHttpRequest, textStatus, errorThrown) {
+                     alert("检索失败：" + XMLHttpRequest.responseText);
+                     //alert(XMLHttpRequest.status) ;
+                },
+                success : function(json) {
+                    var result = eval(json);
+                    if (result['act'] == "picking_list") {
+                        pprint('picklist_print.php?act=picking_list&PICKLIST_ID='+result['picklist_id']+'&print=1','hidden');
+                    } else if (result['act'] == "dispatch_list") {
+                        pprint('shipment_print.php?shipment_id='+result['shipment_list']+'&print=1','hidden');
+                    }
+                }
+            });
+        });
+    });
+    /**
+     * 打印
+     */
+    function pprint(url, mode)
+    {
+        if (mode == 'hidden') {
+            var iframe = document.getElementById('_pprint_');
+            if (!iframe) {
+                var obj = document.createElement("iframe");
+                obj.frameborder = 0;
+                obj.width = 0;
+                obj.height = 0;
+                obj.id = '_pprint_';
+                var iframe = document.body.appendChild(obj);
+            }
+            iframe.src = url;
+        } else {
+            window.open(url, "PrintWindow", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=800,height=920,left=10,top=240");         
+        }
+    }
+
+    // {/literal}
+    // ]]>
+    </script>
+    
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}    
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;批拣&nbsp;</span></legend>
+  
+  <div class="menu-tab">
+      <div class="right-edge">&nbsp;</div>
+      <div class="item"><a href="picklist_delivery.php">批拣发货</a></div>
+    <div class="active"><a href="picklist_shipment.php">拣选列表</a></div>
+      <div class="left-edge">&nbsp;</div>
+  </div>
+  
+  <form method="get">
+  <div style="clear:both;">
+      <h3 style="color:#09F;">查询</h3>
+      
+      <table cellpadding="5" cellspacing="1">
+        <tr>
+          <td>每页显示</td>
+          <td>
+              <select name="size">
+              {html_options options=$page_size_list selected=$filter.size}
+            </select> 条记录
+          </td>
+        </tr>
+        
+        <tr>
+          <td width="120">所处仓库</td>
+          <td>
+            <select name="facility_id"><option value="">- ALL</option>{html_options options=$facility_list selected=$filter.facility_id}</select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>快递方式</td>
+          <td>
+            <select name="shipping_id"><option value="">- ALL</option>{html_options options=$shipping_type_list selected=$filter.shipping_id}</select>
+          </td>
+        </tr>
+        
+         <tr>
+          <td>状态</td>
+          <td>
+            <select name="status">{html_options options=$status_list selected=$filter.status}</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="查询" />
+          </td>
+        </tr>
+         
+      </table>  
+  </div>
+
+  <input type="hidden" name="act" value="search" />
+  </form>
+  {if $total > 0}
+  <div style="clear:both;">
+       <h3 style="color:#F10;">以下订单建议批拣</h3>
+       <table class="bWindow" style="margin-top:10px;" id="table">
+         <tr>
+           <th width="30">No.</th>
+           {if $filter.status != 'PICKLIST_INPUT'}
+           <th>标识号</th>
+           {/if}
+           <th>业务组织</th>
+           <th>所处仓库</th>
+           <th>快递方式</th>
+           <th>订单号</th>
+           <th>物品名称：数量</th>
+           <th>重复订单数量</th>
+            <!--{if $filter.status != 'PICKLIST_PICKED' && $filter.status != 'PICKLIST_CANCELLED'}-->
+           <th>操作</th>
+           <!--{/if}-->
+         </tr>
+         <!--{foreach from=$candidate item=picking name="pickingList"}-->
+         <tr align="center" {if $smarty.foreach.pickingList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+           <td>{$smarty.foreach.pickingList.iteration}</td> 
+           {if $filter.status != 'PICKLIST_INPUT'}
+           <td><a href="picklist_delivery.php?picklist_id={$picking.picklist_id}" target="_blank">{$picking.picklist_id}</a></td>
+           {/if}
+           <td>{$picking.seller}</td> 
+           <td>{$picking.facility_name}<input type="hidden" name="facility_id" value="{$picking.facility_id}"></input></td>
+           <td>{$picking.shipping_name}<input type="hidden" name="shipping_id" value="{$picking.shipping_id}"></input></td>
+           <td>
+               <!--{foreach from=$picking.order_sn_list item=order_sn key=order_id}-->
+               <a href="order_edit.php?order_id={$order_id}" target="_blank">{$order_sn}</a>
+               <input type="hidden" name="order_id[]" value="{$order_id}"></input><br/>
+               <!--{/foreach}-->
+           </td>
+           <td>
+               <!--{foreach from=$picking.goods_name_list item=goods_info}-->
+               {$goods_info.goods_name} ： {$goods_info.goods_number}
+               <input type="hidden" name="goods_id[]" value="{$goods_info.goods_id}_{$goods_info.style_id}_{$goods_info.goods_number}" ></input><br/>
+               <!--{/foreach}-->
+           </td>
+           <td>{$picking.repeat_order_count}
+               <!--{foreach from=$picking.shipment_id_list item=item}-->
+               <input type="hidden" name="shipment_id[]" value="{$item}"></input>
+               <!--{/foreach}-->
+           </td>
+           <!--{if $filter.status != 'PICKLIST_PICKED' && $filter.status != 'PICKLIST_CANCELLED'}-->
+           <td><a href="javascript:void(0);" name="picking_list" class="picklist">打印拣货单</a>&nbsp;&nbsp;&nbsp;&nbsp;
+           <a href="javascript:void(0);" name="dispatch_list" class="picklist">批量打印发货单</a>&nbsp;&nbsp;&nbsp;&nbsp;
+           
+           <!--{if $filter.status == 'PICKLIST_PRINTED' || $filter.status == 'PICKLIST_ASSIGNED' }-->
+            <a href="picklist_shipment.php?act=cancelle_list&picklist_id={$picking.picklist_id}&status={$filter.status}&facility_id={$filter.facility_id}&shipping_id={$filter.shipping_id}&size={$filter.size}"
+             name="cancelle" >取消批拣</a>
+           <!--{/if}-->
+            </td>
+           <!--{/if}-->
+         
+         </tr>
+         <!--{/foreach}-->
+        </table>
+    <br />
+    <br />
+  </div>
+   <br /><br />
+ {$pagination}
+ {else}
+ <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录</h4></div>
+ {/if}
+</fieldset>
+</body>
+</html>

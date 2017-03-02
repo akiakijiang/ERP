@@ -1,0 +1,389 @@
+<!DOCTYPE>
+<html lang="zh-CN">
+<head>
+	<meta charset=utf-8>
+	<link rel="stylesheet" type="text/css" href="styles/reset.css">
+	<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript" src="misc/autocomplete.js"></script>
+	  
+	<script type="text/javascript" src="js/json2.js"></script>
+	<script type="text/javascript" src="js/v3.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="misc/autocomplete.css" />
+	<style type="text/css">
+	{literal}
+	body{
+		font-size: 14px;
+	}
+	table{
+		font-size: 13px;
+		width: 97%;
+		margin:0px auto
+	}
+	table th,table td{
+	    font-weight: normal;
+	    text-align: center;
+	    border:1px solid #62B4E8;
+	}
+	table td{
+	    padding:6px 0;
+	}
+
+	table th{
+	    padding:10px 0;
+	    background: #62B4E8;
+	    color:#fff;
+	}
+	h1{
+		font-size: 1.5em;
+		color:#333;
+		text-align: center;
+		margin:10px 0;
+	}
+	.button{
+				border:none;
+				outline: none;
+			    display: block;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 3px !important;
+			    color: #fff !important;
+			    width: 50px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	.submit{
+				border:none;
+				outline: none;
+			    background: #60b7e1;
+			    border-radius: 2px;
+			    -o-border-radius: 2px;
+			    padding: 2px 2px !important;
+			    color: #fff !important;
+			    width: 80px;
+			    height:30px;
+			    cursor: pointer;
+			    position: relative;
+			    margin: 2px auto;
+	}
+	.simpEditBtn{
+		width: auto;
+		margin:3px;
+	}
+	
+	.simpNewBtn{
+		width: auto;
+		margin:3px;
+	}
+	.simpDelBtn{
+		width: auto;
+		margin:3px;
+	}
+	.button:hover { 
+	                background: #3da1d1;
+	                transition:all .2s;
+	                -o-transition:all .2s;
+	                }
+	                
+	.button:active {
+	                position: relative;
+	                top:1px;
+	                }
+	input[type="text"]{
+                display: inline-block;
+                height: 32px;
+                line-height: 32px;
+                width: 100px;
+                padding:10px 5px;
+                color: #333;
+                border-radius: 3px;
+                -o-border-radius: 3px;
+                border:1px solid #b1b1b1;
+                outline: none; /* for chorme & safari's default effect */
+            }
+    .msg{
+        width: 80%;
+    	padding:5px 0 5px 40px;
+    	margin:10px auto;
+    	display: none;
+    	
+    }
+    .msg-success{
+    	background: url('img/tick_circle.png') #d5ffce no-repeat;
+    	background-position: 10px center;
+        border-color: #9adf8f;
+        color: #556652;
+        
+    }
+    .msg-error{
+    	background: url('img/cross_circle.png') #ffcece no-repeat;
+    	background-position: 10px center;
+        border-color: #df8f8f;
+        color: #665252;
+    }
+    .redtr{
+    	background-color: #ffcece;
+    }
+    .importantNote{
+        color:red;
+        font-size:18px;
+    }
+    {/literal}
+	</style>
+</head>
+<body>
+	<h1>广州海关商品信息维护</h1>
+	<p class="msg msg-success">{$message_success}</p>
+	<p class="msg msg-error">{$message_error}</p>
+	
+	<form>
+		<table border="0">
+		<tr><td>
+		 跨境商品ID：
+		    <input style="width:80px" name="product_id" value="{$smarty.request.product_id}">&nbsp;
+		 
+		  商品名称：
+		    <input style="width:80px" name="goods_name" value="{$smarty.request.goods_name}">&nbsp;
+		
+		  商家编码：
+		    <input style="width:80px" name="outer_id" value="{$smarty.request.outer_id}">&nbsp;
+		
+		 <span style="width:90px;height:20px;">查询起始时间：
+		 <input  style="width:100px;height:20px" id="start_time" name="start_time" value="{$smarty.request.start_time}"></span>
+		 <span style="margin-top:13px;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="startTrigger" /></span>
+		
+		 <span style="width:110px">查询结束时间：
+		 <input style="width:100px;height:20px" id="end_time" name="end_time" value="{$smarty.request.end_time}"></span>
+		<span style="margin-top:13px;width:20px"><input type="button" style="background-image:url(images/image/date.gif);width:15px;border:0px;height:16px;" id="endTrigger" /></span>
+		
+		</td></tr>
+		<tr><td>
+		 <input type="submit" class="submit" value="搜索" style='font-size:10px'>&nbsp;
+		 <input type="hidden" name="act" value="search">
+		 </td></tr>
+		 </table>
+    </form>
+	
+	
+	<form action="kuajinggou_order_info.php" method="post">
+		<table>
+			<thead>
+				<tr>
+					<th>跨境商品ID</th>
+					<th>商品名称</th>
+					<th>商家编码</th>
+					<th>计量</th>
+					<th>价格</th>
+					<th>税率</th>
+					<th>创建时间</th>
+					<th>最后更新时间</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tr>
+				<td><input type="text" name="pro_id[]" class="pro_id"></td>
+				<td>
+				<input type="text" style="width:150px;height:35px" name="pro_name[]" class="pro_name" value="" id="goods_id_select" />
+				</td>
+				<td><input type="text" name="out_id[]" class="out_id" readonly></td>
+				<td><input type="text" name="pro_unit[]" class="pro_unit"></td>
+				<td><input type="text" name="pro_price[]" class="pro_price"></td>
+				<td><input type="text" name="pro_rate[]" class="pro_rate"></td>
+				<td></td>
+				<td></td>
+				<td><input type="button" value="新建" class="button simpNewBtn"></td>
+			</tr>
+			{foreach from=$goods_list key=k item=goods}
+			<tr><td><input type="hidden" name="product_id[]" class="product_id" value="{$goods.product_id}">{$goods.product_id}</td>
+				<td>{$goods.goods_name}</td>
+				<td><input type="text" name="outer_id[]" class="outer_id" value="{$goods.outer_id}" disabled="true" ></td>
+				<td>{$goods.unit}</td>
+				<td><input type="text" name="price[]" class="price" value="{$goods.price}"></td>
+				<td><input type="text" name="rate[]" class="rate" value="{$goods.rate}"></td>
+				<td>{$goods.created_stamp}</td>
+				<td>{$goods.last_updated_stamp}</td>
+				
+				<td>
+					<input type="button" value="修改" class="button simpEditBtn">
+					<input type="button" value="删除" class="button simpDelBtn">
+				</td>
+			</tr>
+			{/foreach}
+			<tr>
+				<td colspan="11" style="text-align:right;padding-right:20px;">{$Pager}</td>
+			</tr>
+		</table>
+	</form>
+<script>
+// <![CDATA[
+    var message_success = "{$message_success}";
+    var message_error = "{$message_error}";
+//{literal}
+$(document).ready(function(){
+	var msg_success = $(".msg-success");
+	var msg_error = $(".msg-error");
+	if(message_success != ""){
+		msg_success.fadeIn("normal");
+		msg_error.hide();
+	}
+	if(message_error != ""){
+		msg_error.fadeIn("normal");
+		msg_success.hide();
+	}
+	var simpEditBtn = $(".simpEditBtn");
+	var simpNewBtn = $(".simpNewBtn");
+	var simpDelBtn = $(".simpDelBtn");
+	
+	simpEditBtn.click(function(){
+		var that = $(this);
+		var simp_product_id = that.parent().parent().find(".product_id").val();
+		var simp_outer_id = that.parent().parent().find(".outer_id").val();
+		var simp_Price = that.parent().parent().find(".price").val();
+		var simp_rate = that.parent().parent().find(".rate").val();
+		var data = "product_id=" + simp_product_id + "&outer_id=" + simp_outer_id +"&price="+simp_Price+"&rate="+simp_rate;
+		if( simp_product_id == "" || simp_outer_id==""){
+			alert("数据不能为空~");
+		}else{
+			//alert(data);
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=update_gz_haiguan_goods',
+				success:function(data){
+					alert("修改成功");
+					window.location.href ='gz_haiguan_goods_info.php';
+				},
+				error:function(data){
+					alert("修改失败");
+				}
+			});
+		}
+	});
+	simpDelBtn.click(function(){
+		var that = $(this);
+		var simp_product_id = that.parent().parent().find(".product_id").val();
+		
+		var data = "product_id=" + simp_product_id ;
+		if( simp_product_id == ""){
+			alert("数据不能为空~");
+		}else{
+			//alert(data);
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=delete_gz_haiguan_goods',
+				success:function(data){
+					alert("删除成功");
+					window.location.href ='gz_haiguan_goods_info.php';
+				},
+				error:function(data){
+					alert("删除失败");
+				}
+			});
+		}
+	});
+	simpNewBtn.click(function(){
+		var that = $(this);
+		var simp_product_id = that.parent().parent().find(".pro_id").val();
+		simp_product_id = simp_product_id.replace(/\s+/g,""); 
+		var simp_product_name = that.parent().parent().find(".pro_name").val();
+		var simp_outer_id = that.parent().parent().find(".out_id").val();
+		var simp_pro_unit = that.parent().parent().find(".pro_unit").val();
+		var simp_Price = that.parent().parent().find(".pro_price").val();
+		var simp_pro_rate = that.parent().parent().find(".pro_rate").val();
+		
+		var data = "application_key=leqee&product_id=" + simp_product_id 
+					+"&goods_name="+simp_product_name+ "&outer_id=" + simp_outer_id 
+					+"&unit="+simp_pro_unit+"&price="+simp_Price+"&rate="+simp_pro_rate;
+		if( simp_product_id == "" ){
+			alert("数据不能为空~");
+		}else{
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:data,
+				url:'ajax.php?act=insert_gz_haiguan_goods',
+				success:function(data){
+					alert("新建成功");
+					window.location.href ='gz_haiguan_goods_info.php';
+				},
+				error:function(data){
+					alert("新建失败");
+				}
+			});
+		}
+	});
+	
+	/*商店搜索*/
+	$('#shop_id_select').autocomplete('gz_haiguan_goods_info.php?request=ajax&act=get_select_shop', {
+		dataType : 'json',
+		minChars: 0,
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.nick);
+		},
+		formatResult : function(row) {
+			return(row.nick);
+		}
+	}).result(function(event, row, formatted) {
+		$(':input[name="appkey[]"]').val(row.nick);
+	});
+	
+	
+	$('#goods_id_select').autocomplete('gz_haiguan_goods_info.php?request=ajax&act=get_select_goods', {
+		dataType : 'json',
+		minChars: 0,
+		mustMatch: false,
+		formatItem : function(row, i, max, value, term) {
+			return(row.goods_name);
+		},
+		formatResult : function(row) {
+			return(row.goods_name);
+		}
+	}).result(function(event, row, formatted) {
+		$(':input[name="pro_name[]"]').val(row.goods_name);
+		if(row.style_id == "0" || row.style_id =="" || row.style_id ==null){
+			var outer_id = row.goods_id;
+		}else{
+			var outer_id = row.goods_id + '_' + row.style_id;
+		}
+		$(':input[name="out_id[]"]').val(outer_id);
+	});
+});
+//{/literal}
+//]]>
+</script>
+
+{literal}
+<script type="text/javascript">
+     $(function(){
+   	  Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_time",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end_time",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+     });
+</script>
+{/literal}
+</html>

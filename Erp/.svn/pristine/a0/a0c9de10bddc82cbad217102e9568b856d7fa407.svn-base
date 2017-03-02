@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>外贸对账数据维护</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	.loading {
+		background: #F1F1F1 url('images/indicator.gif') right center no-repeat;
+	}
+    .strik {
+        background-color: #ECEE9F;
+    }
+	<!--{/literal}-->
+	</style>
+ 
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" src="misc/thickbox.js"></script>
+  <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  <link rel="stylesheet" type="text/css" href="misc/thickbox.css" />
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+	</style>
+  <script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+		// 多选打印事件
+		$('.delete').bind('click', function(event){
+			$checked = $(':checkbox:checked');
+			if ($checked.length) {
+				var ids = new Array();
+				$checked.each(function(i){
+					ids.push(this.value);
+				});	
+				$('#form1').submit();
+			} else {
+				alert('没有选中项');
+				return false;
+			}
+		});
+	});
+	// {/literal}
+	// ]]>
+	</script>
+	<script type="text/javascript">
+	// <![CDATA[	
+	var WEB_ROOT = '{$WEB_ROOT}';
+	// {literal}
+
+	/**
+	 * 改变地域的下拉框
+	 */
+	var Region = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+		        {name: 'partition[country]', data:{type:1}},
+				{name: 'partition[province]', data:{type:2} }, // 省
+				{name: 'partition[city]',     data:{type:3} }, // 市
+				{name: 'partition[district]'}                  // 区
+		],
+		
+		expr : ':select[name="?"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+				for (var i = 0; i < this.regions.length; i++) {
+					var node = $(this.expr.replace('?', this.regions[i].name));
+					node.bind('change', this.regions[i].data, this.change_region_list);
+					if (i > 0) {
+						var prev = $(this.expr.replace('?', this.regions[i-1].name));
+						var value = parseInt(prev.val());
+						if (isNaN(value) || value < 1) {
+							node.hide();
+						} else {
+                            node.show();	
+						}
+					}					
+				}
+		},
+
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = Region.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == Region.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				if (!last) {
+					$c = $(Region.expr.replace('?', Region.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(Region.expr.replace('?', Region.regions[i].name)).hide();	
+					}
+				}
+			
+				$c.unbind();
+				$.ajax({
+					type: 'POST',
+					url: WEB_ROOT + 'admin/ajax.php?act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', Region.regions[next].data, Region.change_region_list);
+							}
+						}
+					}
+				});	
+		}
+	};	
+
+	// 载入执行
+	$(document).ready(function(){
+		
+			// 绑定 选择省会改变地区的事件
+			Region.init();
+			
+	});
+
+	// {/literal}
+	// ]]>
+	</script>
+  
+
+	<!-- Loading Calendar JavaScript files -->
+  	<script type="text/javascript" src="js/zapatec/utils/zapatec.js"></script>
+  	<script type="text/javascript" src="js/zapatec/zpcal/src/calendar.js"></script>
+  	<script type="text/javascript" src="js/zapatec/zpcal/lang/calendar-en.js"></script>
+  	<link rel="stylesheet" href="js/zapatec/zpcal/themes/winter.css" />
+  
+</head>
+<body>
+
+  {if $smarty.request.message}
+  <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+  {$smarty.request.message}
+  </div>
+  {/if}
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+ 
+
+  <div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+  	<div class="item"><a href="fee_search.php">分区运费信息查询</a></div>
+  	<div class="active"><a href="fee_entry.php">分区运费信息录入</a></div>
+    
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  <div style="clear:both;"> 
+    <h3 style="color:#09F;">快递DHL,Fedex,UPS分区运费信息录入</h3>
+    <form method="post" name= "form" action="fee_entry.php" id="form"  >
+	
+	<div style="clear:both;"> 
+  <h3 style="color:#09F;">输入运费信息</h3>
+
+  	<table cellpadding="5" cellspacing="1">
+  	 	<tr>
+          <td width="120">ID</td>
+          <td>
+          	<input name="info_id" type="text" onclick="this.select();" value="{$edit_info.id}" size="15" readonly="readonly" />
+          </td>
+        </tr>
+       
+      <tr>
+        <td>快递分区 <span class="require"> * </span></td>
+        <td>
+           <select name="fenqu_id"><option value="0">-请选择-</option>{html_options options=$fenqu_list selected=$edit_info.fenqu_id}</select> &nbsp;&nbsp;
+           </td>
+      </tr>
+        <tr>
+	  		<td>包裹类型</td>
+          	<td><select name="type" ><option value="0">-请选择-</option><option value="P">P</option><option value="D">D</option></select>
+		  	</td>
+	    </tr>
+	    <tr>
+	  		<td>重量</td>
+          	<td>
+          	<select name="weight" >
+          	<option value="0">-请选择-</option>
+          	<option value="0.5">0.5</option>
+          	<option value="1">1</option>
+          	<option value="1.5">1.5</option>
+          	<option value="2">2</option>
+          	<option value="2.5">2.5</option>
+          	<option value="3">3</option>
+          	<option value="3.5">3.5</option>
+          	<option value="4">4</option>
+          	<option value="4.5">4.5</option>
+          	<option value="5">5</option>
+          	<option value="5.5">5.5</option>
+          	<option value="6">6</option>
+          	<option value="6.5">6.5</option>
+          	<option value="7">7</option>
+          	<option value="7.5">7.5</option>
+          	<option value="8">8</option>
+          	<option value="8.5">8.5</option>
+          	<option value="9">9</option>
+          	<option value="9.5">9.5</option>
+          	<option value="10">10</option>
+          	<option value="10.5">10.5</option>
+          	<option value="11">11</option>
+          	<option value="11.5">11.5</option>
+          	<option value="12">12</option>
+          	<option value="12.5">12.5</option>
+          	<option value="13">13</option>
+          	<option value="13.5">13.5</option>
+          	<option value="14">14</option>
+          	<option value="14.5">14.5</option>
+          	<option value="15">15</option>
+          	<option value="15.5">15.5</option>
+          	<option value="16">16</option>
+          	<option value="16.5">16.5</option>
+          	<option value="17">17</option>
+          	<option value="17.5">17.5</option>
+          	<option value="18">18</option>
+          	<option value="18.5">18.5</option>
+          	<option value="19">19</option>
+          	<option value="19.5">19.5</option>
+          	<option value="20">20</option>
+          	<option value="20.5">20.5</option>
+          	</select>
+		  	</td>
+	    </tr>
+		
+	 	<tr>
+      		<td>费用<span class="require"> * </span> </td>
+        	<td>
+        	<input type="text" name="fee"  value="{$edit_info.fee}" size="30" id="first_fee" /> 
+			</td>
+	 	</tr>
+    	<tr>
+      		<td>生效时间<span class="require"> * </span> </td>
+        	<td>
+        	<input type="text" name="region_time"  value="{$edit_info.date}" size="30" id="region_time" /> 
+			</td>
+	 	</tr>
+	 
+     </table>
+	  <div style="text-align:center">
+	  <input type="submit" value=" {if $smarty.request.act == 'update'}更新{else}录入{/if} "  />
+	      <input type="hidden" name="act" value="{if $smarty.request.act == 'update'}update_submit{else}admit{/if}" />
+	  </div>
+	  </div>
+	</form>
+  </div>
+  
+  
+  {if $fee_list}
+  <br />
+  <div style="clear:both;">
+	   <form method="post" name="form1" id="form1">
+	  <h3 style="color:#09F;">录入的运费信息列表</h3>
+      
+     
+      <br />
+      
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+      
+        <tr bgcolor="#f9f9f9">          
+			<th>选择</th>
+			<th>ID</th>
+            <th>分区号</th>
+            <th>重量</th>
+            <th>包裹类型</th>
+            <th>运费</th>
+            <th>生效日期</th>
+            <th>最后更新日期</th>
+            <th>最后操作人</th>
+            <th>分区名</th>
+        </tr>   
+        
+        {foreach from=$fee_list item=fee}
+		<tr align="center">
+			<td > 
+				<input type="checkbox" name="checked[]" value="{$fee.id}" />
+			</td>
+			<td>{$fee.id}</td>
+			<td>{$fee.fenqu_id}</td>
+		  	<td>{$fee.weight}</td>
+		  	<td>{$fee.type}</td>
+		  	<td>{$fee.fee}</td>
+		  	<td>{$fee.date}</td>
+		  	<td>{$fee.update_time}</td>
+		  	<td>{$fee.operator}</td>
+		  	<td>{$fee.fenqu_name}</td>
+		  	  <td><a href="?act=update&info_id={$fee.id}">编辑</a></td>
+		  	
+		</tr>     
+        {/foreach}
+        
+      </table>
+      
+      <br />
+        
+       <div style="margin-top:10px; clear:both;"> 
+        <input type="button" value="将选中项删除" class="delete" />
+        <input type="hidden" name="act" value="info_delete" />
+      </div>
+      
+      </form>
+  </div>
+  
+  {/if}
+
+<br /><br />
+
+</fieldset>
+
+
+
+</body>
+</html>

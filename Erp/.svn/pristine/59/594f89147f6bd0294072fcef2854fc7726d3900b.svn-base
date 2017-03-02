@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>容器商品清单</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript">
+{literal}
+	
+	function back() {
+		location.href = "inventory_location.php";
+	}
+	{/literal}
+</script>
+</head>
+<body>
+	<button onclick="back();" >返回</button>&nbsp;&nbsp;
+               容器条码：&nbsp;{$location.location_barcode}&nbsp;&nbsp;
+               容器类型：&nbsp;{$location.location_type}
+	<table class="bWindow" style="margin-top:10px;width:1200px;">
+		<tr>
+			<th>商品名</th>
+			<th>商品条码</th>
+			<th>是否串号控制</th>
+			<th>商品数量</th>
+			<th>可预订数量</th>
+			<th>生产日期</th>
+			<th>组织名</th>
+			<th>仓库名</th>
+			<th>新旧状态</th>
+			<th>创建人</th>
+		</tr>
+		{assign var=goodsBarcode value=""}
+		{foreach from=$locations item=location name = "location"}
+		<tr>
+		    <!--{if ($goodsBarcode != $location.goods_barcode) & ($location.is_serial != 0)}-->
+			<td rowspan="{$location.goods_number}">{$location.goods_name}</td>
+			<!--{/if}-->
+			<!--{if  $location.is_serial == 0}-->
+			<td>{$location.goods_name}</td>
+			<!--{/if}-->
+			 <!--{if ($goodsBarcode != $location.goods_barcode) & ($location.is_serial != 0)}-->
+			<td rowspan="{$location.goods_number}">{$location.goods_barcode}</td>
+			<!--{/if}-->
+			<!--{if  $location.is_serial == 0}-->
+			<td>{$location.goods_barcode}</td>
+			<!--{/if}-->
+			<td>{$location.is_serial}</td>
+			<!--{if ($goodsBarcode != $location.goods_barcode) & ($location.is_serial != 0)}-->
+			<td rowspan="{$location.goods_number}">{$location.goods_number}</td>
+			<!--{/if}-->
+			<!--{if  $location.is_serial == 0}-->
+			<td>{$location.goods_number}</td>
+			<!--{/if}-->
+			 <!--{if ($goodsBarcode != $location.goods_barcode) & ($location.is_serial != 0)}-->
+			<td rowspan="{$location.goods_number}">{$location.available_to_reserved}</td>
+			<!--{/if}-->
+			<!--{if  $location.is_serial == 0}-->
+			<td>{$location.available_to_reserved}</td>
+			<!--{/if}-->
+			<td>{$location.validity}</td>
+			<td>{$location.party_name}</td>
+			<td>{$location.facility_name}</td>
+			<td>{$location.status_id}</td>
+			<td>{$location.action_user}</td>
+		</tr>
+		 {assign var=goodsBarcode value=$location.goods_barcode}
+		 {/foreach}
+		
+	</table>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销商管理</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap.min.css" type="text/css"/>
+  <link rel="stylesheet" href="styles/bootstrap/css/bootstrap-theme.min.css" type="text/css"/>
+  <script type="text/javascript" src="styles/bootstrap/js/jquery.min.js"></script>
+  <script type="text/javascript" src="styles/bootstrap/js/bootstrap.min.js"></script>
+	<!-- // <script type="text/javascript" src="misc/jquery.js"></script> -->
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+
+	$(document).ready(function(){
+	    // 绑定滑动效果
+	    $('legend.expand').bind('click', function(event){
+	        $(this).next().slideToggle('normal');
+	    });
+	});
+	
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+<div class="main">
+  <fieldset>
+    <!-- <legend class="header_background">
+      <h3>&nbsp;分销商管理&nbsp;</h3>
+    </legend> -->
+    <div class="main_content">
+      {if $smarty.request.message}
+      <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+      {$smarty.request.message}
+      </div>
+      {/if}
+	    <br />
+      <fieldset class="top_circle_main_fenxiao">
+        <legend class="expand expand_font_size">&nbsp;{if $edit_distributor}编辑分销商{else}添加分销商{/if}&nbsp;
+        </legend>
+        <form method="post" id="form" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">分销商ID</label>
+            <div class="col-sm-3">
+              <input name="distributor_id" class="form-control text_width" type="text" onclick="this.select();" value="{$edit_distributor.distributor_id}" size="15" readonly="readonly" />
+              {if $edit_distributor.is_taxpayer == 'Y'}
+              <a href="distributor_manage.php">新增分销商</a>
+              {/if}
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">分销商名称</label>
+            <div class="col-sm-3">
+              <input name="distributor[name]" class="form-control text_width" type="text" value="{$edit_distributor.name}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">店铺类型</label>
+            <div class="col-sm-3">
+              <select name="distributor[shop_type]" class="form-control text_width">
+                <option value="">- 请选择</option>
+                {html_options options=$shop_type_list selected=$edit_distributor.shop_type}
+              </select>
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">联系地址</label>
+            <div class="col-sm-3">
+              <input name="distributor[address]" class="form-control text_width" type="text" value="{$edit_distributor.address}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">联系电话</label>
+            <div class="col-sm-3">
+              <input name="distributor[tel]" class="form-control text_width" type="text" value="{$edit_distributor.tel}"/>
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">联系人</label>
+            <div class="col-sm-3">
+              <input name="distributor[contact]" class="form-control text_width" type="text" value="{$edit_distributor.contact}" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">淘宝账号</label>
+            <div class="col-sm-3">
+              <input name="distributor[taobao_account]" class="form-control text_width" type="text" value="{$edit_distributor.taobao_account}" />
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">支付宝账号</label>
+            <div class="col-sm-3">
+              <input name="distributor[alipay_account]" class="form-control text_width" type="text" value="{$edit_distributor.alipay_account}" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">包裹所属类目</label>
+            <div class="col-sm-3">
+              <input name="distributor[shipment_category]" class="form-control text_width" type="text" value="{$edit_distributor.shipment_category}" />
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">售后电话</label>
+            <div class="col-sm-3">
+              <input name="distributor[aftersale_phone]" class="form-control text_width" type="text" value="{$edit_distributor.aftersale_phone}" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">所属业务</label>
+            <div class="col-sm-3">
+              <select name="distributor[party_id]" class="form-control text_width" {if $edit_distributor}disabled="disabled"{/if}>
+                <option value="">- 请选择</option>
+                {html_options options=$party_list selected=$edit_distributor.party_id}
+              </select>
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">所属主分销商</label>
+            <div class="col-sm-3">
+              <select name="distributor[main_distributor_id]" class="form-control text_width">
+                <option value="">- 请选择</option>
+                {html_options options=$main_distributor_list selected=$edit_distributor.main_distributor_id}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">属性设置</label>
+            <div class="col-sm-10 radio_margin_min_width">
+              <table><tr><td>
+              <label for="is_taxpayer font_size">有一般纳税人资格</label>
+              <input type="checkbox" id="is_taxpayer" name="distributor[is_taxpayer]" {if $edit_distributor.is_taxpayer == 'Y'} checked="checked" {/if} value="Y" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+              <label for="abt_print_invoice font_size">是否打印发票</label>
+              <input type="checkbox" id="abt_print_invoice" name="distributor[abt_print_invoice]" {if $edit_distributor.abt_print_invoice == 'Y'} checked="checked" {/if} value="Y" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+              {* <label for="abt_logo_style font_size">是否可以定制图片</label>
+              <input type="checkbox" id="abt_logo_style" name="distributor[abt_logo_style]" {if $edit_distributor.abt_logo_style == 'Y'} checked="checked" {/if} value="Y" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *}</td><td>
+              <label for="abt_change_price font_size">是否可修改价格</label>
+              <input type="checkbox" id="abt_change_price" name="distributor[abt_change_price]" {if $edit_distributor.abt_change_price == 'Y'} checked="checked" {/if} value="Y" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+              <label for="distri_authorization font_size">部分授权</label>
+              <input type="checkbox" id="distri_authorization" name="distributor[distri_authorization]" {if $edit_distributor.distri_authorization == 'PART'} checked="checked" {/if} value="PART" /></td><tr></table>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">邮件接收地址</label>
+            <div class="col-sm-3">
+              <input type="text" id="mail_address" placeholder="请输入邮件接收地址" class="form-control text_width" name="distributor[email]" value="{$edit_distributor.email}" />
+            </div>
+            <div class="col-sm-2">
+                <select name="distributor[abt_send_mail]" class="form-control text_width">
+                {html_options options=$mail_list selected=$edit_distributor.abt_send_mail}
+                </select>
+            </div>
+            <!-- <div class="col-sm-8">
+              <span class="col-sm-8">
+                <span class="col-sm-9">
+                  <input type="text" id="mail_address" class="form-control text_width" name="distributor[email]" value="{$edit_distributor.email}" />  &nbsp;&nbsp;&nbsp;&nbsp;
+                </span>
+              </span>
+              <span class="col-sm-3 mail_address_margin_left">
+                <select name="distributor[abt_send_mail]" class="form-control text_width">
+                {html_options options=$mail_list selected=$edit_distributor.abt_send_mail}
+                </select>
+              </span>
+            </div> -->
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label font_size">短信发送设置</label>
+            <div class="col-sm-3">
+              <select name="distributor[abt_send_message]" class="form-control text_width">
+                {html_options options=$message_list selected=$edit_distributor.abt_send_message}
+              </select>
+            </div>
+          <!-- </div>
+          <div class="form-group"> -->
+            <label class="col-sm-2 control-label font_size">货币种类</label>
+            <div class="col-sm-3">
+              {if $edit_currency}         
+              <span>
+                {if $smarty.session.party_id == '65566' || $smarty.session.party_id == '65560' || $smarty.session.party_id == '65630' || $smarty.session.party_id == '65543'}
+                <select name="distributor[currency]" class="form-control text_width">
+                  <option value="">--请选择--</option>
+                  {html_options options=$currencys selected=$edit_distributor.currency}
+                </select>
+                {else}
+                <select name="distributor[currency]" class="form-control text_width">
+                  <option value="">--请选择--</option>
+                  {html_options options=$currency selected=$edit_distributor.currency}
+                </select>
+                {/if}
+              </span>
+              {else}
+              <span>
+                {if $smarty.session.party_id == '65566' || $smarty.session.party_id == '65560' || $smarty.session.party_id == '65630' || $smarty.session.party_id == '65543'}
+                <select name="distributor[currency]" class="form-control text_width">{html_options options=$currencys selected="RMB"}</select>
+                {else}
+                <select name="distributor[currency]" class="form-control text_width">{html_options options=$currency selected="RMB" }</select>
+                {/if}
+              </span>
+              {/if}
+            </div>
+          </div>
+          <div class="form-group">
+          	<label class="col-sm-2 control-label font_size">是否扣预存款</label>
+            <div class="col-sm-3">
+              <select name="distributor[is_prepayment]" class="form-control text_width">
+              	<option value="">-请选择</option>
+                {html_options options=$is_prepayment_list selected=$edit_distributor.is_prepayment}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-2 col-sm-offset-7">
+              <input type="submit" class="btn btn-primary btn-sm" value=" {if $smarty.request.act == 'update'}更新{else}创建{/if} "  />
+              <input type="hidden" name="act" value="{if $smarty.request.act == 'update'}update_submit{else}add_submit{/if}" />
+            </div>
+          </div>        
+	      </form>
+      </fieldset>
+      <fieldset class="bottom_circle_main_fenxiao">
+        <legend class="expand expand_font_size">&nbsp;查询分销商&nbsp;</legend>
+        <div>
+          <div class="inner form_margin" style="text-align:right; padding-right:20px;">
+            <form class="form-horizontal">
+              模糊搜索 ：
+              <input name="keyword" class="input-height" type="text" size="30" value="{$smarty.request.keyword}" />
+              <input type="hidden" name="act" value="search" />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+              <input type="submit" class="btn btn-default btn-sm" value="查询" />
+            </form>
+          </div>      
+          <table class="inner table table-condensed table_hover">
+            <tr align="center" class="table_header">
+              <th>分销商ID</th>
+              <th>分销商名称</th>
+              <th>联系电话</th>
+              <th>联系人</th>
+              <th>所属业务</th>
+              <th>操作</th>
+            </tr>        
+            {foreach from=$distributors item=distributor}
+    				<tr align="center" class="{cycle values='odd,even'}">
+    					<td>{$distributor.distributor_id}</td>
+    					<td>{$distributor.name}</td>
+    					<td>{$distributor.tel}</td>
+    					<td>{$distributor.contact}</td>
+              <td>{$party_list[$distributor.party_id]}</td>
+    					<td>
+    					{if $distributor.status == 'NORMAL'}
+              <a href="?act=delete&distributor_id={$distributor.distributor_id}">停用</a>
+              {else}
+              <a href="?act=normal&distributor_id={$distributor.distributor_id}">启用</a>
+              {/if}
+              <a href="?act=update&distributor_id={$distributor.distributor_id}">编辑</a>
+    					</td>
+    				</tr>
+    				{/foreach}        
+          </table>    
+        </div>
+	    </fieldset>
+      <br />
+    </div>
+  </fieldset>
+</div>
+</body>
+</html>

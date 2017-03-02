@@ -1,0 +1,125 @@
+.tab-title {
+	width: 400px;
+	border-bottom: 1px solid black;
+	margin-bottom: 15px;
+}
+
+.tab-title div{
+	display: inline-block;
+	padding-left: 20px;
+}
+
+.tab-title a{
+ text-decoration: none;
+ font-size: 20px;
+ color: black;
+}
+.tab-title a:active{
+	color: red;
+}
+.somegoods{
+	width: 900px;
+}
+ul.list{
+	list-style: none;
+	padding-left: 6px;
+}
+
+ul.list li{
+	display: inline-block;
+	margin: 1px;
+}
+ul.list li p{
+	padding: 4px;
+	margin: 0px;
+	display: inline-block;
+	background-color: rgba(220,220,220,0.4);
+	border: 1px solid rgba(220,220,220,0.8);
+	/*box-shadow: 3px 2px 3px #999;*/
+
+}
+ul.list li span{
+padding:0px 5px 1px 4px ;
+text-align: center;
+background-color: rgba(220,220,220,1);
+border: none;
+cursor:pointer;
+margin-left: 4px;
+}
+.nes{
+	color: red;
+}
+.unnes{
+	color: white;
+}
+#myform td:not(:first-child){
+/*border: 1px solid black;*/
+width: 900px;
+}
+#myform td:first-child{
+	/*border: 1px solid red;*/
+}
+.buttom{
+	width: 52px;
+	height: 20px;
+	text-align: center;
+	line-height: 20px;
+	border-radius: 3px;
+	border: 1px solid rgba(220,220,220,1);
+	display: inline-block;
+	background-color: rgba(220,220,220,.8);
+	cursor:pointer;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+
+}
+.pro{
+	margin-left: 4px;
+}
+.tab-title .selected{
+border: 1px solid black;
+border-bottom: 2px solid white;
+border-top-left-radius:4px;
+border-top-right-radius:4px;
+padding:0 2px;
+} 
+.text{
+	font-weight: bold;
+}
+.red-text{
+	color:red;
+}
+
+.big-button{
+	width: 160px;
+	height: 30px;
+	background-color: rgb(194, 51, 11);
+	border-color:rgb(194, 51, 11);
+	font-weight: bold;
+	text-shadow:none;
+	color: white;
+/*	-webkit-animation-name: greenPulse;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: infinite;*/
+}
+.small-button{
+	width: 70px;
+	height: 30px;
+}
+/*@-webkit-keyframes greenPulse {
+  from { background-color:#FF3030; -webkit-box-shadow: 0 0 9px #FF4040; }
+  50% { background-color:#FF0000; -webkit-box-shadow: 0 0 18px #FF0000; }
+  to { background-color: #FF3030; -webkit-box-shadow: 0 0 9px #FF4040; }
+}*/
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>批拣</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	/**
+	 * 打印
+	 */
+	function pprint(url, mode)
+	{
+		if (mode == 'hidden') {
+			var iframe = document.getElementById('_pprint_');
+			if (!iframe) {
+				var obj = document.createElement("iframe");
+				obj.frameborder = 0;
+				obj.width = 0;
+				obj.height = 0;
+				obj.id = '_pprint_';
+				var iframe = document.body.appendChild(obj);
+			}
+			iframe.src = url;
+		} else {
+			window.open(url, "PrintWindow", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=800,height=920,left=10,top=240");			
+		}
+	}
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;批拣&nbsp;</span></legend>
+  
+  <div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+  	<div class="active"><a href="picklist_list.php">批拣任务查看</a></div>
+    <div class="item"><a href="picklist_shipment.php">创建拣选任务</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  <form method="get">
+  <div style="clear:both;"> 
+      <h3 style="color:#09F;">查询</h3>
+      
+      <table cellpadding="5" cellspacing="1">
+        <tr>
+          <td>每页显示</td>
+          <td>
+          	<select name="size">
+          	{html_options options=$page_size_list selected=$filter.size}
+            </select> 条记录
+          </td>
+        </tr>
+        
+        <tr>
+          <td width="120">所处仓库</td>
+          <td>
+			<select name="facility_id"><option value="">- ALL</option>{html_options options=$facility_list selected=$filter.facility_id}</select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>状态</td>
+          <td>
+          	<select name="status">{html_options options=$status_list selected=$filter.status}</select>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" value="查询" />
+          </td>
+        </tr>
+         
+      </table>  
+  </div>
+
+  <input type="hidden" name="act" value="search" />
+  </form>
+  
+  
+  {if $total > 0}
+  
+  <br />
+  <div style="clear:both;">
+      <form method="POST">
+      <h3 style="color:#09F;">批拣任务列表</h3>
+      <div style="float:right;"> 共有 <strong>{$total}</strong> 条记录 &nbsp;&nbsp;</div>
+
+      <br />
+      
+      <table class="bWindow" style="margin-top:10px;" id="table">
+        <tr>
+          <th width="30">No.</th>
+          <th>标识号</th>
+          <th>创建时间</th>
+          <th>所处仓库</th>
+          <th>拣货时间</th>
+          <th>打印</th>
+          <th>操作</th>
+        </tr>
+        
+        <!--{foreach from=$list item=picklist name="picklistList"}-->
+        <tr align="center" {if $smarty.foreach.shipmentList.iteration%2 == 0}class="even"{else}class="odd"{/if}>
+        
+          <td>{$smarty.foreach.picklistList.iteration}</td>
+          <td>{$picklist.PICKLIST_ID}</td>
+          <td>{$picklist.CREATED_STAMP}</td>
+          <td>{$picklist.FACILITY_ID|facility_mapping}</td>
+          <td>{$picklist.PICKLIST_DATE}</td>
+          <td>
+            <a href="javascript:void(0);" onclick="pprint('picklist_print.php?act=picking_list&PICKLIST_ID={$picklist.PICKLIST_ID}&print=1','hidden');">打印拣货单</a> &nbsp;&nbsp;
+            <a href="javascript:void(0);" onclick="pprint('shipment_print.php?shipment_id={foreach from=$picklist.shipment item=shipment name=picklistShipment}{$shipment.SHIPMENT_ID}{if !$smarty.foreach.picklistShipment.last},{/if}{/foreach}&print=1','hidden');">批量打印发货单</a>
+          </td>
+          <td>
+            {if $picklist.STATUS=='PICKLIST_INPUT'}
+            <a href="{$url|add_param_in_url:"act":"cancel"|add_param_in_url:"PICKLIST_ID":$picklist.PICKLIST_ID}">取消拣选</a>
+            &nbsp;&nbsp;
+            {/if}
+            <!--<a href="picklist_assign.php?picklist_id={$picklist.PICKLIST_ID}">分派面单</a>-->
+          </td>
+          
+        </tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br />    
+	  {$pagination}
+      
+      </form>
+  </div>
+  <br />
+  
+  {else}
+  <br /><br />
+  <div style="text-align:center"><h4>没有查询到记录</h4></div>
+  <br /><br />
+  {/if}
+
+  
+  <br /><br />
+</fieldset>
+
+</body>
+</html>

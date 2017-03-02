@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>打印贺卡</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="js/js_wms/sinri_print_iframe.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_add_rule.js"></script>
+		<script type="text/javascript" src="js/js_wms/tracking_number_check.js"></script>
+		<script type="text/javascript" src="misc/jquery.js"></script>
+		<style type="text/css" media="all">
+		{literal}
+			h2{
+				font-size:12pt;
+				clear:both;
+				margin:10px 0;
+			}
+			h3{
+				font-size:10pt;
+				clear:both;
+				margin:8px 0;
+			}
+			ul{
+				list-style:none;
+				font-size:10pt;
+				width:49%;
+				float:left;
+			}
+			ul li{
+				height:40px;
+				line-height:40px;
+			}
+			
+			table{
+				font-size:10pt;
+				text-align:center;
+				border:1px solid #000;
+				border-collapse:collapse;
+				margin:20px 0 20px 2px;
+			}
+			table td{
+			    padding:5px 10px;
+			}
+			table td,table th{
+				border:1px solid #000;
+				height:25px;
+				line-height:25px;
+			}
+			p{
+				font-size:10pt;
+				clear:both;
+				-- text-align:center;
+			}
+		{/literal}
+		</style>
+		<script type="text/javascript">
+		// <![CDATA[
+        //{literal}
+		
+			
+			function print_card(taobao_order_sn) {
+				pprint("/admin/card_print.php?print=1&taobao_order_sn="+taobao_order_sn);
+			}
+			
+			function pprint(url) {
+				return window.open(url, "PrintWindow", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=800,height=920,left=10,top=240");          
+			}
+	    //{/literal}
+        //]]>
+		</script>
+</head>
+<body>
+		<div>
+			<h1>打印贺卡</h1>
+
+			<p>
+				<form action="Deal_Card_Print.php" method="POST">
+					<input type="hidden" name="act" value="query">
+					淘宝订单号：<input type="text" name="taobao_order_sn" value="{$taobao_order_sn}">
+					<input type="submit" value="查询"> 
+				</form>
+			</p>
+			<hr>
+			<div>
+			{if $get_info}
+			
+			    <div>
+					<table style="border:0;">
+						<tr>
+							<th>淘宝订单号</th>
+							<th>操作</th>
+						</tr>
+						<tr>
+							<td><span>{$card_info.taobao_order_sn}</span></td>
+							{if $not_need_card}
+							<td>无需打印贺卡</td>
+							{else}
+							<td><a href="javascript:void(0);" onclick="print_card('{$card_info.taobao_order_sn}');">打印此贺卡</a></td>
+							{/if}
+						</tr>
+					</table>
+			    </div>
+			{else}
+		        <p>{$message}</p>
+		    {/if}
+
+				
+
+
+		</div>
+	</body>
+</html>

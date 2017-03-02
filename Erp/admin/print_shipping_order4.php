@@ -1,0 +1,319 @@
+<?php
+/**
+ * 打印快递面单，支持批量打印，全部使用自定义模板
+ * 
+ * $Id: print_shipping_order4.php 96938 2015-12-22 07:46:57Z ljni $
+ */
+
+define('IN_ECS', true);
+require ('includes/init.php');
+require ("function.php");
+include_once ('includes/lib_order.php');
+//admin_priv('purchase_order', 'wl_print_shipping_order', 'distribution_delivery');
+
+
+set_time_limit(300);
+
+$order_ids = explode(',', isset($_REQUEST['order_id']) ? $_REQUEST['order_id'] : '');
+$service_goods_back = $_REQUEST['service_goods_back'];
+$carrier_id = intval($_REQUEST['carrier_id']);
+$cbt_data = array();
+
+$content_width = 200;
+$content_height = 142;
+
+foreach ($order_ids as $order_id) {
+    $order_id = intval($order_id);
+    
+    if ($service_goods_back == 1) {
+        $sql = "
+            SELECT *, o.party_id, o.facility_id,
+                IF(sgs.carrier_name, sgs.carrier_name, carrier_id) AS carrier_id, order_sn
+            FROM {$ecs->table('order_info')} o 
+                LEFT JOIN {$ecs->table('carrier_bill')} cb ON cb.bill_id = o.carrier_bill_id
+                LEFT JOIN {$ecs->table('shipping')} s ON s.shipping_id = o.shipping_id
+                LEFT JOIN service_order_goods sog ON sog.order_id = o.order_id
+                LEFT JOIN service_goods_shipping sgs ON sgs.service_id = sog.service_id
+            WHERE o.order_id = '{$order_id}'
+        ";
+    } else {
+        $sql = "
+            SELECT *, o.party_id, o.facility_id, order_sn
+            FROM {$ecs->table('order_info')} o 
+                LEFT JOIN {$ecs->table('carrier_bill')} cb ON cb.bill_id = o.carrier_bill_id
+                LEFT JOIN {$ecs->table('shipping')} s ON s.shipping_id = o.shipping_id
+            WHERE o.order_id = '{$order_id}'
+        ";
+    }
+    
+    $order = $db->getRow($sql);
+    if (empty($order) || $order['order_id'] != $order_id) {
+        continue;
+    }
+    
+    // 取得配送信息    
+    $order['shipment_id'] = $db->getOne("select SHIPMENT_ID from romeo.shipment where shipping_category = 'SHIPPING_SEND' and PRIMARY_ORDER_ID='{$order['order_id']}'");
+    
+    // 获取屏蔽号码
+    convert_mask_phone($order, 'get');
+    
+    // update order mixed status 
+    // include_once ('includes/lib_order_mixed_status.php');
+    // update_order_mixed_status($order['order_id'], array(
+    //     'shipping_bill_status' => 'printed'
+    // ), 'worker');
+    
+    if ($carrier_id <= 0) {
+        $carrier_id = $order['carrier_id'];
+    }
+    // 查询省、城市
+    $provinceSQL = "SELECT region_name FROM {$ecs->table('region')} WHERE region_id = '{$order['country']}'";
+    $order['country'] = $db->getOne($provinceSQL);
+    
+    $provinceSQL = "SELECT region_name FROM {$ecs->table('region')} WHERE region_id = '{$order['province']}'";
+    $order['province'] = $db->getOne($provinceSQL);
+    
+    $citySQL = "SELECT region_name FROM {$ecs->table('region')} WHERE region_id = '{$order['city']}'";
+    $order['city'] = $db->getOne($citySQL);
+    
+    $districtSQL = "SELECT region_name FROM {$ecs->table('region')} WHERE region_id = '{$order['district']}'";
+    $order['district'] = $db->getOne($districtSQL);
+    
+    // 寄发票，需要写发票地址
+    if ($_REQUEST['act'] == 'send_invoice') {
+        if ($order['inv_address'] != '') {
+            $order['province'] = '';
+            $order['city'] = '';
+            $order['district'] = '';
+            $order['tel'] = '';
+            $order['address'] = $order['inv_address'];
+        }
+    }
+    
+    // {{{ jjshouse 需要 xxx_text
+    $sql = "SELECT * FROM order_attribute WHERE order_id = '{$order['order_id']}' ";
+    $order_attrs = $db->getAllByFieldAsKey($sql, 'attr_name');
+    is_array($order_attrs) || $order_attrs = array();
+    foreach ($order_attrs as $attr_name => $attr) {
+        if ($order['province'] == '' && $attr_name == 'province_text') {
+            $order['province'] = $attr['attr_value'];
+        } elseif ($order['city'] == '' && $attr_name == 'city_text') {
+            $order['city'] = $attr['attr_value'];
+        } elseif ($order['district'] == '' && $attr_name == 'district_text') {
+            $order['district'] = $attr['attr_value'];
+            str_replace( "\r\n ", " ",$order['district']);
+        }
+    }
+    // }}}
+    
+
+    // {{{ 从 carrier_bill_template 读取模板，然后打印 @see carrier_bill_template.php
+    //金奇仕东莞仓EMS快递广东省内走EMS同城，与非同城快递面单不一样。所以模板里面有两个好奇东莞仓EMS快递模板，只有cbt_id不一样
+    if($order['party_id'] == '65547' && $order['facility_id'] == '19568548' && $order['province'] == "广东" && $carrier_id == 9){
+        $sql = "SELECT * FROM ecshop.carrier_bill_template where cbt_id = 56";
+    }else{
+        $sql = "SELECT * FROM ecshop.carrier_bill_template
+        WHERE romeo_party_id = '{$order['party_id']}'
+        AND facility_id = '{$order['facility_id']}'
+        AND carrier_id = '$carrier_id'
+        AND cbt_disabled = 0
+        LIMIT 1 ";
+    }
+    $cbt = $db->getRow($sql);
+    if (!empty($cbt)) {
+        $order['now_ymd_1'] = date("Y/m/d");
+        $order['now_ymd_2'] = date("Y-m-d");
+        $order['now_ymd_3'] = date("Y m d");
+        $order['order_amount'] = sprintf('%01.2f', $order['order_amount']);
+        $order['mobile_tel'] = $order['mobile'] ? $order['mobile'] : $order['tel'];
+        $order['province_city_district'] = ($order['province'] ? '[' . $order['province'] . ']' : '') . ($order['city'] ? '[' . $order['city'] . ']' : '') . ($order['district'] ? '[' . $order['district'] . ']' : '');
+        $order['full_address'] = $order['province_city_district'] . $order['address'];
+        
+        // {{{ jjshouse party_id = 65545
+        if (is_jjshouse($order['party_id'])) {
+            $order['address'] = $order['address'] . ($order['sign_building'] ? ', ' . $order['sign_building'] : '');
+            $order['province_city_district'] = $order['city'] . ', ' . $order['province']; // . ($order['zipcode'] ? ',' . $order['zipcode'] : '');
+            $order['full_address'] = $order['address'] . ', ' . $order['province_city_district'];
+			
+			$country_map = array(
+				'Australia' => '澳大利亚', 
+				'Canada' => '加拿大', 
+				'United Kingdom' => '英国', 
+				'United States' => '美国', 
+				'Ireland' => '爱尔兰', 
+				'Switzerland' => '瑞士', 
+				'New Zealand' => '新西兰', 
+				'Germany' => '德国', 
+				'Cyprus' => '塞浦路斯', 
+				'Malta' => '马尔他', 
+				'United Arab Emirates' => '阿拉伯联合酋长国', 
+				'Singapore' => '新加坡', 
+				'Greece' => '希腊', 
+				'Finland' => '芬兰', 
+				'South Africa' => '南非', 
+				'Brazil' => '巴西', 
+				'France' => '法国', 
+				'Spain' => '西班牙', 
+				'Gibraltar' => '直布罗陀', 
+				'Netherlands' => '荷兰', 
+				'Austria' => '奥地利', 
+				'Japan' => '日本', 
+				'Armenia' => '亚美尼亚', 
+				'Philippines' => '菲律宾', 
+				'Poland' => '波兰', 
+				'Malaysia' => '马来西亚', 
+				'Latvia' => '拉脱维亚', 
+				'Russian Federation' => '俄罗斯联邦', 
+				'Sweden' => '瑞典', 
+				'Norway' => '挪威'
+			);
+			if (array_key_exists($order['country'], $country_map))
+			{
+				$order['country'] .= "({$country_map[$order['country']]})";
+			}
+        }
+        // }}}
+        
+
+        if ($carrier_id == '10') {
+            // 面单中显示的内容区域
+            $content_height = 142;
+        } else {
+            // 非顺丰
+            $content_height = 110;
+        }
+        
+        $cbt['orginal_data'] = $cbt['cbt_data'];
+        foreach ($order as $k => $v) {
+            $cbt['cbt_data'] = str_replace('{$order.' . $k . '}', str_replace('"', '\"', $v), $cbt['cbt_data']);
+        }
+        // {{{
+        $cbt['cbt_data'] = preg_replace("/\r\n/"," ",$cbt['cbt_data']);
+        $cbt['cbt_data'] = preg_replace("/\r/"," ",$cbt['cbt_data']);
+        $cbt['cbt_data'] = preg_replace("/\n/"," ",$cbt['cbt_data']);
+//         $cbt['cbt_data'] = str_replace("\r"," ",$cbt['cbt_data']);
+//         $cbt['cbt_data'] = str_replace("\n"," ",$cbt['cbt_data']);
+        $tmpa = json_decode($cbt['cbt_data']);
+        $hasBox = false;
+        foreach ($tmpa as &$tmpv) {
+            $tmpv = (array) $tmpv;
+            if ($tmpv['name'] == '#box') {
+                $hasBox = true;
+                if (!isset($tmpv['name']['width']) || empty($tmpv['name']['width'])) {
+                    $tmpv['name']['width'] = $content_width;
+                }
+                if (!isset($tmpv['name']['height']) || empty($tmpv['name']['height'])) {
+                    $tmpv['name']['height'] = $content_height;
+                }
+            }
+        }
+        unset($tmpv);
+        if (!$hasBox) {
+            $tmpa[] = array(
+                'name' => '#box', 
+                'data' => '', 
+                'width' => $content_width, 
+                'height' => $content_height, 
+                'top' => 0, 
+                'left' => 0
+            );
+        }
+        $cbt['cbt_data'] = json_encode($tmpa);
+        // }}}
+        $cbt_data[] = $cbt['cbt_data'];
+    }
+
+    // }}}
+}
+
+$cbt_data = '[' . join(", ", $cbt_data) . ']';
+
+if (isset($_REQUEST['print']) && $_REQUEST['print'] == 1) {
+    $onload_print = 'window.print();';
+    $button_print = '';
+} else {
+    $onload_print = '';
+    $button_print = '<input type="button" id="pbtn" style="position: fixed; right: 24px; top: 24px; z-index: 11111;" value="打印">';
+}
+
+$html = <<<html
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="misc/cbt/jquery.min.js"></script>
+<style media="print">
+    *{
+        margin:0; padding:0;
+    }
+    body{
+        font-size:10pt;
+    }
+</style>
+</head>
+<body style="position: relative;">
+{$button_print}
+<script>
+$(document).ready(function() {
+    var cbts = {$cbt_data};
+    
+    for (var z in cbts) {
+        var x = 'p_' + z;
+        $('body').append('<div style="position: relative; border:1px dashed #333; height:{$content_height}mm; width:{$content_width}mm; overflow:hidden;" id="' + x + '"></div>');
+        var cbt = cbts[z];
+        for (var i in cbt) {
+            if (!/^\d+$/.test(i)) {
+                continue;
+            }
+            var id = cbt[i].name;
+    		if (!id) {
+    			continue;
+    		}
+    		if (id == '#box') {
+    			if (cbt[i].width) {
+    				$('#'+x).css({'width': cbt[i].width + 'mm'});
+    			}
+    			if (cbt[i].height) {
+    				$('#'+x).css({'height': cbt[i].height + 'mm'});
+    			}
+    			continue;
+    		}
+            $('#'+x).append('<div id="'+id.replace("#", "") + z + '" class="resizable" style="position: relative;">'+cbt[i].data+'</div>');
+            $(id+z).css({
+                position: 'absolute',
+                top: cbt[i].top + 'px',
+                left: cbt[i].left + 'px',
+                width: cbt[i].width + 'px',
+                height: cbt[i].height + 'px'
+            });
+        };
+        if (z < cbts.length - 1) {
+            $('body').append('<div style="page-break-after: always; position: relative; clear: both;"></div>');
+        }
+    };
+    {$onload_print}
+    if ('{$button_print}' != '') {
+    	$('#pbtn').click(function(){
+    		$(this).hide();
+        	for (var z in cbts) {
+            	var x = 'p_' + z;
+            	//$('#' + x).css({"border-color": "#fff"});
+            	$('#' + x).css({"border-width": "0px"});
+            }
+            window.print();
+        });
+    } else {
+    	for (var z in cbts) {
+        	var x = 'p_' + z;
+        	//$('#' + x).css({"border-color": "#fff"});
+        	$('#' + x).css({"border-width": "0px"});
+        }
+    }
+});
+</script>
+</body>
+</html>
+html;
+
+echo $html;
+

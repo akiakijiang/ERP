@@ -1,0 +1,14 @@
+订单时间,订单来源,ERP订单号,淘宝订单号,发票抬头,送达省份,商品名,数量,单位,单价,金额,{*
+*}快递费,包装费,订单金额,积分金额,开票金额,发票号码,收款方式,快递公司,联系电话,抵用券
+{foreach from=$orders item=order}{foreach from=$order.order_goods item=goods name=order_goods key=flag}
+{$order.order_time|date_format:"%Y-%m-%d"},{$order.distributor_name},{*
+*}{$order.order_sn},{$order.taobao_order_sn},{$order.inv_payee},{*
+*}{$order.province_name},{$goods.goods_name},{$goods.goods_number},{$goods.uom},{$goods.goods_price},{$goods.goods_total_amount},{*
+*}{$order.shipping_fee},{$order.pack_fee},{*
+*}{$order.order_amount},{$order.taobao_point_fee},{*
+*}{if $flag == 0}{$order.invoice_amount}{else} {/if},{$order.shipping_invoices},{*
+*}{$order.pay_name},{$order.shipping_name},{*
+*}{if $order.tel != ''}{$order.tel}{else}无电话{/if} | {if $order.mobile != ''}{$order.mobile}{else}无手机{/if},{*
+*}{$order.bonus|erp_price_format}
+{/foreach}
+{/foreach}

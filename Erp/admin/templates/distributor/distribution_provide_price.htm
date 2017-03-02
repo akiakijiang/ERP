@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品供价管理</title>
+	<link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+
+	$(document).ready(function(){
+	    // 绑定滑动效果
+	    $('legend.expand').bind('click', function(event){
+	        $(this).next().slideToggle('normal');
+	    });
+			
+			/**
+			 * 供应商自动完成
+			 */
+			$('#autocomplete_provider').autocomplete('ajax.php?act=get_provider', {
+					minChars: 0,
+					mustMatch: true,
+					dataType : 'json',
+					formatItem : function(row, i, max, value, term) {
+						return(row.provider_name);
+					},
+					formatResult : function(row) {
+						return(row.provider_name);
+					}
+			}).result(function(event, row, formatted) {
+					// 将隐藏域的值设为供应商的id
+					$('#provider_id').val(row.provider_id);
+			});
+			
+			/**
+			 * 表单提交验证
+			 */
+			$('form').bind('submit', function(event){
+					if ($.trim($(':input[name="row[provider_id]"]').val()) == '') {
+						alert('请输入供应商');
+						return false;	
+					}
+					
+					// 检查价格是否输入正确
+					var price = $.trim($(':input[name="row[price]"]').val());
+					if (price == '' || !/^\d+(\.\d+)?$/.test(price)) {
+						alert('请输入正确的价格');	
+						return false;
+					}
+			});
+	});
+	
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+{include file="distributor/inc.navigation.htm"}
+
+<div style="margin:20px auto; width:750px;" align="left">
+<fieldset style="border:#D43FAA 2px solid;">
+<legend><span style=" font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;商品供价管理&nbsp;</span></legend>
+<div style="width:96%; margin:auto;">
+
+
+  {if $smarty.request.message || $message}
+    <div style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+    {$smarty.request.message}
+    {$message}
+    </div>
+  {/if}
+
+
+	<br />
+  <fieldset style="border: #FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;{if $edit}编辑{else}添加{/if}&nbsp;</legend>
+  <form method="post" id="form" autocomplete="off">
+  		<div>
+      <div style="float:right;"><a href="?act=add">添加</a></div>
+      <table class="inner">
+        <tr>
+          <td width="120">商品名</td>
+          <td>
+          	<!--{if $edit}-->
+            {$edit.goods_name}
+            <input type="hidden" name="row[goods_id]" value="{$edit.goods_id}" />
+            <input type="hidden" name="row[style_id]" value="{$edit.style_id}" />
+            <!--{else}-->
+            <select name="row[goods_id]">{html_options options=$goods_list}</select> &nbsp;&nbsp;
+            <input type="hidden" name="row[style_id]" value="0" />
+            <!--{/if}-->
+          </td>
+        </tr>
+        
+        <tr>
+          <td>供应商</td>
+          <td>
+          	<input type="text" id="autocomplete_provider" value="{$edit.provider_name}" size="45" />  &nbsp; (可输入供应商编码搜索)
+            <input type="hidden" id="provider_id" name="row[provider_id]" value="{$edit.provider_id}" />
+          </td>
+        </tr>
+        
+        <tr>
+          <td>供价</td>
+          <td><input name="row[price]" type="text" value="{$edit.price}" /></td>
+        </tr>
+    
+      </table>
+  		</div>
+         
+  	  <br />
+	    <div style="text-align:center">
+      	<input type="submit" value=" {if $smarty.request.act == 'update'}更新{else}创建{/if} "  />
+	      <input type="hidden" name="act" value="{if $smarty.request.act == 'update'}update_submit{else}add_submit{/if}" />
+      </div>
+	</form>
+  </fieldset>
+
+
+
+  <br /><br />
+  <fieldset style="border:#FF7FFF 1px dashed;">
+  <legend class="expand">&nbsp;供价列表&nbsp;</legend>
+  <div>
+   
+<!--{if $list}-->  {* 如果有数据 *}
+
+      <table class="inner">
+        <tr align="center" class="th">
+          <th>商品编码</th>
+          <th>商品名</th>
+          <th>供应商</th>
+          <th>供价</th>
+          <th width="62">操作</th>
+        </tr>
+        <!--{foreach from=$list item=item}-->
+				<tr align="center" class="{cycle values='odd,even'}">
+					<td>{$item.product_code}</td>
+					<td>{$item.goods_name}</td>
+					<td>{$item.provider_name}</td>
+					<td>{$item.price}</td>
+					<td><a href="?act=update&goods_id={$item.goods_id}&style_id={$item.style_id}">编辑</a></td>
+				</tr>
+				<!--{/foreach}-->
+      </table>
+      
+<!--{else}-->  {* 如果没有数据 *}
+
+			<div style="text-align:center"><h4>无相关数据</h4></div>
+
+<!--{/if}-->
+      
+  </div>
+	</fieldset>
+  <br />
+
+
+</div>
+</fieldset>
+</div>
+
+
+</body>
+</html>

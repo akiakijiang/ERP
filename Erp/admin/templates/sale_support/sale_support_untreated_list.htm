@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+
+<link rel="stylesheet" href="../misc/autocomplete.css" />
+<script type="text/javascript" src="../misc/jquery.js"></script>
+<script type="text/javascript" src="../misc/jquery.ajaxQueue.js"></script> 
+<script type="text/javascript" src="../misc/autocomplete.js"></script>
+
+	<script type="text/javascript">
+	// <![CDATA[
+	            
+	//	{literal}
+	
+	window.onload = function() {
+		show(1);
+	}
+	
+	$(document).ready(function(){
+
+		/**
+		 * 组织搜索
+		 */
+		$('#party_select').autocomplete('sale_support_untreated_list.php?request=ajax&act=search_party', {
+			dataType : 'json',
+			minChars: 0,
+			delay: 1000,
+			mustMatch: true,
+			formatItem : function(row, i, max, value, term) {
+				return(row.name);
+			},
+			formatResult : function(row) {
+				return(row.name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#party_id').val(row.party_id);
+		});
+		
+		/**
+		 * 仓库搜索
+		 */
+		$('#facility_select').autocomplete('sale_support_untreated_list.php?request=ajax&act=search_facility', {
+			dataType : 'json',
+			minChars: 0,
+			delay: 1000,
+			mustMatch: true,
+			formatItem : function(row, i, max, value, term) {
+				return(row.facility_name);
+			},
+			formatResult : function(row) {
+				return(row.facility_name);
+			}
+		}).result(function(event, row, formatted) {
+			$('#facility_id').val(row.facility_id);
+		});
+	
+    });
+	
+	function E(id) {return document.getElementById(id);}
+	function ES(name) {return document.getElementsByName(name);}
+	
+	//去除首尾空格
+	function  Trim(str){
+	  	return  str.replace(/^\s*(.*?)[\s\n]*$/g,  '$1');
+	}
+
+	function apply_submit(){
+		var facility_id = E("facility_id").value;
+		var party_id = E("party_id").value;
+		var start = E("start").value;
+		var end = E("end").value;
+		var order_sn = Trim(E("order_sn").value);
+		
+		do {
+			$('#form1').submit();
+		}while(false);
+		
+		return;
+	}
+	
+	function show(num){
+		if(num != 0){
+			for(var i=1;i<3;i++){
+				if(i != num){
+					E('d'+i).style.display = 'none';
+				}
+			}
+			E('d'+num).style.display = '';
+		}else{
+			for(var i=1;i<3;i++){
+				E('d'+i).style.display = '';
+			}
+		}
+	}
+	
+	function hiddenall(){
+		for (var i=1;i<3;i++){
+			E('d'+i).style.display = 'none';
+		}
+	}
+	
+	//	{/literal}
+		
+  	{if $smarty.request.info}alert('{$smarty.request.info}');{/if}
+	// ]]>
+  </script>
+
+{literal}
+<style>
+  .table_css{width:850px;border-collapse:collapse;}
+	.table_css td{border:1px solid #999;padding:5px;line-height:150%;}
+	.table_css th{background:#ccc;height:30px;border:1px solid #ccc;}
+	.table_css tr:hover{background:#eee;}
+.head u{
+	color:#00BFFF;
+    font-size: 14px;
+    margin-top: -1px;
+    padding-top: 5px;
+}
+.head p{
+	font-size: 14px;
+    margin-top: -1px;
+    padding-top: 5px;
+}
+</style>
+{/literal}
+<title>售后未及时处理订单</title>
+</head>
+
+<body>
+
+
+<div class="head" style="width:850px;">
+<form id = "form1" method = "post">
+<table>
+    <tr>
+      <td style="width:250px"> 对应组织：<input id="party_select" style="width:165px" name="party_select" /></td>
+      <td>对应仓库：&nbsp;&nbsp;<input id="facility_select" name="facility_select" /></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>
+           统计时间：<input id="start" name="start" style="width:70px" value="{$smarty.request.start}" /> 
+		到 <input id="end" name="end" style="width:70px" value="{$smarty.request.end}" /> 
+	  </td>
+	  <td style="width:250px">ERP订单号：<input  id="order_sn" name="order_sn" value="{$smarty.request.order_sn}"/> </td>
+	  <td>
+		<input type="button" value="搜索" onclick="apply_submit(this);"/>
+	  </td>
+	</tr>
+		
+		<input type="hidden" name="act" value="search"/>
+		<input type="hidden" name="facility_id" id="facility_id"/>
+		<input type="hidden" name="party_id" id="party_id"/>
+</table>
+</form>
+<br/>
+<table>
+<tr>
+<td style="width:290px;"><u onclick="show(1);">24小时后仍未完结的售后订单明细及汇总</u></td>
+<td style="width:240px;"><u onclick="show(2);">超过2小时处理不及时订单及汇总</u></td>
+<td style="width:150px;"><u onclick="show(0);">显示全部</u></td>
+</tr>
+</table>
+</div>
+
+<br/>
+
+<div id="d1">
+<h3>24小时后仍未完结的售后订单明细</h3>
+<table class="table_css" style=text-align:center; id="t3">
+	<tr>
+		<th>业务组织</th>
+		<th>订单号</th>
+		<th>支付方式</th>
+		<th>所在仓库</th>
+		<th>首次发起售后沟通时间</th>
+		<th>状态</th>
+	</tr>
+	
+	<!-- {foreach from = $searious_untreated_orders item = item} -->
+	<tr>
+	   <td>{$item.party_name}</td>
+	   <td><a href="sale_support.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</td>
+	   <td>{$item.pay_name}</td>
+	   <td>{$item.facility_name}</td>
+	   <td>{$item.min_send_time}</td>
+	   <td>{if $item.status == 'OK'}未完结{else}完结{/if}</td>
+	</tr>
+	<!-- {/foreach} -->
+	
+</table>
+<h3>处理不及时汇总</h3>
+<table class="table_css" style=text-align:center; id="t2">
+	<tr>
+		<th>业务组织</th>
+		<th>开始时间</th>
+		<th>结束时间</th>
+		<th>订单数量</th>
+		<th>总回复数</th>
+		<th>状态</th>
+	</tr>
+	
+	<!-- {foreach from = $untreated_serious_orders_summary item = item} -->
+	<tr>
+	   <td>{$item.party_name}</td>
+	   <td>{$item.min_time}</td>
+	   <td>{$item.max_time}</td>
+	   <td>{$item.orders_num}</td>
+	   <td>{$item.message_num}</td>
+	   <td>未完结</td>
+	</tr>
+	<!-- {/foreach} -->
+	
+</table>
+</div>
+
+<div id="d2">
+
+<h3>超过2小时未处理清单</h3>
+<table class="table_css" style=text-align:center; >
+	<tr>
+		<th>业务组织</th>
+		<th>订单号</th>
+		<th>支付方式</th>
+		<th>所在仓库</th>
+		<th style="width:100px;">最后一条回复记录</th>
+		<th>最后一条回复时间</th>
+		<th>操作人</th>
+		<th>状态</th>
+	</tr>
+	
+	<!-- {foreach from = $last_untreated_orders item = item} -->
+	<tr>
+	   <td>{$item.party_name}</td>
+	   <td><a href="sale_support.php?order_id={$item.order_id}" target="_blank">{$item.order_sn}</a></td>
+	   <td>{$item.pay_name}</td>
+	   <td>{$item.facility_name}</td>
+	   <td>{$item.message}</td>
+	   <td>{$item.max_send_time}</td>
+	   <td>{$item.send_by}</td>
+	   <td>{if $item.status == 'OK'}未完结{else}完结{/if}</td>
+	</tr>
+	<!-- {/foreach} -->
+	
+</table>
+
+<h3>处理不及时汇总</h3>
+<table class="table_css" style=text-align:center; id="t2">
+	<tr>
+		<th>业务组织</th>
+		<th>开始时间</th>
+		<th>结束时间</th>
+		<th>订单数量</th>
+		<th>总回复数</th>
+		<th>状态</th>
+	</tr>
+	
+	<!-- {foreach from = $untreated_orders_summary item = item} -->
+	<tr>
+	   <td>{$item.party_name}</td>
+	   <td>{$item.min_time}</td>
+	   <td>{$item.max_time}</td>
+	   <td>{$item.orders_num}</td>
+	   <td>{$item.message_num}</td>
+	   <td>未完结</td>
+	</tr>
+	<!-- {/foreach} -->
+	
+</table>
+</div>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "end",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

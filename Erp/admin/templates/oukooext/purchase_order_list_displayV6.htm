@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>采购订单列表</title>
+<!-- Autocomplete -->
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+<!-- Autocomplete /-->
+<!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+</head>
+<body>
+<form method="post" autocomplete="off">
+<table class="bWindow" style="margin-top:20px; width:1000px;">
+<tr align="center">
+  <th>采购批次号</th>
+  <th>采购日期</th>
+  <th>预计到货日期</th>
+  <th>仓库</th>
+  <th>批次状态</th>
+  <th>操作</th>
+</tr>
+<tr align="center">
+	<td><input id="order" name="batch_order_sn" value="{$smarty.request.batch_in_storage.batch_order_sn}" /></td>
+  <td>
+		从
+		<input style="width:80px" name="batch_order_time_start" id="batch_search_order_time_start" value="{$batch_order_time_start}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="batch_search_order_time_start_trigger" value="..." >
+		到
+		<input style="width:80px" name="batch_order_time_end" id="batch_search_order_time_end" value="{$batch_order_time_end}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="batch_search_order_time_end_trigger" value="..." >
+  </td>
+  <td>
+  	<input style="width:80px" name="arrive_time" id="arrive_time" value="{$arrive_time}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="arrive_time_trigger" value="..." >
+  </td>
+  	<td><select  name="facility_id">
+					<option value="0">所有权限仓库</option>
+					{foreach from=$facility_lists key=facility_id item=facility_name}
+					<option value="{$facility_id}" {if $smarty.request.facility_id !=null && $smarty.request.facility_id == $facility_id}selected{/if}>{$facility_name}</option>
+					{/foreach}
+		</select>
+	</td>
+  	<td><select name="purchase_order_status">
+  		<option value="0" {if $purchase_order_status==0}selected{/if}>未入库未完结未废除</option>
+  		<option value="1" {if $purchase_order_status==1}selected{/if}>已入库</option>
+  		<option value="2" {if $purchase_order_status==2}selected{/if}>已完结</option>
+  		<option value="3" {if $purchase_order_status==3}selected{/if}>已废除</option> 	
+  		</select>
+	</td>
+  <td>
+		<input type="submit" value="搜索">
+		<input type="hidden" name="act" value="search">
+		<input type='hidden' name="label" value="{$smarty.request.label}"/>
+  </td>
+</tr>
+</table>
+</form>
+
+<table class="bWindow" style="margin-top:20px">
+<caption><h2>{if $smarty.request.act != 'search'}一周内的批次采购订单{else}搜索的批次采购订单{/if}</h2></caption>
+<tr>
+<th>采购批次号</th>
+<th>条码</th>
+<th>组织</th>
+<th>采购时间</th>
+<th>预计到货时间</th>
+<th>收货仓库</th>
+<th>物流备注</th>
+<th>操作</th>
+</tr>
+{assign var=total_goods_number value=0}
+{foreach from=$search_orders item=search_order}
+{if !$search_order.canceled}
+<tr align="center">
+	<td>
+	   <a href="batch_order_statistics.php?batch_order_sn={$search_order.batch_order_sn}">{$search_order.batch_order_sn}</a> 
+	</td>
+	<td>
+		<img src="code_img.php?barcode={$search_order.batch_order_sn}&width=400" />
+	</td>
+	<td>
+		{$search_order.party_name}<br>
+	</td>
+	<td>{$search_order.order_time}</td>
+	<td>{$search_order.arrive_time}</td>
+	<td>{$search_order.facility_name}</td>
+	<td>{$search_order.remark}</td>
+	<td>{if $search_order.is_cancelled=="N" && $search_order.is_over_c=="N" && $search_order.is_in_storage=="N"}
+		{if $search_order.IN_STORAGE_MODE==0}<a href="receive_rf_scan.php" target="_blank">入库</a>
+		{elseif $search_order.IN_STORAGE_MODE==1}<a href="in_storage.php?act=today" target="_blank">入库</a>
+		{elseif $search_order.IN_STORAGE_MODE==2}<a href="batch_edit_in_storage.php?batch_order_id={$search_order.batch_order_id}" target="_blank">入库</a>
+		{elseif $search_order.IN_STORAGE_MODE==3}<a href="batch_or_edit_in_storage.php?batch_order_id={$search_order.batch_order_id}" target="_blank">入库</a>
+		{/if}
+		{/if}
+	</td>
+</tr>
+{/if}
+{/foreach}
+</table>
+
+<script type="text/javascript">//<![CDATA[
+{literal}
+$(document).ready(function(){
+    Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "batch_search_order_time_start",
+        button            : "batch_search_order_time_start_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "batch_search_order_time_end",
+        button            : "batch_search_order_time_end_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+	});
+	Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "arrive_time",
+        button            : "arrive_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+	});
+});
+
+
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

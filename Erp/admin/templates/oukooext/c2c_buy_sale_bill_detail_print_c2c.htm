@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>内部对帐查看</title>
+</head>
+<body>
+<span class="right" onclick="this.style.display = 'none';document.getElementById('close_window').style.display = 'none';window.print();" style="color: red; font-weight: bold; cursor: pointer;">打印</span>
+<span class="right" onclick="window.close();" style="color: red; font-weight: bold; cursor: pointer;margin-right: 60px;" id="close_window">关闭</span>
+
+<table class="bWindow">
+<caption><h1>代收货款帐单</h1><br><br></caption>
+<tr>
+	<th>订单号</th>
+	<th>订单日期</th>
+	<th>商品名</th>
+	<th>代收金额</th>
+</tr>
+<tr align="center">
+<th>总计</th>
+<td></td>
+<td></td>
+<td>{$bill.amount}</td>
+</tr>
+<!--{foreach from=$provider_ids item=provider}-->
+	<!--{foreach from=$provider.data item=goods}-->
+	<tr align="center">
+	<td><a href="order_edit.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a></td>
+	<td>{$goods.order_time}</td>
+	<td>{$goods.goods_name}</td>
+	<td>{$goods.goods_price}</td>
+	</tr>
+	<!--{/foreach}-->
+<!--{/foreach}-->
+</table>
+<div align="right">总额：{$bill.amount}，日期：{$bill.date}，收款人：{if trim($bill.purchaser) == "张莉"}周斌{/if}{if trim($bill.purchaser) == "王玮"}周尚晨{/if}</div>
+
+</body>
+</html>

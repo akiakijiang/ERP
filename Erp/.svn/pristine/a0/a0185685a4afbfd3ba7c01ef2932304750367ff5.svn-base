@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<title>降价提醒统计数据</title>
+</head>
+
+<body>
+<h3>从{$start}到{$end} <a href="{$WEB_ROOT}goods{$price_changes.0.goods_id}">{$price_changes.0.goods_name}</a>降价提醒统计数据 </h3>
+
+<table class="bWindow">
+<tr><td width="10%">时间</td><td>原价</td><td>现价</td><td>区间</td><td>设置总数</td><td>购买数</td><td>转化率(购买/设置总数)</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td>{*<td colspan="6" align="center">降价范围（百分比 （设置人数））</td>*}</tr>
+{foreach from=$price_changes item=goods name=goods}
+<tr {if $smarty.foreach.goods.iteration % 2 eq 0}bgcolor="#D8D8D8"{/if}>
+<td>{$goods.last_changed|substr:2:8} to {$goods.APPROVED_DATETIME|substr:2:8}</td>
+<td>{$goods.shop_price}</td>
+<td>{$goods.PRICE}</td>
+<td>{$goods.price_range}</td>
+<td>{$goods.sum_base}</td>
+<td>{$goods.sum_buy}</td>
+<td ><font color="Red">{$goods.stat_buy}%</font> ({$goods.sum_buy}/{$goods.sum_base})</td>
+{foreach from=$goods.range name=range item=range key=price}
+	<td title="{$goods.goods_name} 范围：{if $price-$goods.price_range > 0}{$price-$goods.price_range}{else}1{/if}-{$price}">{$range.stat}% ({$range.buy}/{$range.set})</td>
+{/foreach}
+{section name=filltd loop=6 start=$smarty.foreach.range.iteration step=1}
+<td>0</td>
+{/section}
+</tr>
+{/foreach}
+</table>
+
+</body>
+</html>

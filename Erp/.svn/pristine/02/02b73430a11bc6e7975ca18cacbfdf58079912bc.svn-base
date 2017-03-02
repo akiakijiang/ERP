@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+ <head>
+  <title>淘宝分销店铺操作 </title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css" />
+ </head>
+ <body>
+ <fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝分销店铺列表&nbsp;</span></legend>
+    <br />
+    <div style="clear:both;">
+        <form method="POST" >
+        	<table cellpadding="5" cellspacing="1">
+		    	<tr>
+			      	<td>店铺名称:</td>
+			      	<td>{$nick}</td>
+				</tr>
+		      
+		    	<tr>
+			      	<td>支付方式:</td>
+			        <td>
+			        	<select name="pay_id">
+			        		{html_options options=$payment_list selected=$taobao_fenxiao_shop_list.pay_id}
+			        	</select>
+					</td>
+				</tr>
+		        
+		    	<tr>
+			      	<td>组织:</td>
+			        <td>
+			        	<select name="party_id">
+			        		{html_options options=$party_id_list selected=$taobao_fenxiao_shop_list.party_id}
+			        	</select>
+					</td>
+				</tr>
+		        
+		        <tr>
+			      	<td>仓库:</td>
+			        <td>
+			        	<select name="facility_id" >
+			        		{html_options options=$facility_id_list selected=$taobao_fenxiao_shop_list.facility_id}
+			        	</select>
+					</td>
+				</tr>
+		        
+		        <tr>
+			      	<td>配送方式:</td>
+			        <td>
+			        	<select name="shipping_id" >
+			        		{html_options options=$shipping_list selected=$taobao_fenxiao_shop_list.shipping_id}
+			        	</select>
+					</td>
+				</tr>
+				
+				<tr>
+					<td>店铺编码:</td>
+					<td>{$application_key}</td>
+				</tr>
+				
+				<tr>
+			      	<td>状态:</td>
+			        <td>
+			        	<select name="status" >
+			        		{html_options options=$status_list selected=$taobao_fenxiao_shop_list.status}
+			        	</select>
+					</td>
+				</tr>
+		        
+		        <tr>
+			      	<td>是否库存同步:</td>
+			        <td>
+			        	<select name="is_stock_update">
+			        		{html_options options=$is_stock_update_list selected=$taobao_fenxiao_shop_list.is_stock_update}
+			        	</select>
+					</td>
+				</tr>
+		        
+		    	<tr>
+			      	<td>&nbsp;</td>
+			        <td>
+			        	<input type="hidden" name="act" value="save" />
+			        	<input type="submit" value="保存"/>&nbsp;&nbsp;
+			        	<input type="button" value="关闭" onClick="quit()" />&nbsp;&nbsp;
+			        	<font color='red'>{$message}</font>
+					</td>
+				</tr>    
+			</table>
+        </form>
+    </div>
+  </fieldset>
+  <script type="text/javascript">
+    var WEB_ROOT = '{$WEB_ROOT}';
+    // <![CDATA[
+    // {literal}
+    	function quit(){
+    		parent.window.location.reload();
+    	};
+    // {/literal}
+    // ]]>
+  </script>
+ </body>
+</html>

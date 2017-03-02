@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>售后详细</title>
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+	*.margin: 0;
+</style>
+</head>
+<body>
+<!-- {if $errmsg} --> 
+<div style="width:800px; margin:0 auto; color:red; border:#000 1px solid;">
+<ul>
+<!-- {foreach from=$errmsg item=msg}-->
+<li>{$msg}</li>
+<!-- {/foreach} -->
+</ul>
+</div>
+<!-- {/if} -->
+
+<div style="width:800px; margin:0 auto;">
+    <!-- {if $message.next_process_group == ''} -->
+	   <div>
+       <p>责任人：</p>
+          <ul>{$message.responsible_person}</ul>
+       <p>实际原因：</p>
+          <ul>{$message.message}</ul>
+       <p>方案：</p>
+          <ul>{$message.program}</ul>
+       </div>
+    <!-- {else} -->
+       <div>
+	    <p>发送人：</p>
+	       <ul>
+	          {$message.send_by}
+	       </ul>
+	    <p>待处理团队：</p>
+	       <ul>
+	          {$message.next_process_group}
+	       </ul>
+	    <p>咨询详情:</p>
+	       <ul>
+	          {$message.message}
+	       </ul>
+	    </div>
+	    <!-- {if $message.program != ''} -->
+	       <p>原方案：</p>
+	       <ul>
+	          {$message.program}
+	       </ul>
+	    <!-- {/if} -->
+	    <!-- 
+	    	{if $pic_detail} 
+		    <div>
+		    <p>图片:</p>
+		     {foreach from=$pic_detail item=item}
+		    <ul>
+		        <p>描述：{$item.pic_desc}</p>
+		        <img src = "{$item.path}" style = "max-width:700px;"/>
+		    </ul>
+		    </div>
+		    {/foreach}
+	     	{/if} 
+	    -->
+    <!-- {/if} -->
+    <!-- {if $message.path != ""} -->
+    	<!-- {foreach from=$message.path item=pic} -->
+              <a href="{$pic}" target="_blank"><img src='{$pic}' width="200px" height="130px"></a>&nbsp;
+     	<!-- {/foreach} --> 
+   <!-- {/if} -->
+</div>
+</body>
+</html>

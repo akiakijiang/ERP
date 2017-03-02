@@ -1,0 +1,773 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+
+  <title>库存查询</title>
+  
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+  <script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}js/transport.js"></script>
+  <script type="text/javascript">
+
+  {literal}
+
+	// <![CDATA[
+  var erp_id_span;
+  function print_serial_number(order_id, erp_goods_sn, erp_id) {
+    Ajax.call('print_serial_number.php?erp_goods_sn=' + erp_goods_sn + '&order_id=' + order_id, '', print_serial_number_response, 'GET', 'TEXT');
+    erp_id_span = 'erpid_' + erp_id;
+  }
+  
+  function print_serial_number_response(result) {
+    if(document.getElementById(erp_id_span)) {
+      document.getElementById(erp_id_span).innerHTML = "<br />" + result;
+    }
+    //alert(result);
+  }
+
+  // 初始化日历函数
+  function set_up_calendar(input_field_value,button_value) {
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : input_field_value,
+          button            : button_value,
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+      });
+  }
+	
+  function get_date_format(later) {
+		var now = new Date();
+		var year = now.getFullYear();
+		var date_format = year+later;
+	    var month = now.getMonth();
+	    if(month < 10) {
+	    	date_format += "-0";
+	    } else {
+	    	date_format += "-";
+	    }
+	    date_format += month+1;
+	    var day = now.getDate();
+	    if(day < 10) {
+	    	date_format += "-0";
+	    } else {
+	    	date_format += "-";
+	    }
+	    date_format += day;
+		return date_format;
+  }
+  
+  
+  // 页面加载时初始化日历设置 ljzhou 2013.02.05
+  window.onload = function() {
+  	var product_keys = document.getElementsByName('product_keys[]');
+
+  	for(var i=0;i<product_keys.length;i++)
+	{
+	   var product_key = product_keys[i].value;
+	   var products = document.getElementsByName('search_in_times_'+product_key+'[]');
+	  	for(var j=0;j<products.length;j++)
+		{
+	 	   set_up_calendar("search_in_time_"+product_key+"_"+(j+1),"search_in_time_trigger_"+product_key+"_"+(j+1));
+		}
+	    document.getElementById('last_erp_id_'+product_key).value = '';
+	    document.getElementById('last_validity_'+product_key).value = '';
+	    document.getElementById('last_num_'+product_key).value = '';
+	}
+    $('#batch_edit_validity_num').attr('disabled',false);
+  }
+  
+    function get_last_key_id(keys) {
+    	var last_id = keys[keys.length-1].id;
+		var newIds = last_id.split('_');
+		var newId = parseInt(newIds[newIds.length-1]);
+		return newId;
+    }
+    
+    // 添加有效期和数量    
+	function add_validity_number(product_key) {
+		var search_in_time_names = document.getElementsByName('search_in_times_'+product_key+'[]');
+		var newId = get_last_key_id(search_in_time_names)+1;
+
+		var content = " <tr ><td style=\"width:50%;border:0px;\" align='center'>	";
+		content += " <input style=\"width:45%\" id=\"search_in_time_"+product_key+"_"+newId+"\" name=\"search_in_times_"+product_key+"[]\" value="+get_date_format(2)+" >";
+		content += " <input  type=\"button\" id=\"search_in_time_trigger_"+product_key+"_"+newId+"\" value=\"...\" >";
+		content += " </td>";
+		content += " <td style=\"width:50%;border:0px;\" align='left'> &nbsp&nbsp";
+		content += " <input style=\"width:20%\" type=\"text\" id=\"input_number_"+product_key+"_"+newId+"\" name=\"input_numbers_"+product_key+"[]\" value='1' onkeyup=\"value=value.replace(/[^\\d]/g,'')\" onbeforepaste=\"clipboardData.setData('text',clipboardData.getData('text').replace(/[^\\d]/g,''))\" readonly />&nbsp&nbsp";
+		content += " <input style=\"width:20%\" type='button' value='编辑' onclick=\"$('#input_number_"+product_key+"_"+newId+"').attr('readonly', false);return false;\">&nbsp&nbsp";
+	    content += " <input style=\"width:20%\" type='button' value='删除' onclick=";
+	    content += " \"remove_validity_number(this);return false;\">";
+		content += " </td></tr>";
+
+       $('#addValidityNumber_'+product_key).parent().parent().before(content);
+       set_up_calendar("search_in_time_"+product_key+"_"+newId,"search_in_time_trigger_"+product_key+"_"+newId);
+	}
+
+	
+	//删除当前行
+	function remove_validity_number(obj) { 
+		if(confirm('确认删除吗？')) {
+		    $(obj).parent().parent().remove(); 
+		} 
+		return false;
+	} 
+    
+	function check_input_num(input_number,product_key,check_number) {
+		var goods_name = $('#goods_name_'+product_key).val();
+	    if (isNaN(check_number)) {
+	        alert("请输入数字"+goods_name + ':' + check_number);
+	        return false;
+	    }
+		
+		if (check_number.trim() == ''){
+			alert("请输入一个数字，不想入库请输入0 " + goods_name + ':' + check_number);
+			return false;
+		}
+		return true;
+	}
+	
+	function check_validity_format(validity) {
+		var exp = /^[1-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/;
+		if(!exp.test(validity)) {
+			return false;
+		}
+		return true;
+	}
+	
+	// 检测日期和数量是否正确
+	function check_validity_number(product_key) {
+		var goods_name = $('#goods_name_'+product_key).val();
+		var origin_validitys = document.getElementsByName('origin_search_in_times_'+product_key+"[]");
+		var validitys = document.getElementsByName('search_in_times_'+product_key+"[]");
+		var numbers = document.getElementsByName('input_numbers_'+product_key+"[]");
+  	    var storage_count = $.trim($('#storage_count_'+product_key).val());
+
+  	    var total_num = 0;
+		for (var i=0;i<validitys.length;i++) {
+			// 如果是没有维护日期的这一行，则不检查日期,但要检查数量
+			if(i>0) {
+				if(!check_validity_format(validitys[i].value)) {
+					alert('请输入 “2013-01-01” 这样格式的日期!'+goods_name+':'+validitys[i].value);
+					return false;
+				}
+					
+				for (var j=i+1;j<validitys.length;j++) {
+					if(validitys[i].value == validitys[j].value) {
+						alert('同一个商品日期不能重复！'+goods_name+':'+validitys[i].value);
+						return false;
+					}
+				}
+			}
+			
+			// 检测格式
+	    	if(!check_input_num(storage_count,product_key,numbers[i].value)) {
+	    		return false;
+	    	}
+			total_num += parseInt(numbers[i].value.trim());
+		}
+		// 检测总数量
+		if(parseInt(storage_count) != parseInt(total_num)) {
+			alert('该商品总修改数量必须要等于总库存数量：'+goods_name);
+			return false;
+		}
+
+		return true;
+	}
+
+	// 分析维护的日期和数量的变化
+	function check_validity_number_variance(product_key) {
+       var origin_validitys = document.getElementsByName('origin_search_in_times_'+product_key+'[]');
+       var now_validitys = document.getElementsByName('search_in_times_'+product_key+'[]');
+       var origin_nums = document.getElementsByName('origin_input_numbers_'+product_key+'[]');
+       var now_nums = document.getElementsByName('input_numbers_'+product_key+'[]');
+       var erp_ids = document.getElementsByName('erp_ids_'+product_key+'[]');
+
+	   var last_erp_ids = ''; // 最后可以用来更改日期的erp_id字符串
+	   var last_validitys = ''; // 最后将改为的日期
+	   var last_nums = ''; // 最后和将改的日期一一对应的数量
+  	   var add_validity_flag; // 是否是新的日期
+  	   var delete_validity_flag; // 是否少了日期
+  	   
+       // 判断增加日期&&日期没变但数量改变
+       for(var j=0;j<now_validitys.length;j++) {
+    	   add_validity_flag = true;
+  	       for(var k=0;k<origin_validitys.length;k++) {
+  	    	   
+    		   if(now_validitys[j].value==origin_validitys[k].value) {
+    			   now_nums[j].value = parseInt(now_nums[j].value);
+    			   origin_nums[k].value = parseInt(origin_nums[k].value);
+    			   if(now_nums[j].value < origin_nums[k].value) {
+    				  var edit_erp_ids = erp_ids[k].value;
+    				  var edit_validity_nums = new Array();
+    				  edit_validity_nums = edit_erp_ids.split(',');
+    				  var diff = origin_nums[k].value - now_nums[j].value;
+    				  for (var n=0;n<diff;n++) {
+    					  last_erp_ids += edit_validity_nums[n]+',';
+    				  }
+    			   }
+    			   else if (now_nums[j].value > origin_nums[k].value) {
+    				  last_validitys += now_validitys[j].value+',';
+    				  var diff = parseInt(now_nums[j].value) - parseInt(origin_nums[k].value)
+    				  last_nums += diff+',';
+    			   }
+    			   
+    			   add_validity_flag = false;
+    			   break;
+    		   }
+    		   
+    	   }
+    	   if(add_validity_flag) {
+			  last_validitys += now_validitys[j].value+',';
+			  last_nums += parseInt(now_nums[j].value)+',';
+    	   }  
+       }
+       
+       // 判断减少日期
+       for(var k=0;k<origin_validitys.length;k++) {
+	  	   delete_validity_flag = true;
+
+   	       for(var m=0;m<now_validitys.length;m++) {
+   		      if(now_validitys[m].value==origin_validitys[k].value) {
+   			     delete_validity_flag = false;
+   			     break;
+   		      }
+   	       }
+   	   	   if(delete_validity_flag) {
+  			  var diff = parseInt(origin_nums[k].value);
+  			  var edit_erp_ids = erp_ids[k].value;
+  			  var edit_validity_nums = new Array();
+  			  edit_validity_nums = edit_erp_ids.split(',');
+  			  for (var n=0;n<diff;n++) {
+  				last_erp_ids += edit_validity_nums[n]+',';
+  			  }
+  	   	   }  
+   	   }
+
+	    last_erp_ids = last_erp_ids.substring(0,last_erp_ids.length-1); // 去掉最后一个','
+  	    last_validitys = last_validitys.substring(0,last_validitys.length-1); 
+  	    last_nums = last_nums.substring(0,last_nums.length-1); 
+	    if(last_erp_ids != '') {
+	        document.getElementById('last_erp_id_'+product_key).value = last_erp_ids;
+	        document.getElementById('last_validity_'+product_key).value = last_validitys;
+	        document.getElementById('last_num_'+product_key).value = last_nums;
+	        return true;
+	    }
+	    return false;
+	}
+	
+	//批量修改有效期数量 ljzhou 2013.01.31
+	function batch_edit_validity_num_click(){
+	    if(!confirm("确定批量维护有效期吗？")) {
+	    	  return false;
+	    };
+  	    var product_keys = document.getElementsByName('product_keys[]');
+        if(product_keys.length ==0) {
+  	       alert('没有找到商品！请联系erp');
+  	       return false;
+        }
+  	    var if_edit_validity = false; // 是否编辑过了
+  	    for(var i=0;i<product_keys.length;i++)
+	    {
+	       var product_key = product_keys[i].value;
+	       var is_maintain_warranty = $('#is_maintain_warranty_'+product_key).val();
+	       // 无需维护有效期的商品不需要检测
+	       if(is_maintain_warranty == 0) {
+	    	   continue; 
+	       }
+	       
+ 	       if(!check_validity_number(product_key)){
+    	       return false;
+	       }
+ 	       
+  	       if( check_validity_number_variance(product_keys[i].value) ) {
+  	    	   if(!if_edit_validity) {
+  	  	    	  if_edit_validity = true; 
+  	    	   }
+  	       }
+	    }
+
+	    if(!if_edit_validity) {
+	    	alert('您没有修改任何地方！');
+	    	return false;
+	    }
+	    
+	    var form = document.getElementById('storage_list_summary_form');
+	    form.submit();
+	    $('#batch_edit_validity_num').attr('disabled',true);
+	}
+	
+	// ]]>	
+  {/literal}
+  </script>
+</head>
+<body>
+<form>
+商品名：
+<input style="width:100px" name="goods_name" value="{$smarty.request.goods_name}">
+&nbsp;&nbsp;
+条码：
+<input style="width:100px" name="barcode" value="{$smarty.request.barcode}">
+{if !$is_third_party_warehouse}
+&nbsp;&nbsp;
+商品类别：
+<select name="goods_cagetory">
+<option value="-1">所有</option>
+<option value="1" {if $smarty.request.goods_cagetory == 1}selected{/if}>手机</option>
+<option value="2" {if $smarty.request.goods_cagetory == 2}selected{/if}>手机配件</option>
+<option value="3" {if $smarty.request.goods_cagetory == 3}selected{/if}>健康电子</option>
+<option value="4" {if $smarty.request.goods_cagetory == 4}selected{/if}>DVD</option>
+<option value="5" {if $smarty.request.goods_cagetory == 5}selected{/if}>电教品</option>
+<option value="6" {if $smarty.request.goods_cagetory == 6}selected{/if}>礼品</option>
+<option value="7" {if $smarty.request.goods_cagetory == 7}selected{/if}>鞋品</option>
+<option value="8" {if $smarty.request.goods_cagetory == 8}selected{/if}>运动装备</option>
+</select>
+{/if}
+&nbsp;&nbsp;
+全新：
+<select name="is_new">
+<option value="-1">所有</option>
+<option value="NEW" {if $smarty.request.is_new == "NEW"}selected{/if}>全新</option>
+<option value="SECOND_HAND" {if $smarty.request.is_new == "SECOND_HAND"}selected{/if}>二手</option>
+</select>
+&nbsp;&nbsp;
+时间：
+<input style="width:90px" id="storage_time" name="storage_time" value="{$smarty.request.storage_time}"><input type="button" value="..." id="storage_time_trigger">
+&nbsp;&nbsp;
+其他条件：
+<select name="other_condition">
+<option value="-1">所有</option>
+<option value="1" {if $smarty.request.other_condition == 1}selected{/if}>未上架，但库存有货</option>
+<option value="2" {if $smarty.request.other_condition == 2}selected{/if}>已上架，有库存非在售商品</option>
+</select>
+&nbsp;&nbsp;
+仓库:
+<select name="available_facility">
+<option value="-1">所有</option>
+{html_options options=$available_facility selected = $smarty.request.available_facility }
+</select>
+</br></br>
+到期时间开始：
+<input style="width:90px" id=start_validity_time name="start_validity_time" value="{$smarty.request.start_validity_time}"><input type="button" value="..." id="start_validity_time_trigger">
+&nbsp;&nbsp;
+到期时间结束：
+<input style="width:90px" id="end_validity_time" name="end_validity_time" value="{$smarty.request.end_validity_time}"><input type="button" value="..." id="end_validity_time_trigger">
+&nbsp;&nbsp;
+<input type="submit" value="搜索">
+&nbsp;&nbsp;
+<input type="submit" name="type" value="库存清单CSV">
+&nbsp;&nbsp;
+<input type="submit" name="type" value="类别汇总CSV">
+&nbsp;&nbsp;
+<input type="submit" name="type" value="库存汇总CSV">
+&nbsp;&nbsp;
+<input type="submit" name="type" value="内部人员借机清单CSV">
+&nbsp;&nbsp;
+<input type="submit" name="type" value="库存汇总(不含有效期)CSV">
+<input type="hidden" name="act" value="search">
+<input type="hidden" name="label" value="{$smarty.request.label}">
+</form>
+<p>目前所处仓库：
+<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+</p>
+<br />
+{foreach from=$labels item=label_name key=label_id }
+{if $smarty.request.label == $label_id}
+<strong>{$label_name}</strong>&nbsp;&nbsp;&nbsp;
+{else}
+<a href="?label={$label_id}">{$label_name}</a>&nbsp;&nbsp;&nbsp;
+{/if}
+{/foreach}
+<div style="text-align:right;">cost time {$cost_time}</div>
+
+{if $smarty.request.label eq 'brand_storage_summary'}
+<table class="bWindow">
+<caption><h2>类别汇总</h2><br><br></caption>
+<tr>
+<th><a href="storage.php">所有类别</a></th>
+<th>总数</th>
+<th>全新</th>
+<th>二手</th>
+<th>总计</th>
+<th>全新总计</th>
+<th>二手总计</th>
+</tr>
+{foreach from=$brand_storage_list item=brand_storage key=brand_name}
+<tr align="center">
+<td><a href="storage.php?{if $brand_name == '配件'}goods_cagetory=2{elseif $brand_name == '小家电'}goods_cagetory=3{elseif $brand_name == 'DVD'}goods_cagetory=4{else}goods_name={$brand_name|urlencode}{/if}">{$brand_name}</a></td>
+<td>{$brand_storage.count|default:0}</td>
+<td>{$brand_storage.new_count|default:0}</td>
+<td>{$brand_storage.second_hand_count|default:0}</td>
+<td align="right">{$brand_storage.purchase_paid_amount|default:0|invoice_price_format}</td>
+<td align="right">{$brand_storage.new_purchase_paid_amount|default:0|invoice_price_format}</td>
+<td align="right">{$brand_storage.second_hand_purchase_paid_amount|default:0|invoice_price_format}</td>
+</tr>
+{/foreach}
+<tr align="center">
+<th>汇总</th>
+<td>{$goods_count}</td>
+<td>{$new_count}</td>
+<td>{$second_hand_count}</td>
+<td align="right">{$purchase_paid_amount_sum|invoice_price_format}</td>
+<td align="right">{$new_purchase_paid_amount|invoice_price_format}</td>
+<td align="right">{$second_hand_purchase_paid_amount|invoice_price_format}</td>
+</tr>
+</table>
+{elseif $smarty.request.label eq 'gh_goods_list'}
+{if $gh_goods_list}
+<table class="bWindow" id="gh_order">
+<caption><h2>正在跟供应商换货清单</h2><br><br></caption>
+<tr>
+<th>商品名</th>
+<th>供价</th>
+<th>是否全新</th>
+<th>订单号</th>
+<th>供应商</th>
+<th>申请人</th>
+<th>换货时间</th>
+<th>类型</th>
+<th>串号</th>
+<th>备注</th>
+<th>经手人</th>
+<th>操作</th>
+</tr>
+<tr align="center">
+<th>汇总</th>
+<td>{$gh_sum_purchase_paid_amount}</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<!--{foreach from=$gh_goods_list item=goods}-->
+<tr align="center">
+<td>{$goods.goods_name}</td>
+<td>
+	{if view_provide_price($goods.category)}
+	{$goods.purchase_paid_amount}
+  {else}
+  N/A
+  {/if}
+</td>
+<td>{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if}</td>
+<td><a href="order_edit.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a></td>
+<td>{$goods.consignee}</td>
+<td>{$goods.apply_user}</td>
+<td>{$goods.order_time}</td>
+<td>{$goods.order_type}</td>
+<td>{$goods.erp_goods_sn}</td>
+<td>{$goods.postscript}</td>
+<td>{$goods.action_user}</td>
+<td><a href='h_return_goods_gys.php?id={$goods.order_goods_id}&type=g&back=storage.php?label=gh_goods_list'>换货入库</a>
+    <br>
+</td>
+</tr>
+<!--{/foreach}-->
+</table>
+{/if}
+{elseif $smarty.request.label eq 'sh_goods_list'}
+{if $sh_goods_list}
+<table class="bWindow">
+<caption><h2>内部人员借机清单</h2><br><br></caption>
+<tr>
+<th>商品名</th>
+<th>供价</th>
+<th>供应商</th>
+<th>是否全新</th>
+<th>订单号</th>
+<th>人名</th>
+<th>最后操作时间</th>
+<th>预计还机时间</th>
+<th>类型</th>
+<th>串号</th>
+<th>条码</th>
+<th>备注</th>
+<th>经手人</th>
+<th>操作</th>
+</tr>
+<tr align="center">
+<th>汇总</th>
+<td>{$sh_sum_purchase_paid_amount}</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<!--{foreach from=$sh_goods_list item=goods}-->
+<tr align="center">
+<td>{$goods.goods_name}</td>
+<td>
+	{if view_provide_price($goods.category)}
+	{$goods.purchase_paid_amount}
+  {else}
+  N/A
+  {/if}
+</td>
+<td>{$goods.provider_name}</td>
+<td>{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if}</td>
+<td><a href="detail_info.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a></td>
+<td>{$goods.consignee}</td>
+<td>{$goods.action_time}</td>
+<td>{$goods.predict_return_time}</td>
+<td>{$goods.order_type}</td>
+<td>{$goods.erp_goods_sn}</td>
+<td>{$goods.barcode}</td>
+<td>{$goods.postscript}</td>
+<td>
+<!-- {foreach from=$goods.return_time_history item=history} -->
+<p>{$history.operator_time}</p>
+<!-- {/foreach} -->
+</td>
+<td><a href ='h_goods_gys.php?act=edit_h&order_id={$goods.order_id}&type=s&id={$goods.goods_id}&sn={$goods.erp_goods_sn}&back=storage.php?label=sh_goods_list'>续借</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href='h_return_goods_gys.php?id={$goods.order_goods_id}&type=s&back=storage.php?label=sh_goods_list'>归还入库</a>
+    <br>
+</td>
+</tr>
+<!--{/foreach}-->
+</table>
+{/if}
+
+{elseif $smarty.request.label eq 'storage_list'}
+{* ------------------- 库存清单 ------------------- *}
+<table class="bWindow">
+<caption><h2>库存清单(共{$goods_count}个,移动定制机{$mobile_count}个,非移动定制机{$no_mobile_count}个)</h2><br><br></caption>
+<thead>
+  <tr>
+  <th width="8%">商品名</th>
+  <th width="5%">供价</th>
+  <th width="3%">是否全新</th>
+  <th width="9%">订单号</th>
+  {if $smarty.session.party_id|is_jjshouse}
+  <th width="5%">工单号</th>
+  {/if}
+  <th width="6%">下单时间</th>
+  <th width="5%">条码</th>
+  <th width="5%">库位</th>
+  <th width="6%">有效期</th>
+  <th width="5%">类型</th>
+  <th width="5%">分类</th>
+  <th width="8%">串号</th>
+  <th>内部SKU</th>
+  <th width="9%">入库单号<br>入库时间<br/>所在仓库</th>
+  {if $smarty.session.party_id|is_jjshouse}
+  <th width="6%">图片</th>
+   {/if}
+  <th width="5%">经手人</th>
+  <th width="10%">操作</th>
+  </tr>
+</thead>
+
+<tbody >
+  <!--{foreach from=$goods_list item=goods}-->
+  <tr align="center" height="20px;">
+  <td width="8%">{$goods.goods_name}</td>
+  <td width="5%">
+  	{if view_provide_price($goods.category)}
+  	{$goods.purchase_paid_amount}
+    {else}
+    N/A
+    {/if}
+	</td>
+  <td width="3%">{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if}</td>
+  <td width="9%"><a href="detail_info.php?order_id={$goods.order_id}" target="_blank">{$goods.order_sn}</a></td>
+  
+  {if $smarty.session.party_id|is_jjshouse}
+  <td width="5%">{$goods.dispatch_sn}</td>
+  {/if}
+  <td width="6%">{$goods.order_time}</td>
+  <td width="5%">{$goods.barcode}</td>
+  <td width="5%">{$goods.location_seq_id}</td>
+  <td width="6%">{if $goods.validity !=''}{$goods.validity}{else}未维护有效期{/if}</td>
+  <td width="5%">{$goods.order_type}</td>
+  <td width="5%">{$goods.in_type}</td>
+  <td width="8%">{$goods.erp_goods_sn} <!--<a href="#" onclick="print_serial_number('{$goods.order_id}', '{$goods.erp_goods_sn}', '{$goods.erp_id}');return false;">打印串号</a><span id="erpid_{$goods.erp_id}"></span>--></td>
+	<td>{$goods.internal_sku}</td>  
+  <td width="9%">
+    {$goods.in_sn}
+    <br>
+    {$goods.in_time}
+    <br/>
+    {$goods.facility_name}
+  </td>
+  {if $smarty.session.party_id|is_jjshouse}
+  <td width="6%"><img width="60px" height="80px;" src="{$goods.image_url}" /></td>
+  {/if}
+  <td width="5%">{$goods.action_user}</td>
+  <td width="10%">
+      {if $is_oversea_sales}
+  		<a href='t_goods_gys.php?sn={$goods.erp_goods_sn}&in_sn={$goods.in_sn}&id={$goods.goods_id}&back=storage.php?label=storage_list'>供应商退货</a>
+      <br>
+      {/if}
+      <a href='h_goods_gys.php?sn={$goods.erp_goods_sn}&in_sn={$goods.in_sn}&id={$goods.goods_id}&type=g&back=storage.php?label=storage_list'>供应商换货</a>
+      <br>
+      <a href='h_goods_gys.php?sn={$goods.erp_goods_sn}&in_sn={$goods.in_sn}&id={$goods.goods_id}&type=s&back=storage.php?label=storage_list'>内部员工借机</a>
+  </td>
+  </tr>
+  <!--{/foreach}-->
+</tbody>
+
+<tfoot>
+	<tr align="center">
+	<th width="25%">汇总</th>
+	<td width="5%">{$purchase_paid_amount_sum|invoice_price_format}</td><br />
+	<td colspan="9">&nbsp;</td>
+	</tr>
+</tfoot>
+</table>
+
+{elseif $smarty.request.label eq 'storage_list_summary'}
+{* ------------------- 库存汇总 ------------------- *}
+<form action="batch_edit_validity.php" method="post" id="storage_list_summary_form" >
+
+<table class="bWindow">
+<caption><h2>库存汇总</h2><br>
+    <div align='center'><font color='red'>{$info}</font></div><br>
+    <div align='center'><input type="button" style="color:red" id='batch_edit_validity_num' name="batch_edit_validity_num" onclick="javascript:batch_edit_validity_num_click();" value="批量维护有效期" /></div>
+   
+    <br /> <br />
+</caption>
+<thead>
+  <tr>
+  <th withd="20%">商品名</th>
+  <th width="5%">新旧</th>
+  <th width="10%">条码</th>
+  <th width="10%">库位</th>
+  <th width="10%">仓库</th>
+  <th width="5%">总数量</th>
+  <th width="20%">有效期与数量</th>
+  <th width="20%">维护有效期和数量</th>
+  </tr>
+</thead>
+
+<tbody>
+
+<!--{foreach from=$storage_list  item=goods}-->
+<tr align="center" height="20px;">
+  <td>{$goods.goods_name}</td>
+  <td>{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if}</td>
+  <td>{$goods.barcode}</td>
+  <td>{$goods.location_seq_id}</td>
+  <td>{$goods.facility_name}</td>
+  <td>{$goods.storage_count}
+  </td>
+  <td>
+    <input type='hidden' id="is_maintain_warranty_{$goods.product_key}" name="is_maintain_warrantys[]" value="{$goods.is_maintain_warranty}"/>
+    <input type='hidden' id="storage_count_{$goods.product_key}" name="storage_counts[]" value="{$goods.storage_count}"/>
+    <input type='hidden' id="{$goods.product_key}" name="product_keys[]" value="{$goods.product_key}"/>
+    <input type='hidden' id="goods_name_{$goods.product_key}" name="goods_names[]" value="{$goods.goods_name}"/>
+    <input type='hidden' id="last_erp_id_{$goods.product_key}" name="last_erp_ids[]" value=""/>
+    <input type='hidden' id="last_validity_{$goods.product_key}" name="last_validitys[]" value=""/>
+    <input type='hidden' id="last_num_{$goods.product_key}" name="last_nums[]" value=""/>
+   {if $goods.is_maintain_warranty == 1}
+   <table >
+     <!--{foreach from=$goods.product_keys  item=product key=key }-->
+     <tr >
+        <td style="width:50%;border:0px" align='center'> {if $product.validity == ''}未维护有效期{else}{$product.validity}{/if}
+        <input type='hidden' id="origin_search_in_time_{$goods.product_key}_{$key+1}" name="origin_search_in_times_{$goods.product_key}[]" value="{$product.validity}" >
+    	<input type='hidden' id="origin_input_number_{$goods.product_key}_{$key+1}" name="origin_input_numbers_{$goods.product_key}[]" value="{$product.validity_num}" >
+    	<input type='hidden' id="erp_id_{$goods.product_key}_{$key+1}" name="erp_ids_{$goods.product_key}[]" value="{$product.erp_ids}" >
+		</td>
+        <td style="width:50%;border:0px" align='center'> {$product.validity_num}
+    	</td>
+     </tr>
+     <!--{/foreach}-->
+    </table>
+    {/if}
+  </td>
+  
+  <td>
+  {if $goods.is_maintain_warranty == 1}
+ <table >
+
+     <!--{foreach from=$goods.product_keys item=product key=key }-->
+     <tr >
+        <td style="width:50%;border:0px;" align='center' > 
+        {if $product.validity == ''}未维护有效期 
+        <input type='hidden' id="search_in_time_{$goods.product_key}_{$key+1}" name="search_in_times_{$goods.product_key}[]" value="{$product.validity}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="hidden" id="search_in_time_trigger_{$goods.product_key}_{$key+1}" value="..." >
+        {else}
+        <input style="width:45%" id="search_in_time_{$goods.product_key}_{$key+1}" name="search_in_times_{$goods.product_key}[]" value="{$product.validity}" onfocus="if (this.value == '') this.value = '{$smarty.now|date_format:"%Y-%m-%d"}'">
+		<input type="button" id="search_in_time_trigger_{$goods.product_key}_{$key+1}" value="..." >
+        {/if}
+		</td>
+        <td style="width:50%;border:0px;" align='left' > &nbsp&nbsp
+    	<input style="width:20%" type="text" id="input_number_{$goods.product_key}_{$key+1}" name="input_numbers_{$goods.product_key}[]" value="{$product.validity_num}" onkeyup="value=value.replace(/[^\d]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" readonly />&nbsp&nbsp
+    	<input style="width:20%" type='button' value='编辑' onclick="$('#input_number_{$goods.product_key}_{$key+1}').attr('readonly', false);return false;">&nbsp&nbsp
+    	{if $product.validity != ''}
+    	<input style="width:20%" type='button' value='删除'  onclick="remove_validity_number(this)">
+    	{/if}
+    	</td>
+     </tr>
+     <!--{/foreach}-->
+
+    <tr >
+    <td style="text-align:center;border:0px;"  colspan="2">
+    <a href="javascript:void(0)" id="addValidityNumber_{$goods.product_key}" onclick="add_validity_number('{$goods.product_key}')">添加有效期和数量</a>  
+    </td>
+    </tr>
+     </table>
+   {/if}
+</td>
+</tr>
+<!--{/foreach}-->
+</tbody>
+
+</table>
+</form>
+
+
+{/if}
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "storage_time",
+        button            : "storage_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "start_validity_time",
+          button            : "start_validity_time_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+      
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "end_validity_time",
+          button            : "end_validity_time_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

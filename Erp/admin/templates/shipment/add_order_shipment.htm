@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>追加面单</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+
+  
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+    .loading {
+        background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+    }
+    <!--{/literal}-->
+  </style>
+  
+  <script type="text/javascript">
+    // <![CDATA[
+    
+    var ORDER_SN   = '{foreach from=$order_list item=order_item name=order_list1}{$order_item.order_sn}{if !$smarty.foreach.order_list1.last},{/if}{/foreach}';  // 查询条码
+    var ORDER_ID   = '{$order.order_id}';  // 打印面单链接用
+    var PARTY_ID   = '{$order.party_id}';  // 订单的组织
+    var SHIP_STTS  = '{$order.shipping_status}';  // 主订单的配送状态，根据该状态来确定鼠标焦点的定位位置
+    var CARRIER_ID = '{$shipment->carrierId}';  // 检查快递的格式
+    var SHIPPING_ID = '{$order.shipping_id}';  // 检查快递的格式
+    var TRACK_NUM  = '{$shipment->trackingNumber}';  // 面单号，已经批拣过的，需要检查
+    var alert_message = '{$alert_message}';
+    var admin_name = '{$smarty.session.admin_name}';
+    
+    // {literal}
+    var carrier_code = '';
+    switch(CARRIER_ID) {
+        case '21':
+            carrier_code = 'DHL';
+            break;
+        case '22':
+            carrier_code = 'UPS';
+            break;
+        case '23':
+            carrier_code = 'TNT';
+            break;
+        case '24':
+            carrier_code = 'FEDEX';
+            break;
+        default:
+            carrier_code = '';
+    }
+    
+    $(document).ready(function(){
+        // 绑定滑动效果
+        $('legend.expand').bind('click', function(event){
+            $(this).next().slideToggle('normal');
+        });
+        
+        // 绑定加载出库单事件
+        $('#load').bind('click', load);
+        $('#shipment_id').bind('keyup', listen).focus();
+
+        // 确定页面载入时鼠标焦点的定位
+        if ($.trim($('#shipment_id').val()) != '') {
+            $('#shipment_id').select();
+        }
+        // 等待输入发货单号 
+        else {
+            $('#shipment_id').focus();
+        }
+  
+
+        // 扫描面单号
+        $('.inputTrackingNumber').keyup(check_tracking_number);
+        // 修改面单号
+        $('.inputTrackingNumber').dblclick(function(){
+            $this=$(this);
+            if($this.attr('readonly') && confirm('确认要修改面单号吗？')){
+                $this.attr('readonly',false).select();
+            }
+        });
+        
+        // 添加扫描面单号
+        $('#add_tracking_number_input').bind('click',function(){
+        	var shipmentId = $('#shipment_id').val();
+            $.ajax({
+                type: "POST",
+                url: "add_order_shipment.php?shipment_id=" + shipmentId+"&act=add_unique_shipment",
+                data: "shipping_id="+SHIPPING_ID,
+                dataType: 'json',
+                error: function(){alert("查询异常，请联系ERP");},
+                success: function(data){
+                	if(data.arata==1 && data.tracking_number!=""){ 
+                		$('#add_tracking_number_input').parent().parent().before("<tr><td>面单号：</td><td><input type=\"text\" name=\"shipment_tracking_number[]\" size=\"30\" class=\"inputTrackingNumber\" value=\""+data.tracking_number+"\" />&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"tip\"><strong>请扫描面单号</strong></span></td></tr>");
+                		print_url = 'print_shipping_order3.php?order_id=' + ORDER_ID + '&print=1&arata=1'
+                        var win=pprint(print_url, 'hidden');
+                        $(win).bind('load', function(){
+                            // 更新面单号提交（在面单打印后提交页面）
+                            $('#form').find(':hidden[name="act"]').val('waybill');
+                            $('#form').submit();
+                        });
+                	}else {
+                		$('#add_tracking_number_input').parent().parent().before("<tr><td>面单号：</td><td><input type=\"text\" name=\"shipment_tracking_number[]\" size=\"30\" class=\"inputTrackingNumber\" />&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"tip\"><strong>请扫描面单号</strong></span></td></tr>");
+                        $('.inputTrackingNumber').select().focus();
+                        $('.inputTrackingNumber').keyup(check_tracking_number);
+                	}
+                }
+            });
+            
+        });
+        
+        // 发货提交
+        $('#shipment').attr('disabled', false).bind('click', function(){
+            $(this).attr('disabled', true);
+            $('#form').find(':hidden[name="act"]').val('shipment');
+            $('#form').submit();                                                                        
+        });
+        
+    });
+    
+    var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+    /**
+     * 监听
+     */
+    function listen(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load();
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    /**
+     * 载入订单商品和信息
+     */
+    function load() 
+    {
+        var shipment_id = $.trim($('#shipment_id').val());
+        if (shipment_id == '') {
+            alert('请先输入发货单号');
+            return; 
+        }
+        
+        if (check_order_refund_status(shipment_id) == -1) {
+        	if(!confirm("该运单对应订单发起退款申请?\n1、强制配货出库的请点 确认\n2、否则请点 取消")){
+             	return;
+             }
+        }
+        location.href = "add_order_shipment.php?shipment_id="+shipment_id;
+    }
+     
+    //扫描运单号时检查订单退款状态
+    function check_order_refund_status(shipment_id) {
+    	var refund_status;
+    	$.ajax({
+    		async: false,
+    		type: 'POST',
+            url: 'ajax.php?act=check_refund_status_by_shipment_id',
+            data: 'shipment_id=' + shipment_id,
+            dataType: 'json',
+            error: function() {	alert('ajax请求错误, 扫描发货单号时检查订单退款状态失败:' + shipment_id); return false},
+            success: function(data) {
+            	refund_status = data;
+            }
+        }); 
+        return refund_status;
+    }
+        
+    /**
+     * 扫描动作
+     * 把扫描的串号自动匹配到订单的商品，没有匹配则报错
+     */
+    function scan(event)
+    {
+        if (event.keyCode != KEY.CTRL) return;
+        
+        var $i = $(this);
+        var barcode = $.trim($i.val());
+        if (barcode != '') {
+            validate(barcode);
+            $i.val('').select();
+        }
+    }
+
+    /**
+     * 扫描面单
+     */
+    function check_tracking_number(event)
+    {
+        if (event.keyCode != KEY.CTRL) return;
+        
+        var trackingNumber = $.trim($(event.target).val());
+        if (trackingNumber=='') {
+            alert('请输入面单号');
+            return;
+        }
+        
+        // 批拣检查
+        if (SHIP_STTS==9 && TRACK_NUM!='' && $(event.target).attr('picklist')=='1' && trackingNumber!=TRACK_NUM) {
+            if(!confirm('输入的面单号和批拣任务扫面的面单号不匹配！')) {
+                return false;   
+            }
+        }
+        
+        var flag = true;
+        //  检查运单号规则
+        if(!check_tracking_number_rule (CARRIER_ID,trackingNumber)) {
+            flag = false;
+            alert('提醒：运单号和发货的类型不匹配！请检查');
+            return false;
+        }
+
+        //检查运单号是否存在系统里面
+        $.ajax({
+            type: "POST",
+            url: "ajax.php?act=unique_trackingNumber",
+            data: "trackingNumber=" + trackingNumber,
+            dataType: 'json',
+            error: function(){alert("运单号查询失败，请重新扫描");},
+            success: function(data){
+                if (data == '') {
+                     // FIXME:
+                    if (admin_name == 'zwsun') {
+                        flag = true;
+                    }
+                    
+                    if (!flag) {                    	
+                    	alert('提醒：运单号和发货的类型不匹配！请检查');
+							return false;
+                                                
+                    }   
+                    	if (PARTY_ID=='65545' || PARTY_ID=='65554'|| PARTY_ID == '65560'|| PARTY_ID == '65564' || PARTY_ID == '65567' || PARTY_ID == '65570') {
+                    		print_url = 'print_shipping_order4.php?order_id=' + ORDER_ID + '&print=1'
+                        } else {
+                            print_url = 'print_shipping_order3.php?order_id=' + ORDER_ID + '&print=1'
+                        }
+                        
+                        // FIXME:
+                        if (admin_name == 'zwsun') {
+                            print_url += "&print=0";
+                        }
+                        
+                        if (CARRIER_ID == '3') {
+                            print_url += "&carrier_id=3";
+                        }
+                        var win=pprint(print_url, 'hidden');
+                    
+                        $(win).bind('load', function(){
+                            // 更新面单号提交（在面单打印后提交页面）
+                            $('#form').find(':hidden[name="act"]').val('waybill');
+                            $('#form').submit();
+                        });
+                } else {
+                    alert("运单号已存在，请更换运单,重新扫描运单号");
+                    event.target.select();
+                    return;
+                }
+            }
+        });
+    }
+    
+    // 检查运单号规则 
+    function check_tracking_number_rule (carrier_id,tracking_number) {
+    	var result = false;
+    	$.ajax({
+    		async:false,
+    		type: 'POST',
+    		url: 'ajax.php?act=check_tracking_number',
+    	    data: 'carrier_id=' + carrier_id + '&tracking_number=' + tracking_number,
+    	    dataType: 'json',
+    	    error: function() {
+                alert('ajax请求错误,检查面单号规则失败:' + tracking_number); 
+    	    },
+    	    success: function(data) {
+    	    	if(data['error']) {
+    	    		alert(data['error']);
+    	    	} else if(data == true) {
+    	    		result = true;
+    	    	} 
+    	    }
+    	});
+    	return result;
+    }
+
+    /**
+     * 打印
+     */
+    function pprint(url, mode)
+    {
+        if (mode == 'hidden') {
+            var iframe = document.getElementById('_pprint_');
+            if (!iframe) {
+                var obj = document.createElement("iframe");
+                obj.frameborder = 0;
+                obj.width = 0;
+                obj.height = 0;
+                obj.id = '_pprint_';
+                var iframe = document.body.appendChild(obj);
+            }
+            iframe.src = url;
+            return iframe;
+        } else {
+            return window.open(url, "PrintWindow", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=800,height=920,left=10,top=240");          
+        }
+    }
+    
+    /**
+     * 打印
+     */
+    function hidden_print(url) {
+        window.print_frame.location.href = url;
+    }
+    
+    // 判断是否存在警告
+    if(alert_message && !confirm(alert_message)) {
+        history.go(-1);
+    }
+    // {/literal}
+    // ]]>
+  </script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+<div>
+<a style="font-weight:bold; font-size:18px; color:#90F;" href='batch_add_order_shipment.php'>切换到批量追加</a>
+</div> 
+</br></br>
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;追加面单-单个版&nbsp;</span></legend>
+<form method="post" id="form"> 
+
+    <div style="clear:both;"> 
+    <h3 style="color:#09F;">配送信息</h3>
+
+    <table cellpadding="5" cellspacing="1">
+        <tr>
+        <td width="120">扫描发货单号</td>
+        <td>
+            <input type="text" id="shipment_id" value="{$shipment->shipmentId}" size="39" /> &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" id="load" value="加载" />
+        </td>
+        </tr>
+        
+        <!--{if $shipment}-->
+        <tr>
+          <td>发货仓库</td>
+          <td>{$order.facility_id|facility_mapping}</td>
+        </tr>
+        
+        <tr>
+          <td ><font   color   =   "red" size="2px">配送方式</font></td>
+          <td><font   color   =   "red" size="2px">{$order.shipping_name}</font></td>
+        </tr>
+        
+        <tr>
+          <td>收货人</td>
+          <td>{$order.consignee}</td>
+        </tr>
+        
+        <tr>
+          <td>收货地址</td>
+          <td>
+            {if check_admin_priv('check_user_address')}
+            {if $order.province != 0}[{$order.province|get_region_names}]{/if}{if $order.city != 0}[{$order.city|get_region_names}]{/if}{if $order.district != 0}[{$order.district|get_region_names}]{/if}{$order.address}
+            {else}
+            ××××××
+            {/if}
+          </td>
+        </tr>
+        
+        {if $order.important_day}
+        <tr>
+          <td>用户婚期</td>
+          <td>{$order.important_day}</td>
+        </tr>
+        {/if}
+        
+        <!--{/if}-->
+        
+    </table>
+  </div>
+  
+  <h3 style="color:#09F;">追加面单</h3>
+  <div>
+        <table cellpadding="5" cellspacing="1">
+          
+         <!--{foreach from=$shipment_list item=shipment_item key=key}-->
+          {* 这里会有多个 shipment_item 吗？ *}
+          <tr>
+          <td>{$key+1}</td>
+            <td>面单号：</td>
+            <td>
+            {if $order.shipping_status==8 || $order.shipping_status==2 || $order.shipping_status==1 }  {* 如果有面单号了则显示启用面单号修改的按钮 *}
+                <input type="text" name="shipment_tracking_number[{$shipment_item->shipmentId}]" size="30" class="inputTrackingNumber" value="{$shipment_item->trackingNumber}" readonly="readonly" />
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="tip"><strong>已输入面单号</strong>，如需修改请双击输入框后重新输入</span>
+            {elseif $order.shipping_status==9}
+                <input type="text" name="shipment_tracking_number[{$shipment_item->shipmentId}]" size="30" class="inputTrackingNumber" {if $shipment_item->picklistId}picklist="1"{/if} />
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="tip"><strong>请扫描面单号</strong></span>
+            {/if}
+            </td>
+          </tr>
+          <!--{/foreach}-->
+          
+          {if $order.shipping_status==8 || $order.shipping_status==2 || $order.shipping_status==1}
+          <tr>
+            <td></td>
+            <td><a href="javascript:void(0);" id="add_tracking_number_input">添加面单号</a></td>
+          </tr>
+          {/if}
+      </table>
+  </div>
+  
+  
+  <input type="hidden" name="act" />
+  <input type="hidden" name="shipment_id" value="{$shipment->shipmentId}" />
+  
+</form>
+
+<br /><br />
+
+</fieldset>
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank" ></iframe>
+</body>
+</html>

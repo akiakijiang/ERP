@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script type="text/javascript" src="../admin/misc/jquery.js"></script>
+  <link href="styles/default.css" rel="stylesheet" type="text/css">
+  <title>商品批量导入</title> 
+ 
+  <link href="templates/distributor/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<br />
+<!--{/if}-->
+  
+<fieldset style="border: #D43FAA 2px solid;"><legend><span
+	style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;商品批量导入&nbsp;</span></legend>  
+
+  
+	<div style="clear:both;"> 
+	
+  <!-- {if $party_id == '65574'} -->
+  <fieldset style="border: #FF7FFF 1px dashed;"><legend
+	class="expand">&nbsp;下载品牌商信息&nbsp;</legend>	
+	 <br/>
+    <form id="download_bymboree" method="post" enctype="multipart/form-data">
+      &nbsp;&nbsp;
+                请选择业务： 
+      <select name="item_select">
+      	 <option value="">- 请选择</option>
+		 {html_options options=$item_list}
+	  </select>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			
+      <input type="submit" value="下载金宝贝商品信息" />
+      <input type="hidden" name="act" value="download_bymboree" />
+    </form>
+    <br/>
+  </fieldset> 
+  <!--{/if}-->   
+  <br/>  
+   	
+<fieldset style="border: #FF7FFF 1px dashed;"><legend
+	class="expand">&nbsp;商品导入乐其系统&nbsp;</legend>
+<br/>
+<div>
+    <form id="upload" method="post" enctype="multipart/form-data">
+      &nbsp;&nbsp;
+      
+      	<div style="float:left; width: 350px;">
+	       <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+	       <input type="button"  value="查看" onclick="list_excel()"/>
+	       <input type="button"  value="导入" onclick="import_excel()"/>
+	       <input type="hidden" name="act" id="act" value="upload" />
+	    </div>
+	   		
+	   	<div style="float: right; margin-right:300px;">
+	      	<a href="javascript:void(0)" onclick="download_model()"><font size="4px">批量导入模版下载</font></a>
+	    </div>
+	   
+	   
+	    <div style="float: right; margin-right: 300px;">
+	      	<a href="javascript:void(0)" onclick="download_style()"><font size="4px">导出样式表</font></a>
+	    </div>
+      
+    </form>
+  
+</div>
+<br/>
+</fieldset>    
+   <br/> 
+    
+  <fieldset style="border: #FF7FFF 1px dashed;"><legend
+	class="expand">&nbsp;下载乐其商品信息&nbsp;</legend>  
+	<br/>
+    <form id="download_leqee" method="post" enctype="multipart/form-data">
+			&nbsp;&nbsp; 
+      <input type="submit" value="下载乐其商品信息" />
+      <input type="hidden" name="act" value="download_leqee" />
+    </form>
+    <br/>
+   </fieldset>
+	</div>
+</fieldset>
+		
+		{if $goods_import_list}
+
+	<h4>读取商品数据:{$goods_import_list.insert|@count} </h4><br />
+	<table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+        <th width="10%">商品分类</th>
+        <th width="10%">商品重量</th>
+        <th width="10%">商品体积</th>
+        <th width="10%">是否上架</th>
+        <th width="10%">警告库存</th>
+        <th width="10">是否维护保质期</th>
+        <th width="10">保质期</th>
+      </tr>
+      		<!-- {foreach from=$goods_import_list.insert item=item} -->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td>{$item.cat_name}</td>
+        <td>{$item.goods_weight}</td>
+        <td>{$item.goods_volumn}</td>
+        <td>{$item.is_on_sale}</td>
+        <td>{$item.warn_number}</td>
+        <td>{$item.is_maintain_warranty}</td>
+        <td>{$item.goods_warranty}</td>
+      </tr>
+        <!-- {/foreach} -->
+    </table>
+  
+    	{/if}
+
+	{if $goods_import_report}
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">商品导入报告</h3>
+    <h4>商品成功新增:{$goods_import_report.insert|@count} </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+        <th width="10%">商品分类</th>
+        <th width="10%">商品重量</th>
+        <th width="10%">商品体积</th>
+        <th width="10%">是否上架</th>
+        <th width="10%">警告库存</th>
+        <th width="10">是否维护保质期</th>
+        <th width="10">保质期</th>
+      </tr>
+      
+      <!--{foreach from=$goods_import_report.insert item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td>{$item.cat_name}</td>
+        <td>{$item.goods_weight}</td>
+        <td>{$item.goods_volumn}</td>
+        <td>{$item.is_on_sale}</td>
+        <td>{$item.warn_number}</td>
+        <td>{$item.is_maintain_warranty}</td>
+        <td>{$item.goods_warranty}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="3">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->      
+
+      
+    </table>
+    
+    <h4>商品成功更新:{$goods_import_report.update|@count} </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+        <th width="10%">商品分类</th>
+        <th width="10%">商品重量</th>
+        <th width="10%">商品体积</th>
+        <th width="10%">是否上架</th>
+        <th width="10%">警告库存</th>
+        <th width="10">是否维护保质期</th>
+        <th width="10">保质期</th>
+      </tr>
+      
+      <!--{foreach from=$goods_import_report.update item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td>{$item.cat_name}</td>
+        <td>{$item.goods_weight}</td>
+        <td>{$item.goods_volumn}</td>
+        <td>{$item.is_on_sale}</td>
+        <td>{$item.warn_number}</td>
+        <td>{$item.is_maintain_warranty}</td>
+        <td>{$item.goods_warranty}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="3">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->      
+
+      
+    </table>    
+    
+    
+    <br />
+    <br />
+    <h4>商品导入失败:{$goods_import_report.failed|@count}  </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+
+        <th width="60%">错误原因</th>
+      </tr>
+      
+      <!--{foreach from=$goods_import_report.failed item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td align="left">&nbsp;{$item.errmsg}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="2">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->
+    </table>
+    
+      
+	</div>
+  {/if}
+   <br/>
+
+  	{if $goods_style_import_report} 
+	<br />
+	<div style="clear:both;"> 
+		<h3 style="color:#09F;">SKU导入报告</h3>
+    <h4>SKU成功新增:{$goods_style_import_report.insert|@count} </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+        <th width="10%">商品分类</th>
+        <th width="10%">商品重量</th>
+        <th width="10%">商品体积</th>
+        <th width="10%">是否上架</th>
+        <th width="10%">警告库存</th>
+        <th width="10%">商品价格</th>
+        <th width="10%">SKU条码</th>
+        <th width="10%">样式ID</th>
+      </tr>
+      
+      <!--{foreach from=$goods_style_import_report.insert item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td>{$item.cat_name}</td>
+        <td>{$item.goods_weight}</td>
+        <td>{$item.goods_volumn}</td>
+        <td>{$item.is_on_sale}</td>
+        <td>{$item.warn_number}</td>
+        <td>{$item.style_price}</td>
+        <td>{$item.sku_barcode}</td>
+        <td>{$item.style_id}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="3">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->      
+
+      
+    </table>
+    
+    <h4>SKU成功更新:{$goods_style_import_report.update|@count} </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+        <th width="10%">商品分类</th>
+        <th width="10%">商品重量</th>
+        <th width="10%">商品体积</th>
+        <th width="10%">是否上架</th>
+        <th width="10%">警告库存</th>
+        <th width="10%">商品价格</th>
+        <th width="10%">SKU条码</th>
+        <th width="10%">样式ID</th>
+      </tr>
+      
+      <!--{foreach from=$goods_style_import_report.update item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td>{$item.cat_name}</td>
+        <td>{$item.goods_weight}</td>
+        <td>{$item.goods_volume}</td>
+        <td>{$item.is_on_sale}</td>
+        <td>{$item.warn_number}</td>
+        <td>{$item.style_price}</td>
+        <td>{$item.sku_barcode}</td>
+        <td>{$item.style_id}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="3">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->      
+
+      
+    </table>    
+    
+    
+    <br />
+    <br />
+    <h4>商品导入失败:{$goods_style_import_report.failed|@count}  </h4><br />
+    <table class="bWindow">
+      <tr>
+        <th width="10%">商品名称</th>
+        <th width="10%">商品条码</th>
+        <th width="10%">SKU条码</th>
+        <th width="10%">样式ID</th>
+        <th width="60%">错误原因</th>
+      </tr>
+      
+      <!--{foreach from=$goods_style_import_report.failed item=item}-->
+      <tr align="center" class="{cycle values='even,odd'}">
+		<td>{$item.goods_name}</td>
+        <td>{$item.goods_barcode}</td>
+        <td>{$item.style_barcode}</td>
+        <td>{$item.style_id}</td>
+        <td align="left">&nbsp;{$item.errmsg}</td>
+      </tr>
+      
+      <!--{foreachelse}-->
+      <tr align="center">
+      	<td colspan="3">没有记录</td>
+      </tr>
+      
+      <!--{/foreach}-->
+    </table>
+    
+      
+	</div>
+  {/if}
+  
+  
+  
+
+  <br /><br /><br />
+
+
+</fieldset>
+
+<fieldset style="border: #D43FAA 2px solid;"><legend><span
+	style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;乐其电教下载资料专用&nbsp;</span></legend>  
+	<!-- {if $party_id == '16'} -->
+  <fieldset style="border: #FF7FFF 1px dashed;"><legend
+	class="expand">&nbsp;乐其电教下载资料导入&nbsp;</legend>	
+	<form id="upload" method="post" enctype="multipart/form-data" action="batch_leqee_download.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" value="导入" />
+      <input type="hidden" name="act" value="upload" />
+    </form>
+    <br/>
+    <br/>
+  </fieldset> 
+  <!--{/if}-->   
+  <br/>  
+</fieldset>
+<script type="text/javascript">
+    // <![CDATA[
+    //{literal}
+    	function import_excel(){
+    	   $("#act").val('upload');
+    	   $("#upload").submit();
+       }
+       function download_style(){
+    	   $("#act").val('download_style');
+    	   $("#upload").submit();
+       }
+       function download_model(){
+    	   $("#act").val('download_model_product');
+    	   $("#upload").submit();
+       }
+       function list_excel(){
+    	   $("#act").val('list_excel');
+    	   $("#upload").submit();
+       }
+      
+    //{/literal}
+    //]]>
+  </script>
+</body>
+</html>

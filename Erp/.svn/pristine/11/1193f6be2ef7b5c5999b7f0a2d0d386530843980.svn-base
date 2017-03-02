@@ -1,0 +1,136 @@
+<!--  
+$arata.sentBranch
+$arata.tracking_number
+$arata.ytoSender
+$arata.service_type
+
+$order.consignee
+$order.mobile
+$order.tel
+$order.province
+$order.city
+$order.district
+$order.address
+$order.c_tel
+$order.company_address
+$order.bigPen
+
+$good.tc_code
+$good.sku_num
+
+
+$smarty.now
+
+$rank
+
+-->
+
+<div style="position:relative;display:inline-block;width:450px;height:800px;border:none;">
+	<div style="position:absolute;display:inline-block;width:450px;height:800px;border:none;">
+		<div class="inside" style="position:absolute;font-size:10pt;top:0px;left:0px;height:800px;width:450px;">
+			<div class="left-top" style="position:absolute;font-size:20pt;top:2%;left:0%;height:5%;width:50%;text-align:center;border-right:0px;border-bottom:0px;">
+				圆通快递
+			</div>
+			<div class="right-top" style="position:absolute;font-size:20pt;top:2%;left:50%;height:5%;width:50%;text-align:center;border-bottom:0px;">
+				{$arata.sentBranch}
+			</div>
+
+			<div class="left" style="position:absolute;font-size:20pt;top:7%;left:0%;height:5%;width:75%;border-right:0px;border-bottom:0px;">
+				<div class="inside" style="position:absolute;font-size:10pt;top:5%;left:10%;height:90%;width:40%;">
+					{$arata.tracking_number}
+				</div>
+				<div class="inside" style="position:absolute;font-size:5pt;top:50%;left:50%;height:30%;width:40%;">
+					日期：{$smarty.now|date_format:"%Y-%m-%d"}
+				</div>
+			</div>
+			<div class="left" style="position:absolute;font-size:10pt;top:12%;left:0%;height:5%;width:75%;text-align:left;border-right:0px;border-bottom:0px;">
+				<div class="inside" style="position:absolute;font-size:5pt;top:5%;left:3%;height:90%;width:95%;">
+					寄件人：{$arata.ytoSender}   联系方式：{$order.c_tel}
+					<br>
+					地址：{$order.company_address}
+				</div>
+			</div>
+			<div class="right" style="position:absolute;font-size:20pt;top:7%;left:75%;height:10%;width:25%;text-align:center;border-bottom:0px;">
+				<!-- <img src="assets/img/Shop2DBarcodes/1953.png" style="margin-top:2px;" width="70px" height="70px"> -->
+			</div>
+			<div class="left right" style="position:absolute;font-size:20pt;top:17%;left:0%;height:10%;width:100%;border-bottom:0px;">
+				<div class="inside" style="position:absolute;font-size:15pt;top:10%;left:6%;height:90%;width:90%;">
+					<b>收件人：{$order.consignee}       电话：{$order.mobile} {$order.tel}</b>　
+					<br>
+					<b> <span  style="font-size:18pt;">地址：{if $order.province != ''}{$order.province}{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}</span></b>
+				</div>
+			</div>
+			<div class="left right" style="position:absolute;font-size:30pt;top:32%;left:0%;height:8%;line-height:60px;width:100%;text-align:center;vertical-align:middle;letter-spacing:5px;filter:dropshadow(color=black,offx=1,offy=0) dropshadow(color=black,offx=2,offy=0) dropshadow(color=black,offx=3,offy=0)">
+				  {$order.bigPen} 
+			</div>		
+			<div style="position:absolute;top:40%;left:0%;height:9%;width:100%;text-align:center;border:0px;">
+				<img src="code_img.php?barcode={$arata.tracking_number}&height=80&width=500&text=0" style="position:absolute;left:4%;top:5%;width:92%;height:70%;margin-top:2px;" />
+				<div class="inside" style="position:absolute;font-size:10pt;top:80%;left:5%;height:15%;width:90%;letter-spacing:15px;">
+					*{$arata.tracking_number}*
+				</div>
+			</div>
+			<div class="left-bottom" style="position:absolute;font-size:10pt;top:50%;left:0%;height:10%;width:70%;text-align:left;border-right:0px;">
+				<div class="inside" style="position:absolute;font-size:10pt;top:5%;left:5%;height:35%;width:95%;">
+				圆通速递将快件送达收件人地址，经收件人或收件人（寄件人）允许的代收人签字，视为送达。
+				</div>
+				<div class="inside" style="position:absolute;top:40%;left:5%;height:60%;width:95%;" >
+						{if $goods}
+						商品
+						{foreach from=$goods item=good}
+						{if $good.tc_code !=''}
+						<span style="font-size:13pt;"> {$good.sku_num}; </span>
+						{else} <span style="font-size:10pt;"> {$good.sku_num}; </span>
+						{/if}
+						{/foreach}
+						{/if}
+				</div>
+			</div>
+			<div class="right-bottom" style="position:absolute;font-size:10pt;top:50%;left:70%;height:10%;width:30%;text-align:left;">
+				<div class="inside" style="position:absolute;font-size:15pt;top:10%;left:5%;height:90%;width:80%;">
+					签收
+				</div>
+			</div>
+
+			<!-- divide -->
+			<div style="position:absolute;top:65%;left:3%;height:5%;width:100%;text-align:left;border:0px;font-size: 20px">
+					圆通快递
+			</div>
+			<div style="position:absolute;top:70%;left:0%;height:10%;width:100%;text-align:center;border:0px;">
+				<img src="code_img.php?barcode={$arata.tracking_number}&height=80&width=500&text=0" style="position:absolute;top:5%;left:5%;width:90%;height:70%;" />
+				<div class="inside" style="position:absolute;font-size:10pt;top:80%;left:5%;height:15%;width:90%;letter-spacing:15px;">
+					*{$arata.tracking_number}*
+				</div>
+			</div>
+
+			<div class="left" style="position:absolute;font-size:20pt;top:80%;left:0%;height:4%;width:50%;text-align:center;border-right:0px;border-bottom:0px;">
+				{$arata.service_type}
+			</div>
+			<div class="right" style="position:absolute;font-size:15pt;top:80%;left:50%;height:4%;width:50%;text-align:center;border-bottom:0px;">
+				{$arata.tracking_number}
+			</div>
+
+			<div class="left right" style="position:absolute;font-size:10pt;top:84%;left:0%;height:5%;width:100%;text-align:left;border-bottom:0px;">
+				<div class="inside" style="position:absolute;font-size:5pt;top:5%;left:6%;height:90%;width:90%;">
+					寄件人：{$arata.ytoSender}       联系方式：{$order.c_tel}    {$order.sendIDUser}
+					<br>
+					地址：{$order.company_address}  |  {$order.sendIDCard}
+				</div>
+			</div>
+
+			<div class="left right" style="position:absolute;font-size:20pt;top:89%;left:0%;height:12%;width:100%;border-bottom:0px;">
+				<div class="inside" style="position:absolute;font-size:10pt;top:5%;left:6%;height:90%;width:90%;">
+					收件人：{$order.consignee}  电话：{$order.mobile} {$order.tel}
+					<br>
+					地址：{if $order.province != ''}{$order.province}{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}
+					<br>
+					此运单仅供圆通速递签约客户使用，相关责任义务以双方合作合同为准
+				</div>
+				<div class="inside" style="position:absolute;font-size:10pt;top:75%;left:90%;height:10%;width:5%;">
+					{if $rank !=''}{$rank}{/if}
+				</div>
+			</div>
+			</div>
+
+
+	</div>
+</div>

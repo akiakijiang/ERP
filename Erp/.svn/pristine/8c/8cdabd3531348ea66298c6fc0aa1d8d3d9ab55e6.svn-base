@@ -1,0 +1,530 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="../styles/default.css" rel="stylesheet" type="text/css">
+<title>添加补寄发票</title>
+{literal}
+<style type="text/css">
+#show_add,#show_edid{
+	width:70%;	
+	margin-right: auto;
+	margin-left: auto;
+}
+</style>
+{/literal}
+</head>
+{literal}
+<script src="../js/jquery-1.3.2.js"></script>
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+/**
+ * 改变地域的下拉框
+ */
+var Region = {
+	/** 
+	 * WEB控件ID
+	 */	
+	regions : [
+			{name: 'order[province]', data:{type:2} }, // 省
+			{name: 'order[city]',     data:{type:3} }, // 市
+			{name: 'order[district]'}                  // 区
+	],
+	
+	expr : ':select[name="?"]',
+		
+	/**
+	 * 初始化，即绑定事件
+	 */
+	init : function() 
+	{
+			for (var i = 0; i < this.regions.length; i++) {
+				var node = $(this.expr.replace('?', this.regions[i].name));
+				node.bind('change', this.regions[i].data, this.change_region_list);
+				if (i > 0) {
+					var prev = $(this.expr.replace('?', this.regions[i-1].name));
+					var value = parseInt(prev.val());
+					if (isNaN(value) || value < 1) {
+						node.hide();
+					} else {
+                        node.show();	
+					}
+				}					
+			}
+	},
+
+	/**
+	 * 改变下拉框
+	 */
+	change_region_list : function(event) 
+	{
+			var $p = $(this);  // 父级元素
+			var pn = $p.attr('name');
+			var ln = Region.regions.length;
+			var last = false;
+			var next = 0;
+			
+			// 如果到了最后一级则返回
+			for (var i=0; i<ln; i++) {
+				if (pn == Region.regions[i].name) {
+					next = i + 1;
+					if (i == ln -1) { last = true; }
+				}
+			}
+			
+			if (!last) {
+				$c = $(Region.expr.replace('?', Region.regions[next].name));	 // 子级元素
+				
+				for (var i=next; i<ln; i++) {
+					$(Region.expr.replace('?', Region.regions[i].name)).hide();	
+				}
+			}
+		
+			$c.unbind();
+			
+			$.ajax({
+				type: 'POST',
+				url:  '../ajax.php?act=get_regions',  // 查询地址
+				data: 'type=' + event.data.type + '&parent=' + $p.val(),
+				dataType: 'json',
+				error: function() { alert('查询地域失败'); },
+				success: function(data) {
+					if (data.regions && data.regions != '') {
+						r = data.regions;
+						var list = '<option value="0">-请选择-</option>';
+						for (var i = 0; i < r.length; i++) {
+							list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+						}
+						$c.html(list).fadeIn();
+						if (next + 1 < ln) {
+							$c.bind('change', Region.regions[next].data, Region.change_region_list);
+						}
+					}
+				}
+			});	
+	}
+};	
+var InvoiceI = {
+		/** 
+		 * WEB控件ID
+		 */	
+		regions : [
+				{name: 'invoiceEdit[province]', data:{type:2} }, // 省
+				{name: 'invoiceEdit[city]',     data:{type:3} }, // 市
+				{name: 'invoiceEdit[district]'}                  // 区
+		],
+		
+		expr : ':select[name="?"]',
+			
+		/**
+		 * 初始化，即绑定事件
+		 */
+		init : function() 
+		{
+				for (var i = 0; i < this.regions.length; i++) {
+					var node = $(this.expr.replace('?', this.regions[i].name));
+					node.bind('change', this.regions[i].data, this.change_region_list);
+					if (i > 0) {
+						var prev = $(this.expr.replace('?', this.regions[i-1].name));
+						var value = parseInt(prev.val());
+						if (isNaN(value) || value < 1) {
+							node.hide();
+						} else {
+	                        node.show();	
+						}
+					}					
+				}
+		},
+
+		/**
+		 * 改变下拉框
+		 */
+		change_region_list : function(event) 
+		{
+				var $p = $(this);  // 父级元素
+				var pn = $p.attr('name');
+				var ln = InvoiceI.regions.length;
+				var last = false;
+				var next = 0;
+				
+				// 如果到了最后一级则返回
+				for (var i=0; i<ln; i++) {
+					if (pn == InvoiceI.regions[i].name) {
+						next = i + 1;
+						if (i == ln -1) { last = true; }
+					}
+				}
+				
+				if (!last) {
+					$c = $(InvoiceI.expr.replace('?', InvoiceI.regions[next].name));	 // 子级元素
+					
+					for (var i=next; i<ln; i++) {
+						$(InvoiceI.expr.replace('?', InvoiceI.regions[i].name)).hide();	
+					}
+				}
+			
+				$c.unbind();
+				
+				$.ajax({
+					type: 'POST',
+					url:  '../ajax.php?act=get_regions',  // 查询地址
+					data: 'type=' + event.data.type + '&parent=' + $p.val(),
+					dataType: 'json',
+					error: function() { alert('查询地域失败'); },
+					success: function(data) {
+						if (data.regions && data.regions != '') {
+							r = data.regions;
+							var list = '<option value="0">-请选择-</option>';
+							for (var i = 0; i < r.length; i++) {
+								list += '<option value="' + r[i].region_id + '">' + r[i].region_name + '</option>';		
+							}
+							$c.html(list).fadeIn();
+							if (next + 1 < ln) {
+								$c.bind('change', InvoiceI.regions[next].data, InvoiceI.change_region_list);
+							}
+						}
+					}
+				});	
+		}
+	};	
+
+
+
+$(document).ready(function(){
+	// 绑定 选择省会改变地区的事件
+	Region.init();
+	InvoiceI.init();
+});
+function showAdd()
+{
+	$('#show_add').toggle();
+	$('#show_edid').hide();
+}
+function invoiceDelete(self)
+{
+	var id=self.title;
+	var order_sn=$('#order_sn').val();
+	$.ajax({
+		url: "../invoice_manage/invoice_add.php?act=delete",
+		type: "POST",
+		data:{id:id},  
+		dataType:"json",  		
+		success: function(data){
+			//alert(data);
+			if(data==1){
+				$(self).parent().parent().hide();
+			}
+			else if(data==-1){
+				alert('您要删除的补寄发票信息,财务已经添加快递运单号,不能删除');
+			}else{
+				alert('出现错误,请与erp组联系');
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+}
+function showEdit(self)
+{
+	var id = self.title;
+	$.ajax({
+		url: "../invoice_manage/invoice_add.php?act=searchEdit",
+		type: "POST",
+		data:{id:id},  
+		dataType:"json",  		
+		success: function(data){
+			if(data.id > 0)
+			{	
+				if(data.num > 0){
+					alert('你要编辑的补寄发票信息,财务已录入快递运单号,不能修改');
+					return ;
+				}
+				$('#show_add').hide();
+				$('#show_edid').toggle();
+				$('#shipment_idEdit').val(data.shipment_id);
+				$('#shippingNoteEdit').val(data.shipping_note);
+				$('#invoiceId').val(id);
+				$('#consigneesEdit').val(data.consignee);
+				$('#telEdit').val(data.tel);
+				$('#addrEdit').val(data.address);
+				$('#zipcodeEdit').val(data.zipcode);
+				$("#shippingEdit option[value='"+data.shipment_type_id+"']").attr("selected",true);
+			}else 
+			{
+				alert('出现问题,请与ERP组联系');
+			}
+		},
+		error: function(){
+			alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+			return false;
+		}
+	});	
+}
+function checkShipping2()
+{
+	var value=$('#shippingAdd').val();
+	if(value==0)
+	{
+		alert('请选择快递式');
+		return false;
+	}else {
+		$('#add_invoice').attr('disabled',true);
+		$('#add').submit();
+	}
+}
+function checkShipping()
+{
+	var value=$('#shippingEdit').val();
+	if(value==0)
+	{
+		alert('请选择快递式');
+		return false;
+	}else
+	$('#edit').submit();
+}
+</script>
+{/literal}
+<body>
+<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+	<legend><span style="font-weight: bold; font-size: 18px;">&nbsp;添加补寄发票&nbsp;</span></legend>
+<form id="form1" name="form1" method="post" action="invoice_add.php?act=search">
+<div>
+订单号:  <input type="text" id=order_sn name="order_sn" value="{$order_sn}" /> &nbsp;&nbsp; 
+开始时间：
+<input style="width:80px;" name="start_time" value="{$smarty.request.start_time}" id="start_time" />
+<input type="button" value="..." id="start_time_trigger" />
+结束时间：
+<input style="width:80px" name="end_time" value="{$smarty.request.end_time}" id="end_time" />
+<input type="button" value="..." id="end_time_trigger" />&nbsp;&nbsp;&nbsp;&nbsp;
+订单开票情况：
+<select name="invoiced">
+{html_options options=$invoiced_array selected=$smarty.request.invoiced}
+</select>
+<input type="submit" style="margin-left:50px" value="搜索"  id="search" onclick="document.forms[0].csv.value = '0'" />
+<input type="submit" value="导出" onclick="document.forms[0].csv.value = '1'" />
+<input type="hidden" name="csv" value="0" />
+</div>
+
+</form>
+
+<br/>
+<!-- added by wliu 2016.1.7 for limit status -->
+{if $if_ship ne 1 and $if_ship ne 2 and $if_ship ne null}
+<div>
+<span style="color:red">该订单不是【已发货】或【收货确认】状态不能添加补寄</span>
+</div>
+<br/>
+{/if}
+<table border="0" cellpadding="0" cellspacing="0" class="bWindow odd" {foreach from=$order_info item=or} {foreachelse}style="display:none"{/foreach}>
+	<tr bgcolor="#E2F9FA">
+		<th align="center">订单号</th>
+		<th align="center">收件人</th>
+		<th align="center">收件地址</th>
+		<th align="center">商品金额</th>
+		<th align="center">发票抬头</th>
+		<th align="center">编辑</th>
+	</tr>
+	
+  	<tr>
+		<td align="center"><a href="../order_edit.php?order_id={$order_info.order_id}" target="_blank">{$order_info.order_sn}</a></td>
+		<td align="center">{$order_info.consignee}</td>
+		<td align="left">{$order_info.country_name}{$order_info.province_name}{$order_info.city_name}{$order_info.district_name}{$order_info.address}</td>
+		<td align="center">{$order_info.order_amount}</td>
+		<td align="center">{$order_info.inv_payee}</td>
+		<td align="center">
+			<input type="button" value="添加补寄发票" onclick="showAdd();" {if $if_ship ne 1 and $if_ship ne 2}disabled="false"{/if}></td>
+	</tr>
+</table>
+
+<br/>
+	<!--{foreach from=$invoiceList item=invoice}{if $invoice.num eq 0}style="display:none"{/if} {/foreach}-->
+<!-- <form id="deletess" name="deletess" method="post" action="invoice_add.php?act=delete">
+<input type="submit" value="删除" id="sd"></input> 
+</form> -->
+<table border="0" cellpadding="0" cellspacing="0" class="bWindow odd">
+	<tr bgcolor="#2899D6">
+		<th align="center">订单号</th>
+		<th align="center">补寄发票收件人</th>
+		<th align="center">补寄发票地址</th>
+		<th align="center">补寄发票快递方式</th>
+		<th align="center">客服操作人</th>
+		<th align="center">操作时间</th>
+		<th aligh="center">打印发票时间</th>
+		<th align="center">快递面单号</th>
+		<th align="center">邮编</th>
+		<th align="center">电话</th>
+		<th align="center">商品金额</th>
+		<th align="center">备注</th>
+		<th align="center"  colspan="2">编辑</th>
+	</tr>
+	{foreach from=$invoiceList item=i}
+	<tr>
+		<td align="center"><a href="../order_edit.php?order_id={$i.order_id}" target="_blank">{$i.order_sn}</a></td>
+		<td align="center">{$i.consignee}</td>
+		<td align="left">{$i.country_name}{$i.province_name}{$i.city_name}{$i.district_name}{$i.address}</td>
+		<td align="center">{$i.shipping_name}</td>
+		<td align="center">{$i.action_user}</td>
+		<td align="center">{$i.created_stamp|date_format:"%Y-%m-%d %T"}</td>
+		{if $i.shipping_time}
+		<td align="center">{$i.shipping_time|date_format:"%Y-%m-%d %T"}</td>
+		{else}<td></td>
+		{/if}
+		<td align="center">{$i.TRACKING_NUMBER}</td>
+		<td align="center">{$i.zipcode}</td>
+		<td align="center">{$i.tel}</td>
+		<td align="center">{$i.order_amount}</td>
+		<td align="center">{$i.shipping_note}</td>
+		{if $count == 1 || $count == 0}
+		<td align="center"><a href="#" onclick="showEdit(this);" title="{$i.id}" id='editI'>编辑补寄发票</a></td>
+		<td align="center"><a href="#" onclick="invoiceDelete(this);" title="{$i.id}" id='delete'>删除</a></td>
+		{else}
+		<td></td>
+		{/if}
+	</tr>
+	{/foreach}
+	<tr align="center">
+		<td colspan="20">{$pager}</td>
+	</tr>
+</table>
+<br />
+<br />
+<form id="add" name="add" method="post" action="invoice_add.php?act=add">
+<table border="0" cellpadding="0" cellspacing="0" class="bWindow" style="display:none" id="show_add">
+	<tr>
+		<td align="right">收件人：<input type="hidden" id="orderSn" name="orderSn" value="{$order_sn}"></td>
+		<td align="left"  colspan="2"><input type="text" name="consignee" id="consignee" value="{$order_info.consignee}"/></td>
+	</tr>
+	<tr>
+		<td align="right">补寄发票地址:</td>
+		<td colspan="2" align="left">
+			<select name="order[province]"><option value="0">-请选择-</option>{html_options options=$province_list selected=$province_id}</select>省 &nbsp;&nbsp;
+           <select name="order[city]" style="display:none"><option value="0">-请选择-</option>{html_options options=$city_list selected=$city_id}</select> &nbsp;&nbsp;
+           <select name="order[district]" style="display:none"><option value="0">-请选择-</option>{html_options options=$district_list selected=$district_id}</select>
+		</td>
+	</tr>
+	<tr>
+		<td align="right"></td>
+		<td colspan="2" align="left"><input type="text" style="width:360px" name="addr" value="{$order_info.address}"/><font color="#CCCCCC">详细的路名、街名和具体的门牌号</font></td>
+	</tr>
+	<tr>
+		<td align="right">收件人电话：</td>
+		<td align="left" colspan="2"><input type="text" name="tel" value="{if $order_info.mobile eq ''}{$order_info.tel}{else}{$order_info.mobile}{/if}" /></td>
+	</tr>
+	
+	<tr>
+		<td align="right">邮编：</td>
+		<td align="left" colspan="2"><input type="text" name="zipcode" id="zipcode" value="{$order_info.zipcode}"/></td>
+	</tr>
+	<tr>
+		<td align="right">快递方式：</td>
+		<td align="left" colspan="2">
+			<select name="shippingAdd" id='shippingAdd'>
+			<option value='110'>挂号信</option>
+			<option value='85' {if $party_id|in_array:$party_list}selected="selected"{/if}>圆通</option>
+			<option value='47'>EMS快递</option>		
+			<option value='44' {if $party_id==65562}selected="selected"{/if}>顺丰快递</option>	
+			<option value='89'>申通快递</option>
+			<option value='99'>汇通快递</option>	
+			<!-- {html_options options=$shipping_list selected=$order.shipping_id}  -->
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">备注：</td>
+		<td align="left" colspan="2"><input type="text" name="shippingNote" id="shippingNote" value=""/></td>
+	</tr>
+	<tr>
+		<td align="right"><input type="button" name="sub" id='add_invoice' value="添加" onclick="checkShipping2();"/></td>
+		<td align="left"  colspan="2"><input type="reset" name="res" value="重置" /></td>
+	</tr>
+</table>
+</form>
+<br />
+<form id="edit" name="edit" method="post" action="invoice_add.php?act=edit">
+<table border="0" cellpadding="0" cellspacing="0" class="bWindow" style="display:none" id="show_edid">
+	<tr>
+		<td align="right">收件人：<input type="hidden" id="invoiceId" name="invoiceId"></td>
+		<td align="left"  colspan="2"><input type="text" name="consigneesEdit" id="consigneesEdit"/></td>
+	</tr>
+	<tr>
+		<td align="right">补寄发票地址:<input type="hidden" id="shipment_idEdit" name="shipment_idEdit"></td>
+		<td colspan="2" align="left">
+		   <select name="invoiceEdit[province]"><option value="0">-请选择-</option>{html_options options=$province_list selected=$province_id}</select>省 &nbsp;&nbsp;
+           <select name="invoiceEdit[city]" style="display:none"><option value="0">-请选择-</option>{html_options options=$city_list selected=$city_id}</select> &nbsp;&nbsp;
+           <select name="invoiceEdit[district]" style="display:none"><option value="0">-请选择-</option>{html_options options=$district_list selected=$district_id}</select>
+		</td>
+	</tr>
+	<tr>
+		<td align="right"><input type="hidden" id="orderSn2" name="orderSn2" value="{$order_sn}"></td>
+		<td colspan="2" align="left"><input type="text" style="width:360px" name="addrEdit" value="" id="addrEdit"/>   <font color="#CCCCCC">详细的路名、街名和具体的门牌号</font></td>
+	</tr>
+	<tr>
+		<td align="right">发票抬头</td>
+		<td align="left"><input type="text" name="inv_payee" value="{$order_info.inv_payee}"/></td>
+	</tr>
+	<tr>
+		<td align="right">收件人电话：</td>
+		<td align="left" colspan="2"><input type="text" name="telEdit" id="telEdit"/></td>
+	</tr>
+	<tr>
+		<td align="right">邮编：</td>
+		<td align="left" colspan="2"><input type="text" name="zipcodeEdit" id="zipcodeEdit"/></td>
+	</tr>
+	<tr>
+		<td align="right">快递方式：</td>
+		<td align="left" colspan="2">
+			<select name="shippingEdit" id="shippingEdit">
+			<option value='110'>挂号信</option>
+			<option value='85' {if $party_id|in_array:$party_list}selected="selected"{/if}>圆通</option>
+			<option value='47'>EMS快递</option>		
+			<option value='44' {if $party_id==65562}selected="selected"{/if}>顺丰快递</option>	
+			<option value='89'>申通快递</option>
+			<option value='99'>汇通快递</option>						
+			<!-- {html_options options=$shipping_list selected=$order.shipping_id}  -->
+			</select>
+		</td>
+	</tr>
+ 	<tr style="display:none" >
+		<td align="right">备注：</td>
+		<td align="left" colspan="2"><input type="text" name="shippingNoteEdit" id="shippingNoteEdit"/></td>
+	</tr>
+
+	<tr>
+		<td align="right"><input type="button" name="subs" value="编辑" onclick="checkShipping();"/></td>
+		<td align="left"  colspan="2"><input type="reset" name="res" value="重置" /></td>
+	</tr>
+</table>
+</form>
+</fieldset>
+
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "start_time",
+        button            : "start_time_trigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      
+      Zapatec.Calendar.setup({
+          weekNumbers       : false,
+          electric          : false,
+          inputField        : "end_time",
+          button            : "end_time_trigger",
+          ifFormat          : "%Y-%m-%d",
+          daFormat          : "%Y-%m-%d"
+        });
+    //]]>
+</script>
+{/literal}
+
+</body>
+</html>

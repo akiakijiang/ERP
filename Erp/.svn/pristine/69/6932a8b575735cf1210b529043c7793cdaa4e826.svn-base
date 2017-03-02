@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>用户管理</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+</head>
+<body>
+
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;用户列表&nbsp;</span></legend>
+  
+
+  <br />
+  <div style="clear:both;">
+      {if $admin_list}
+	  <h3 style="text-align:right; clear:both;"><a href="privilege.php?act=add">添加用户</a>&nbsp;</h3>
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+            <th>{$lang.user_name}</th>
+            <th>{$lang.real_name}</th>
+            <th>{$lang.group}</th>
+            <th>{$lang.email}</th>
+            <th>{$lang.join_time}</th>
+            <th>{$lang.last_time}</th>
+            <th>{$lang.handler}</th>
+        </tr>
+
+		<!--{foreach from=$admin_list item=list}-->
+		<tr align="center" class="{cycle values='even,odd'}">
+			<td>{$list.user_name}</td>
+			<td>{$list.real_name}</td>
+      <td>{$list.department}</td>
+			<td>{$list.email}</td>
+			<td>{$list.join_time}</td>
+			<td>{if $list.last_time eq ""}N/A{else}{$list.last_time}{/if}</td>
+			<td>
+				<a href="privilege.php?act=allot&id={$list.user_id}&user={$list.user_name}" title="{$lang.allot_priv}"><img src="images/icon_priv.gif" border="0" height="16" width="16"></a>&nbsp;&nbsp;
+				<a href="admin_logs.php?act=list&id={$list.user_id}" title="{$lang.view_log}"><img src="images/icon_view.gif" border="0" height="16" width="16"></a>&nbsp;&nbsp;
+				<a href="privilege.php?act=edit&id={$list.user_id}" title="{$lang.edit}"><img src="images/icon_edit.gif" border="0" height="16" width="16"></a>&nbsp;&nbsp;
+				<a href="privilege.php?act=remove&id={$list.user_id}" onclick="return confirm('{$lang.drop_confirm}')" title="{$lang.remove}"><img src="images/icon_drop.gif" border="0" height="16" width="16"></a>&nbsp;&nbsp;
+				<a href="privilege.php?act=privilege_manage&id={$list.user_id}">下放权限</a>&nbsp;&nbsp;
+			</td>
+		</tr>
+		<!--{/foreach}-->
+      </table>
+        {if $admin_disabled_list}
+        <br/>
+        <h3>离职人员列表</h3>
+        <table class="bWindow" style="margin-top:10px;">
+        <tr>
+            <th>{$lang.user_name}</th>
+            <th>{$lang.real_name}</th>
+            <th>{$lang.email}</th>
+            <th>{$lang.join_time}</th>
+            <th>{$lang.last_time}</th>
+            <th>操作</th>
+        </tr>
+        <!--{foreach from=$admin_disabled_list item=admin_disabled}-->
+        <tr align="center" style="color:red;" class="{cycle values='even,odd'}">
+            <td>{$admin_disabled.user_name}</td>
+            <td>{$admin_disabled.real_name}</td>
+            <td>{$admin_disabled.email}</td>
+            <td>{$admin_disabled.join_time}</td>
+            <td>{if $admin_disabled.last_time eq ""}N/A{else}{$admin_disabled.last_time}{/if}</td>
+            <td><a href="privilege.php?act=recover&id={$admin_disabled.user_id}" title="用户恢复" style="text-decoration:none;">
+                <input type="button" name="act" value="用户恢复" style="cursor:pointer;"></input></a>
+            </td>
+        </tr>
+        <!--{/foreach}-->
+        </table>
+        {/if}
+      <br />
+      <br />
+ 	  {$pagination}
+      {else}
+  
+      <h3 style="text-align:center">没有数据， 去 <a href="role.php?act=edit">添加</a></h3>
+      
+      {/if}
+      
+  </div>
+  <br /><br /><br />
+  
+</fieldset>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+ERP订单号,淘宝订单号,订单商品数量,入库数,出库数量,是否全新,订单时间,order_type_id,商品名,order_id,rec_id,快递名称,仓库名称,订单状态,shipping_status,出入库时间,商品条码,product_id
+{foreach from=$new_details item=new}
+"{$new.order_sn}","{$new.taobao_order_sn}","{$new.goods_number}","{$new.in_num}","{$new.out_num}","{$new.status_id}","{$new.order_time}","{$new.order_type_id}","{$new.goods_name}","{$new.order_id}","{$new.rec_id}","{$new.shipping_name}","{$new.facility_name}","{$new.order_status}","{$new.shipping_status}","{$new.last_update_time}","{$new.barcode}","{$new.product_id}"
+{/foreach}

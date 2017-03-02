@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>批量完结批拣单</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  
+  <style type="text/css">
+	<!--{literal}-->
+	.tip {
+		color: #888;
+	}
+	.require {
+		color: #F00;
+	}
+	<!--{/literal}-->
+  </style>
+  
+  <script type='text/javascript'>
+  function batch_over_pick_sn() {
+	  
+  }
+  </script>
+
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;批量完结批拣单&nbsp;</span></legend>
+ 
+    <form action='batch_pick_over_action.php' method='post' id='batch_over'>
+	    <table>
+	    <tr>
+	    	  <td>
+	                                  请输入要批量完结的批拣单：
+	          </td> 
+	          <td>
+	              <input type="text" id="batch_pick_sn" value="" ></input>
+	          </td> 
+	          &nbsp;&nbsp;&nbsp;&nbsp;
+	          <td>
+	              <input type="submit" id="batch_over_pick_sn" value="完结" ></input>
+	          </td>
+	    </tr>
+	    </table>
+    </form>
+
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en_US" xml:lang="en_US">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>热敏面单资源管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="{$WEB_ROOT}admin/js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="{$WEB_ROOT}admin/js/style/zapatec/zpcal/themes/winter.css" />
+
+  <style type="text/css">
+  {literal}
+    table.arata_stat_table, table.arata_stat_table td {
+        border: 1px solid gray;
+        border-collapse:collapse;
+        font-size: 13px;
+        text-align: center;
+        /* padding: 5px; */
+      }
+      table.arata_stat_table th {
+        background-color: #2899D6;/* #6CB8FF; */
+        color: #EEEEEE;
+        border: 1px solid gray;
+        border-collapse:collapse;
+        padding: 2px;
+        text-align: center;
+      }
+  {/literal}
+  </style>
+
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <script type="text/javascript" >
+  {literal}
+  function passAction(obj){
+  	var facility_id = obj.id ;
+  	location.href = 'auto_deliver_party_facility.php?act=add&facility_id=' + facility_id ;
+  }
+  function denyAction(obj){
+  	var facility_id = obj.id ;
+  	location.href = 'auto_deliver_party_facility.php?act=del&facility_id=' + facility_id ;
+  }
+  {/literal}
+  </script>
+</head>
+<body>
+<div>
+  <h1>中通热敏面单资源管理</h1>
+  <!--
+  <p>未使用：                {$not_used_count}</p>
+  <p>已绑定，未回传：{$using_count}</p>
+  <p>已回传：                {$used_count}</p>
+  -->
+  <table class="arata_stat_table">
+    <tr>
+      <th>类型</th>
+      <th>数量</th>
+    </tr>
+    <tr>
+      <td>未使用</td>
+      <td>{$not_used_count}</td>
+    </tr>
+    <tr>
+      <td>已绑定，未回传</td>
+      <td>{$using_count}</td>
+    </tr>
+    <tr>
+      <td>已回传</td>
+      <td>{$used_count}</td>
+    </tr>
+  </table>
+</div>
+
+
+{if $isAdmin eq 'Y'}
+  <p>
+    如果自动申请面单号依旧无法满足需要，请手动申请。
+    <form action="zto_thermal_manage.php" method="POST">
+      <input type="hidden" name="act" value="apply">
+      <input type="submit" value="手动申请一批中通热敏面单号码"> 
+    </form>
+  </p>
+  <p>
+    如果需要针对特定组织-仓库-运送方式更改其面单打印方式，请
+    <a href="ArataCarrierBillSwitch.php">
+      进入切换页面
+    </a>
+    。
+  </p>
+{/if}
+
+</body>
+</html>

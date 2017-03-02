@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>欧酷网 {$goods_inform.goods_name}到货通知</title>
+</head>
+
+<body style="width:1000px;font-size:12px;color:#000;background:#fff;">
+<div style="margin:auto;width:700px;">
+	<a href="http://www.ouku.com" target="_blank"><img src="http://www.ouku.com/auto/top_01.jpg" alt="欧酷网" border="0"/></a>
+</div>
+<div style="margin:auto;width:700px;">
+	<p>亲爱的欧酷会员：</p>
+	<p style="text-indent:2em;line-height:200%;">
+    欢迎您来欧酷网购物，您的订单已经确认，由于邮政快递周五4点后至周末期间不收发件，您订购的商品暂时无法为您寄出，订单会顺延至下周一为您发出。请您耐心等待！
+  </p> 
+  <p style="text-indent:2em;line-height:200%;">
+    如您对此订单中的商品有何疑问或需要做更改，请立刻点击<a href="http://ouku.com/orderService.php#" target="_blank">售中咨询</a>，提交您的修改信息，我们会尽快为您处理！
+  </p>
+  <p style="text-indent:2em;line-height:200%;">
+    感谢您对欧酷的支持，祝您购物愉快！
+  </p>
+  <p style="text-indent:2em;line-height:200%;">
+    欧酷网全国统一客服电话：4008-206-206
+  </p>
+	<strong>以下为您的订单信息：</strong>
+    <p style="width:660px;border-bottom:1px dashed #ccc;height:1px;"></p>
+	<table style="width:100%;font-size:12px;border-bottom:1px dashed #ccc;height:1px;" cellpadding="5" cellspacing="5">
+		<caption style="text-align:left;font-weight:900;;"></caption>
+        
+		<tr>
+		<th style="width:30%;" align="left">商品名称</th>
+		<th style="width:20%;">商家信息</th>
+		<th style="width:15%;">商品单价</th>
+		<th style="width:15%;">商品数量</th>
+		<th style="width:15%;">金额小计</th>
+		</tr>
+ 		{if count($cart_goods) > 0}
+		{foreach from=$cart_goods.goods_list item=goods}
+		<tr>
+			<td align="left">{if $goods.parent_id > 0}&nbsp;&nbsp;+&nbsp;<a href="http://www.ouku.com/goods{$goods.goods_id}/"  target="_blank" style="color:#ff6600;">{$goods.goods_name}</a>{else}<a href="http://www.ouku.com/goods{$goods.goods_id}/"  target="_blank">{$goods.goods_name}</a>{/if}{if $goods.goods_number > 1}&nbsp;X&nbsp;{$goods.goods_number}{/if}</td>
+			<td align="center"><a href="http://www.ouku.com/" target="_blank">欧酷网</a></td>
+			<td align="center">{$goods.goods_price|price_format}</td>
+			<td align="center">{$goods.goods_number}</td>
+			<td align="center">{$goods.total_price|price_format}</td>
+		</tr>
+		{/foreach}
+		{/if}
+
+		<tr align="center">
+		    <td colspan="4" align="right">
+			<p>商品小计：<span style="color:red;">{$order.goods_amount|price_format}</span>&nbsp;
+			{if $bonus}红包抵用：<span style="color:red;">{$bonus|price_format}</span>{/if}&nbsp;
+			{if $order.shipping_proxy_fee}快递手续费：<span style="color:red;">{$order.shipping_proxy_fee|price_format}</span>(2%商品总金额){/if}&nbsp;
+            {if $order.shipping_fee}运费：<span style="color:red;">{$order.shipping_fee|price_format}</span>{/if}&nbsp;
+            {if $order.pack_fee}包装费：<span style="color:red;">{$order.pack_fee|price_format}</span>{/if}&nbsp;</p>
+            <b>费用总计：<span style="color:red;">{$order.order_amount|price_format}</span></b></td>
+		</tr>
+					
+	</table>
+
+	<table style="width:100%;font-size:12px;" cellpadding="5" cellspacing="5">
+	</tr>
+		<tr>
+			<td style="width:50%;"><strong>订单号：</strong><a href="http://www.ouku.com/my.php" target="blank">{$order.order_sn}</a></td>
+			<td style="width:50%;"><strong>订单状态：</strong>{$order.status_desc}</td>
+		</tr>
+		<tr>
+			<td><strong>订购时间：{$order.order_time}</strong></td>
+			<td><strong>货运方式：</strong>{if !$order.shipping_ziti}<a href="{$order.web_site}" target="_blank">{/if}{$order.shipping_name|escape}{if !$order.shipping_ziti}</a>{/if} {if $order.bill_no}运单号：{$order.bill_no}{/if}</td>
+		</tr>
+		<tr>
+		<td><strong>收货人：</strong>{$order.consignee|escape}</td>
+		<td></td>
+		</tr>
+		<tr>
+		<td colspan="2"><strong>收货地址：</strong>{if $order.shipping_ziti}{$order.midway_address}{else}{$order.province_name|escape}{if $order.city_name}&nbsp;{$order.city_name|escape}{/if}{if $order.district_name}&nbsp;{$order.district_name|escape}{/if}&nbsp;{$order.address|escape}{/if}</td>
+		</tr>
+		<tr>
+		<td><strong>电子邮箱：</strong>{$order.email|escape}</td>
+		<td><strong>手机号码：</strong>{$order.mobile|escape}</td>
+		</tr>
+		<tr>
+		<td><strong>发票抬头：</strong>{if $order.inv_payee}{$order.inv_payee|escape}{else}个人{/if}</td>
+		<td><strong>付款方式：</strong>{$order.pay_name|escape}<span style="color:red;margin-left:20px;">您需要支付{$order.order_amount}元</span></td>
+		</tr>
+		<tr>
+		<td colspan="2"><strong>订单附言：</strong>{if $order.postscript}{$order.postscript|escape}{else}无{/if}</td>
+		</tr>
+	</table>
+	
+	<p style="width:660px;border-bottom:1px dashed #ccc;height:1px;"></p>
+  <p> 点击登录[<a href="http://www.ouku.com/my.php" target="_blank">我的欧酷</a>]查看订单详细 </p>
+
+<b>发货延迟：</b><p>有时会出现您订购的商品暂时缺货的情况，因此可能无法在48小时内发货。</p>
+
+        <p>1、您可以在"下单后咨询"中选择"物流配送"咨询您的发货详情。</p>
+
+        <p>2、您可以拨打"客服电话"咨询您的发货详情。 </p>
+
+<b>修改订单：</b>
+
+<p>如果您的订单未发货<br /> 您可以在<a href="http://www.ouku.com/orderService.php#orderTime" target="_blank">[下单后咨询]</a> 中留言进行订单修改，我们的工作人员在收到后将会立即修改订单。您也可以直接拨打我们的客服电话4008-206-206修改订单 </p>
+
+<p>如果您的订单已发货单[不推荐在发货后修改订单]<br /> 请您在收到商品后，直接选择拒收（来回快递费由用户自己承担），同时与欧酷客服联系修改订单，我们将会在商品补齐后再次为您寄出。  </p>
+
+<b>取消订单：</b>
+
+<p>进入[我的欧酷]--[详细订单]中[取消订单]来取消您的订单。</p>
+
+<p>1、若您是已付款的用户，在收到取消订单的通知并与您确认后，您的款项会按您付款的方式返还给您。</p>
+
+<p>2、若您是未付款的用户，在收到取消订单的通知后，您的订单会被自动终止。 </p>
+
+<b>货到付款：</b><p>欧酷网通过第三方快递公司来进行配送，使用货到付款，需要先按订单金额（货款+运费）付款给快递员，然后当其面开箱验货，如当场发现包裹有坏损或配件缺失，请立刻致电欧酷网客服4008-206-206投诉，我们会立即给予处理答复。详细货到付款说明请<a href="http://www.ouku.com/help/index.php?id=11" target="_blank">[点击查看]</a> 
+  </p>
+</div>
+<div style="margin:auto;width:700px;">
+<img src="http://www.ouku.com/auto/bottom_02.jpg" alt="欧酷信息" />
+</div>
+</body>
+</html>

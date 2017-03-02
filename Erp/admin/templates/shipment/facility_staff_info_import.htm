@@ -1,0 +1,251 @@
+<!DOCTYPE>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>拣貨人员信息录入</title>
+    <!-- <link href="../../styles/default.css" rel="stylesheet" type="text/css" /> -->
+    <script type="text/javascript" src="misc/jquery.js"></script>
+    <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+      <!-- RF枪键盘监听，页面跳转 -->
+    <!-- // <script type="text/javascript" src="js/js_wms/rf_scan.js"></script> -->
+
+      <style type="text/css">
+    <!--{literal}-->
+    body{
+        font-family: Tahoma,Verdana;
+        font-size: 14px;
+    }
+    .tip {
+            color: #888;
+        }
+    .require {
+            color: #F00;
+        }
+    .loading {
+            background: #F1F1F1 url('misc/indicator.gif') right center no-repeat;
+        }
+     .list:nth-child(2n+1){
+        background-color: rgba(192,192,192,0.3);
+     }
+     .bWindow{
+        width: 100%;
+        margin: 10px auto;
+     }
+     .bWindow tr{
+        height: 30px;
+     }
+     .bWindow td{
+        padding-top: 8px;
+        padding-bottom: 8px;
+     }
+     #staff_form{
+        width: 800px;
+        margin: 10px auto;
+     }
+     #staff_form select{
+        width: 131px;
+     }
+     #staff_form button{
+        height: 28px;
+        width: 48px;
+        border-radius: 4px;
+        background-color: #09F;
+        color: white;
+        border: 2px solid #3295DD;
+        box-shadow: 2px 2px 3px grey;
+     }
+     #staff_form input[type=button]{
+        width: 50px;
+        display: inline-block;
+        height: 100px;
+     }
+     #staff_form input, #staff_form select{
+        margin-right: 20px;
+        height:1.5rem;
+     }
+
+<!--{/literal}-->
+    </style>    
+    <script type="text/javascript">
+    // <![CDATA[
+    var WEB_ROOT = '{$WEB_ROOT}';
+    // {literal} 
+    $(document).ready(function(){
+        $('#staff_number').bind('click', listen_staff_number);
+        $('#staff_number').bind('keyup', listen_staff_number).focus();
+        
+        // 限制首字母不为特殊字符
+      $('#staff_number').bind('keypress', function (event) {
+         var regex = new RegExp("^[a-zA-Z0-9]+$");
+         var first_staff_number = $('#staff_number').val().substr(0,1);
+         // console.log(first_staff_number);
+         // var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+         if (!regex.test(first_staff_number)) {
+          // event.preventDefault();
+          // return false;
+          first_staff_number = first_staff_number.slice(1);
+          $('#staff_number').val(first_staff_number);
+         }
+        });
+
+       // 限制首字母不为特殊字符
+      $('#staff_name').bind('keypress', function (event) {
+         var regex = new RegExp("^[\u4e00-\u9fa5][0-9\u4e00-\u9fa5]*$");
+         var staff_name = $('#staff_name').val();
+         // console.log(first_staff_number);
+         // var key = String.fromCharCode(!event.staff_name ? event.staff_name : event.staff_name);
+         if (!regex.test(staff_name)) {
+            // s.substring(0,s.Length-1)
+            var str=staff_name.substr(staff_name.length-1,1);
+            var regExp = /[a-z]$/;
+            if(regExp.test(str)){
+                staff_name = staff_name.substr(0,staff_name.length-1);
+                $('#staff_name').val(staff_name);
+            }
+              console.log('未输入中文');
+              event.preventDefault();
+              return false;
+         }
+        });
+    });
+
+    var KEY = {
+        RETURN: 13,  // 回车
+        CTRL: 17,    // CTRL
+        TAB: 9
+    };
+
+    /**
+     * 发货单监听
+     */
+    function listen_staff_number(event) 
+    {
+        switch (event.keyCode) {
+            case KEY.RETURN:
+            case KEY.CTRL:
+                load_staff_number();
+                event.preventDefault();
+                break;
+        }
+    }
+
+     function load_staff_number() 
+    {
+        var staff_number = $.trim($('#staff_number').val());
+        console.log(staff_number);
+        if (staff_number == '') {
+            alert('请先输入工牌号');
+            return; 
+        }
+        // location.href = "shipment_recheck.php?shipment_id="+shipment_id;
+    }
+    
+    function staff_info_import(obj){
+           var staff_name = $('#staff_name').val();
+           var staff_number = $.trim($('#staff_number').val());
+           var facility = $('#facility').val();
+           // console.log(staff_name+staff_number+facility);
+           if(staff_number=='' || staff_number==null){
+                 alert('请输入工牌号');
+                 return false;   
+           }else if (staff_name=='' || staff_name==null){
+                 alert('请填写揀貨人員姓名');
+                return false;
+           }else{
+                  $.ajax({
+                    type: 'post',
+                    url: WEB_ROOT +'admin/facility_staff_info_import.php?act=insert',  
+                    data: {
+                        'staff_name': staff_name,
+                        'staff_number': staff_number,
+                        'facility': facility
+                    },
+                    dataType:'json',
+                    success: function(data) { 
+                        var data=data.flag;
+                        if(data=='exist'){
+                            alert('工牌号重复，请重新输入');
+                        }
+                        window.location.reload();
+                    },
+                    error : function(XMLHttpRequest, textStatus, errorThrown) {
+                     console.log(XMLHttpRequest.status);    
+                     console.log(XMLHttpRequest.readyState);
+                     console.log(textStatus);
+                     }
+                    // error:function(data){
+                    //     alert("失败！");
+                    // }
+                });
+           }
+                return false;
+        }
+    // {/literal}
+    // ]]>
+    </script>
+</head>
+<body >
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+    <legend>
+        <span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;拣货人员信息录入&nbsp;</span>
+    </legend> 
+    <div style="clear:both;" id="staff_form"> 
+        <form method="post" onsubmit="return formsubmit()">
+            工牌号：<input type="text" name="staff_number" id="staff_number">
+            姓名：<input type="text" name="staff_name" id="staff_name">
+            物理仓： <select name="facility" id="facility">
+                        <option value="shanghai">上海仓</option>
+                        <option value="jiashan">嘉善仓</option>
+                        <option value="wuhan">武汉仓</option>
+                        <option value="chengdu">成都仓</option>
+                        <option value="beijing">北京仓</option>
+                        <option value="dongguan">东莞仓</option>
+                        <option value="shenzhen">深圳仓</option>
+                    </select>
+            <button type="button" value="提交" onclick="staff_info_import(this)">添加</button>
+        </form>
+    </div>
+ <div>
+
+        <h3 style="color:#09F;">拣货人员信息列表</h3>
+        <table class="bWindow" style="margin-top:10px;">
+            <tr style="background-color:#3295DD;color:white">          
+                <th>姓名</th>
+                <th>工牌号</th>
+                <th>物理仓</th>
+                <th>创建人</th>
+                <th>创建时间</th>
+            </tr>    
+            {foreach from=$result  item=staff name=bigloop}
+            {if $smarty.foreach.bigloop.iteration == $result|@count}
+            {php}break;{/php}
+            {/if} 
+            <tr align="center" class="list">
+
+                    <!-- 姓名 -->
+                    <td>{$staff.staff_name}</td>
+                    <!-- 员工号 -->
+                    <td class="">{$staff.staff_number}</td>
+                    <!-- 仓库 -->
+                    <td class="">{$staff.facility}</td>
+                    <!-- 操作人 -->
+                    <td class="shop_name">{$staff.created_user}</td>
+                    <!-- 操作时间 -->
+                    <td class="order_type">{$staff.now_time}</td>
+            </tr>
+            {/foreach}
+            <tr>
+                <td colspan="11" style="text-align:right;padding-right:20px;">{$Pager}</td>
+            </tr>
+        </table>
+  </div>
+</fieldset>
+<!-- {debug} -->
+</body>
+</html>

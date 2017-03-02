@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>批拣单查询</title>
+<link type="text/css" rel="stylesheet" href="styles/default.css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+<style type="text/css">
+	<!--{literal}-->
+	td {
+		text-align: center;
+	}
+	#search td {
+		text-align: left;
+	}
+	.pWindow{
+		width:99.7%;
+		font-size:10pt;
+		text-align:center;
+		border:1px solid #000;
+		border-collapse:collapse;
+		margin:20px 0 20px 2px;
+	}
+	.pWindow td{
+	    padding:5px 10px;
+	}
+	.pWindow td,.pWindow th{
+		border:1px solid #000;
+		height:25px;
+		line-height:25px;
+	}
+	.postscript {
+	    font-size:15px;
+	    font-family: "黑体";
+	    font-weight:bold;
+	}
+	.top{
+	    margin-top:140px;
+	    margin-left:0px;
+	}
+	<!--{/literal}-->
+</style>
+<script type="text/javascript">
+{literal}
+
+// 完结批捡单前灰掉按钮
+function over_batch_pick(batch_pick_sn) {
+	if(!confirm('确认完结吗？')) {
+		return false;
+	}
+	$('#btn_over_batch_pick_'+batch_pick_sn).attr('disabled',true);
+	$('#form_over_batch_pick_'+batch_pick_sn).submit();
+}
+{/literal}
+</script>
+</head>
+    <!--sp==1、sp==4 时走打印界面-->
+	{if $sp==1 || $sp==4}
+	<body  onload="window.print()">
+	{else}
+	<body>
+	{/if}
+	{if $sp==1}
+	<h1 align='center'>批拣单打印</h1>
+	   <h3 align="center" >批拣单号：{$sn}<img src="code_img.php?barcode={$sn}&width=400&height=70" /></h3>
+	   <table  class="pWindow" >	
+			<tr>
+				<th width="5%">共{$location_count}条</th>
+				<th width="10%">库位号</th>
+				<th width="10%">商品条码</th>					
+				<th width="30%">商品名</th>
+				<th width="5%">数量</th>
+				<!-- <th width="35%">下架去处 （生产日期|批次|数量）</th> -->
+				<th width="5%">记录</th>
+			</tr>
+			{assign var=location_count_i value=0}
+			{assign var=last_location_barcode value='0'}
+			<!--{foreach from=$batch_bill_info key=location_barcode item=location_info}-->
+				{assign var=location_count_i value=$location_count_i+1}
+		    	<tr>
+	    		<!--{if $location_barcode != $last_location_barcode}-->
+	    			<td rowspan='{$location_info.goods_list|@count}'>{$location_count_i}</td>
+					<td rowspan='{$location_info.goods_list|@count}'>{$location_barcode}</td>
+				<!--{/if}-->
+				{assign var=last_location_barcode value=$location_barcode}
+		    	<!--{foreach from=$location_info.goods_list key=product_id item=goods_info}-->
+		    		<td>{$goods_info.barcode}</td>
+		    		<td>{$goods_info.goodsName}</td>
+		    		<td>{$goods_info.goodsNumber}</td>
+		    		{*
+		    		<td style='text-align:left'>
+			    	<!--{foreach from=$goods_info.validity_batch_sn key=grid_id item=validity_sns}-->
+			    		[第{$grid_id}格]{$validity_sns.0.shipment_id}</br>
+			    		<!--{foreach from=$validity_sns item=validity_sn}-->
+						{if $validity_sn.validity != '1970-01-01'}  生产日期:{$validity_sn.validity} {/if}
+						{if $validity_sn.batch_sn != ''} 批次: {$validity_sn.batch_sn} {/if}
+						 数量:{$validity_sn.quantity} 
+				        </br>
+				        <!--{/foreach}-->
+					<!--{/foreach}-->
+
+		    		</td>
+		    		*}
+		    		<td></td>
+		    		</tr>
+				<!--{/foreach}-->
+		   <!--{/foreach}-->
+	   </table>		
+	<DIV style="text-align:center;margin-top:10px;font-size:14px;">
+			乐其新仓库批拣单 打印完毕!
+    </DIV>	
+    <!--走批拣单查询界面-->
+	{else}
+	<fieldset style="-moz-border-radius:6px;padding:10px;margin:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;打印批拣单&nbsp;</span></legend>
+	 <DIV>
+	    <h3 style="color:#09F;">查询</h3>
+		<p>
+		    <form style="margin-bottom:-15px" action="search_batch_pick.php" method="GET">
+	                      如果需要根据批拣单号重新打印批拣单，请在此查询并重新打印:
+	            <input type="hidden" name="sugu_print" value="2">
+				<input type="text" name="sn" value="{$smarty.request.sn}">
+				<input type="submit" value="  打 印  "><br><br>
+	        </form>
+			<form action="search_batch_pick.php"  method="GET">
+			 <input type="hidden" name="sugu_print" value="5">
+			 <table id="search" cellpadding="5" cellspacing="1">
+			   <tr>
+			    <td>批拣单号
+	            <input id="batch_pick_sn" style="width:100px;margin-top:10px" size="50"  name="batch_pick_sn" value="{$smarty.request.batch_pick_sn}"></td>
+			    <td>批拣单状态
+			    <select name="is_pick">
+			        {html_options options=$is_pick_list selected = $smarty.request.is_pick}
+			    </select></td>
+			     <td>发货单状态
+			    <select name="shipping_status">
+			        {html_options options=$shipping_status_list selected = $smarty.request.shipping_status}
+			    </select></td>
+			   </tr>
+			   <tr>
+			    <td>批拣单操作人
+	            <input id="action_user" style="width:100px" size="50"  name="action_user" value="{$smarty.request.action_user}"></td>
+			    <td>拣货人工牌号
+	            <input id="action_user" style="width:100px" size="50"  name="employee_no" value="{$smarty.request.employee_no}"></td>
+			    <td>起始创建时间 <input style="width:90px;margin-top:0px" id=start_validity_time name="start_validity_time" value="{$start_validity_time}"><input type="button" value="..." id="start_validity_time_trigger"></td>
+			    <td>终止创建时间 <input style="width:90px;margin-top:0px" id="end_validity_time" name="end_validity_time" value="{$smarty.request.end_validity_time}"><input type="button" value="..." id="end_validity_time_trigger"></td>
+			    <td><input type="submit"  style="margin-top:0px" value="搜索" ></td>
+			   </tr>
+			  </table>
+			</form>
+		</p>
+	</DIV>
+	<DIV>
+	    <h3 style="color:#09F; margin-bottom: 2px;">批拣单列表</h3>
+		<h3 style="text-align:center;color:red;">
+		    <if $message>
+			    {$message}
+			</if>
+		</h3>
+		<br>
+		<h3 style="text-align:left;">
+		{if $flag}
+		     {$total_message}
+		</h3>
+		{else}
+		<h3 style="text-align:left;color:red;">
+		      {$total_message}    
+		{/if}
+		</h3>
+		<table class="bWindow" style="margin-top:10px;margin-bottom:10px;width:1400px;">
+			<tr>
+				<th>操作</th>
+				<th>批拣单号</th>
+				<th>sku数</th>
+				<th>批拣单状态</th>
+				<th>发货单状态</th>
+				<th>批拣单操作人</th>
+				<th>拣货人（工牌号）</th>
+				<th>拣货绑定时间</th>
+				<th>创建时间</th>
+				<th>最后更新</th>
+			</tr>
+			<!--{foreach from=$batch_pick_lists item=list}-->
+			<tr>
+			   <td><form action="search_batch_pick.php?&sugu_print=2&sn={$list.batch_pick_sn}&is_pick={$smarty.request.is_pick}&start_validity_time={$smarty.request.start_validity_time}&end_validity_time={$smarty.request.end_validity_time}&action_user={$smarty.request.action_user}&batch_pick_sn={$smarty.request.batch_pick_sn}&shipping_status={$smarty.request.shipping_status}" method="POST">
+				   <input type="submit" value="  打 印  "><br>
+				   </form>
+				   <form id='form_over_batch_pick_{$list.batch_pick_sn}' action="batch_pick_over_action.php?from_php=search_batch_pick.php&batch_pick_sn={$list.batch_pick_sn}&is_pick={$smarty.request.is_pick}&start_validity_time={$smarty.request.start_validity_time}&end_validity_time={$smarty.request.end_validity_time}&action_user={$smarty.request.action_user}" method="POST">
+				   <input id='btn_over_batch_pick_{$list.batch_pick_sn}' type="button" {if $list.pick_status == 'Y'}disabled='true' value="已完结"{else} disabled='true' value="完结"{/if}  onclick="over_batch_pick('{$list.batch_pick_sn}')" ><br>
+				   </form>
+			   </td>
+			   <td><a href="display_batch_pick_detail.php?batch_pick_sn={$list.batch_pick_sn}" target="new">{$list.batch_pick_sn}</a>
+			   <td>{$list.sku_num}</td>
+			   <td>{$list.is_printed}, {$list.is_pick}</td>
+			   <td align='center'>
+			  	 <!--{foreach from=$list.status  item=sta key=key}-->
+			  	 {$key}({$sta})</br>
+			  	 <!--{/foreach}-->
+			   </td>
+			   <td>{$list.action_user}</td>
+			   <td>{if $list.employee_no}{$list.employee_name}（{$list.employee_no}）{else if}未分配{/if}</td>
+			   <td>{if $list.employee_no}{$list.employee_bind_stamp}{/if}</td>
+			   <td>{$list.created_stamp}</td>
+			   <td>{$list.last_updated_stamp}</td>
+			</tr>
+			<!--{/foreach}-->
+
+	</table>
+	{$pagination}
+	</fieldset>
+	<!--终于转到打印 批拣单了-->
+	{if $sp==2}
+	  <iframe name="print_frame" width="100%" height="100%" frameborder="1" 
+		src="search_batch_pick.php?sugu_print=1&sn={$sn}" ></iframe>
+	{/if}
+	{if $sp==3}
+	  <iframe name="print_frame" width="100%" height="100%" frameborder="1" 
+		src="search_batch_pick.php?sugu_print=4&is_pick={$smarty.request.is_pick}&start_validity_time={$smarty.request.start_validity_time}&end_validity_time={$smarty.request.end_validity_time}&action_user={$smarty.request.action_user}&shipping_status={$smarty.request.shipping_status}" ></iframe>
+	{/if}
+	{literal}
+	<script type="text/javascript">//<![CDATA[
+	                                          
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "start_validity_time",
+	          button            : "start_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      
+	      Zapatec.Calendar.setup({
+	          weekNumbers       : false,
+	          electric          : false,
+	          inputField        : "end_validity_time",
+	          button            : "end_validity_time_trigger",
+	          ifFormat          : "%Y-%m-%d",
+	          daFormat          : "%Y-%m-%d"
+	        });
+	      //]]>
+	</script>
+	{/literal}
+	{/if}
+</body>
+</html>

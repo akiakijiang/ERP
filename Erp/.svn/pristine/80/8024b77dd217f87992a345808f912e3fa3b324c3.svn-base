@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/erp.js"></script>
+<title>旧版发货统计</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+</head>
+<body onload="submitEnabled('submit_button');">
+
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statics.php">今日快递发货情况</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statics.php?red_notice=1">24小时未发货订单({$count_1})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statics.php?red_notice=2">48小时未发货订单({$count_2})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statics.php?red_notice=3">4点前有库存未发货订单({$count_3})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="shipping_statics.php?red_notice=4">已出库未发货订单({$count_4})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#">当天未发货总计({$count_5})</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#">共计({$count_6})</a>
+</p>
+<a href="shipping_statistics.php" target="_blank">新版页面</a>
+{if $smarty.request.red_notice == null}
+<table border="0" cellpadding="0" cellspacing="0" class=bWindow>
+	<tr>
+		<td>快递
+		</td>
+		<td>发货数量
+		</td>
+		<td>备注
+		</td>
+	</tr>
+	{foreach from=$carrier_counts item=carrier_count key=key}
+	<tr>
+		<td>{$key}</td>
+		<td>{$carrier_count.carrier_count}</td>
+		<td>{$key}</td>
+	</tr>
+	{/foreach}
+	<tr>
+		<td>总计
+		</td>
+		<td>{$total_count}
+		</td>
+		<td>
+		</td>
+	</tr>
+</table>
+{/if}
+{if $smarty.request.red_notice == 1}
+24小时未发货订单({$count_1})
+{elseif $smarty.request.red_notice == 2}
+48小时未发货订单({$count_2})
+{elseif $smarty.request.red_notice == 3}
+4点前有库存未发货订单({$count_3})
+{elseif $smarty.request.red_notice == 4}
+已出库未发货订单({$count_4})
+{elseif $smarty.request.red_notice == 5}
+剩余库存订单数量({$count_5})
+{/if}
+{if $smarty.request.red_notice <= 4 && $smarty.request.red_notice >= 1}
+<form method="POST">
+<input type="submit" name="csv" value="导出CSV">
+</form>
+<p style="text-align:center;"><font color="red">物流查看</font>&nbsp;&nbsp;{$pager}</p>
+{foreach from=$orders item=order}
+<table cellpadding="0" cellspacing="0" class="bWindow">
+<tr style="background:#f1f1f1;">
+	<td>订单号：<a href="detail_info.php?order_id={$order.order_id}" target="_blank">{$order.order_sn}</a></td>
+    <td>{if $smarty.request.red_notice != 4}
+		确认时间：{if $order.confirm_time != null}{$order.confirm_time}&nbsp;&nbsp;{$order.confirm_user}{/if}
+		{else}
+		已出库待发货时间: {$order.chuku_time}
+		{/if}
+	</td>
+</tr>
+
+<tr>
+    <td colspan="5">
+    	<table cellpadding="0" cellspacing="0">
+			<tr>
+            	<td style="width:30%;">商品名称</td>
+                <td style="width:70%;">备注</td>
+            </tr>
+<!--{foreach from=$order.goods_list item=goods name=goods}-->
+{if $goods.erp_id == 0}
+	{assign var=count value=$goods.goods_number}
+{else}
+	{assign var=count value=1}
+{/if}
+<!--{section loop=$count name=inner}-->
+
+{if $order.order_sn == $pre_order_sn}
+	{assign var=goods_index value=$goods_index+1}
+{else}
+	{assign var=goods_index value=1}
+{/if}
+{assign var=pre_order_sn value=$order.order_sn}                
+		<tr>     
+	<!--{if $goods.rec_id != $pre_bg_id}-->
+			<td>
+				{$goods.goods_name} × {$goods.goods_number}
+			</td>
+	<!--{/if} -->
+    <!--{if $goods.rec_id != $pre_bg_id && $smarty.foreach.goods.iteration == 1}-->
+    		<form method="POST" id="data_form_{$order.order_id}">
+			<td rowspan="{$smarty.foreach.goods.total}">
+			{foreach from=$order.shipping_action item=action name=action}
+				<p>备注：{$action.action_note} , 操作人：{$action.action_user} , 时间：{$action.action_time}</p>
+			{/foreach}
+				添加备注：<br>
+				<textarea style="width:500px;height:100%" name="note_{$order.order_id}" id="note_{$order.order_id}" {if $goods.erp_id != 0}disabled{/if}></textarea>
+				<input type="button" name="edit_button" value="编辑" onclick="setEditable('{$goods.rec_id}', '{$order.order_id}', '')">
+				<input type="button" name="cancel_button" value="取消" onclick="setEditable('{$goods.rec_id}', '{$order.order_id}', 'disabled')">
+				<input name="submit_button" type="submit" value="   提交   " onclick="submitData(this, 'data_form_{$order.order_id}')" disabled>
+				<input name="order_id" id="order_id" value="{$order.order_id}" type="hidden"/>
+				<input name="act" id="act" value="remark" type="hidden"/>
+			</td>
+			</form>
+    <!--{/if}-->
+		</tr>
+<input type="hidden" name="erp_id_{$goods.rec_id}[]" value="{$goods.erp_id}" {if $goods.erp_id != 0}disabled{/if}>
+<input type="hidden" name="last_update_time_{$goods.rec_id}[]" value="{$goods.last_update_time}" {if $goods.erp_id != 0}disabled{/if}>
+{assign var=pre_bg_id value=$goods.rec_id}
+<!--{/section}-->
+
+<input type="hidden" name="order_goods_id[]" value="{$goods.rec_id}" id="order_goods_id_{$goods.rec_id}" {if $goods.erp_id != 0}disabled{/if}>
+<input type="hidden" name="order_sn_{$goods.rec_id}" id="order_sn_{$goods.rec_id}" value="{$order.order_sn}" {if $goods.erp_id != 0}disabled{/if}>            
+         <!--{/foreach}-->
+        </table>
+    </td>
+</tr>
+</table>
+{/foreach}
+<p style="text-align:center;"><font color="red">物流查看</font>&nbsp;&nbsp;{$pager}</p>
+{/if}
+
+</body>
+</html>

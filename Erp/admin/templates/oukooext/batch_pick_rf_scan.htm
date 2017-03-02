@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>RF枪批拣界面（正常版）</title>
+        <meta http-equiv = "Content-Type" content="text/html; charset=utf-8" >
+　　    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script type="text/javascript" src="misc/jquery.js"></script>
+        <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>  
+        <link rel="stylesheet" href="styles/rf_scan.css" />
+    </head>
+    <body>
+        <div class="all">
+            <div id="page1" class="allpages">
+                <p>欢迎使用批拣出库!</p>
+                <form action="batch_pick_rf_scan_n1.php" method="POST">
+                    <label for="FOCUS_IT1">批拣单号：</label>
+                    <input name="BPSN" type="text" id="FOCUS_IT1" autofocus/>
+                    <input type="hidden" name="state" value="1"/>
+                    <input type="submit" value="开始批捡" id="for_submit1" class="hover_button"/>
+                </form>
+            </div>
+            <div id="page3" class="allpages">
+                <p>此批捡单号已经捡完或无效,请重新输入</p>
+                <form action="batch_pick_rf_scan_n1.php" method="POST">
+                    <label for="FOCUS_IT2">批拣单号：</label>
+                    <input name="BPSN" type="text" id="FOCUS_IT2" autofocus/>
+                    <input type="hidden" name="state" value="1"/>
+                    <input type="submit" name="search_batch_pick" value="开始批捡" class="hover_button"/>
+                </form>
+            </div>
+            <div id="page_main" class="allpages">
+                    <ul>
+                        <li><p>当前库位：{$duty.location_barcode}</p></li>
+                        <li><p>货物名称：{$duty.goods_name}</p></li>
+                    </ul>
+                    <form action="batch_pick_rf_scan_n1.php" method="POST" name="NSN_MOUSIKOMI" id="main_form">
+                               <p>商品条码：{$duty.goods_barcode}</p>
+                               <label for="FOCUS_IT">商品条码：</label>
+                               <input type='text' name='goods_barcode' id="FOCUS_IT" autofocus />
+                               <img src="images/059.png" title = 'right!'/>
+                               <img src="images/060.png" title = 'wrong!'/>  
+                            <div id="box_for_show_grid">
+                               <p>出库总量：{$duty.total_number}</p>
+                               <table  class="table_gird">
+                                    <tr>
+                                        <th>发货单号</th>
+                                        <th>格子号码</th>
+                                        <th>商品数量</th>
+                                    </tr>
+                                   {foreach from=$duty.details key=k item=value}
+                                    <tr>
+                                        <td>{$value.shipment_id}</td>
+                                        <td>{$value.grid_id}</td>
+                                        <td>{$value.number}</td>
+                                    </tr>
+                                    {/foreach}
+                               </table>
+                               <input type="hidden" name="state" value="202"/>
+                               <input type='hidden' name='product_id' value='{$duty.product_id}'/>
+                               <input type='hidden' name='location_barcode' value='{$duty.location_barcode}'/>
+                               <input type="button" id="confirm_button" value="确认出库" class="hover_button" onclick="document.NSN_MOUSIKOMI.submit();"/>
+                            </div>
+                    </form>
+            </div>
+            <div id="error_msg_page" class="allpages over_page">
+                    <p>商品出库失败 ~ T T ~</p>
+                    <p>{$error_msg}</p>
+                    <form action="batch_pick_rf_scan_n1.php" method="post">
+                        <input type="hidden" name="state" value="200"/>
+                        <input type="hidden" name="BPSN" value="{$BPSN}"/>
+                        <input type="submit" class="hover_button" value="下一个" autofocus/>
+                    </form>
+            </div>
+            <div class="allpages over_page" id="alldone_page">
+                <p>全部拣完</p>
+                <a href="batch_pick_rf_scan_n1.php" class="key_for_link">拣完~请返回初始界面！</a>
+            </div>
+            <div class="allpages" id="done_but_error_page">
+                <p>全部捡完</p>
+                <p>{$error_get_duty_list}</p>
+                <a href="batch_pick_rf_scan_n1.php" class="key_for_link">拣完~但有错啊MLGB~请返回初始界面！</a><br>
+            </div>
+        </div>
+        <script type="text/javascript">
+        // <![CDATA[
+             var STATE = '{$state}';
+             var GOTO = '{$goto}';
+             var someBPSN = '{$BPSN}';
+             //{literal}
+             $(document).ready(function(){ 
+                var $page1 = $("#page1");
+                var $page3 = $("#page3");
+                var $page_main = $("#page_main");
+                var $error_msg_page = $("#error_msg_page");
+                var $alldone_page = $("#alldone_page");
+                var $done_illness_page = $("#done_illness_page");
+                var $FOCUS_IT = $("#FOCUS_IT");
+                var $box_for_show_grid = $("#box_for_show_grid");
+                var $images = $("img");
+                $FOCUS_IT.keydown(function(event){//判断键盘事件：F4-115
+                    if(event.which == 115){
+                        var scan_text = $(this).val();
+                        var shall_goods_barcode = $(this).prev().prev().text().substring(5);
+                        if(scan_text === shall_goods_barcode){
+                            $images.eq(1).fadeOut("slow");
+                            $images.eq(0).fadeIn("slow");
+                            $box_for_show_grid.css("display","block");
+                        }else{
+                            $images.eq(0).fadeOut("slow");
+                            $images.eq(1).fadeIn("slow");
+                            $(this).val("");
+                        }
+                    }
+                });
+                function enter_for_link(){
+                    $(document).keydown(function(event){
+                            var e = event || window.event || arguments.callee.caller.arguments[0];
+                            var $key_for_link = $(".key_for_link");
+                            if(e && e.which == 13){
+                                alert("enter!");
+                                $key_for_link.click();
+                                return true;
+                            }
+                        });
+                }
+                var $FOCUS_IT1 = $("#FOCUS_IT1");
+                var $FOCUS_IT2 = $("#FOCUS_IT2");
+                var $FOCUS_IT3 = $("#FOCUS_IT3");
+                var $for_submit1 = $("#for_submit1");
+                var show_page1 = function(){
+                    $page1.css("display","block");
+                    $FOCUS_IT1.attr("value",someBPSN).attr("readonly","readonly").css("background-color","#999");
+                    $for_submit1.attr("disabled","disabled").css("background-color","#999").css("color","#333");
+                }
+                if(STATE == 0)   
+                {  //初始状态，等待用户输入批捡单号
+                   $page1.css("display","block");
+                   $FOCUS_IT1.focus();
+                }
+                if(STATE == 1)    
+                {//用户输入完BPSN，提交给PHP，PHP中判断BPSN的有效性
+                    if(GOTO == 0){//如果用户输入的BPSN的格式无效，报错
+                        $page1.css("display","none");
+                        $page3.css("display","block");
+                        $FOCUS_IT2.focus();
+                    }
+                }
+                if(STATE == 201){//如果该BPSN有效（格式正确而且批拣状态为N），则进入批拣循环环节
+                    show_page1();
+                    $page_main.css("display","block");
+                    $FOCUS_IT.focus();
+                    $FOCUS_IT3.focus();
+                }
+                if(STATE == 202){//出库错误信息
+                    if(GOTO == 0){
+                        show_page1();
+                        $error_msg_page.css("display","block");
+                    }
+                }
+                if(STATE == 3){
+                    if(GOTO == 1){//批拣完结界面
+                        show_page1();
+                        $alldone_page.css("display","block");
+                        enter_for_link();
+                    }else{//批拣完结界面(error exists)
+                        show_page1();
+                        $done_illness_page.css("display","block");
+                        enter_for_link();
+                    }
+                }
+            });
+            //{/literal}
+            //]]>
+        </script>
+    </body>
+</html>

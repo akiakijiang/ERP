@@ -1,0 +1,10 @@
+商品名,是否全新,条码,仓库,库位,总数量,串号
+{foreach from=$storage_list  item=goods}
+{if $goods.location_validity_list}
+{foreach from=$goods.location_validity_list  item=product key=key }
+"{$goods.goods_name}",{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新{else}二手{/if},="{$goods.barcode}",="{$goods.facility_name}",{$product.location_barcode},{$goods.storage_count},="{$goods.serial_numbers_str}"
+{/foreach}
+{else}
+"{$goods.goods_name}",{if $goods.status_id == 'INV_STTS_AVAILABLE'}全新{else}二手{/if},="{$goods.barcode}",="{$goods.facility_name}","",{$goods.storage_count},="{$goods.serial_numbers_str}"
+{/if}
+{/foreach}

@@ -1,0 +1,4 @@
+店铺名称,application_key,app_key,app_secret,uin,创建时间
+{foreach from=$shop_list item=shop}
+="{$shop.nick}",="{$shop.application_key}",="{$shop.app_key}",="{$shop.app_secret}",="{$shop.uin}",="{$shop.created_stamp}"
+{/foreach}

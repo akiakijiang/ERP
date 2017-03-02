@@ -1,0 +1,330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>收货入库</title>
+<!-- Autocomplete -->
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" href="misc/autocomplete.css" />
+<!-- Autocomplete /-->
+<!-- Calendar -->
+	<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+	<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+	<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<!-- Calendar /-->  
+
+	<script type="text/javascript">
+	{literal}
+	// <![CDATA[
+	
+	var Control = {
+		/**
+		 * 分类数据
+		 */
+		categorys : [
+				{'id' : '',          'result' : '全部' },
+				{'id' : 'mobile',    'result' : '手机' },
+				{'id' : 'fittings',  'result' : '手机配件' },
+				{'id' : 'dvd',       'result' : 'DVD' },
+				{'id' : 'education', 'result' : '电教产品' }
+		] ,
+		
+		elements : { 
+				'category' : '#autocomplete_cagetory' ,
+				'goods' : '#autocomplete_goods' ,
+				'provider' : '#autocomplete_provider'
+		},
+		
+		/**
+		 * 渲染
+		 */
+		render : function() {
+				// 需要自动完成的对象
+				var $category = $(this.elements.category);
+				var $goods = $(this.elements.goods);
+				var $provider = $(this.elements.provider);
+
+				// 商品名搜索提示输入
+				$goods.autocomplete('ajax.php?act=search_goods', {
+					dataType : 'json',
+					formatItem : function(row, i, max, value, term) {
+						return(row.goods_name);
+					},
+					formatResult : function(row) {
+						return(row.goods_name);
+					}
+				});
+								
+				// 商品分类提示输入
+				$category .autocomplete(this.categorys, {
+					minChars: 0,
+					mustMatch: true,
+					formatItem : function(row, i, max, value, term) {
+						return(row.result);
+					},
+					formatResult : function(row) {
+						return(row.result);
+					}
+				}).result(function(event, row, formatted) {
+					// 将隐藏域提供分类id
+					$('#goods_cagetory').val(row.id);
+					$goods.flushCache().setOptions({
+						extraParams : {'category':row.id}
+					});
+				}).focus();
+		
+				// 供应商提示输入
+				$provider.autocomplete('ajax.php?act=get_provider', {
+					minChars: 0,
+					mustMatch: true,
+					dataType : 'json',
+					formatItem : function(row, i, max, value, term) {
+						return(row.provider_name);
+					},
+					formatResult : function(row) {
+						return(row.provider_name);
+					}
+				}).result(function(event, row, formatted) {
+					// 将隐藏域的值设为供应商的id
+					$('#provider_id').val(row.provider_id);
+				});		
+		} ,
+		
+		/**
+		 * 初始化
+		 */
+		init : function() {
+				this.render();
+				
+				if (cat = $('#goods_cagetory').val()) {
+					$(this.elements.goods).setOptions({
+						extraParams : {'category':cat}
+					});
+				}		
+		} ,
+		
+		/**
+		 * 绑定到表单, 当表单提交时 ,没有输入供应商时将供应商id设置为0
+		 */
+		bind : function(expr) {
+				var $form = $(expr);
+				$form.bind('submit', function(){
+					if ($.trim($('#autocomplete_provider').val()) == '') {
+						// 供应商
+						$('#provider_id').val(0);			
+					}
+					
+					if ($.trim($('#autocomplete_cagetory').val()) == '') {
+						// 商品分类
+						$('#goods_cagetory').val('');			
+					}					
+					
+					if ($('#statStartCalendar').val() == '') {
+						alert('必须指定时间区间');
+						return false;
+					}
+					return true;
+				});
+		}
+		
+	};
+	
+	
+	$(document).ready(function(){
+		Control.init();
+		Control.bind('#form');
+		
+		$('#batch').bind('change', function(){
+			var today, start, end;
+			today = (new Date()).format("yyyy-MM-dd");
+
+			switch ($(this).val()) {
+				case '1':
+					start = today + ' 09:00';
+					end = today + ' 12:50';
+					break;
+				
+				case '2':
+					start = today + ' 12:50';
+					end = today + ' 15:50';
+					break;
+				
+				case '3':
+					start = today + ' 15:50';
+					end = today + ' 22:00';
+					break;
+			}
+			
+			$('#statStartCalendar').val(start);
+			$('#statEndCalendar').val(end);
+		});
+	});
+
+	/**
+	* 对Date的扩展，将 Date 转化为指定格式的String
+	* 月(M)、日(d)、12小时(h)、24小时(H)、分(m)、秒(s)、周(E)、季度(q) 可以用 1-2 个占位符
+	* 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
+	* eg:
+	* (new Date()).pattern("yyyy-MM-dd hh:mm:ss.S") ==> 2007-07-02 08:09:04.423
+	* (new Date()).pattern("yyyy-MM-dd E HH:mm:ss") ==> 2007-03-10 二 20:09:04
+	* (new Date()).pattern("yyyy-MM-dd EE hh:mm:ss") ==> 2007-03-10 周二 08:09:04
+	* (new Date()).pattern("yyyy-MM-dd EEE hh:mm:ss") ==> 2007-03-10 星期二 08:09:04
+	* (new Date()).pattern("yyyy-M-d h:m:s.S") ==> 2007-7-2 8:9:4.18
+	*/
+	Date.prototype.format = function(fmt) {
+			var o = {
+					"M+": this.getMonth() + 1,
+					//月份
+					"d+": this.getDate(),
+					//日
+					"h+": this.getHours() % 12 == 0 ? 12 : this.getHours() % 12,
+					//小时
+					"H+": this.getHours(),
+					//小时
+					"m+": this.getMinutes(),
+					//分
+					"s+": this.getSeconds(),
+					//秒
+					"q+": Math.floor((this.getMonth() + 3) / 3),
+					//季度
+					"S": this.getMilliseconds() //毫秒
+			};
+			var week = {
+					"0": "\u65e5",
+					"1": "\u4e00",
+					"2": "\u4e8c",
+					"3": "\u4e09",
+					"4": "\u56db",
+					"5": "\u4e94",
+					"6": "\u516d"
+			};
+			if (/(y+)/.test(fmt)) {
+					fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+			}
+			if (/(E+)/.test(fmt)) {
+					fmt = fmt.replace(RegExp.$1, ((RegExp.$1.length > 1) ? (RegExp.$1.length > 2 ? "\u661f\u671f": "\u5468") : "") + week[this.getDay() + ""]);
+			}
+			for (var k in o) {
+					if (new RegExp("(" + k + ")").test(fmt)) {
+							fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+					}
+			}
+			return fmt;
+	}
+	// ]]>
+	{/literal}
+	</script>
+</head>
+
+<body>
+
+<h2 align="center">搜索</h2>
+<div style="margin-top:20px;" align="left">
+<form method="post" autocomplete="off" id="form">
+<table class="bWindow" style="margin-top:20px; width:1200px;">
+<tr align="center">
+	<th>订单号</th>
+  <th>商品</th>
+  <th>供应商</th>
+  <th>期初时间</th>
+  <th>期末时间</th>
+  <th>时间段</th>
+  <th>&nbsp;</th>
+</tr>
+<tr align="center">
+	<td><input id="order" name="order_sn" value="{$smarty.request.order_sn}" /></td>
+  <td><input id="autocomplete_goods" name="goods_name" value="{$smarty.request.goods_name}" size="40" /></td>
+  <td><input id="autocomplete_provider" name="provider_name" value="{$smarty.request.provider_name}" size="45" /><input type="hidden" id="provider_id" name="provider_id" value="{$smarty.request.provider_id}" /></td>
+  <td>
+	  <input style="width:120px" id="statStartCalendar" name="start" value="{$start}"><input type="button" value=".." id="statStartTrigger">
+  </td>
+  <td>
+  	<input style="width:120px" id="statEndCalendar" name="end" value="{$end}"><input type="button" value=".." id="statEndTrigger">
+  </td>
+  <td>
+  	<select name="batch" id="batch">
+    <option value="0">-- 请选择 --</option>
+    <option value="1">-- 第一批 --</option>
+    <option value="2">-- 第二批 --</option>
+    <option value="3">-- 第三批 --</option>
+    </select>
+  </td>
+  <td>
+		<input type="submit" value="搜索">
+		<input type="hidden" name="act" value="search">
+  </td>
+</tr>
+</table>
+</form>
+</div>
+
+
+<div align='center'><br><font color='red'>{$info}</font></div>
+
+
+<table class="bWindow" style="margin-top:20px">
+<caption>
+<h2>{if $smarty.request.act != 'search'}今日采购入库{else}采购入库查询{/if}</h2>
+</caption>
+<tr>
+<th>采购单号</th>
+<th>下单时间</th>
+<th>商品</th>
+<th>已入库个数</th>
+<th>入库时间</th>
+<th>采购负责人</th>
+<th>供应商</th>
+<th>发票类型</th>
+</tr>
+{assign var=total_goods_number value=0}
+{foreach from=$search_orders item=search_order}
+<tr align="center">
+<td>{$search_order.order_sn}</td>
+<td>
+	{$search_order.order_time}<br>
+</td>
+<td>{$search_order.goods_name} × {$search_order.goods_number}<!--累加商品数{assign var=total_goods_number value=$total_goods_number+$search_order.goods_number}--></td>
+<td>{$search_order.in_count}</td>
+<td>{$search_order.min_in_time}</td>
+<td>{$search_order.purchaser}</td>
+<td>	
+	{if check_admin_priv('check_provider')}
+	<!--{foreach from=""|getProviders item=provider}-->
+	{if $provider.provider_id == $search_order.provider_id}{$provider.provider_name}{/if}
+	<!--{/foreach}-->
+  {else}
+  ××××××
+  {/if}
+</td>
+<td>{$search_order.order_type}</td>
+</tr>
+{/foreach}
+</table>
+</body>
+
+<script type="text/javascript">//<![CDATA[
+{literal}
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "statStartCalendar",
+		button            : "statStartTrigger",
+		ifFormat          : "%Y-%m-%d %H:%M",
+		daFormat          : "%Y-%m-%d %H:%M"
+	});
+	Zapatec.Calendar.setup({
+		weekNumbers       : false,
+		electric          : false,
+		inputField        : "statEndCalendar",
+		button            : "statEndTrigger",
+		ifFormat          : "%Y-%m-%d %H:%M",
+		daFormat          : "%Y-%m-%d %H:%M"
+	});
+    //]]>
+</script>
+{/literal}
+</html>

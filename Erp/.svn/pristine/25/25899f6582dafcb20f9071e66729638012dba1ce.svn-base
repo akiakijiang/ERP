@@ -1,0 +1,6 @@
+订单号,业务组,仓库,快递名称,预算快递费,省,是否可达
+{foreach from=$orders item=order}
+{foreach from=$order item=shipping}
+"{$shipping.order_sn}","{$shipping.party_name}","{$shipping.facility_name}","{$shipping.shipping_name}","{$shipping.shipping_fee}","{$shipping.province}","{$shipping.arrived}"
+{/foreach}
+{/foreach}

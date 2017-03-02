@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="../styles/default.css" rel="stylesheet" type="text/css">
+  
+  <script type="text/javascript" src="../misc/jquery.js"></script>
+  <script type="text/javascript">
+	{literal}
+	$(document).ready(function(){
+		$('.expand').bind('click', function(){
+			$(this).next().toggle();
+		});
+	});
+	{/literal}
+  </script>  
+
+  <!-- Loading Calendar JavaScript files -->
+  <script type="text/javascript" src="../js/style/zapatec/utils/zapatec.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/src/calendar.js"></script>
+  <script type="text/javascript" src="../js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+  <link rel="stylesheet" href="../js/style/zapatec/zpcal/themes/winter.css" />
+  
+  <style type="text/css">
+	{literal}
+	.menu-tab {
+		height:25px; line-height:25px; width:100%; clear:both; text-align:center; color:#003; font-weight:bold;
+	}
+	.menu-tab a{
+		color:#003;
+		text-decoration:none;
+	}
+	.menu-tab a:hover{
+		color:#903;
+		text-decoration:underline;
+	}
+	.menu-tab .right-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .left-edge{
+		float:right; border-bottom:#999 1px solid; width:30px;
+	}
+	.menu-tab .item{
+		float:right; border-bottom:#999 1px solid; padding:0 10px;
+	}
+	.menu-tab .active{
+		float:right; border:#999 1px solid; border-bottom:#fff; padding:0 10px;
+	}
+	{/literal}
+	</style>
+  
+	<title>淘宝店铺数据统计</title>
+</head>
+<body>
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;淘宝店铺数据统计&nbsp;</span></legend>
+
+
+	<div class="menu-tab">
+  	<div class="right-edge">&nbsp;</div>
+    <div class="active"><a href="#">按销售人员统计</a></div>
+  	<div class="item"><a href="{if $statistics}taobao_statistics.php?act=筛选&start={$filter.start}&end={$filter.end}{else}taobao_statistics.php{/if}">店铺概况统计</a></div>
+  	<div class="left-edge">&nbsp;</div>
+  </div>
+  
+  
+  
+	<div style="clear:both;"> 
+    <h3 style="color:#09F;">查询</h3>
+  	<form method="get">  
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td>时间区间</td>
+        <td>
+           <input type="text" name="start" value="{$filter.start}" id="start" size="10" maxlength="20" /> <input type="button" id="startTrigger" value="日历" style="border:#960 1px solid;" />
+           &nbsp; 到 &nbsp;
+           <input type="text" name="end" value="{$filter.end}" id="end" size="10" maxlength="20" /> <input type="button" id="endTrigger" value="日历" style="border:#960 1px solid;" />
+        </td>
+        <td>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="act" value="筛选" />   
+	  		&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="act" value="导出" {if !$list}disabled="disabled"{/if} />
+        </td>
+		</tr>
+	</table>
+    </form>
+  </div>
+  
+  
+  <br />
+  
+  
+<!--{if $statistics}-->
+  
+  <div style="clear:both;">
+  
+      <h3 style="color:#09F;">店铺数据统计</h3>
+      
+      <table class="bWindow" style="margin-top:10px;">
+        <tr bgcolor="#f8f8f8">
+          <th>店铺</th>
+          <th>销售人员</th>
+          <th>旺旺ID</th>
+          <th>咨询数量</th>
+          <th>咨询人数</th>
+          <th>回复数量</th>
+          <th>回复字数</th>
+          <th>转化订单数</th>
+          <th>转化率</th>
+          <th>平均响应时间</th>
+          <th>最长响应时间</th>
+        </tr>
+        
+        <!--{foreach from=$statistics key=taobao_shop_id item=taobao_shop_statistics}-->
+        <!--{foreach from=$taobao_shop_statistics item=item name="List"}-->
+        <tr align="center">
+          <!--{if $smarty.foreach.List.first}-->
+          <td rowspan="{$taobao_shop_statistics|@count}">{$taobao_shop_list[$taobao_shop_id].nick}</td>
+          <!--{/if}-->
+          <td>{$item.owner}</td>  
+          <td>{$item.replier}</td>
+          <td>{$item.total_consulting|default:0} 条</td>
+          <td>{$item.total_referee|default:0} 人</td>
+          <td>{$item.total_reply_count|default:0} 条</td>
+          <td>{$item.total_reply_length|default:0} 字</td>
+          <td>
+            {if $item.total_convert_order > 0}
+            <a href="javascript:void(0);" class="expand">{$item.total_convert_order} 单</a>
+            <div class="expand" style="display:none;">{foreach from=$item.convert_order_list item=o}<p><a href="../order_edit.php?order_id={$o.order_id}" target="_blank">{$o.order_sn}</a></p>{/foreach}</div>
+            {else}
+            {$item.total_convert_order|default:0} 单
+            {/if}
+          </td>
+          <td>{$item.rate_convert_order}</td>
+          <td>{$item.avg_respond|default:0} 分钟</td>
+          <td>{$item.max_respond|default:0} 分钟</td>
+        </tr>
+        <!--{/foreach}-->
+        <!--{/foreach}-->
+
+      </table>
+      
+  </div>
+<!--{/if}-->
+  
+  <br />
+  
+</fieldset>
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+// {literal}
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "start",
+  button            : "startTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+
+Zapatec.Calendar.setup({
+	weekNumbers       : false,
+	electric          : false,
+	inputField        : "end",
+  button            : "endTrigger",
+	ifFormat          : "%Y-%m-%d",
+	daFormat          : "%Y-%m-%d"
+});
+// {/literal}
+// ]]>
+</script>
+
+</body>
+</html>

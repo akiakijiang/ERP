@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>销退入库详情</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript">
+
+// <![CDATA[
+// {literal}
+
+$(document).ready(function(){
+	//{/literal}
+	
+{if $goods_list}
+    var map_goods_list = new Array();
+    {foreach from =$goods_list item=goods}
+    	var good_list = new Array();
+    	good_list[0] = '{$goods.in_time}';
+    	good_list[1] = "{$goods.goods_name}";
+    	
+    	good_list[2] = "{$goods.order_type}";
+    	good_list[3] = '{$goods.is_new}';
+    	good_list[4] = '{$goods.cat_name}';
+    	good_list[5] = '{$goods.facility_name}';
+    	good_list[6] = '{$goods.barcode}';
+    	good_list[7] = '{$goods.goods_number}';
+    	good_list[8] = '{if view_provide_price($goods.category)}{$goods.purchase_paid_amount}{else}N/A{/if}';
+    	good_list[9] = "{if check_admin_priv('check_provider')}{foreach from=$providers item=provider}{if $provider.provider_id == $goods.provider_id}{$provider.provider_name}{/if}{/foreach}{else}××××××{/if}";
+    	good_list[10] = '{if ($goods.ori_order_status == 4 || $goods.ori_shipping_status == 3)}是{else}否 {/if}';
+    	good_list[11] = '{$goods.shipping_invoice}';
+    	
+    	good_list[12] = '{$goods.order_id}';
+    	good_list[13] = '{$goods.order_sn}';
+    	good_list[14] = '{$goods.goods_price}';
+    	good_list[15] = '{$goods.dispose_method}';
+    	//{literal}
+    	var flag = false;
+    	for(var i=0;i<map_goods_list.length;i++){
+    		var map_good = map_goods_list[i];
+    		if(map_good[13] == good_list[13] && map_good[6] == good_list[6] && map_good[9] == good_list[9] && map_good[3] == good_list[3]){
+    			map_good[7] = parseInt(map_good[7]) + parseInt(good_list[7]);
+    			flag=true;
+    			break;
+    		}
+    	}
+    	if(!flag)map_goods_list.push(good_list);
+    	//{/literal}
+    {/foreach}
+    
+    //{literal}
+    if(map_goods_list.length != 0){
+    	var tdc = "<caption><h1>销退入库详情</h1></caption><tr><th>入库时间</th><th>商品</th>";
+    	tdc += "{if 'finance_order'|check_admin_priv or 'purchase_order'|check_admin_priv}<th>类型</th><th>新旧</th><th>分类</th><th>仓库</th><th>条码</th><th>数量</th><th>供价</th><th>供应商</th><th>原订单是否拒收</th><th>销售发票号码</th>{/if}";
+    	tdc +="<th>-t订单号</th><th>售价</th><th>操作类别</th></tr>";
+        for(var j = 0; j < map_goods_list.length; j++) {
+           var map_good = map_goods_list[j];
+           tdc +="<tr align='center'><td>"+map_good[0]+"</td><td>"+map_good[1]+"</td>";
+           tdc += "{if 'finance_order'|check_admin_priv or 'purchase_order'|check_admin_priv}<td>"+map_good[2]+"</td><td>"+map_good[3]+"</td><td>"+map_good[4]+"</td><td>"+map_good[5]+"</td><td>"+map_good[6]+"</td><td>"+map_good[7]+"</td><td>"+map_good[8]+"</td><td>"+map_good[9]+"</td><td>"+map_good[10]+"</td><td>"+map_good[11]+"</td>{/if}";
+           tdc += "<td><a href='order_edit.php?order_id="+map_good[12]+"' target='_blank'>"+map_good[13]+"</a></td><td>"+map_good[14]+"</td><td>"+map_good[15]+"</td></tr>";
+        }
+        $("#map_goods_table").prepend(tdc);
+	}
+    //{/literal}
+{/if}
+	//{literal}
+});
+function Pager(obj){
+	$('#pager_hidden_form').val(obj);
+	document.hidden_form.submit();
+}
+// {/literal}
+// ]]>
+</script>
+
+</head>
+<body>
+<form method="post">
+订单类型：
+<select name="order_type">
+	<option value="-1">所有</option>
+	<option value="NONE" {if $smarty.request.t_infos.order_type == 'NONE'}selected{/if}>未填</option>
+	<option value="B2C" {if $smarty.request.t_infos.order_type == 'B2C'}selected{/if}>B2C</option>
+	<option value="C2C" {if $smarty.request.t_infos.order_type == 'C2C'}selected{/if}>C2C</option>
+	<option value="DX" {if $smarty.request.t_infos.order_type == 'DX'}selected{/if}>DX</option>
+</select>
+新旧：
+<select name="is_new">
+	<option value="-1">所有</option>
+	<option value="INV_STTS_AVAILABLE" {if $smarty.request.t_infos.is_new == 'NEW'}selected{/if}>全新</option>
+	<option value="INV_STTS_USED" {if $smarty.request.t_infos.is_new == 'SECOND_HAND'}selected{/if}>二手</option>
+</select>
+仓库：
+<select name="facility_id" id="facility_id" >            
+   {html_options options=$available_facility selected=$smarty.request.t_infos.facility_id }
+</select>
+入库开始时间：
+<input style="width:75px" id="startCalendar" name="start" value="{$smarty.request.t_infos.start}"><input type="button" value="..." id="startTrigger">
+入库结束时间：
+<input style="width:75px" id="endCalendar" name="end" value="{$smarty.request.t_infos.end}"><input type="button" value="..." id="endTrigger">
+<input type="submit" value="搜索">
+<input type="submit" value="导出CSV" name="csv">
+<input type="hidden" name="act" value="search">
+</form>
+<br>
+
+<table id='map_goods_table' class='bWindow'>
+<tr align="right">
+{if "finance_order"|check_admin_priv or "purchase_order"|check_admin_priv}
+	<td colspan="15">{$pager}</td>
+{else}
+	<td colspan="4">{$pager}</td>
+{/if}
+</tr>
+</table>
+<form method="POST" name="hidden_form">
+	<input type="hidden" name="order_type_hidden_form" value="{$smarty.request.t_infos.order_type}"/>
+	<input type="hidden" name="is_new_hidden_form" value="{$smarty.request.t_infos.is_new}"/>
+	<input type="hidden" name="facility_id_hidden_form" value="{$smarty.request.t_infos.facility_id}"/>
+	<input type="hidden" name="start_hidden_form"  value="{$smarty.request.t_infos.start}"/>
+	<input type="hidden" name="end_hidden_form" value="{$smarty.request.t_infos.end}"/>
+	<input type="hidden" name="pager_hidden_form" id="pager_hidden_form" />
+</form>
+</body>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>批量导入</title>
+</head>
+<body>
+<div style="margin-top:50px;" align="center">
+<h1>文件导入</h1>
+<a href="finance_dshk.php">任务页面</a><br>
+<br>
+<form action="finance_dshk_import_action.php" enctype="multipart/form-data" method="POST">
+快递公司
+<select name="shipping_id">
+<option value="1">深圳宅急送</option>
+<option value="2">上海宅急送</option>
+<option value="3">深圳EMS</option>
+<option value="4">上海EMS</option>
+<option value="5">顺丰</option>
+<option value="6">风火</option>
+</select>
+<br>
+代收货款、邮费
+<select name="type">
+<option value="1">合在一起</option>
+<option value="0">独立分开</option>
+</select>
+<br>
+报表时间(格式为YYYYMM)
+<input type='text' name='bill_time'></input>
+<br>
+第几份报表
+<input type='text' name='times' value=1></input>
+<br>
+文件类型
+<select name="bill_type">
+<option value="0">所有</option>
+<option value="1">代收货款</option>
+<option value="2">邮费</option>
+</select>
+<br>
+<input type="file" name="file" size="40">
+<br>
+<input type="submit" value="导入">
+<input type="hidden" name="act" value="batch_add">
+</form>
+<br>
+<!--{if $insert_count != null}-->
+共加入{$insert_count}条记录
+<!--{/if}-->
+<br>
+<br>
+<font color="red">
+{foreach from=$info item=msg}
+{$msg}<br>
+{foreachelse}
+    {if $smarty.request.act=='batch_add'}
+        导入的实收金额：{$summary_order_amount}<br />
+        导入的手续费总计：{$summary_proxy_amount}<br />
+        导入的快递费总计：{$summary_shipping_fee}<br />
+        导入的记录条数：{$success_num}
+    {/if}
+{/foreach}
+</font>
+</div>
+</body>
+</html>

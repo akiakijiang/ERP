@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="{$WEB_ROOT}admin/styles/default.css" rel="stylesheet" type="text/css">	
+<head>
+	<title>抵扣预存款</title>
+	{literal}
+	<script type="text/javascript" src="../admin/misc/jquery.js"></script>
+	<script type="text/javascript">
+		function withhold(obj){
+			var status = obj.title;
+			if(status != 1){
+				alert('请确认订单状态，订单被确认之后才能扣款');
+				return;
+			}
+			document.hold.submit();
+		}
+	</script>
+	{/literal}
+</head>
+<body>
+	{if $message}
+	<div style="border:#3295dd 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  {/if}
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+	<legend><span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;抵扣预存款&nbsp;</span></legend>
+	<form>
+		订单号：<input type="text" name="order_sn" value="{$smarty.request.order_sn}" />
+		<input type="submit" style="margin-left:30px"  value="搜索" />
+		<input type="hidden" name="act" value="search">
+	</form>
+	<br />
+	<br />
+	<!-- {if $order_list} -->
+	<table border="0" cellpadding="0" cellspacing="0" class="bWindow">
+		<tr>
+			<th align="center">订单号</th>
+			<th align="center">分销商</th>
+			<th align="center">订单时间</th>
+			<th align="center">订单状态</th>
+			<th align="center">收货人</th>
+			<th align="center">电话</th>
+			<th align="center">支付方式</th>
+			<th align="center">商品金额</th>
+			<th align="center">操作</th>			 
+		</tr>
+		
+		<tr>
+			<td align="center"><a href="order_edit.php?order_id={$order_list.order_id}" target="_blank">{$order_list.order_sn}</a></td>
+			<td align="center">{$distributor}</td>
+			<td align="center">订单时间:{$order_list.order_time|date_format:'%Y-%m-%d %T'}<br />确认时间:{$order_list.confirm_time|date_format:'%Y-%m-%d %T'}</td>
+			<td align="center">{$adminvars.order_status[$order_list.order_status]},{$adminvars.pay_status[$order_list.pay_status]},{$adminvars.shipping_status[$order_list.shipping_status]}</td>
+			<td align="center">{$order_list.consignee}</td>
+			<td align="center">{$order_list.tel}</td>
+			<td align="center">{$order_list.pay_name}</td>
+			<td align="center">￥{$order_list.goods_amount|erp_price_format}</td>
+			<td align="center"><a href="#" title="{$order_list.order_status}" onclick="withhold(this)">抵扣预存款</a></td>
+		</tr>	
+	</table>
+	<!-- {/if} -->
+	<form name="hold">
+		<input type="hidden" name="act" value="hold" />
+		<input type="hidden" name="order_sn" value="{$order_list.order_sn}" />
+	</form>
+</fieldset>
+</body>
+</html>

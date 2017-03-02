@@ -1,0 +1,741 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>商品列表</title>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.core.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.tabs.css">
+<link rel="stylesheet" href="./js/jquery.ui/jquery.ui.theme.css">
+<!-- <script src="./js/jquery-1.3.2.js"></script> --> 
+<script type="text/javascript" src="misc/jquery1.11.min.js"></script> 
+<script src="./js/jquery.ui/jquery.ui.widget.js"></script> 
+<script src="./js/jquery.ui/jquery.ui.tabs.js"></script> {literal}
+<style type="text/css">
+body {
+	font-family: "新宋体";
+	font-size: 12px;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+
+h1 {
+	font-size: 16px;
+}
+
+.table {
+	width: 100%;
+	border: 1px solid #EEE;
+	font-size: 12px;
+	font-family: "宋体";
+}
+
+.table td {
+	border: 1px solid #EEE;
+	padding: 4px;
+}
+ .table th{background:#ffffff;border-bottom:1px solid #CCC;padding:4px; text-align:center;}
+#holder li {
+	padding: 4px;
+}
+
+.input {
+	width: 200px;
+	height: 20px;
+}
+#menu{
+		font-size: 16px;
+}
+
+#button {
+	text-align: center;
+}
+.styleWidth {
+	float: left;
+	width: 97%;
+	list-style-type: none;
+}
+.styleColor {
+	float: left;
+	width: 80px;
+	height: 80px;
+}
+.styleSport {
+	float: left;
+	width: 75px;
+	height: 30px;
+}
+.styleCloth {
+	float: left;
+	width: 90px;
+	height: 30px;
+}
+.provider_list{
+	 z-index: 10; 
+	 width: 260px; 
+	 position: absolute; 
+	 display: none; 
+}
+ ul,ul li{list-style:none;font-size:12px;margin:0;padding:0;background:#fff;} 
+.del_purchase_info{
+	text-decoration: none; 
+	color: red;
+}
+</style>
+{/literal}
+</head>
+<body>
+	<br />
+<div class="demo">
+		<form id="form1"  method="post" action="goods_index.php?act=addGoods">
+<div id="tab">
+<ul>
+	<li><a href="#tabs-1">基本信息</a></li>
+</ul>
+<div id="tabs-1">
+<table class="table" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right">商品名称：</td>
+		<td><textarea name="goods_name" id="goods_name" rows="2" cols="100" onblur="checkName();"></textarea><font id="goods_name_info" name="goods_name_info" color="red" >*</font></td>
+		<td><input type="hidden" id="goods_id" name="goods_id" value={$goods.goods_id}></input><input type="hidden" id="name_state" name="name_state" value="1"></input></td>
+	</tr>
+	<tr>
+		<td align="right">商品条码：</td>
+		<td><input type="text" class="input" name="barcode" id="barcode" onblur="checkBarcode();"
+			value="" style="width:100%;" /><font id="code_info" name="code_info" color="red">请输入唯一条码(康师傅多码情况中间以英文逗号分隔)</font>
+			<!-- All Hail Sinri Edogawa -->
+		    <input type="button" name="In the beginning God created Heavens and the earth." 
+		    	value="获取随机条码";
+		    	id="sinri_try_create_barcode"
+		    	onclick="getBarcodeBySinri();">
+		</td>
+		<td><input type="hidden" id="code_state" name="code_state" value="1"></input></td>
+	</tr>
+	<tr>
+		<td align="right">商品分类：</td>
+		<td>{$cat_name}</td>
+		<td><input type="hidden" id="cat_id" name="cat_id" value="{$cat_id}"></input>
+		<input type="hidden" id="test" value="{$cat_name}" name="test"></input></td>
+	</tr>
+	<tr>
+		<td align="right">重量维护：</td>
+		<td> <label> <input type="radio" id = 'maintainWeightYes' name="maintainWeight" value="1" checked="checked" /> 是</label>
+			 <label> <input type="radio" id = 'maintainWeightNo' name="maintainWeight" value="0" /> 否 </label>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品重量：</td>
+		<td><input type="text" class="input" name="goods_weight" id="goods_weight"  value="{$goods.goods_weight}" />（单位：g）</td>
+	</tr>
+	<tr>
+	    <td align="right">保质期维护：</td>
+		<td> <label> <input type="radio" id = 'maintainWarrantyYes' name="maintainWarranty" value="1" checked="checked" /> 是</label>
+			 <label> <input type="radio" id = 'maintainWarrantyNo' name="maintainWarranty" value="0" /> 否 </label>
+	   </td>
+	</tr>
+	<tr>
+		<td align="right">保质期：</td>
+		<td><input type="text" class="input" name="goods_warranty" id="goods_warranty"  value="{$goods.goods_warranty}" />（单位：月）</td>
+	</tr>
+	<tr>
+	    <td align="right">批次号维护：</td>
+		<td> <label> <input type="radio" id = 'maintainBatchSnYes' name="maintainBatchSn" value="1" /> 是</label>
+			 <label> <input type="radio" id = 'maintainBatchSnNo' name="maintainBatchSn" value="0" checked="checked" /> 否 </label>
+	   </td>
+	</tr>
+	<tr>
+        <td align="right">违禁品：</td>
+        <td> <label> <input type="radio" id = 'contrabandYes' name="contraband" value="1" /> 是</label>
+             <label> <input type="radio" id = 'contrabandNo' name="contraband" value="0" checked="checked" /> 否 </label>
+       </td>
+    </tr>
+    <tr>
+    	<td align="right">商品货号：</td> 
+    	<td>
+    		<input type="text" class="input" id="goods_code" name="goods_code" value="{$goods.goods_code}"/>
+    	</td>
+    </tr>
+    <tr>
+    	<td align="right">商品单位：</td> 
+    	<td>
+    		<input type="text" class="input" id="unit_name" name="unit_name" value="{$goods.unit_name}"/> （个、件等）
+    	</td>
+    </tr>
+	<tr>
+		<td align="right">商品长度：</td>
+		<td><input type="text" class="input" id="goods_length" name="goods_length" value="{$goods.goods_length|default:0}"></input>（单位：cm 保留两位小数）
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品宽度：</td>
+		<td> <input type="text" class="input" id ="goods_width" name="goods_width" value="{$goods.goods_width|default:0}"></input>（单位：cm 保留两位小数）
+		</td>
+	</tr>
+	<tr>
+		<td align="right">商品高度：</td>
+		<td><input type="text" class="input" name="goods_height" id="goods_height"  value="{$goods.goods_height|default:0}" ></input>（单位：cm 保留两位小数）
+		</td>
+	</tr>
+	<tr>
+        <td align="right">商品体积：</td>
+        <td><input type="text" class="input" name="goods_volume" id="goods_volume"  value="{$goods.goods_volume}" />（单位：cm³）</td>
+    </tr>
+	<tr>
+		<td align="right">箱子：</td>
+		<td>
+			长度：
+				<input type="text" class="input" id="box_length" name="box_length" value="{$goods.box_length|default:0}"></input> &nbsp;
+		 	宽度： 
+		 	<input type="text" class="input" id ="box_width" name="box_width" value="{$goods.box_width|default:0}"></input>  &nbsp;
+		 	高度： 
+		    <input type="text" class="input" name="box_height" id="box_height"  value="{$goods.box_height|default:0}" ></input> &nbsp; 
+		   （单位：cm 保留两位小数）
+		</td>
+	</tr>
+
+    <tr>
+		<td align="right">商品价格：</td>
+		<td><input type="text" class="input" name="goods_price" id="goods_price"  value="{$goods.goods_price}" />（单位：元）
+		<font id="warn_price_info" name="warn_price_info" color="red" ></font></td>
+	</tr>
+		<tr>
+		<td align="right">采购信息：</td>
+
+		<td>
+			<span style='display: none' id="providers">
+				{foreach from=$providers item=provider}
+					<li gid='{$provider.provider_id}' code="{$provider.provider_code}">{$provider.provider_name}</li>
+				{/foreach}
+			</span>
+			<span>
+				<span class="purchase_info">
+		        </span>
+	        	<input type="button"  class="add_purchase_info" value="添加采购信息"/>
+			</span> 
+		</td>
+	</tr>
+	<tr>
+		<td align="right">是否上架：</td>
+		<td> <label> <input type="radio" name="onSale" value="1" checked="checked" /> 是</label>
+			 <label> <input type="radio" name="onSale" value="0" /> 否 </label>
+		</td>
+	</tr>
+<!--  	<tr>
+		<td align="right">是否使用气泡袋：</td>
+		<td> <label> <input type="radio" name="is_bubble_bag" value="1"/> 是</label>
+			 <label> <input type="radio" name="is_bubble_bag" value="0" checked="checked" /> 否 </label>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">是否使用泡沫箱：</td>
+		<td> <label> <input type="radio" name="is_bubble_box" value="1" /> 是</label>
+			 <label> <input type="radio" name="is_bubble_box" value="0"  checked="checked"/> 否 </label>
+		</td>
+	</tr>	
+-->
+	<tr>
+		<td align="right">耗材名称：</td>
+		<td> 
+			<select name="consumable_id" id="consumable_id">
+					<option value="0"  selected="selected" >---</option>
+					<!-- {foreach from=$consumable_list item=item} -->
+		     		<option value="{$item.consumable_id}" >{$item.consumable_name}</option>
+		     		<!-- {/foreach} -->
+		     </select> 			
+		         数量：<input type="text" name="consumable_count" id="consumable_count"></input>				
+	     </td>
+	</tr>
+	<tr>
+		<td align="right">警告库存：</td>
+		<td><input type="text" class="input" name="warn_number" id="warn_number" onblur="checkWarn();" value="0"/>
+		<font id="warn_number_info" name="warn_number_info" color="red" >*</font></td>
+		<td><input type="hidden" id="warn_state" name="warn_state" value="1"></input></td>
+	</tr>
+	<tr>
+		<td align="right">商品税率：</td>
+		<td><input type="text" class="input" name="added_fee" id="added_fee" value="1.17"/>
+		<font id="added_fee_info" name="added_fee_info" color="red" >商品税率默认为1.17，如不是1.17请自行修改</font></td>
+	</tr>
+	<tr>
+	   <td align="right">商品标签：</td>
+	</tr>
+	<tr>
+	<td align="right">货币种类</td>
+	<td>
+		{if $smarty.session.party_id == '65566' || $smarty.session.party_id == '65560' || $smarty.session.party_id == '65630' || $smarty.session.party_id == '65543'}
+	    <select name="currency">{html_options options=$currencys selected="RMB"}</select>
+	    {else}
+	    <select name="currency">{html_options options=$currency selected="RMB" }</select>
+	    {/if}
+	</td>
+	</tr>
+    	
+   	<tr>
+		<td align="right">箱规：</td>
+		<td><input type="text" class="input" name = "spec" id="spec" /><font color="red">*</font></td>
+	</tr>	
+	<tr>
+		<td align="right">产品重要性：</td>
+		<td>
+			<select name="product_importance" id="product_importance">
+				<option value=""  selected="selected" >--请选择--</option>
+				{html_options options=$product_importance_list}
+			</select>
+		</td>
+	</tr>
+	
+	{if $show_item_number}
+		<tr>
+        	<td align="right">易碎品：</td>
+        	<td> <label> <input type="radio" name="is_fragile" value="1" /> 是</label>
+            	 <label> <input type="radio" name="is_fragile" value="0" checked="checked" /> 否 </label>
+       		</td>
+    	</tr>
+    	
+		<tr>
+			<td align="right">物料编码</td>
+		</tr>
+		
+	{/if}
+</table>
+
+
+  <div id="tagsBox" >
+	<ul class="styleWidth" id="tag_ul">
+	{foreach from=$tag_list item=tag}
+		<li class="styleColor">	
+		     <input type="checkbox" name="tags[]" value="{$tag.tag_id}" id="tags" title="{$tag.tag_name}"/>{$tag.tag_name}	
+		</li>
+	{/foreach}	
+  </div>  
+    
+</div>
+<div id="button"><input type="button" id="sub" value="提交" onclick="applySubmit();"/>
+<input type="hidden" name="party_id" value="{$smarty.session.party_id}" id="party_id"></input>
+<input type="reset" name="Submit2" value="重置" />
+</div>
+</div>
+ </form>
+</div>
+<!-- End demo -->
+{literal}
+<script type="text/javascript">
+
+// 商品页 添加采购信息 
+function onePurchaseInfoHtml( ){
+	var html = ""; 
+	html += '<span class="purchase_info_one" style="padding:2px;">'; 
+	html += '采购单价:<input type="text" class="input purchase_unit_price"  name="purchase_unit_price[]"   value="" />';
+	html += ' (元) &nbsp;&nbsp;'
+	html += '<input type="hidden" class="input purchase_provider_id"   name="purchase_provider_id[]"   value="" />'; 
+	html += "<span>"; 
+	html += '供应商:<input type="text" class="input select_provider purchase_provider_name"  autocomplete="off" name="purchase_provider_name[]"   value="" />';
+	html += '<ul class="provider_list" ></ul>'; 
+	html += "</span>"; 
+	html += '<i class="del_purchase_info" styel="color:red;">&nbsp;&times;删除&nbsp;</i>'
+	html += "<br/>"; 
+	html += '</span>';
+	return html; 
+}
+
+// 商品基本信息页 添加采购信息  doing  
+$("body").on("click",".add_purchase_info",function(){
+	var html = onePurchaseInfoHtml( );   
+	$(this).siblings(".purchase_info").append(html); 
+}); 
+
+ // 删除一个采购信息 
+$("body").on("click",".del_purchase_info",function(){
+	$(this).parents("span.purchase_info_one").remove(); 
+}); 
+
+// 检查采购价格 填写的正确性 
+$("body").on("blur",".purchase_unit_price",function(){
+	var reg=/^[0-9]+(.[0-9]{2})?$/;
+	if(!reg.test($(this).val()) && goods_price!='')
+	{
+		alert('采购价格为带有两位小数的数字 \n示例:32.00');
+		return false;
+	}
+	return true; 
+}); 
+
+var contrl = {
+		tmp : '', //  input里的值默认值
+		num : -1, //  li的所在的列数
+	} ; 
+// 选择供应商 
+$("body").on("keyup",".select_provider",function(event){
+	var that = $(this); 
+	var ul = $(this).siblings("ul.provider_list"); 
+	ul.show().css("left",$(this).position().left+"px"); 
+
+	var li = $(this).siblings("ul.provider_list").find("li"); 
+	if(li.length > 0 ){
+		if (event.keyCode == 40){  // 向下 
+			if (contrl.num < li.length-1){
+				contrl.num++;
+			}
+		
+		}else if(event.keyCode == 38){  // 向上 
+			if(contrl.num >= 1){
+				contrl.num--;
+			}
+
+		}else{
+			fill_provider_list(that,ul);
+			return; 
+		}
+
+		if (contrl.num >=0 && contrl.num < li.length){
+			li.css("background","#fff").css("color",'#000');  
+		    li.get(contrl.num).style.background = '#36c';  
+			li.get(contrl.num).style.color = '#fff';  
+			var id = $(li.get(contrl.num)).attr("gid");
+		    $(this).parents(".purchase_info_one").find(".purchase_provider_id").val(id); 
+			contrl.tmp = li.get(contrl.num).innerHTML; 
+			$(this).val(contrl.tmp);
+		}
+
+	}else{
+		fill_provider_list(that,ul);
+	}
+	console.log(event.keyCode); 
+}); 
+
+$("body").on("blur",".select_provider",function(event){
+	var that = $(this); 
+	var ul = $(this).siblings("ul.provider_list"); 
+	ul.hide( ); 
+}); 
+
+// 检索包含关键字的供应商 
+function fill_provider_list(input,ul){
+    var provider = input.val();
+    var provider_name = '';
+    ul.html($("#providers").html()); 
+    var li = ul.find("li"); 
+    if($.trim(provider).length > 0){
+    	var html = ''; 
+	    li.each(function(){
+	    	provider_name = $(this).html(); 
+	    	if( provider_name.toUpperCase().indexOf(provider.toUpperCase()) != -1 ){
+	    		html += '<li gid="'+$(this).attr("gid")+'">'+provider_name+'</li>'; 
+	    	}
+	    }); 
+	    ul.html(html); 
+	} 
+    contrl.num = -1; 
+    contrl.tmp = ""; 
+}
+
+function applySubmit(){
+	var code_state = $('#code_state').val();
+	var name_state = $('#name_state').val();
+	var warn_state = $('#warn_state').val();
+    if(!checkBarcode()) {
+    	alert('条码检测有问题，请看错误提示');
+    	return false;
+    }
+    
+	if($.trim($('#goods_name').val()) == ''){
+		$('#goods_name_info').html('您输入的商品名为空');
+		return false;
+	}
+	if($.trim($('#warn_number').val()) == ''){
+		$('#warn_number_info').html('您输入的库存为空');
+		return false;
+	}
+	
+	var spec = $("#spec");
+	var reg = new RegExp('^[0-9]+$');
+	if(spec.length > 0 && !reg.test(spec.val())){
+		alert('箱规必须为正整数');
+		return false;
+	}
+	
+	var item_number = $("#item_number");
+	if(item_number.length > 0 && item_number.val() == ''){
+		alert("物料号不能为空")
+		return false;
+	}
+	
+	//检测价格框输入的价格是否合理
+	if($.trim($('#goods_price').val()) != ''){
+		var prices = $.trim($('#goods_price').val()).split('.');
+		if(prices.length > 2){
+			$('#warn_price_info').html('您输入的价格不合理');
+			return;
+		}else if(prices.length == 2){
+			if(prices[1].length > 2){
+				$('#warn_price_info').html('商品价格只能保存两位小数');
+				return;
+			}
+		}
+	}
+	var falg_weight = true;
+	var goods_weight = $.trim($('#goods_weight').val());
+	var reg = /^[1-9][0-9]*$/;
+	if (goods_weight && goods_weight != 0) {
+		if (goods_weight.match(reg)) {
+			falg_weight = true;
+		} else {
+			falg_weight = false;
+		}
+		if (!falg_weight) {
+			alert("重量单位为g，请输入整数");
+			return;
+		}
+	}
+    var maintain_weight = document.getElementById('maintainWeightYes');
+    if (maintain_weight.checked) {
+    	if (!(goods_weight && goods_weight != 0)) {
+        	alert('请维护重量');
+        	return;
+    	}
+    }
+    
+	var goods_warranty = $.trim($('#goods_warranty').val());
+	if (goods_warranty && goods_warranty != 0) {
+		if (goods_warranty.match(reg)) {
+			falg_warranty = true;
+		} else {
+			falg_warranty = false;
+		}
+		if (!falg_warranty) {
+			alert("保质期单位为月，请输入整数");
+			return;
+		}
+	}
+    var maintain_warranty = document.getElementById('maintainWarrantyYes');
+    if (maintain_warranty.checked) {
+    	if (!(goods_warranty && goods_warranty != 0)) {
+        	alert('请维护保质期');
+        	return;
+    	}
+    }
+
+	var consumable_count =$.trim($('#consumable_count').val());	
+	var consumable_id = $.trim($('#consumable_id').val());
+
+	if(consumable_id!='0')  
+	{
+		if(!consumable_count.match(reg)) {
+			alert('请检查"耗材编辑"输入！');
+			return false;
+		}
+	}
+
+	var falg_volume = true;
+	var goods_volume = "";
+	var cat_name = $.trim($('#test').val());
+	//var reg_1 = /^[1-9][0-9]*(.[0-9]*)?$/;
+	var reg_1 = /^[1-9][0-9]*(.[0-9]{0,2})?$/;
+    if (cat_name == "耗材商品") {
+    	var goods_length = $.trim($('#goods_length').val());
+    	var goods_width = $.trim($('#goods_width').val());
+    	var goods_height = $.trim($('#goods_height').val());
+   		if (!goods_length.match(reg_1)) {
+   			alert("请输入合法的商品长度");
+   			return;
+   		}
+   		if (!goods_width.match(reg_1)) {
+   			alert("请输入合法的宽度");
+   			return;
+   		}
+   		if (!goods_height.match(reg_1)) {
+   			alert("请输入合法的高度");
+   			return;
+   		}
+   		goods_volume = (Math.round(goods_length*100)/100)*(Math.round(goods_width*100)/100)*(Math.round(goods_height*100)/100);
+    	goods_volume = Math.round((goods_volume*100)/100);
+    } else {
+    	goods_volume = $.trim($('#goods_volume').val());
+    }
+    var box_length = $.trim($('#box_length').val());
+	var box_width = $.trim($('#box_width').val());
+	var box_height = $.trim($('#box_height').val()); 
+	var reg_box = /^[0-9]*(.[0-9]{0,2})?$/;
+	if (!box_length.match(reg_box)) {
+   		alert("请输入合法的箱子长度");
+   		return;
+   	}
+   	if (!box_width.match(reg_box)) {
+   		alert("请输入合法的箱子宽度");
+   		return;
+   	}
+   	if (!box_height.match(reg_box)) {
+   		alert("请输入合法的箱子高度");
+   		return;
+   	}
+
+	if (goods_volume && goods_volume != 0) {
+		goods_volume = goods_volume+"";
+        if (goods_volume.match(reg_1)) {
+        	falg_volume = true;
+        } else {
+        	falg_volume = false;
+        }
+        if (!falg_volume) {
+            alert("体积单位为cm³，请输入整数");
+            return;
+        }
+    } 
+	if(code_state == 1 && name_state == 1 && warn_state == 1){
+		$("#goods_volume").attr('value', goods_volume);
+		$('#form1').submit();
+	}
+	else{
+		alert('请查检您输入的信息是否正确');
+	}
+	
+}
+function checkName(){
+	var goodsName=$.trim($('#goods_name').val());
+	if(goodsName==''){
+		$('#name_state').val('0');
+		$('#goods_name_info').html('您输入的值为空');
+	}
+	else if(goodsName!=''){
+		var party_id = $.trim($('#party_id').val());
+		var cat_name = $.trim($('#test').val())
+		if (party_id == 65581 && cat_name != "耗材商品")　{
+			var name = goodsName.split(" ", -1);
+			var size = name.length;
+			var color_name = $.trim(name[1]);
+			if (size > 2) {
+				alert("商品名称维护规则：商品名称加空格加颜色名称");
+				$('#name_state').val('0');
+				$('#goods_name_info').html('您输入商品名称不符合要求');
+			} else if(size == 2 && color_name != '' && color_name) {
+				//检查第二个是否为颜色名称
+				$.ajax({
+					type: "POST",
+					url: "goods_index.php?act=checkColorName&&color="+color_name,
+					success: function(data){
+						if (data == '"success"') {
+							$('#name_state').val('1');
+							$('#goods_name_info').html('正确');
+						} else {
+							$('#name_state').val('0');
+							$('#goods_name_info').html('您输入商品名称不符合要求');
+						}
+					},
+					error: function(){
+						alert('出现错误,请与ERP组联系,打bug报告,谢谢---');
+						$('#name_state').val('0');
+						$('#goods_name_info').html('您输入商品名称不符合要求');
+					}
+				});	
+			} else {
+				$('#name_state').val('1');
+				$('#goods_name_info').html('正确');
+			}
+		} else {
+			$('#name_state').val('1');
+			$('#goods_name_info').html('正确');
+		}
+		
+	}
+}
+function checkWarn(){
+	var warn_number=$('#warn_number').val();
+	
+	if(warn_number==''){
+		$('#warn_state').val('0');
+		$('#warn_number_info').html('您输入的警告库存为空');
+	}
+	else if(warn_number!=''){
+		$('#warn_state').val('1');
+		$('#warn_number_info').html('正确');
+	}
+}
+
+function checkBarcode(){
+	var goodsBar= $('#barcode').val();
+	var goods_id =$('#goods_id').val();
+	
+	// 判断条码中是否含空格
+	if(goodsBar.match(/\s+/)) {
+		$('#code_info').html('商品条码不能含空格，请检查！');
+		return false;
+	}
+	
+	if(goodsBar[goodsBar.length - 1]==';'){
+		$('#code_info').html('商品条码结尾不能有分号，请检查！');
+		return false;
+	}
+	
+	if(!goodsBar.match(/^[0-9A-Za-z]+[;[0-9A-Za-z]+]*$/)){
+		$('#code_info').html('商品条码中不能出现除数字和英文分号以外的其他字符');
+		return false;
+	}
+	
+	if(goodsBar=='')
+	{
+		$('#code_state').val('0');
+		$('#code_info').html('商品条码不能为空！');
+		return false;
+	}
+	var result = false;
+	$.ajax({
+		async: false,
+		type: "POST",
+		url: "goods_index.php?act=checkBarCode&&goodsBar="+goodsBar,
+		data: "goods_id="+goods_id,
+		success: function(data){
+			if(data.trim()=='ok')
+			{	
+				result = true;
+				$('#code_state').val('1');
+				$('#code_info').html('您输入商品条码是唯一的');
+			}
+			else if(data.trim()=='-1')
+			{
+				$('#code_state').val('0');
+				$('#code_info').html('您输入商品条码已经存在,请查检后再输入');
+			}
+			else 
+			{
+				alert('checkBarCode出现问题,请与ERP组联系,谢谢---');
+			}
+		},
+		error: function(){
+			alert('checkBarCode ajax出现错误,请与ERP组联系,打bug报告,谢谢---');
+		}
+	});	
+	return result;
+}
+
+function getBarcodeBySinri(){
+	var goods_id =$('#goods_id').val();
+	$.ajax({
+		type: "POST",
+		url: "goods_index.php?act=getNewBarCode&goods_id="+goods_id,
+		success: function(data){
+			if(data!='failed')
+			{
+				$('#code_state').val('1');
+				$('#sinri_try_create_barcode').val('再摇一次');
+				$('#barcode').val(data);
+			}else{
+				$('#code_state').val('0');
+				$('#sinri_try_create_barcode').val('运气不好,再摇一次！');
+			}
+		},
+		error: function(){
+			$('#sinri_try_create_barcode').val('运气不好明天再来！');
+		}
+	});	
+}
+$(function() {
+    $("#tab").tabs();}
+);
+</script>
+{/literal}
+</body>
+</html>

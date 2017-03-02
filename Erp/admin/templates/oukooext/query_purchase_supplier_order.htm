@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+<title>查询采购订单关系</title>
+</head>
+
+<body>
+<form>
+查询采购单订单和-gt订单的关系：  &nbsp;&nbsp;
+采购单号：<input style="width:90px" name="purchase_order" >&nbsp;
+-gt订单号<input style="width:90px" name="supplier_order" >
+<input type="hidden" name="act" value="search" />
+<input type="submit" value="查看" />
+</form>
+{if $smarty.request.act == 'search'}
+<h3>采购订单 -gt订单明细</h3>
+<table class="bWindow">
+	<tr>
+		<td>采购订单号</td><td>入库数量</td><td>入库时间</td>
+		<td>-gt订单号</td><td>-gt订单类型</td><td>出库数量</td><td>出库时间</td>
+	</tr>
+	{foreach from=$orders item=order}
+	<tr>
+		<td><a href="order_edit.php?order_id={$order.pOrder_id}" target="_blank">{$order.pOrder}</a></td>
+		<td>{$order.pQuantity}</td>
+		<td>{$order.pTime}</td>
+		<td><a href="order_edit.php?order_id={$order.sOrder_id}" target="_blank">{$order.sOrder}</a></td>
+		<td>{$order.order_type}</td>
+		<td>{$order.sQuantity}</td>
+		<td>{$order.sTime}</td>
+	</tr>
+	{/foreach}
+</table>
+{/if}
+
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>花王数据导入</title>
+<link href="templates/distributor/style.css" rel="stylesheet" type="text/css"></link>
+<link href="misc/thickbox.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="js/style/calendar/GooCalendar.css"/>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/thickbox.js"></script>
+<script type="text/javascript" src="js/style/calendar/GooFunc.js"></script>
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+	<script type="text/javascript" src="misc/ajaxfileupload.js"></script>
+	<script type="text/javascript" src="js/style/calendar/GooCalendar.js"></script>
+
+<script type="text/javascript">//<![CDATA[
+//{literal}
+var property={
+	    divId:"demo",
+	    needTime:true,
+	    isFirst :true,
+	    yearRange:[1970,2030],
+	    week:['Su','Mo','Tu','We','Th','Fr','Sa'],
+	    month:['January','February','March','April','May','June','July',	'August','September','October','November','December'],
+	    format:"yyyy-MM-dd hh:mm:ss"
+	};
+	$(document).ready(function(){
+		
+	    canva1=$.createGooCalendar("settlement_time",property);
+	    canva3=$.createGooCalendar("shipping_time2",property);
+	    property.isFirst = false;
+	    canva2=$.createGooCalendar("settlement_time_end",property);
+	    canva4=$.createGooCalendar("shipping_time2_end",property);
+	});
+	// {/literal}
+    //]]>
+</script>
+<script type="text/javascript"><!--
+{literal}
+function onExport() {
+	$('#request').val('download');
+	$('#select_from').submit();
+}
+function onSearch() {
+	$('#request').val('search');
+	$('#select_from').submit();
+}
+function onSearch2() {
+	$('#request').val('search2');
+	$('#select_from').submit();
+}
+function onDeal() {
+	alert("迷糊的心怡同学又忘记上传数据啦！");
+	$('#request').val('dealData');
+	
+	$('#select_from').submit();
+}
+
+function form2_onSearch1() {
+	$('#request2').val('form2_search1');
+	$('#select_from2').submit();
+}
+function form2_onSearch2() {
+	$('#request2').val('form2_search2');
+	$('#select_from2').submit();
+}
+function form2_onExport1() {
+	$('#request2').val('form2_download1');
+	$('#select_from2').submit();
+}
+function form2_onExport2() {
+	$('#request2').val('form2_download2');
+	$('#select_from2').submit();
+}
+{/literal}
+--></script>
+</head>
+
+
+<body>
+  
+
+
+<!--{if $message}-->
+	<div style="border:rgba(220,220,220,.8) 2px solid; padding:5px; text-align:center;">
+	{$message}
+	</div>
+  <!--{/if}-->
+
+	<fieldset style="-moz-border-radius: 6px; padding: 10px;">
+		<legend>
+			<span style="font-weight: bold; font-size: 18px; color: #2A1FFF;">&nbsp;花王数据处理&nbsp;</span>
+		</legend>
+		
+		 
+<div style="margin:20px auto; " align="left">
+<fieldset style="border:rgba(220,220,220,.8) 2px solid; ">
+	<br />
+	<div style="width: 500px;float: left;padding-left: 200px;">
+	<legend class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;结汇明细：&nbsp;</legend>
+	<form id="settlement_info_upload" method="post" enctype="multipart/form-data" action="huawang_data_import.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="settlement_upload" />
+    </form>
+    <br />
+     <br/>
+	<legend class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;天猫交易流水：&nbsp;</legend>	
+	<form id="tianmao_trade_upload" method="post" enctype="multipart/form-data" action="huawang_data_import.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="tianmao_upload" />
+    </form>
+    <br />
+    <br/>
+    <legend class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;库存流水明细：&nbsp;</legend>	
+	<form id="shipping_info_upload" method="post" enctype="multipart/form-data" action="huawang_data_import.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="shipping_upload" />
+    </form>
+    <br />
+     <br/>
+    <legend class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;淘宝订单：&nbsp;</legend>	
+	<form id="taobao_order_info_upload" method="post" enctype="multipart/form-data" action="huawang_data_import.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="taobao_order_upload" />
+    </form>
+    <br />
+     <br />
+    <legend class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;账单明细：&nbsp;</legend>	
+	<form id="service_fee_info_upload" method="post" enctype="multipart/form-data" action="huawang_data_import.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="service_fee_upload" />
+    </form>
+    <br />
+    
+    <br />
+    <legend class="expand" style="font-size: 15px;background-color: #B8DCFF";>&nbsp;apo数据导入：&nbsp;</legend>	
+	<form id="service_fee_info_upload" method="post" enctype="multipart/form-data" action="huawang_data_import.php">
+      &nbsp;&nbsp;
+      <input type="file" name="excel" size="30" /> &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" id='upload_btn' value="导入" />
+      <input type="hidden" name="act" value="apo_upload" />
+    </form>
+    <br />
+    
+    </div>
+    <div style="width:450px;float:left" align="left">
+	<div>注意事项</div>
+		<div style="border:1px solid red;padding:10px;border-radius:5px;margin-top: 10px;">
+		<p style="color:red">1、淘宝订单导入时，请先将（订单创建时间）转换为文本格式。</p>
+		<p style="color:red">2、请修改sheet名称（与蓝色提示相同）。</p>
+		<p style="color:red">3、账单明细excel，删除（淘宝交易号列）。</p>
+		<p>4、导入过程中被意外关闭，则此次不会导入数据。</p>
+		<p>5、若结汇数据存在空值，则系统不能处理。</p>
+		<p>6、若excel过大，请删除不需要的列。</p>
+	</div>
+</div>
+    <br/>
+</fieldset> 
+
+</div>
+		
+		<div style="clear: both;">
+			<form id="select_from" method="post">
+				<table class="bWindow">
+					<tr align="center">
+						<td>淘宝订单号：<input  id="taobao_order_sn" name="taobao_order_sn" value="{$smarty.request.taobao_order_sn}" /></td>
+						<td>结汇时间（起）：<input  id="settlement_time" name="settlement_time" value="{$smarty.request.settlement_time}" />&nbsp;&nbsp;</td>
+						<td>结汇时间（止）：<input  id="settlement_time_end" name="settlement_time_end" value="{$smarty.request.settlement_time_end}" />&nbsp;&nbsp;</td>						
+						<td>订单类型：<select name="kao_order_status" id='kao_order_status'> 
+										<option value="null"></option>
+										<option value="P">销售</option>
+  										<option value="R">退货</option>
+								   </select>
+						<td>
+						
+						<input type="hidden" id='request' name="request" value="search" />
+						&nbsp;
+						<input type="button" value="导入数据搜索" onclick="onSearch2()" />
+						&nbsp;
+						<input type="button" value="结汇数据搜索" onclick="onSearch()" />
+						&nbsp;
+						<input type="button" value="导出结汇数据" onclick="onExport()" />
+						&nbsp;
+						<input type="button" value="处理结汇数据" onclick="onDeal()" />
+						&nbsp;
+						</td>
+					</tr>
+				</table>
+			</form>	
+		</div>
+		<br />
+		<div style="clear: both;">
+			<h3 style="color: #09F;">结汇数据查看</h3>
+				<table class="bWindow" style="margin-top: 10px;"
+				id="goods_list_table">
+				<tr>
+					<th width="30">No.</th>
+					<th>淘宝订单号</th>
+					<th>支付宝交易流水号</th>
+					<th>订单类型</th>
+					<th>结汇时间</th>
+					<th>发货时间</th>
+					<th>运费（日）</th>
+					<th>商品金额（日）</th>
+					<th>手续费（日）</th>
+					<th>汇率</th>
+					<th>商品品目</th>
+					<th>商品数量</th>
+					<th>商品原价（日）</th>
+					<th>优惠金额（日）</th>
+					<th>订单金额</th>
+					<th>订单金额（日）</th>
+				</tr>
+				<!--  {if $kao_order_list != null} -->
+				<!-- {foreach from=$kao_order_list item=kao_order name="kaoOrderList"} -->
+				<form id="item_from" method="post">
+				<tr align="center" class="{cycle values='odd,even'}">
+					<td>{$smarty.foreach.kaoOrderList.iteration}</td>
+					<td>{$kao_order.taobao_order_sn}</a></td>
+					<td>{$kao_order.transaction_sn}</td>
+					<td>{$kao_order.type}</td>
+					<td>{$kao_order.settlement_date}</td>
+					<td>{$kao_order.shipping_date}</td>
+					<td>{$kao_order.shipping_fee}</td>
+					<td>{$kao_order.goods_amount}</td>
+					<td>{$kao_order.fee}</td>
+					<td>{$kao_order.rate}</td>
+					<td>{$kao_order.goods_sn}</td>
+					<td>{$kao_order.goods_num}</td>
+					<td>{$kao_order.goods_price_jps}</td>
+					<td>{$kao_order.bonus}</td>
+					<td>{$kao_order.rmb_settlement_amount}</td>
+					<td>{$kao_order.order_amount}</td>
+					
+				</tr>
+				</form>
+				<!-- {/foreach} -->
+				<!-- {else} -->
+				<tr>
+					<td colspan="16" align="center">没有数据</td>
+				</tr>
+				<!--  {/if} -->
+
+			    </table>
+			<br />
+		</div>
+
+
+		<div style="clear: both;">
+				<h3 style="color: #09F;">导入数据查看</h3>
+					<table class="bWindow" style="margin-top: 10px;"
+					id="goods_list_table2">
+					<tr>
+						<th width="30">No.</th>
+						<th>淘宝订单号</th>
+						<th>发送时间</th>
+						<th>订单类型</th>
+						<th>订单时间</th>
+						<th>结汇时间</th>
+						<th>发货时间</th>
+						<th>运费（RMB）</th>
+						<th>手续费（日）</th>
+						<th>Amount（日）</th>
+						<th>Amount（RMB）</th>
+						<th>结汇金额（日）</th>
+						<th>结汇金额（RMB）</th>
+						<th>应付货款（RMB）</th>
+						<th>汇率</th>
+						<th>商品品目</th>
+						<th>商品数量</th>
+	
+					</tr>
+					<!--  {if $import_orders_list != null} -->
+					<!-- {foreach from=$import_orders_list item=import_order name="importOrderList"} -->
+					<form id="item_from2" method="post">
+					<tr align="center" class="{cycle values='odd,even'}">
+						<td>{$smarty.foreach.importOrderList.iteration}</td>
+						<td>{$import_order.taobao_order_sn}</a></td>
+						<td>{$import_order.transaction_sn}</td>
+						<td>{$import_order.type}</td>
+						<td>{$import_order.create_time}</td>
+						<td>{$import_order.settlement_time}</td>
+						<td>{$import_order.shipping_time}</td>
+						<td>{$import_order.should_pay_postage}</td>
+						<td>{$import_order.fee}</td>
+						<td>{$import_order.jps_amount}</td>
+						<td>{$import_order.rmb_amount}</td>
+						<td>{$import_order.settlement_amount}</td>
+						<td>{$import_order.rmb_settlement_amount}</td>
+						<td>{$import_order.should_pay_amount}</td>
+						<td>{$import_order.rate}</td>
+						<td>{$import_order.goods_sn}</td>
+						<td>{$import_order.goods_num}</td>
+						
+					</tr>
+					</form>
+					<!-- {/foreach} -->
+					<!-- {else} -->
+					<tr>
+						<td colspan="17" align="center">没有数据</td>
+					</tr>
+					<!--  {/if} -->
+	
+				    </table>
+				<br />
+			</div>
+<br />
+<br />
+<br />
+			<div style="clear: both;">
+						<form id="select_from2" method="post">
+							<table class="bWindow">
+								<tr align="center">
+									<td>淘宝订单号：<input  id="taobao_order_sn2" name="taobao_order_sn2" value="{$smarty.request.taobao_order_sn}" /></td>
+									<td>出库时间（起）：<input  id="shipping_time2" name="shipping_time2" value="{$smarty.request.shipping_time2}" />&nbsp;&nbsp;</td>
+									<td>出库时间（止）：<input  id="shipping_time2_end" name="shipping_time2_end" value="{$smarty.request.shipping_time2_end}" />&nbsp;&nbsp;</td>						
+									<td>
+									<input type="hidden" id='request2' name="request2" value="search" />
+									&nbsp;
+									<input type="button" value="出库数据查看" onclick="form2_onSearch1()" />
+									&nbsp;
+									<input type="button" value="库存数据查看" onclick="form2_onSearch2()" />
+									&nbsp;
+									<input type="button" value="导出出库数据" onclick="form2_onExport1()" />
+									&nbsp;
+									<input type="button" value="导出库存数据" onclick="form2_onExport2()" />
+									&nbsp;
+									</td>
+								</tr>
+							</table>
+						</form>	
+					</div>
+			<br />
+		<div style="clear: both;">
+					<h3 style="color: #09F;">出库数据查看</h3>
+						<table class="bWindow" style="margin-top: 10px;"
+						id="goods_list_table3">
+						<tr>
+							<th width="30">No.</th>
+							<th>淘宝订单号</th>
+							<th>订单时间</th>
+							<th>付款时间</th>
+							<th>发货时间</th>
+							<th>商品编码</th>
+							<th>商品数量</th>
+							<th>汇率</th>
+							<th>商品金额（日）</th>
+							<th>优惠金额（日）</th>
+							<th>运费（RMB）</th>
+							<th>实付金额（日）</th>
+							<th>服务费（日）</th>
+							<th>支付宝手续费（日）</th>
+							<th>天猫国际手续费（日）</th>
+							<th>花王收入（日）</th>
+						</tr>
+						<!--  {if $inventory_out_list != null} -->
+						<!-- {foreach from=$inventory_out_list item=inventory_out name="inventoryOutList"} -->
+						<form id="item_from2" method="post">
+						<tr align="center" class="{cycle values='odd,even'}">
+							<td>{$smarty.foreach.inventoryOutList.iteration}</td>
+							<td>{$inventory_out.taobao_order_sn}</a></td>
+							<td>{$inventory_out.create_time}</td>
+							<td>{$inventory_out.payment_time}</td>
+							<td>{$inventory_out.shipping_time}</td>
+							<td>{$inventory_out.goods_sn}</td>
+							<td>{$inventory_out.goods_num}</td>
+							<td>{$inventory_out.rate}</td>
+							<td>{$inventory_out.goods_amount}</td>
+							<td>{$inventory_out.bonus}</td>
+							<td>{$inventory_out.should_pay_postage}</td>
+							<td>{$inventory_out.should_pay_amount}</td>
+							<td>{$inventory_out.service_fee}</td>
+							<td>{$inventory_out.alipay_service_fee}</td>
+							<td>{$inventory_out.tmgj_service_fee}</td>
+							<td>{$inventory_out.kao_income}</td>
+						</tr>
+						</form>
+						<!-- {/foreach} -->
+						<!-- {else} -->
+						<tr>
+							<td colspan="17" align="center">没有数据</td>
+						</tr>
+						<!--  {/if} -->
+					    </table>
+					<br />
+				</div>
+		
+		<div style="clear: both;">
+					<h3 style="color: #09F;">库存数据查看</h3>
+						<table class="bWindow" style="margin-top: 10px;"
+						id="goods_list_table3">
+						<tr>
+							<th width="30">No.</th>
+							<th>同步时间</th>
+							<th>仓库编码</th>
+							<th>商品编码</th>
+							<th>商品库存</th>
+							
+						</tr>
+						<!--  {if $inventory_list != null} -->
+						<!-- {foreach from=$inventory_list item=inventory name="inventoryList"} -->
+						<form id="item_from2" method="post">
+						<tr align="center" class="{cycle values='odd,even'}">
+							<td>{$smarty.foreach.inventoryList.iteration}</td>
+							<td>{$inventory.last_updated_stamp}</td>
+							<td>49025140</td>
+							<td>{$inventory.goods_sn}</td>
+							<td>{$inventory.quantity}</td>
+						</tr>
+						</form>
+						<!-- {/foreach} -->
+						<!-- {else} -->
+						<tr>
+							<td colspan="17" align="center">没有数据</td>
+						</tr>
+						<!--  {/if} -->
+					    </table>
+					<br />
+				</div>
+
+	</fieldset>
+</body>
+</html>

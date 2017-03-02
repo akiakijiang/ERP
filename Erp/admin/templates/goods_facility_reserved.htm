@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>库存冻结</title>
+<script type="text/javascript" src="../misc/jquery.js"></script>
+
+ <link href="../styles/default.css" rel="stylesheet" type="text/css" />
+ <!-- bootstrap 3.0.2 -->
+  <link href="../../css/bootstrap.css" rel="stylesheet" type="text/css" />
+  <!-- font Awesome -->
+  <link href="../../css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="../misc/autocomplete.css" />
+  <script type="text/javascript" src="../misc/autocomplete.js"></script>
+  <style type="text/css">
+ 	{literal}
+ 	.modal-wrap{
+    width:100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0,0,0,.5);
+    z-index: 999;
+    display: none;
+}
+.modal-content{
+    margin:100px auto 0 auto;
+    width: 450px;
+    max-height:400px;
+	overflow:none;
+    padding:20px 30px;
+    position: relative;
+}
+.modal-close {
+    font-size: 30px;
+    width: 36px;
+    height: 36px;
+    display: block;
+    position: fixed;
+    top:100px;
+    right:35%;
+    cursor: pointer;
+    z-index: -1;
+}
+ 	{/literal}
+ 		
+ 	</style>
+ 	
+<script type="text/javascript">
+	{literal}
+	var act = 'update';
+	$(document).ready(function(){
+		 $(".modal-close").click(function(){
+	 	        $(this).parents(".modal-wrap").hide();
+	 	    });
+	 	 	$(".modal-wrap").click(function(event){
+	 	        var target = $(event.target).attr("class");
+	 	        if (target == "modal-wrap") {
+	 	            $(".modal-wrap").hide();
+	 	        }
+	 	    });
+	 	 	
+	 	 	$('#goods_name').autocomplete('?method=ajax&act=search_goods', {
+	  			dataType : 'json',
+	  			minChars: 0,
+	  			mustMatch: false,
+	  			formatItem : function(row, i, max, value, term) {
+	  				return(row.goods_name);
+	  			},
+	  			formatResult : function(row) {
+	  				return(row.goods_name);
+	  			}
+	  	    	}).result(function(event, row, formatted) {
+	  			 $('#goods_id').val(row.goods_id);
+	  			 var style = 0;
+	  			 if(row.style_id){
+	  				 style = row.style_id;
+	  			 }
+	  			 $('#style_id').val(style);
+	  		  }); 
+	});
+	
+	
+	
+	function get_reserve(goods_id,style_id,facility_id,goods_name,reserve_number,freeze_reason){
+		$('#goods_name').val(goods_name);
+		$('#goods_name').attr('disabled',true);
+		$('#facility_id').val(facility_id);
+		$('#facility_id').attr('disabled',true);
+		$('#ori_facility_id').val(facility_id);
+		$('#goods_id').val(goods_id);
+		$('#style_id').val(style_id);
+		$('#reserve_number').val(reserve_number);
+		$('#freeze_reason').val(freeze_reason);
+		act = 'update';
+		show_dia();
+	}
+	
+	function update_reserve(){
+		
+		var facility_id =$('#facility_id').val();
+		var goods_id =$('#goods_id').val();
+		var style_id =$('#style_id').val();
+		var ori_facility_id = $('#ori_facility_id').val();
+		var reserve_number = $('#reserve_number').val();
+		var freeze_reason = $('#freeze_reason').val();
+		var r = new RegExp('^[0-9]+$');
+		if(!r.test(reserve_number)){
+			alert('冻结数量必须为正整数');
+			return;
+		}
+		if(!goods_id){
+			alert('未选择商品');
+			return;
+		}
+		if(!freeze_reason){
+			alert('请填写冻结原因');
+			return;
+		}
+		var data = "method=ajax&act="+act+"&goods_id="+goods_id+"&style_id="+style_id+"&facility_id="+facility_id+"&reserve_number="+reserve_number+"&ori_facility_id="+ori_facility_id+"&freeze_reason="+freeze_reason;
+		$.ajax({
+			data : data,
+			dataType : 'json',
+			success : function(data){
+				if(data.message){
+					alert(data.message);
+					return;
+				}
+				if(act == 'update'){
+					alert('修改成功');
+				}else{
+					alert('添加成功');
+				}
+				location.reload();
+			},
+			error : function(data){
+				alert('修改失败')
+			}
+		});
+	}
+	
+	
+	function delete_reserve(goods_id,style_id,facility_id){
+		if(!confirm('确认删除？')){
+			return;
+		}
+		var data = "method=ajax&act=delete&goods_id="+goods_id+"&style_id="+style_id+"&facility_id="+facility_id;
+		$.ajax({
+			data : data,
+			dataType : 'json',
+			success : function(data){
+				alert('删除成功');
+				location.reload();
+			},
+			error : function(data){
+				alert('删除失败，请联系ERP组');
+			}
+		});
+	}
+	function show_add(){
+		clear_all();
+		act = 'insert';
+		$('#goods_name').attr('disabled',false);
+		$('#facility_id').attr('disabled',false);
+		show_dia();
+	}
+	
+	function show_dia(){
+		$('.modal-table-content').parents(".modal-wrap").fadeIn();
+	}
+	
+	function cancle(){
+		$('.modal-table-content').parents(".modal-wrap").fadeOut();
+	}
+	
+	function clear_all(){
+		$('#goods_name').val('');
+		$('#facility_id').val('');
+		$('#goods_id').val('');
+		$('#style_id').val('');
+		$('#reserve_number').val('');
+		$('#freeze_reason').val('');
+		$('#ori_facility_id').val('');
+		
+	}
+	{/literal}
+</script>
+</head>
+<body>
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend style="font-weight:bold; font-size:18px; color:#2A1FFF;">库存冻结</legend>
+	<br/>
+	<form>
+
+		<div>
+		<span>仓库：</span>
+		<select  name="facility_id" style="width:275px;">
+            <option value='-1' >-请选择-</option>
+			{foreach from=$facility key=key item=facility_item}
+				<option value="{$key}" {if $key eq $smarty.request.facility_id}selected="selected"{/if}>{$facility_item}</option>
+			{/foreach}
+		</select>
+		商家编码：<input name="outer_id" type="text" value="{$smarty.request.outer_id}"/>
+		商品名：<input name="goods_name" type="text" value="{$smarty.request.goods_name}"/>
+		商品条码：<input name="barcode" type="text" value="{$smarty.request.barcode}"/>
+		<input type="submit" value="查询"/>
+		</div>
+		
+		<input type="hidden" name="act" value="search"/>
+		<input type="hidden" name="method" value="get"></input>
+	</form>
+
+<br/>
+<div style="width:90%;text-align: right" ><input type="button" value="添加" onclick="show_add()"/></div>
+<br/>
+<table class="table table-hover">
+	<thead>
+		<tr>
+			<th>序号</th>
+			<th>商家编码</th>
+			<th style="text-align: center">商品名</th>
+			<th>商品条码</th>
+			<th>仓库名</th>
+			<th>冻结数量</th>
+			<th>冻结原因</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	
+	<tbody>
+		{foreach from=$goods_reserveds item=goods_reserved name=reserve}
+			<tr>
+				<td>{$smarty.foreach.reserve.iteration}</td>
+				<td>{$goods_reserved.goods_id}_{$goods_reserved.style_id}</td>
+				<td align="center">{$goods_reserved.product_name}</td>
+				<td>{$goods_reserved.barcode}</td>
+				<td>{$goods_reserved.facility_name}</td>
+				<td>{$goods_reserved.reserve_number}</td>
+				<td>{$goods_reserved.freeze_reason}</td>
+				<td><input type="button" value="编辑" onclick="get_reserve({$goods_reserved.goods_id},{$goods_reserved.style_id},{$goods_reserved.facility_id},'{$goods_reserved.product_name}',{$goods_reserved.reserve_number},'{$goods_reserved.freeze_reason}')"/>
+					<input type="button" value="删除" onclick="delete_reserve({$goods_reserved.goods_id},{$goods_reserved.style_id},{$goods_reserved.facility_id})"/></td>
+			</tr>
+		{/foreach}
+		<tr>
+		
+		</tr>
+	</tbody>
+</table>
+<div style="width:90%;text-align: right" >{$pager}</div>
+</fieldset>
+ <div class="modal-wrap">
+            <div class="modal-content">
+                <div class="modal-close">
+                    <i class="fa fa-times"></i>
+                </div>
+                <div class="modal-table-content">
+                		<input type="hidden" id="goods_id"/>
+                		<input type="hidden" id="style_id"/>
+                		<input type="hidden" id="ori_facility_id"/>
+						商品名：&nbsp;&nbsp;&nbsp;<input id="goods_name" style="width:280px" /><br/>
+						<br/>
+						商品仓库：<select id="facility_id">
+							{html_options options=$facility}
+						</select><br/><br/>
+                		冻结数：&nbsp;&nbsp;&nbsp;<input type="text" id="reserve_number"/><br/>
+                		<br/>
+                		冻结原因：<input type="text" id="freeze_reason" style="width:280px"/><br/>
+                		<br/>
+						<div align="center"><input value="确定" type="button" class="btn btn-default" onclick="update_reserve()"/>
+						&nbsp&nbsp&nbsp&nbsp<input value="取消" class="btn btn-default" type="button" onclick="cancle()"/></div>
+                </div>
+            </div>
+        </div>
+</body>
+</html>

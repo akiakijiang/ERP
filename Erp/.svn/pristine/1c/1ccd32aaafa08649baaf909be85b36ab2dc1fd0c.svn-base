@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>抵用券领取记录</title>
+</head>
+<body>
+<table class="bWindow">
+<caption>
+	<h1>抵用券领取记录</h1>
+	{if $gts|@count > 0}
+		<h2>
+		配置ID：{$gts[0].gtc_id}，金额：{$gts[0].gtc_value}，时限：{if $gts[0].gt_state == 3}无时间限制{elseif $gts[0].gt_state == 2}{$gts[0].gtc_stime|date_format:"%Y-%m-%d"}至{$gts[0].gtc_etime|date_format:"%Y-%m-%d"}{/if} <br />
+    领取时间：{$gts[0].give_time|date_format:"%Y-%m-%d"}，领取人：{$gts[0].give_user|getUserName}<br>
+		</h2>
+	{/if}
+	
+	<a href="gt_give.php">领取抵用券</a><br><br>
+</caption>
+<tr>
+<th>编号</th>
+<th>生成时间</th>
+<th>生成人</th>
+<th>生成备注</th>
+<th>关联订单</th>
+<th>认领人</th>
+<th>领取原因</th>
+<th>使用时间</th>
+</tr>
+<!--{foreach from=$gts item=gt}-->
+<tr align="center">
+<td>{$gt.gt_code}</td>
+<td>{$gt.gt_ctime|date_format:"%Y-%m-%d %H:%M"}</td>
+<td>{$gt.gt_creator}</td>
+<td>{$gt.gt_comment}</td>
+<td>{$gt.order_info.order_sn}</td>
+<td>{$gt.user_id|getUserName}</td>
+<td>{$gt.give_comment}</td>
+<td>{$gt.gtl_utime|date_format:"%Y-%m-%d %H:%M"}</td>
+</tr>
+<!--{/foreach}-->
+<tr align="center">
+<td colspan="10">{$pager}</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{foreach from=$show_fields name=show_fields item=field}
+    {$field}{if !$smarty.foreach.show_fields.last},{/if}
+{/foreach}
+
+{foreach from=$data_list item=data}
+{foreach from=$show_fields key=key name=inner item=item}{$data.$key}{if !$smarty.foreach.inner.last},{/if}{/foreach}
+
+{/foreach}
+

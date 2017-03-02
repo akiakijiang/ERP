@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分派权限</title>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="misc/jquery.js"></script>
+  
+	<script type="text/javascript">
+	// <![CDATA[
+	// {literal}
+	$(document).ready(function(){
+														 
+		// 全选
+		$('#select').toggle(
+			function() {
+				$("#form").find(':input[type="checkbox"]').each(function(){
+					$(this).attr('checked', true);
+				});
+			},
+			function () {
+				$("#form").find(':input[type="checkbox"]').each(function(){
+					$(this).attr('checked', false);
+				});
+			}
+		);
+			
+	});
+	// {/literal}
+	// ]]>
+	</script>
+</head>
+<body>
+
+<!--{if $message}-->
+<script type="text/javascript">
+// <![CDATA[
+// {literal}	
+  window.setTimeout(function(){
+    $('#message').slideUp("slow");
+  }, 4000);
+// {/literal}
+// ]]>
+</script>
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+	<legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;分派权限&nbsp;</span></legend>
+
+
+	<div style="clear:both;"> 
+  	<form method="post" id="form" action="privilege.php">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      	<td width="120">用户 ： </td>
+        <td><input type="text" value="{$user.user_name}" readonly="readonly" /></td>
+		</tr>
+        
+    	<tr>
+      	<td>角色 ： </td>
+        <td>
+        	{foreach from=$role_list item=role}
+            <div style="width:170px;float:left;">
+           	<label for="role_{$role.role_id}"><input id="role_{$role.role_id}" type="checkbox" name="user[roles][{$role.role_id}]" value="{$role.role_id}" {if $role.checked}checked="checked"{/if} /> <strong>{$role.role_name}</strong></label>
+            </div>
+            {/foreach}
+        </td>
+		</tr>
+        
+    	<tr>
+      	<td></td>
+        <td><span style="color: #888;"> 下列不能操作的权限是由角色指派的。也可以为用户指派角色之外的具体权限以实现更具体的权限管理。</span></td>
+		</tr>
+      
+    	<tr>
+      	<td valign="top">权限分派 ： <input id="select" type="button" value="全选" /></td>
+        <td>
+        	<table >
+        	{foreach from=$action_group_list item=group}
+            <tr><td><strong style="color:#09F; cursor:pointer;" class="select" id="priv_{$group.action_id}">{$lang[$group.action_code]}</strong></td></tr>
+            <tr><td>
+            
+            {foreach from=$group.priv_list item=priv}
+                {if $priv.show}
+                	<div style="width:200px;float:left;">
+                	<label for="priv_{$priv.action_id}" {if $priv.roled}title="{$priv.role_name}"{/if}>
+                	   <input id="priv_{$priv.action_id}" pid="priv_{$priv.parent_id}" type="checkbox" name="user[action_list][{$priv.action_id}]" value="{$priv.action_code}" {if $priv.checked}checked="checked"{/if} {if $priv.roled}disabled="disabled"{/if} />
+                       {if $lang[$priv.action_code]}
+                       {$lang[$priv.action_code]}
+                       {else}
+                       {$priv.action_code}
+                       {/if}
+                	</label>
+                    </div>
+                {elseif $priv.checked}
+                    <input id="priv_{$priv.action_id}" pid="priv_{$priv.parent_id}" type="hidden" name="user[action_list][{$priv.action_id}]" value="{$priv.action_code}" />
+                {/if}
+            {/foreach}
+            </td></tr>
+            <tr><td>&nbsp;</td></tr>
+            {/foreach}
+            </table>
+        </td>
+		</tr>
+        
+    	<tr>
+      	<td>&nbsp;</td>
+        <td>
+      	    <input type="hidden"   name="id"    value="{$user.user_id}" />
+	        <input type="hidden"   name="act"   value="{$form_act}" />
+        	<input type="submit" value="保存" />
+		</td>
+		</tr>
+		</table>
+    </form>
+  </div>
+  <br />
+  
+</fieldset>
+
+</body>
+</html>

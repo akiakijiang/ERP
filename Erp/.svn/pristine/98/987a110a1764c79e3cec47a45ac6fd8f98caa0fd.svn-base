@@ -1,0 +1,56 @@
+<!-- 操作记录信息 -->
+{foreach from=$service.service_log item=log name=logs}
+{if $smarty.foreach.logs.first}
+<div class="action_class" style='clear:both;'>
+	<a {if $log.remark_count}href="#" class="action_remak"{else}style="background:#EEF7FF"{/if}>显示备注内容[{$log.remark_count}]</a>
+	<a {if $log.log_count}href="#" class='action_log'{else}style="background:#EEF7FF"{/if}>显示操作记录[{$log.log_count}]</a>
+    {if $service.rma_tracks}<a href="#" class='rmatracker'>售后档案</a>{/if}
+</div>
+<table cellpadding="0" cellspacing="0" class="action_info log_table" style="{if $log.remark_count}display:none;{/if}float:left;margin-top:0;">
+	<tr class="tr_tab">
+    	<th width="34%">操作记录</th>
+        <th >操作人</th>
+        <th width='18.5%'>操作时间</th>
+        <th width="34%">记录内容</th>
+    </tr>
+	{/if}
+	{if !$log.is_remark} 
+    <tr>
+    	<td style='text-align:left;'>{$log.status_name}</td>
+        <td>{$log.log_username}</td>
+        <td>{$log.log_datetime}</td>
+        <td style="text-align:left;">{$log.log_note}</td>
+    </tr>
+    {/if}
+{if $smarty.foreach.logs.last}             
+</table>
+{/if}
+{/foreach} 
+{foreach from=$service.service_log item=log name=logss}
+	{if $smarty.foreach.logss.first}
+<table cellpadding="0" cellspacing="0" class="action_info remak_table" style="{if $log.remark_count == 0}display:none;{/if}float:left;margin-top:0;">
+	<tr class="tr_tab">
+    	<th width="34%">售后状态</th>
+        <th>添加人</th>
+        <th width='18.5%'>添加时间</th>
+        <th  width="34%" sId="{$service.service_id}"><a href="#" class="pop" actVal='remark' style="float:right;color:#27ae60">添加备注</a>备注内容</th>
+    </tr>
+	{/if}
+	{if $log.is_remark} 
+    <tr>
+    	<td style='text-align:left;'>{$log.status_name}</td>
+        <td>{$log.log_username}</td>
+        <td>{$log.log_datetime}</td>
+        <td style="text-align:left;">{$log.log_note}</td>
+    </tr>
+    {/if}
+	{if $smarty.foreach.logss.last}              
+</table>
+{/if}
+{/foreach}
+
+ 
+{include file="v3/include/rma_track.dwt"}
+
+
+ 

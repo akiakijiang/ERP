@@ -1,0 +1,4 @@
+商品名,供价,供应商,是否全新,订单号,人名,最后操作时间,预计还机时间,类型,串号,条码,备注,经手人
+{foreach from=$sh_goods_list item=goods}
+"{$goods.goods_name}","{if view_provide_price($goods.category)}{$goods.purchase_paid_amount}{else}N/A{/if}","{$goods.provider_name}","{if $goods.is_new == 'NEW'}全新{elseif $goods.is_new == 'SECOND_HAND'}二手{/if}","{$goods.order_sn}","{$goods.consignee}","{$goods.action_time}","{$goods.predict_return_time}","{$goods.order_type}","{$goods.erp_goods_sn}","{$goods.barcode}","{$goods.postscript}","{$goods.return_time_history_str}"
+{/foreach}

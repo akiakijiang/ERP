@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>分销运费模板管理</title>
+  <link href="styles/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="misc/jquery.js"></script>
+  <script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+  <script type="text/javascript" src="misc/autocomplete.js"></script>
+  <link rel="stylesheet" type="text/css" href="misc/autocomplete.css" />
+  <style type="text/css">
+    <!--{literal}-->
+    .tip {
+        color: #888;
+    }
+    .require {
+        color: #F00;
+    }
+	.list {
+		border:1px solid #E4E4E4;
+		height:225px;
+		width:400px;
+		margin-right:10px;
+		overflow:auto;
+		padding:3px;
+	}
+    <!--{/literal}-->
+  </style>
+  
+  <script type="text/javascript">
+  // <![CDATA[
+  // {literal}
+
+  // {/literal}
+  // ]]>
+  </script>
+  
+</head>
+<body>
+
+<!--{if $message}-->
+<div id="message" style="border:#7F9F00 2px solid; padding:5px; text-align:center;">
+{$message}
+</div>
+<!--{/if}-->
+  
+  
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;指定模板&nbsp;</span></legend>
+
+  <div style="float:right;clear:both;"><a href="distribution_postage_manage.php">运费模板维护</a></div>
+    
+  <div style="clear:both;">
+ 	<form method="post" id="form" action="distribution_postage_assign.php">
+  	<table cellpadding="5" cellspacing="1">
+    	<tr>
+      		<td width="120">选择产品 <span class="require"> * </span></td>
+	        <td>
+				<div class="list">
+					{html_checkboxes name="products" options=$product_list checked=$product_checked separator="<br />"}
+                </div>
+            </td>
+            <td>指定运费模板 <span class="require"> * </span></td>
+            <td>
+          	    <div class="list">
+                	{html_checkboxes name="postages" options=$postage_list checked=$postage_checked separator="<br />"}
+                </div>
+            </td>
+		</tr>
+    	<tr>
+        	<td colspan="3">&nbsp;</td>
+            <td>
+				<input type="submit" value="保存" />
+		    </td>
+		</tr>
+	</table>
+    
+    <input type="hidden" name="act" value="assign" />
+    </form>
+  </div>
+  
+  <br />
+</fieldset>
+
+
+<br /><br /><br />
+
+
+<fieldset style="-moz-border-radius:6px;padding:10px;">
+  <legend><span style="font-weight:bold; font-size:18px; color:#2A1FFF;">&nbsp;已指定运费模板产品&nbsp;</span></legend>
+  
+  {if $list}
+  <div style="clear:both;">
+      <table class="bWindow" style="margin-top:10px;">
+        <tr>
+          <th width="30%">产品名</th>
+          <th width="10%">PRODUCT ID</th>
+          <th width="10%">SKU ID</th>
+          <th width="10%">商家编码</th>
+          <th width="35%">运费模板</th>
+          <th width="5%"></th>
+        </tr>
+        
+        <!--{foreach from=$list item=item}-->
+		<tr align="center" bgcolor="#f9f9f9">
+		    <td>{$item.name}</td>
+            <td>{$item.product_id}</td>
+            <td>{$item.sku_id}</td>
+			<td>{$item.outer_id}</td>
+            <td>
+				{if $item.postage}
+                {foreach from=$item.postage item=p}
+                {$p.description}/{$p.postage_id},
+                {/foreach}
+                {else}
+                未指定
+                {/if}
+			</td>
+            <td><a href="distribution_postage_assign.php?act=update&product_id={$item.product_id}&sku_id={$item.sku_id}">编辑</a></td>
+		</tr>
+        <!--{/foreach}-->
+        
+      </table>
+      
+      <br /><br />
+      {$pagination}
+      
+  </div>
+  {else}
+  
+  <br /><div style="clear:both;text-align:center;">没有已指定模板的商品</div>
+  {/if}
+</fieldset>
+
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css" />
+<title>发货</title>
+{literal}
+<style type="text/css">
+<!--
+.STYLE1 {color: #FF0000}
+li{list-style:none;font-size:14px;line-height:200%;}
+-->
+</style>
+<script type="text/javascript">
+window.onload = function() {
+  document.getElementById('batch_bill_no').select();
+  document.getElementById('batch_bill_no').focus();
+}
+
+var total = 0;
+
+function change_batch_bill_no(event) {
+  eventObj = event == null ? window.event : event;
+	keyCode = eventObj.which==null ? event.keyCode : eventObj.keyCode;
+	if (keyCode == 17 || keyCode == 13) {
+	  if( keyCode == 17) {
+		  document.getElementById('batch_bill_no').value += "\n";
+	  }
+	  total++;
+      document.getElementById('tips').innerHTML = total;
+      if (total % 8 == 0) {
+          document.getElementById('batch_bill_no').rows += 8;
+      }
+	}
+}
+
+function issue(obj) {
+    if (document.getElementById('batch_bill_no').value == '') {
+        alert('没有运单号'); 
+        return false;
+    } else {
+        if (confirm('确认要发货吗？本次提交的运单数为：' + total)) {
+            obj.disabled = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+</script>
+{/literal}
+</head>
+
+<body>
+目前所处仓库：
+<span style="font-weight:bold;font-size:20px;color:red;">{$facility_name}</span>
+{if $smarty.request.act == 'issue'}
+<table class="bWindow" style="width:600px;">
+<tr><td colspan="2"><h3>本次共计发货运单数： {$bill_no_num} <br /><br />发货结果如下：</h3></td></tr>
+{if $canceled_orders}
+<tr><td colspan="2"><h3>以下订单被取消</h3></td></tr>
+<tr><td>运单号</td><td>已取消 订单号</td></tr>
+{foreach from=$canceled_orders item=item}
+<tr><td>{$item.bill_no}</td><td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a></td></tr>
+{/foreach}
+{/if}
+
+{if $prepayment_consume_fail}
+<tr><td colspan="2"><h3 style="color: red;">以下订单对应分销预存款抵扣失败订单。请赶紧联系运营、或财务</h3></td></tr>
+<tr><td>运单号</td><td>分销预存款抵扣失败订单 订单号</td></tr>
+{foreach from=$prepayment_consume_fail item=item}
+<tr><td>{$item.bill_no}</td><td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a>&nbsp;({$item.msg})</td></tr>
+{/foreach}
+{/if}
+
+{if $best_time_orders}
+<tr><td colspan="2"><h3>以下订单还未到发货时间</h3></td></tr>
+<tr><td>运单号</td><td>订单号</td></tr>
+{foreach from=$best_time_orders item=item}
+<tr><td>{$item.bill_no}</td><td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a></td></tr>
+{/foreach}
+{/if}
+
+{if $noinvoice_orders}
+<tr><td colspan="2"><h3>以下订单没有填写发票号</h3></td></tr>
+<tr><td>运单号</td><td>订单号</td></tr>
+{foreach from=$noinvoice_orders item=item}
+<tr><td>{$item.bill_no}</td><td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a></td></tr>
+{/foreach}
+{/if}
+
+{if $badstatus_orders}
+<tr><td colspan="2"><h3>以下订单的之前的状态不是待发货</h3></td></tr>
+<tr><td>运单号</td><td>订单号</td></tr>
+{foreach from=$badstatus_orders item=item}
+<tr><td>{$item.bill_no}</td><td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a></td></tr>
+{/foreach}
+{/if}
+
+{if $pallet_bill_nos}
+<tr><td colspan="2"><h3>以下运单号所属业务需要称重，码托发货</h3></td></tr>
+<tr><td colspan="2">运单号</td></tr>
+<tr><td colspan="2">{$pallet_bill_nos}</td></tr>
+{/if}
+
+{if $noorder_bill_nos}
+<tr><td colspan="2"><h3>以下运单号没有订单对应</h3></td></tr>
+<tr><td colspan="2">运单号</td></tr>
+{foreach from=$noorder_bill_nos item=bill_no}
+<tr><td colspan="2">{$bill_no}</td></tr>
+{/foreach}
+{/if}
+
+{if $ok_orders}
+<tr><td colspan="2"><h3>以下订单成功发货</h3></td></tr>
+<tr><td>运单号</td><td>订单号</td></tr>
+{foreach from=$ok_orders item=item}
+<tr><td>{$item.bill_no}</td><td><a href="order_edit.php?order_id={$item.order.order_id}" target="_blank">{$item.order.order_sn}</a></td></tr>
+{/foreach}
+{/if}
+
+{if $error_mask_phones}
+<tr><td colspan="2"><h3>以下订单屏蔽号码异常</h3></td></tr>
+<tr><td colspan="2">订单号</td></tr>
+{foreach from=$error_mask_phones item=item key=key}
+<tr><td colspan="2">{$key}</td></tr>
+{/foreach}
+{/if}
+
+{if $merge_orders}
+<tr><td colspan="2"><h3>以下订单运单号录入不全，不能操作发货</h3></td></tr>
+<tr><td colspan="2">运单号</td></tr>
+{foreach from=$merge_orders item=bill_no}
+<tr><td colspan="2">{$bill_no}</td></tr>
+{/foreach}
+{/if}
+
+</table>
+{/if}
+<form id="form1" name="form1" method="POST" action=""  onsubmit=" return issue(this);">
+  <input type="hidden" name="act" value="issue" />
+  <h3 for="order_sn">扫描运单号</h3>
+  <textarea name="batch_bill_no" id="batch_bill_no" onkeyup="change_batch_bill_no(event);" cols="25" rows="8"></textarea>
+  <div>已扫描运单的数量：<span id="tips">0</span></div>
+  <p><input type="submit" value="发 货"  /></p>
+</form>
+
+</body>
+</html>

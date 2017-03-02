@@ -1,0 +1,19 @@
+<html>
+<head>
+<title>联邦快递</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body {if $smarty.request.print == 1}onload="window.print()"{/if}>
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{if $smarty.request.print != 2 && $smarty.request.print != 1}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<input type="button" onClick="this.style.display='none';window.print();" value="打印">
+<!-- 丧心病狂的ERP仓库改造党的爪牙大鲵为了批量打印快递面单效果加的 -->
+{/if}
+<!-- 丧心病狂的大鲵干完了 20130807 ljni@i9i8.com -->
+<div style="position:absolute;font-size:12px;top:250px;left:30px;">{$order.consignee}</div>
+<div style="position:absolute;font-size:12px;top:270px;left:30px;">{$order.tel}</div>
+<div style="position:absolute;font-size:12px;top:270px;left:180px;">{$order.mobile}</div>
+<div style="position:absolute;font-size:12px;top:320px;left:20px;width:200px">{if $order.province != ''}[{$order.province}]{/if}{if $order.city != ''}[{$order.city}]{/if}{if $order.district != ''}[{$order.district}]{/if}{$order.address}(订单号：{$order.order_sn})</div>
+</body>
+</html>

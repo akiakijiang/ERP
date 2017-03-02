@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>C2C返现记录</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+{literal}
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+
+{/literal}
+</script>
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+&nbsp;&nbsp;
+类型：
+<select name = 'type'> 
+	<option value="ALL" {if $smarty.request.type == 'ALL'}selected{/if}>全部</option>
+	<option value="YES" {if $smarty.request.type == 'YES'}selected{/if}>已返</option>
+	<option value="NO" {if $smarty.request.type == 'NO'}selected{/if}>未返</option>
+</select>
+<input type="hidden" name="act" value="search">
+<input type="submit" value="      搜索      ">
+<input type="submit" name="csv" value="导出CSV">
+</form>
+<br>
+<br>
+<table class="bWindow">
+<caption>
+	<h2>C2C返现详情</h2>
+	<a href='c2c_buy_sale.php'>返回内部结账</a>
+	<br><br>
+</caption>
+<tr>
+<th>时间</th>
+<th>返现金额</th>
+<th>类型</th>
+<th>采购结款人</th>
+<th>银行帐号</th>
+<th>操作者</th>
+<th>查看</th>
+</tr>
+<tr>
+<td>汇总</td>
+<td>{$sum}</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<!--{foreach from=$bills item=bill}-->
+<tr align="center">
+<td>{$bill.date}</td>
+<td>{$bill.return_amount}</td>
+<td>{if $bill.is_dif_returned == 'YES'}已返{else}未返{/if}</td>
+<td>{$bill.purchaser}</td>
+<td>{$bill.bank_no}</td>
+<td>{$bill.user}</td>
+<td>
+	<a href="c2c_buy_sale_bill_detail.php?bill_id={$bill.bill_id}&type=f">查看</a>
+</td>
+</tr>
+<!--{/foreach}-->
+<td colspan="10" align="center" style="border-right:0"><font color="red">内部C2C结帐</font>{$pager}</td>
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

@@ -1,0 +1,330 @@
+/* 分销商系统样式表 */
+
+/* ------- 基础样式 ------- */
+body {
+  font-family:Tahoma,Verdana;
+  font-size:12px;
+  margin : 10px;
+}
+
+select {
+  font-family : Tahoma,Verdana;
+  font-size : 12px;
+}
+
+pre {
+  font-family:Tahoma;
+  font-size:12px;
+}
+
+input {
+  font-family:Tahoma;
+  font-size:12px;
+}
+
+textarea {
+  font-family : Tahoma,Verdana;
+  font-size : 12px;
+}
+
+
+
+/* ------- 基础样式 ------- */
+.inner {
+	line-height:30px;
+	width: 100%;
+}
+
+.expand{
+	/*border-radius: 15px 15px 1px 1px;*/
+	background-color: rgba(100,149,237,.5); 
+/*  background-color:#B8DCFF;*/
+	color:black; 
+	cursor:pointer;
+	padding:3px;
+}
+.expand_font_size{
+  font-size: 17px !important;
+}
+
+.disabled {
+	background-color: #C0C0C0; 
+	color:#FFFFFF; 
+	cursor: auto;
+	padding:3px;
+}
+
+
+/* ------- 导航条样式 ------- */
+.navigation {
+	list-style:none;	
+}
+.navigation li {
+	padding: 1px 2px;
+	margin: 0 5px;
+	line-height: 14px;
+	float: left;
+}
+.navigation li a {
+	text-decoration:none;
+}
+.navigation li a:hover {
+	background-color:#FF6600;
+	color:#FFFFFF;
+	height: 25px;
+}
+.navigation li.actived {
+	background-color:#FF6600;
+	color: #FFFFFF;
+}
+.navigation li.actived a{
+	color: #FFFFFF;
+}
+
+/* ------- 用于分页的样式 ------- */
+div.page {
+	float:right;
+	clear:both;
+	padding: 5px;
+	font-weight: 700;
+}
+div.page a{
+	border: 1px solid #b2b2b2;
+	padding: 5px 7px;
+	margin: 0 3px;
+	color:#000000;
+	text-decoration:none;
+}
+div.page a:hover {
+	background:#FF9900 none repeat scroll 0 0;
+	color:#FFFFFF;
+}
+div.page a.currentPage {
+	border: 1px solid #CE5A00;
+	color: #FFFFFF;
+	background:#FF9900 none repeat scroll 0 0;
+}
+
+/* ------- 表格样式 ------- */
+tr.th {
+	background-color:#FF9900;
+	color:#FFF;
+}
+tr.odd {
+	background-color:#FFF;
+}
+tr.even {
+	background-color:#E5F3F6;
+}
+tr.hover {
+	background-color:#b6d1ec;
+}
+/*---------------分销管理页面的所有样式----------------------------*/
+.main{
+  /*margin:auto;*/
+  width: 100%;
+}
+.main_content{
+  width: 98%;
+  margin: auto;
+}
+.header_background{
+  border-radius: 5px;
+  padding-top: 1px;
+  padding-left: 1px;
+  background: rgba(139,137,137,.6);
+}
+.if_message{
+  border:#7F9F00 2px solid;
+  padding: 5px;
+  text-align: center;
+}
+.circle{
+  border:1px solid rgba(220,220,220,.9);
+  border-radius: 1px 1px 20px 20px;
+}
+.top_circle{
+  overflow-x:hidden; 
+  /*border:1px solid rgba(220,220,220,.9);*/
+  /*border-radius: 1px 1px 20px 20px;*/
+  width: 84%;
+  margin-left: 1%;
+}
+.top_circle_main_fenxiao{
+  /*border:1px solid rgba(220,220,220,.9);*/
+  /*border-radius: 1px 1px 20px 20px;*/
+  width: 70%;
+  margin-left:2%;
+}
+.bottom_circle{
+  margin-left: 1%;
+  margin-bottom: 40px;
+}
+.bottom_circle_main_fenxiao{
+ border:1px solid rgba(220,220,220,.9);
+ border-radius: 1px 1px 20px 20px;
+ width: 95%;
+ margin: auto;
+}
+.border_radius{
+  border-radius: 15px 15px 1px 1px;
+}
+.select_right{
+  margin-left: 50px;
+  width: 138px !important;
+}
+.left_adjust{
+  margin-left: -15px;
+}
+.left_adjust_again{
+  margin-left: -16px;
+}
+.margin_left{
+  margin-left: -30px;
+  width: 80px !important;
+}
+.margin_double{
+  text-align: right;
+  margin-top: 6px;
+  margin-left: -4%; 
+  z-index: -1;
+}
+.taobao_word_adjust{
+  margin-top: 5px;
+  margin-left: -20px;
+}
+.table_hover{
+  word-wrap:break-word; 
+  margin-top: 10px;
+  border-top-style: none;
+}
+.table_hover tr:nth-child(odd){
+  background: rgba(220,220,220,.8);
+}
+.table_hover tr:hover{
+  background: rgba(255,218,185,.6);
+}
+.table_header th{
+  text-align: center;
+  background: rgba(220,220,220,.9);
+}
+/*.table_header th:nth-child(1){
+  border-top-left-radius: 10px;
+}
+.table_header th:last-child{
+  border-top-right-radius: 10px;
+}*/
+.table_content{
+  text-align: center;
+}
+.check_all_margin{
+  margin-top: 7px;
+}
+.check_all_margin_icon{
+  margin-top: 20px;
+}
+.fenye_change{
+  float: right;
+  margin-top: -40px;
+}
+.radio_margin{
+ margin-top: 6px;
+}
+.radio_margin_min_width{
+  margin-top: 3px;
+  min-width: 566px;
+}
+.currentPage{
+  background: rgba(220,220,220,.9) !important;
+}
+.fenye_change:after{
+  clear: both;
+}
+
+a:link{
+  color: #1788E9;
+}
+ a:visited{
+  color: rgba(159, 94, 199, 0.7);
+ }
+ a:hover{
+  color: rgba(160,32,240,.7);
+ }
+
+.a_href{
+  color: rgba(160,32,240,.7);
+}
+
+.mail_address_margin_both{
+  padding-left: -30px;
+  padding-right: -40px;
+  margin-right: -30px;
+  margin-left: -30px;
+}
+
+.mail_address_margin_left{
+  margin-left: -50px;
+}
+
+.sale_price_margin_right{
+  margin-right: -40px;
+}
+
+.pagination {
+  display: block;
+  padding-left: 0;
+  margin-top: 40px;
+  /* margin: 20px 0; */
+  border-radius: 4px;
+}
+.pagination li{
+  display:inline-block;
+}
+
+.pagination>li:first-child>a, .pagination>li:first-child>span {
+  margin-left: 0;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.pagination>li>a, .pagination>li>span {
+  position: relative;
+  float: left;
+  padding: 6px 12px;
+  margin-left: -1px;
+  line-height: 1.42857143;
+  color: #337ab7;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
+.text_width{
+  height: 26px !important;
+  padding: 1px 10px !important;
+  max-width: 200px;
+}
+.select_margin_left{
+  padding:1px 10px !important;
+  font-size:10px !important;
+  text-align: right;
+  width:70% !important;
+  margin-left: 30%;
+  height:26px !important;
+}
+
+.font_size{
+  font-size: 13px;
+}
+
+.form_margin{
+  /*padding-top:1px;*/
+  margin-top: -15px !important;
+}
+.hidden_tr{
+  display:none;
+}
+.input-height{
+  margin-top: 2px;
+  height:30px;
+}

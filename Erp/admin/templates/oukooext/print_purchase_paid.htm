@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<title>付款通知书</title>
+</head>
+
+<body>
+<table width="584" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="304" valign="top"><p>&nbsp;</p></td>
+    <td width="281" colspan="2" valign="top"><p>部门 采购部</p></td>
+  </tr>
+  <tr>
+    <td width="304" valign="top"><p><strong>上海欧酷网络科技有限公司付款通知书</strong><strong> </strong></p></td>
+    <td width="86" valign="top"><p>&nbsp;</p></td>
+    <td width="195" valign="top"><p>年    月   日 </p></td>
+  </tr>
+</table>
+<br>
+<div align="center">
+  <table border="1" cellspacing="0" cellpadding="0" class="bWindow" style="width:850px">
+    <tr>
+      <td width="131" rowspan="2"><p align="center">收  款  单  位</p></td>
+      <td width="250" rowspan="2"><p>&nbsp;{$goods.provider_name}</p></td>
+      <td width="74"><p align="center">开户银行</p></td>
+      <td colspan="3"><p>&nbsp;&nbsp;{$goods.provider_bank}</p></td>
+    </tr>
+    <tr>
+      <td width="74"><p align="center">帐    号</p></td>
+      <td colspan="3"><p>&nbsp;&nbsp;{$goods.bank_account}</p></td>
+    </tr>
+    <tr>
+      <td width="131"><p align="center">付款金额(大写)</p></td>
+      <td width="250"><p>&nbsp;&nbsp;{$goods.RMB}</p></td>
+      <td width="74"><p align="center">小    写</p></td>
+      <td colspan="3"><p>&nbsp;&nbsp;{if $goods.purchase_paid_amount != 0}￥{$goods.purchase_paid_amount}{/if}</p></td>
+    </tr>
+    <tr>
+      <td width="131"><p align="center">购  物  名  称</p></td>
+      <td width="250"><p>&nbsp;&nbsp;{$goods.goods_name}</p></td>
+      <td width="74"><p align="center">单  价</p></td>
+      <td width="92"><p>&nbsp;&nbsp;{if $goods.purchase_paid_amount != 0}￥{$goods.purchase_paid_amount}{/if}</p></td>
+      <td width="68"><p align="center">数  量</p></td>
+      <td width="45" align="center"><p>1</p></td>
+    </tr>
+    <tr>
+      <td width="131"><p align="center">付  款  方  法</p></td>
+      <td colspan="5"><p>&nbsp;&nbsp;{$goods.purchase_paid_type_name}</p></td>
+    </tr>
+    <tr>
+      <td colspan="6" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;付款理由： </p></td>
+    </tr>
+  </table>
+</div>
+<p align="center">经手人：                     经理审批：                  主办会计审批：</p>
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/css/css.css" rel="stylesheet" type="text/css">
+<link href="styles/css/odiv.css" rel="stylesheet" type="text/css">
+<script src="js/js/jquery.pack.js" type="text/javascript" ></script>
+<script src="js/js/div.jquery.js" type="text/javascript" ></script>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+
+{include file="oukooext/menu.htm"}
+{literal}
+<script type="text/javascript">
+$(function(){
+	var yScroll = document.documentElement.scrollHeight;
+	var windowHeight = document.documentElement.clientHeight;
+	if(yScroll < windowHeight){
+		pageHeight = windowHeight;
+	} else {
+		pageHeight = yScroll;
+	}
+
+	$("#oDiv").height(pageHeight);
+	$("#oDiv").css("visibility","hidden");
+	$("#itemDiv1").cDiv("#Close1","#itemDiv1",".yok");
+	$("#itemDiv2").cDiv("#Close2","#itemDiv2",".fp");
+	$("#itemDiv3").cDiv("#Close3","#itemDiv3",".fpyj");
+	$("#itemDiv4").cDiv("#Close4","#itemDiv4",".pass");
+	$("#itemDiv5").cDiv("#Close5","#itemDiv5",".ok");
+	
+
+	$(".fp").click(function(){
+		$("#ffpp").empty();
+		$(this).parent().next().children().clone().prependTo("#ffpp");
+	});
+
+	$(".ok").click(function(){
+		var num = $(this).parent().parent().children(":eq(0)").text();
+		$("#itemDiv5 span:eq(0)").text(num);
+	});
+
+});
+
+// {{{ 继续修改发票
+var gonoModInvoice = function (order_sn){
+	var rUrl = "order_action.php?action=ajax&do=gonoModInvoice"+"&random="+Math.random()+"_"+new Date().getTime();
+
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_sn="+order_sn,
+		success: function(msg){
+			if (msg == 'ok') {
+				alert('操作成功！');
+				window.location.reload();
+				return true;
+			}else if (msg == 'error') {
+				alert('操作失败！');
+				hideDiv();
+			}else{
+				alert('未能正确传递参数！');
+				hideDiv();
+			}
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+};
+// }}}
+
+
+
+var dblclick = function(){
+	$("#oDiv").css("visibility","hidden");
+	$(".itemDiv").css("visibility","hidden");
+	$(":input").css("visibility","visible");
+	$(".itemDiv :input").css("visibility","hidden");
+}
+function onloadss(){
+	ss(".itemDiv");
+}
+function ss(divclass){
+	$(divclass).css("top",(document.documentElement.scrollTop + (document.documentElement.clientHeight/4)+"px"));
+	$(divclass).css("left", (document.documentElement.clientWidth/3+"px"));
+}
+window.onscroll=onloadss;
+window.onresize=onloadss;
+window.onload=onloadss;
+</script>
+<style type="text/css">
+*{
+padding:0;
+margin:0;
+}
+button{
+border:0;
+}
+
+.Table3_Bo table{
+width:100%;
+text-align:center;
+border-bottom:1px solid #b2b2b2;
+border-collapse:collapse;
+}
+.Table3_Bo th{
+height:30px;
+line-height:30px;
+border:1px solid #b2b2b2;
+}
+.Table3_Bo td{
+height:50px;
+line-height:50px;
+border:1px solid #b2b2b2;
+}
+.Table3_Bo table table{
+border:0;
+width:100%;
+}
+
+#user{
+padding-bottom:15px;
+_height:1%;
+}
+#user table{
+float:right;
+width:90.5%;
+margin-top:-30px;
+margin-right:10px;
+margin-bottom:10px;
+}
+p{
+padding:0;
+margin:5px 0;
+}
+#user table td{
+border:1px solid #b2b2b2;
+}
+table table td{
+border:0;
+border-bottom:1px solid #b2b2b2;
+width:16.6%;
+}
+.b5{
+margin-left:30px;
+}
+.w1{
+width:10%;
+}
+.w2{
+width:15%;
+}
+.w3{
+width:20%;
+}
+
+.Button4{
+background-repeat:no-repeat;
+height:25px;
+line-height:25px;
+padding:0;
+cursor:pointer;
+}
+.Button3{
+background-repeat:no-repeat;
+height:22px;
+line-height:22px;
+padding:0;
+margin:5px;
+cursor:pointer;
+}
+.Table3_Bo{
+float:none;
+clear:both;
+}
+
+#fapiao,#yj{
+position:absolute;
+filter:alpha(opacity=80);
+opacity:0.8;
+top:25%;
+left:25%;
+width:800px;
+background:#fff;
+padding:30px;
+border:1px solid #000;
+display:none;
+}
+#yj{
+display:block;
+width:400px;
+top:25%;
+left:25%;
+}
+#yj input{
+width:300px;
+}
+#yj textarea{
+width:300px;
+height:80px;
+}
+#fapiao h2,#fapiao h3{
+text-align:left;
+margin:5px 0;
+}
+</style>
+{/literal}
+<title>财务管理模块</title>
+</head>
+
+<body>
+<div class="Caption">
+  财务管理模块
+</div>
+<div style="float:left;width:950px;text-align:left">
+  <div class="Hr1"><img src="images/image/hr1.gif" width=948 height=2></div>
+  
+  {include file="oukooext/search_order.htm"}
+  
+  <div>
+  <UL id="admin_nav">
+  	<li class="{if !$type}selected{else}mMenu_li2{/if}"><a href="?">待处理订单</a></li>
+	<LI><a href="#">发票  &raquo;</a>
+		<UL>
+			<li class="{if $type == 'f,s_0'}selected{else}mMenu_li2{/if}"><a href="?type=f,s_0">待确认</a></li>
+			<li class="{if $type == 'f,s_2'}selected{else}mMenu_li2{/if}"><a href="?type=f,s_2">修改反馈</a></li>
+		</UL>
+    </li>
+	<LI><a href="#">待确认款项 &raquo;</a>
+	    <UL>
+			<li class="{if $type == 'dq,s_0'}selected{else}mMenu_li2{/if}"><a href="?type=dq,s_0">先款后货</a></li>
+			<li class="{if $type == 'dq,s_1'}selected{else}mMenu_li2{/if}"><a href="?type=dq,s_1">货到付款</a></li>
+		</UL>
+	</LI>
+	<li class="{if $type == 'dt,s_1'}selected{else}mMenu_li2{/if}"><a href="?type=dt,s_1">已收款</a></li>
+	<li class="{if $type == 'dt,s_0'}selected{else}mMenu_li2{/if}"><a href="?type=dt,s_0">待退款</a></li>
+	<li class="{if $type == 'dt,s_2'}selected{else}mMenu_li2{/if}"><a href="?type=dt,s_2">已退款</a></li>
+
+  </UL>
+  </div>
+  
+  <div style="float:left"><img src="images/image/Menu_bot.gif" width=950 height=3></div>
+  
+{if !$type}
+<div class="Table3_Bo" id="Table2" style="border:none;margin-top: 260px; text-align: center;">
+	{foreach from=$tasks item=list}
+	<div class="newTask">
+		<a href="?type={$list.type}">{$list.item}(<span style="color: red; font-weight:bold; ">{$list.total}</span>)</a>
+	</div>
+	{/foreach}
+</div>
+{else}  
+<div class="Table3_Bo" style="border:none; ">
+<table cellpadding="0" cellspacing="0">
+<thead>
+<tr>
+<th class="w1">订单号</th>
+<th class="w1">下单时间</th>
+<th class="w1">收货人</th>
+<th class="w3">商品</th>
+<th class="w1">订单总金额</th>
+<th class="w1">支付方式</th>
+<th class="w3">订单状态</th>
+<th class="w1">操作</th>
+</tr>
+</thead>
+<tbody>
+{foreach from=$order_list item=list}
+			<tr>
+				<td><a href="detail_info.php?order_id={$list.order_id}"  target="_blank">{$list.order_sn}</a></td>
+				<td>{$list.order_time}</td>
+				<td>{$list.consignee}</td>
+				<td>{$list.goods_name}</td>
+				<td>{$list.total_fee}</td>
+				<td>{$list.pay_name}</td>
+				<td>{$list.status}</td>
+				<td>
+				<!-- <span class="Button4 b5" onclick="window.op已收货en('detail_info.php?order_id={$list.order_id}">查看</span> -->
+				
+	{if $dc_type == 'search'}{assign var=type value=$list.type}{else}{assign var=type value=$smarty.request.type}{/if}
+					{if !$type}
+	{elseif $type == 'f,s_0'}<span class="Button3 fp">预览发票</span><span class="Button3 fpyj" onClick="modifycomment('{$list.order_id}','{$list.inv_payee}')">修改意见</span><span class="Button3" onClick="ok({$list.order_id}, 'f,s_0')">确认发票</span>
+	{elseif $type == 'f,s_2'}<span class="Button3 fp">预览发票</span><span class="Button3 ok" onClick="ajax_getFinanceInvoiceInfo('{$list.order_id}')">确认发票</span>
+
+	{elseif $type == 'dq,s_0'}<span class="Button4 yok" onClick="yok('{$list.order_sn}','{$list.goods_name}','{$list.order_amount}','{$list.order_id}', 'dq,s_0')">已收款</span>
+	{elseif $type == 'dq,s_1'}<span class="Button4 yok" onClick="yok('{$list.order_sn}','{$list.goods_name}','{$list.order_amount}','{$list.order_id}', 'dq,s_1')">已收款</span>
+
+	{elseif $type == 'dt,s_0'}<span class="Button4 pass" onClick="pass('{$list.order_sn}','{$list.goods_name}','{$list.order_amount}','{$list.order_id}')">已退款</span>
+	{/if}
+				</td>
+				<td style="display:none">
+					<div>
+						<h2>上海商业发票</h2>
+						<h3>发票抬头：{$list.inv_payee}</h3>
+						<table>
+							<tr><th>品名</th><th>数量</th><th>单价</th><th>金额</th></tr>
+							{foreach from=$list.goods item=goods}
+							<tr><td>{$goods.goods_name}</td><td>{$goods.goods_number} 个</td><td>{$goods.goods_price}</td><td>{$goods.total_price}</td></tr>
+							{/foreach}
+						</table>
+					</div>
+				</td>
+			</tr>
+{/foreach}
+<tr>
+<td colspan="8" style="text-align:right;padding-right:20px;">{$page_info}</td>
+</tr>
+</tbody>
+</table>
+</div>
+{/if}
+<a href='http://www.zapatec.com/products/prod1'> Javascript Calendar</a>
+</div>
+
+<div id="oDiv" onDblClick="dblclick()"></div>
+{literal}
+<script type="text/javascript">
+function Show(a)
+{
+	for(var i=1;i<=6;i++)
+	{
+		if(a == i)
+		{
+			document.getElementById("M"+i).className= "Menu_li3";
+			document.getElementById("Table"+i).style.display = "";
+		}
+		else
+		{
+			document.getElementById("M"+i).className= "Menu_li2";
+			document.getElementById("Table"+i).style.display = "none";
+		}
+	}
+}
+var fp = document.getElementById("fapiao");
+var yi = document.getElementById("yj");
+
+function Close(){
+	fp.style.display = "none";
+	yi.style.display = "none";
+}
+
+
+function ok(id, type)
+{
+	if(confirm('确认发票吗?')) {
+		confirm_invoice(id, type);
+	}
+}
+
+function confirm_invoice(id, type) {
+	_form = document.getElementById("confirm_invoice_form");
+	if (_form != null && _form.order_id != null) {
+		_form.order_id.value = id;
+		_form.type.value = type;
+		_form.submit();
+	}
+}
+
+function change() {
+	_select = document.getElementById("oselect");
+	if (_select != null) {
+		value = _select.options[_select.selectedIndex].value;
+	}
+	location.href=value;
+}
+
+var modifycomment = function (id,title){
+	//alert(id);
+	$("#itemDiv3 li:eq(0) span").text(title);
+	$("#itemDiv3 li:eq(3) input").val(id);
+};
+
+var yok = function (num,title,money,id, type){
+	$("#itemDiv1 li:eq(0) input").val(num);
+	$("#itemDiv1 li:eq(1) input").val(title);
+	$("#itemDiv1 li:eq(2) input").val(money);
+	$("#itemDiv1 li:eq(4) input").val(id);
+	$("#itemDiv1 li:eq(6) input").val(type);
+};
+
+var pass = function (num,title,money,id){
+	$("#itemDiv4 li:eq(0) input").val(num);
+	$("#itemDiv4 li:eq(1) input").val(title);
+	$("#itemDiv4 li:eq(2) input").val(money);
+	$("#itemDiv4 li:eq(4) input").val(id);
+};
+
+var ajax_getFinanceInvoiceInfo = function (order_id) {
+	$("#itemDiv5 li:eq(6) input").val(order_id);
+	var rUrl = "order_action.php?action=ajax&do=getFinanceInvoiceInfo"+"&random="+Math.random()+"_"+new Date().getTime();
+	$.ajax({
+		type: "POST",
+		url: rUrl,
+		data: "order_id="+order_id,
+		success: function(s){
+			//alert(s);
+			var arr = s.split("\t\t--\t\t");
+			$("#itemDiv5 span:eq(1)").html(arr[0]);
+			$("#itemDiv5 span:eq(2)").html(arr[1]);
+			$("#itemDiv5 span:eq(3)").html(arr[2]);
+		},
+		error: function(){alert('出现错误了');return false;}
+	});
+
+}
+
+function checkxx(xxx) {
+	f = xxx;
+	//alert(xxx.order_id.value);
+	//return false;
+}
+
+function confirm_invoice_check(xxx) {
+	f = xxx;
+	if (f.inv_payee_confirm.value == '') {
+		alert('请填写确认发票抬头');
+		f.inv_payee_confirm.focus();
+		f.inv_payee_confirm.style.border = "1px solid red;";
+		return false;
+	}
+	return true;
+}
+
+</script>
+{/literal}
+
+
+<!-- -->
+<div class="itemDiv" id="itemDiv1">
+<h2>已收款确认</h2>
+<form method="POST" action="order_action.php" id="confirm_pay_form">
+<ul>
+<li><strong>订单号：</strong><input class="aleft" readonly="readonly" /></li>
+<li><strong>商品：</strong><input class="aleft" readonly="readonly" /></li>
+<li><strong>总金额：</strong><input class="aleft" readonly="readonly" /></li>
+<li><strong>备注：</strong><textarea name="action_note">已收款</textarea></li>
+<li style="display:none"><input type="hidden" name="order_id" /></li>
+<li style="display:none"><input type="hidden" name="action"  value="confirm_pay"/></li>
+<li style="display:none"><input type="hidden" name="type" /></li>
+</ul>
+<p><a href="#" class="Button4" onClick="document.getElementById('confirm_pay_form').submit()">确定</a><a href="#" class="Button4" id="Close1">取消</a></p>
+</form>
+</div>
+
+<!-- -->
+<div class="itemDiv" id="itemDiv2">
+<div id="ffpp" align="center"></div>
+<p><span style="cursor:pointer;"  class="Button4" id="Close2">关闭</span></p>
+</div>
+
+
+<!-- -->
+<div class="itemDiv" id="itemDiv3" >
+<h2>财务修改发票意见</h2>
+<form action="order_action.php" method="POST" id="modify_form" onSubmit="return checkxx(this)">
+<ul>
+<li><strong>原发票抬头：</strong><span class="aleft"></span></li>
+<li><strong>拟修改发票抬头：</strong><input type="input" name="inv_payee_new" /></li>
+<li><strong>备注：</strong><textarea name="action_note"></textarea></li>
+<li style="display:none"><input type="hidden" name="order_id" /></li>
+<li style="display:none"><input type="hidden" name="action" value="modify_invoice"/></li>
+</ul>
+<p><input type="submit" class="Button3" value="通知客服" style="width: 60px;"><a href="#" class="Button4" onClick="document.getElementById('modify_form').reset()">重置</a><a href="#" class="Button4" id="Close3">取消</a></p>
+</form>
+</div>
+
+
+<div class="itemDiv" id="itemDiv4">
+<h2>退款确认</h2>
+<form method="POST" action="order_action.php" id="confirm_refund_form">
+<ul>
+<li><strong>订单号：</strong><input class="aleft" readonly="readonly" /></li>
+<li><strong>商品：</strong><input class="aleft" readonly="readonly" /></li>
+<li><strong>总金额：</strong><input class="aleft" readonly="readonly" /></li>
+<li><strong>备注：</strong><textarea name="action_note">已退款</textarea></li>
+<li style="display:none"><input type="hidden" name="order_id" /></li>
+<li style="display:none"><input type="hidden" name="action" value="confirm_refund"/></li>
+</ul>
+<p><a href="#" class="Button4" onClick="document.getElementById('confirm_refund_form').submit()">确定</a><a href="#" class="Button4" id="Close1">取消</a></p>
+</form>
+</div>
+
+<div class="itemDiv" id="itemDiv5" >
+<h2>确认发票</h2>
+<form method="POST" action="order_action.php" id="confirm_invoice_form" onSubmit="return confirm_invoice_check(this);">
+<ul>
+<li><strong>订单号：</strong><span class="aleft">00006</span></li>
+<li><strong>原发票抬头：</strong><span class="aleft" style="border: 1px solid green; text-align: left; padding: 3px;"></span></li>
+<li><strong>　　　　　　　</strong><span class="aleft" style="border: 1px solid blue; text-align: left; padding: 3px;"></span></li>
+<li><strong>　　　　　　　</strong><span class="aleft" style="border: 1px solid blue; text-align: left; padding: 3px;"></span></li>
+<li><strong>确认发票抬头：</strong><input type="text" name="inv_payee_confirm" /></li>
+<li><strong>备注：</strong><textarea name="action_note">发票已确认</textarea></li>
+<li><input type="hidden" name="order_id" /></li>
+</ul>
+<p><input type="submit" class="Button4" value="确定" style="width: 40px;"><a href="#" class="Button4" id="Close5">取消</a><a href="#" class="Button3" onclick="gonoModInvoice($('#itemDiv5 span:eq(0)').text());" style="color: red;">继续修改</a></p>
+	
+	<input type="hidden" name="action" value="confirm_invoice" />
+	<input type="hidden" name="type" />
+</form>
+</div>
+
+
+
+</body>
+</html>

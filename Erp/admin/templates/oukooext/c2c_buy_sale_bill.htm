@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="styles/default.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="misc/autocomplete.css" />
+<title>财务付款记录查看</title>
+
+<!-- Loading Calendar JavaScript files -->
+<script type="text/javascript" src="js/style/zapatec/utils/zapatec.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/src/calendar.js"></script>
+<script type="text/javascript" src="js/style/zapatec/zpcal/lang/calendar-en.js"></script>
+<script type="text/javascript" src="misc/jquery.js"></script>
+<script type="text/javascript" src="misc/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="misc/autocomplete.js"></script>
+<link rel="stylesheet" href="js/style/zapatec/zpcal/themes/winter.css" />
+<script type="text/javascript">
+var WEB_ROOT = '{$WEB_ROOT}';
+{literal}
+$(document).ready(function(){
+	$('#provider').autocomplete(WEB_ROOT + 'admin/ajax.php?act=get_provider', {
+		dataType : 'json',
+        minChars: 0,
+        mustMatch: true,
+        formatItem : function(row, i, max, value, term) {
+            return(row.provider_name);
+        },
+        formatResult : function(row) {
+            return(row.provider_name);
+        }
+    }).result(function(event, row, formatted) {
+        $('#provider_id').val(row.provider_id);
+    });   
+});
+function E(id) {return document.getElementById(id);}
+function ES(name) {return document.getElementsByName(name);}
+
+{/literal}
+</script>
+</head>
+<body>
+<form>
+开始时间：
+<input style="width:90px" id="startCalendar" name="start" value="{$smarty.request.start}"><input type="button" value="..." id="startTrigger">
+结束时间：
+<input style="width:90px" id="endCalendar" name="end" value="{$smarty.request.end}"><input type="button" value="..." id="endTrigger">
+<label for="provider">供应商：</label>
+<input type="text" name="provider" id="provider" style="width:300px;">
+<input type="hidden" name="provider_id" id="provider_id">
+<br><br>
+订单类型：
+<select name="order_type" >
+<option value="all">&nbsp;</option>
+<option value="b2c"{if $smarty.request.order_type == 'b2c'} selected="selected"{/if}>&nbsp;B2C&nbsp;</option>
+<option value="c2c"{if $smarty.request.order_type == 'c2c'} selected="selected"{/if}>&nbsp;C2C&nbsp;</option>
+<option value="dx" {if $smarty.request.order_type == 'dx' } selected="selected"{/if}>&nbsp;DX&nbsp;</option>
+</select>
+金额：
+<input style="width:90px" name="amount" value="{$smarty.request.amount}">
+凭证时间：
+<select name="voucher_year_search">
+	<option value="0">所有</option>
+	{section name=foo start=2007 loop=$next_year}
+	<option value="{$smarty.section.foo.index}" {if $smarty.section.foo.index==$smarty.request.voucher_year_search}selected="selected"{/if} >
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>年
+<select name="voucher_month_search">
+	<option value="0">所有</option>
+	{section name=foo start=1 loop=13}
+	<option value="{$smarty.section.foo.index}" {if $smarty.section.foo.index==$smarty.request.voucher_month_search}selected="selected"{/if} >
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>月&nbsp;&nbsp;
+凭证号：
+<input style="width:90px" name="voucher_no_serach" value="{$smarty.request.voucher_no_serach}">
+<input type="hidden" name="act" value="search">
+<br><br>
+采购订单号：
+<input style="width:150px" name="order_sn" value="{$smarty.request.order_sn}">
+<input type="submit" value="      搜索      ">
+</form>
+<br>
+<table class="bWindow">
+<caption><h2>财务{$smarty.request.order_type}付款记录</h2><a href='c2c_buy_sale.php'>内部订单详情</a><br><br></caption>
+<tr>
+<th>付款批次号</th>
+<th>时间</th>
+<th>本次付款金额</th>
+<th>采购金额</th>
+<th>使用返利金额</th>
+<th>使用预付金额</th>
+<th>C2C应返金额</th>
+<th>订单类型</th>
+<th>采购结款人</th>
+<th>类型</th>
+<th>银行帐号</th>
+<th>付款凭证号</th>
+<th>操作者</th>
+<th>供应商</th>
+<th>操作</th>
+</tr>
+<!--{foreach from=$bills item=bill}-->
+<tr align="center">
+<td>{$bill.bill_id}</td>
+<td>{$bill.date}</td>
+<td>{$bill.amount}</td>
+<td>{$bill.total_amount}</td>
+<td>{$bill.rebate_amount}</td>
+<td>{$bill.prepayment_amount}</td>
+<td>{$bill.return_amount}</td>
+<td>{$bill.type}</td>
+<td>{$bill.purchaser}</td>
+<td>{if $bill.paid_type == "CASH"}现金{/if}{if $bill.paid_type == "BANK"}银行汇款{/if}</td>
+<td>{$bill.bank_no}</td>
+<td>
+{if empty($bill.voucher_no)}
+<form>
+<select name="voucher_year">
+{section name=foo start=2007 loop=$next_year}
+	<option value="{$smarty.section.foo.index}" {if $bill.voucher_year==$smarty.section.foo.index}selected="selected"{/if}>
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>年
+<select name="voucher_month">
+{section name=foo start=1 loop=13}
+	<option value="{$smarty.section.foo.index}"  {if $bill.voucher_month==$smarty.section.foo.index}selected="selected"{/if}>
+	{$smarty.section.foo.index}
+	</option>
+{/section}
+</select>月&nbsp;&nbsp;-
+<input style="width:60px" name="voucher_no" value=""><br>
+<input type="hidden" name="bill_id" value="{$bill.bill_id}">
+<input type="hidden" name="amount" value="{$smarty.request.amount}">
+<input type="hidden" name="start" value="{$smarty.request.start}">
+<input type="hidden" name="end" value="{$smarty.request.end}">
+<input type="hidden" name="page" value="{$smarty.request.page}">
+<input type="hidden" name="act" value="update_voucher_no">
+<input type="submit" value="添加凭证号">
+</form>
+{else}
+{$bill.voucher_year}年{$bill.voucher_month}月&nbsp;&nbsp;-&nbsp;&nbsp;{$bill.voucher_no}
+{/if}
+</td>
+<td>{$bill.user}</td>
+<td>
+	{foreach from=""|getProviders item=provider}
+	{if $provider.provider_id == $bill.provider_id}
+	{$provider.provider_name}
+	{/if}
+	{/foreach}
+</td>
+<td>
+	<a href="c2c_buy_sale_bill_detail.php?bill_id={$bill.bill_id}&type=f">查看</a></br>
+	
+	{if "finance_order"|check_admin_priv}
+		{if $bill.has_invoice != 'YES'}&nbsp;&nbsp;<a href="c2c_buy_sale_bill.php?act=has_invoice&bill_id={$bill.bill_id}" onclick="return confirm('是否确认已开发票？')">未开发票</a>{else}已开发票{/if}
+		{if $bill.is_dif_returned != 'YES'}未返还差额
+		{else}已返还差额
+		{/if}
+	{else}
+		{if $bill.has_invoice != 'YES'}&nbsp;&nbsp;未开发票{else}已开发票{/if}
+		{if $bill.is_dif_returned != 'YES'}&nbsp;&nbsp;未返还差额{else}已返还差额{/if}	
+	{/if}
+	</br>
+	&nbsp;&nbsp;<a target="_blank" href='c2c_buy_sale_bill_detail_print.php?bill_id={$bill.bill_id}&type={$bill.type}&bill_type=finance'>打印</a>
+</td>
+</tr>
+<!--{/foreach}-->
+<td colspan="10" align="center" style="border-right:0"><font color="red">内部C2C结帐</font>{$pager}</td>
+</table>
+{literal}
+<script type="text/javascript">//<![CDATA[
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "startCalendar",
+        button            : "startTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+      Zapatec.Calendar.setup({
+        weekNumbers       : false,
+        electric          : false,
+        inputField        : "endCalendar",
+        button            : "endTrigger",
+        ifFormat          : "%Y-%m-%d",
+        daFormat          : "%Y-%m-%d"
+      });
+    //]]>
+</script>
+{/literal}
+</body>
+</html>

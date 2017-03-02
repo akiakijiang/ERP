@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>欧酷网 {$goods_inform.goods_name}到货通知</title>
+</head>
+
+<body style="width:1000px;font-size:12px;color:#000;background:#fff;">
+<div style="margin:auto;width:700px;">
+	<a href="http://www.ouku.com" target="_blank"><img src="http://www.ouku.com/auto/top_01.jpg" alt="欧酷网" border="0"/></a>
+</div>
+<div style="margin:auto;width:700px;">
+	<p>亲爱的欧酷会员：</p>
+	<p style="text-indent:2em;line-height:200%;">
+    您在欧酷网关注的 <a href="http://www.ouku.com/goods{$goods_inform.goods_id}" target="_blank">{$goods_inform.goods_name}</a> 已经到货啦！
+  </p> 
+  <p style="text-indent:2em;line-height:200%;">
+    目前欧酷商城售价：<font color="Red">{$goods_inform.price|price_format}</font> 市场价：{$goods_inform.market_price|price_format} 便宜<font color="Red">{$goods_inform.market_price-$goods_inform.price|price_format}</font>
+  </p>
+  <p style="text-indent:2em;line-height:200%;">
+    商品标配：{$goods_inform.seller_note}
+  </p>
+	<a href="http://www.ouku.com/goods{$goods_inform.goods_id}" target="_blank">点击进入购买</a><br />
+	<p>若您无法直接点击链接，请复制以下地址到浏览器地址栏中：<br />
+	<a href="http://www.ouku.com/goods{$goods_inform.goods_id}" target="_blank">http://www.ouku.com/goods{$goods_inform.goods_id}</a></p>
+	<p style="width:660px;border-bottom:1px dashed #ccc;height:1px;"></p>
+	更多商品可登录<a href="http://www.ouku.com" target="_blank">欧酷商城</a>寻找，还可登录<a href="http://bbs.ouku.com" target="_blank">欧酷论坛</a>，一同参与讨论哦。 
+	<p>温馨提示：</p>
+  <p> &nbsp;提醒次数：本邮件会在商品到货时由系统自动发出，仅提醒一次，不会重复提醒。<br />
+      &nbsp;到货数量：由于本次到货数量有限，欢迎您及时订购，如果商品被抢购完，还请您多多谅解。<br />
+	    &nbsp;重新设置：商品售完后将会继续恢复缺货状态。若您还没订购到此款手机，请您务必重新设置到货通知，否则再次到货时将无法通知您。<br /><a href="http://www.ouku.com/goods{$goods_inform.goods_id}" target="_blank">点击进入重新设置</a>
+  </p>
+</div>
+<div style="margin:auto;width:700px;">
+<img src="http://www.ouku.com/auto/bottom_02.jpg" alt="欧酷信息" />
+</div>
+</body>
+</html>
